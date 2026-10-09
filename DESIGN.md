@@ -7,7 +7,8 @@ sets: the groups of SUMMARIZECOLUMNS, CALCULATE's filters, and context transitio
 rows of an iterator. That context reaches a table only along its relationships. SQL has none
 of this.
 
-`compiler.js` (the page's) writes the SQL for the constructs the page uses, case by case.
+The analytics-as-code dashboard's former compiler (`compiler.js`) wrote the SQL for the
+constructs its page used, case by case.
 This package translates DAX's rules instead, so that a query it has not seen comes out right.
 
 ## The approach

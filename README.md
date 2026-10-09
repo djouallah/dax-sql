@@ -5,10 +5,21 @@ and Analysis Services use) and turns DAX queries over it into one SQL query each
 semantics: filter context, context transition, relationships, blanks. Tested on DuckDB, with a
 dialect layer for other engines.
 
-It replaced the fixed cases of the page's former `compiler.js`, which knew this repository's
-model and page only, and was removed on 2026-10-08. Since then the page compiles every query
-with this package: `dashboard/github/dax/semantic/query.js` writes the DAX, and this package
-turns it into SQL. The page's queries are part of this package's tests.
+It was written for [analytics-as-code](https://github.com/djouallah/analytics-as-code), whose
+dashboard compiles every query with it: the dashboard writes the DAX, this package turns it into
+SQL, and there the same DAX is also asked of the deployed Power BI model and the rows compared.
+That one model is the only one it has been checked against so far.
+
+## The contract
+
+- **In:** a Tabular model (TMSL, the `model.bim` JSON), one DAX query (`EVALUATE ...`), and
+  options: how a table's rows are named in SQL, the dialect, referential integrity, casts,
+  roles, parameters (see [API](#api)).
+- **Out:** one SQL `SELECT`, and the result's columns: name, type, lineage. Or a `DaxError`
+  saying the text is not DAX (`SYNTAX`), is wrong for this model (`SEMANTIC`), or is DAX this
+  compiler does not translate (`UNSUPPORTED`).
+- **Not its job:** writing DAX from a visual (that is the BI tool's: Power BI's visuals write
+  DAX, and so does the analytics-as-code dashboard), running the SQL, or fetching data.
 
 **Credit:** written by [N.S. Devaraj](https://github.com/nsdevaraj), contributed in
 [#5](https://github.com/djouallah/analytics-as-code/pull/5), "Generic Approach for dax to sql
@@ -234,7 +245,8 @@ and gives each aggregate the filters that reach its table.
   (`TREATAS`, or `VALUES` used as a filter). Blank-row and `BLANK()` matches do work: the
   blank row, the blank a fact row with no dimension row reads through the relationship, and
   `BLANK()`. A boolean filter (`T[c] = BLANK()`, `ISBLANK`) does match a stored NULL. It is
-  kept this way because matching those NULLs made the page's queries about 25% slower.
+  kept this way because matching those NULLs made the analytics-as-code dashboard's queries
+  about 25% slower.
 - **When one column mixes numbers and text**, the whole column comes back as text. This
   happens with a calculation group that has a text item (a FORMAT item) when grouped by its
   column, and with `IF(c, 1, "x")`.
@@ -296,13 +308,9 @@ npm test
 - `test/features.test.js` has 24 more on the same model: calculated tables, calculation
   groups, field parameters, row-level security, ALLSELECTED, `START AT`, the window
   functions, the blank row, context transition and FORMAT.
-- `test/repo.test.js` uses this repository's model on made-up data (`test/fixtures/nem.js`):
-  - every measure runs in five filter contexts;
-  - some values are compared with SQL written by hand;
-  - every query the dashboard sends, in six page states, is compared row for row with
-    `compiler.js`.
-
-  Where the two differ, this package follows DAX, and the test lists the reason.
+- [analytics-as-code](https://github.com/djouallah/analytics-as-code) runs its model's measures
+  and its dashboard's queries through this package on every push, and compares them with its
+  deployed Power BI model on request.
 
 ## Review
 

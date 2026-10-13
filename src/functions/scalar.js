@@ -106,9 +106,9 @@ function weeknum(c, args, env) { return ir.fn('weeknum', [s(c, args[0], env), op
 function search(name) {
   return (c, args, env) => ir.fn(name, [s(c, args[0], env), s(c, args[1], env), opt(c, args[2], env, ir.lit(1)), opt(c, args[3], env, ir.BLANK)], 'int');
 }
+// Every occurrence of the old text, or only the one an instance number gives.
 function substitute(c, args, env) {
-  if (args[3]) throw unsupported('SUBSTITUTE with an instance number');
-  return ir.fn('substitute', args.slice(0, 3).map(x => s(c, x, env)), 'string', { strict: true });
+  return ir.fn('substitute', args.slice(0, args[3] ? 4 : 3).map(x => s(c, x, env)), 'string', { strict: true });
 }
 function concatenate(c, args, env) { return ir.op('concat', s(c, args[0], env), s(c, args[1], env)); }
 function combineValues(c, args, env) { return ir.fn('combinevalues', args.map(x => s(c, x, env)), 'string', { nn: true }); }

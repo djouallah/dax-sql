@@ -12,7 +12,7 @@
 //   dates     date time year month day hour minute second quarter weekday weeknum eomonth
 //             add_interval datediff start_of end_of today now utctoday utcnow
 // agg(fn, arg, extra) the aggregates of ir.js: sum avg min max count countrows dcount dcountnb
-//   countblank product median pct_inc stdev_s stdev_p var_s var_p concat hasone count0 dcount0
+//   countblank product median pct_inc pct_exc stdev_s stdev_p var_s var_p concat hasone count0 dcount0
 export class Dialect {
   name = 'ansi';
 
@@ -43,6 +43,11 @@ export class Dialect {
   div(a, b) { return `(CAST(${a} AS DOUBLE PRECISION) / ${b})`; }
 
   isNotDistinct(a, b) { return `${a} IS NOT DISTINCT FROM ${b}`; }
+
+  // The sides of a comparison of text (=, <, IN, a table filter's values), written so that it
+  // is without regard to case, as DAX compares text. `a` is a side that is text for certain;
+  // the others can be a blank.
+  nocase(a, ...others) { return [a, ...others].map(s => `lower(${s})`); }
   isDistinct(a, b) { return `${a} IS DISTINCT FROM ${b}`; }
 
   // a + b where either can be blank: blank only when both are.

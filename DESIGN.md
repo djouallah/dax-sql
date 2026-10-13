@@ -212,6 +212,10 @@ existing combinations, cross-joined, plus a dimension's blank row) and the expre
 evaluated on each. `ROLLUPADDISSUBTOTAL` is a `UNION ALL` of the levels; each call is an axis,
 and the levels of several are crossed.
 
+**Text** compares without regard to case, as in DAX: a comparison, `IN`, a bind and a table
+filter's membership on text columns are written with the dialect's `nocase` (DuckDB's
+`NOCASE` collation, `lower` on both sides elsewhere).
+
 **One value as a table.** `VALUES(c)` under a bind on `c` is `onerow(v, exists)`, not a scan.
 
 - `EXCEPT` and `INTERSECT` of it are conditions.

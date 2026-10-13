@@ -1,6 +1,5 @@
 // DuckDB (1.1 and later; tested on 1.5).
 import { Dialect } from './base.js';
-import { unsupported } from '../errors.js';
 import { formatNumber, formatDate, generalNumber, generalDate, dateSerial, serialDate } from './duckdb-format.js';
 
 const UNIT_SQL = { day: 'DAY', week: 'WEEK', month: 'MONTH', quarter: 'QUARTER', year: 'YEAR', hour: 'HOUR', minute: 'MINUTE', second: 'SECOND' };
@@ -11,6 +10,10 @@ export class DuckDBDialect extends Dialect {
   supportsQualify = true;
 
   type(t) { return t === 'double' ? 'DOUBLE' : super.type(t); }
+
+  // The NOCASE collation on one side is the comparison's (and IN's, and a join's). A NULL
+  // with no type takes no collation, so it goes on the side that is text.
+  nocase(a, ...others) { return [`(${a} COLLATE NOCASE)`, ...others]; }
 
   // / divides as DOUBLE already.
   div(a, b) { return `(${a} / ${b})`; }
@@ -79,7 +82,18 @@ export class DuckDBDialect extends Dialect {
       case 'upper': return `upper(${x})`;
       case 'lower': return `lower(${x})`;
       case 'trim': return `regexp_replace(trim(${x}), ' {2,}', ' ', 'g')`;
-      case 'substitute': return `replace(${x}, ${y}, ${z})`;
+      case 'substitute': {
+        if (w === undefined) return `replace(${x}, ${y}, ${z})`;
+        // The w-th occurrence only: it starts after the first w pieces of the text split on the
+        // old text, and the w - 1 old texts between them (the text and the old text are bound
+        // once). Unchanged with fewer occurrences.
+        const n = `CAST(trunc(${w}) AS BIGINT)`;
+        const before = `CAST(list_sum([length(dax_e) FOR dax_e IN dax_p[1:${n}]]) + (${n} - 1) * length(dax_s[2]) AS BIGINT)`;
+        const body = `CASE WHEN ${n} < 1 THEN error('SUBSTITUTE: the instance number must be 1 or more')
+          WHEN dax_s[2] = '' OR ${n} >= len(dax_p) THEN dax_s[1]
+          ELSE left(dax_s[1], ${before}) || ${z} || substring(dax_s[1], ${before} + length(dax_s[2]) + 1) END`;
+        return `[[${body} FOR dax_p IN [string_split(dax_s[1], dax_s[2])]][1] FOR dax_s IN [[${x}, ${y}]]][1]`;
+      }
       case 'replace': return `(left(${x}, ${y} - 1) || ${w} || substring(${x}, ${y} + ${z}))`;
       case 'search': case 'find': {
         const low = s => (name === 'search' ? `lower(${s})` : s);
@@ -167,7 +181,15 @@ export class DuckDBDialect extends Dialect {
       case 'var_s': return `var_samp(${x})${f}`;
       case 'var_p': return `var_pop(${x})${f}`;
       case 'concat': return `string_agg(COALESCE(${x}, ''), ${extra.delim}${extra.order?.length ? ` ORDER BY ${extra.order.join(', ')}` : ''})${f}`;
-      case 'pct_exc': throw unsupported('PERCENTILE.EXC on DuckDB');
+      // The value at rank k(n + 1) of the n values in order, between the two around it as
+      // that rank is between theirs; blank when the rank is not between 1 and n. The sorted
+      // values and the rank are bound once.
+      case 'pct_exc': {
+        const nb = ` FILTER (WHERE ${x} IS NOT NULL${extra.filter ? ` AND ${extra.filter}` : ''})`;
+        const i = 'CAST(floor(dax_r) AS BIGINT)';
+        const body = `CASE WHEN dax_r >= 1 AND dax_r <= len(dax_l) THEN dax_l[${i}] + (dax_r - ${i}) * (dax_l[least(${i} + 1, len(dax_l))] - dax_l[${i}]) END`;
+        return `[[${body} FOR dax_r IN [${extra.k} * (len(dax_l) + 1)]][1] FOR dax_l IN [list(${x} ORDER BY ${x})${nb}]][1]`;
+      }
     }
     return super.agg(fn, x);
   }

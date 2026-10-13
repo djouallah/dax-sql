@@ -187,7 +187,7 @@ and gives each aggregate the filters that reach its table.
 **Functions.**
 
 - **Aggregates and iterators:** `SUM`, `AVERAGE`, `MIN`, `MAX`, `COUNT(A/BLANK)`, `COUNTROWS`,
-  `DISTINCTCOUNT(NOBLANK)`, `PRODUCT`, `MEDIAN`, `STDEV.S/P`, `VAR.S/P`, `PERCENTILE.INC`;
+  `DISTINCTCOUNT(NOBLANK)`, `PRODUCT`, `MEDIAN`, `STDEV.S/P`, `VAR.S/P`, `PERCENTILE.INC/EXC`;
   their X forms; `CONCATENATEX` and `RANKX`.
 - **Filter context:** `CALCULATE`, the modifiers above, `ISFILTERED`, `ISCROSSFILTERED`,
   `ISINSCOPE`, `HASONEVALUE`, `HASONEFILTER`, `SELECTEDVALUE`, `FILTERS`, `LOOKUPVALUE`,
@@ -240,8 +240,10 @@ and gives each aggregate the filters that reach its table.
 
 ## Where it differs from DAX
 
-- **String comparisons and grouping are case-sensitive**, as the SQL engine compares. DAX
-  compares text without regard to case.
+- **Text compares without regard to case** in comparisons (`=`, `==`, `<`, ...), `IN`, and
+  filters given as a table (`TREATAS`, `VALUES`), as in DAX. Grouping, `DISTINCT`, sorting and
+  relationships on text columns go by the SQL engine's comparison, which is case-sensitive:
+  in DAX a column holds one value for `"a"` and `"A"`, and in the engine it holds both.
 - **`FORMAT`** handles en-US only (its third argument can be `"en-US"`), and the pattern must
   be a constant. A model's format strings are not applied to the results: numbers come back
   as numbers.
@@ -262,8 +264,8 @@ and gives each aggregate the filters that reach its table.
   - model features: object-level security, dynamic format strings, `DEFINE COLUMN`;
   - query syntax: `ROLLUP` in `SUMMARIZE`;
   - functions: the window functions' reset argument (visual calculations only),
-    `NATURALINNERJOIN` and its kind, `TOPNSKIP`, `ADDMISSINGITEMS`, `PERCENTILE.EXC`,
-    `SUBSTITUTE` with an instance number, and anything not listed above.
+    `NATURALINNERJOIN` and its kind, `TOPNSKIP`, `ADDMISSINGITEMS`, and anything not listed
+    above.
 
 ## How it works
 

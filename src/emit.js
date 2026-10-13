@@ -414,7 +414,8 @@ export class Emitter {
         if (!D.length) continue;
         if (f.kind === 'bind') {
           if (f.implied && ctx.filters.includes(f.implied)) continue;
-          out.push(this.d.isNotDistinct(res.meta(D[0]), this.scalar(f.val, scope)));
+          const sides = [res.meta(D[0]), this.scalar(f.val, scope)];
+          out.push(this.d.isNotDistinct(...(D[0].type === 'string' && textOrBlank(f.val) ? this.d.nocase(...sides) : sides)));
           if (f.guard) out.push(paren(this.scalar(f.guard, scope, true)));
         }
         else if (f.kind === 'pred' && D.length === f.cols.length) out.push(paren(this.scalar(f.pred, withRow(scope, f.row, res), true)));
@@ -451,7 +452,8 @@ export class Emitter {
       const b = this.table(f.src, scope), names = b.names(), a = this.alias('r');
       const sel = D.map(c => `${a}.${this.ident(names[f.idx[f.cols.indexOf(c)]])}`);
       const blanks = D.some(c => this.blankSide(table, c, res, state) && mayBeBlank(f.src, f.idx[f.cols.indexOf(c)]));
-      return this.member(D.map(c => res.meta(c)), sel, `(${b.render()}) AS ${a}`, blanks, ir.freeRows(f.src).size > 0);
+      const text = D.map(c => c.type === 'string' && textOrBlank(f.src.cols[f.idx[f.cols.indexOf(c)]]));
+      return this.member(D.map(c => res.meta(c)), sel, `(${b.render()}) AS ${a}`, blanks, ir.freeRows(f.src).size > 0, text);
     }
     // Rows of a model table, as the scan's own rows: its conditions, inline.
     const chain = filterChain(f.src);
@@ -512,7 +514,14 @@ export class Emitter {
   // Whether the values `left` are a row of `from` (its columns `right`), a blank matching a
   // blank as in DAX. IN for one column that cannot be blank on both sides; one that can, IN or
   // else a blank in `from` (as fast as IN when `from` reads no outer row); EXISTS otherwise.
-  member(left, right, from, blanks = false, correlated = true) {
+  // Where `text` says a column is text on both sides (`left` for certain), it matches without
+  // regard to case.
+  member(left, right, from, blanks = false, correlated = true, text = []) {
+    if (text.some(Boolean)) {
+      const sides = left.map((l, i) => (text[i] ? this.d.nocase(l, right[i]) : [l, right[i]]));
+      left = sides.map(x => x[0]);
+      right = sides.map(x => x[1]);
+    }
     if (left.length === 1 && !blanks) return `${left[0]} IN (SELECT ${right[0]} FROM ${from})`;
     if (left.length === 1 && !correlated)
       return `(${left[0]} IN (SELECT ${right[0]} FROM ${from}) OR ${left[0]} IS NULL AND EXISTS (SELECT 1 FROM ${from} WHERE ${right[0]} IS NULL))`;
@@ -558,7 +567,8 @@ export class Emitter {
       case 'insub': {
         const b = this.isolated(() => this.table(x.src, scope)), names = b.names(), a = this.alias('i');
         const blanks = x.e.some((e, j) => !e.nn && mayBeBlank(x.src, j));
-        const s = this.member(x.e.map(e => this.scalar(e, scope)), names.map(n => `${a}.${this.ident(n)}`), `(${b.render()}) AS ${a}`, blanks, ir.freeRows(x.src).size > 0);
+        const text = x.e.map((e, j) => isText(e) && textOrBlank(x.src.cols[j]));
+        const s = this.member(x.e.map(e => this.scalar(e, scope)), names.map(n => `${a}.${this.ident(n)}`), `(${b.render()}) AS ${a}`, blanks, ir.freeRows(x.src).size > 0, text);
         return pred ? `(${s})` : `COALESCE(${s}, FALSE)`;
       }
     }
@@ -632,7 +642,7 @@ export class Emitter {
       case 'pow': return d.fn('power', [S(l), S(r)]);
       case 'neg': return `(-${this.num(l, scope)})`;
       case 'eq': case 'ne': case 'lt': case 'le': case 'gt': case 'ge': return this.compare(x.op, l, r, scope, pred);
-      case 'eqs': return `(${d.isNotDistinct(S(l), S(r))})`;
+      case 'eqs': return `(${d.isNotDistinct(...this.nocase([l, r], [S(l), S(r)]))})`;
       case 'and': return `(${this.bool(l, scope, pred)} AND ${this.bool(r, scope, pred)})`;
       case 'or': return `(${this.bool(l, scope, pred)} OR ${this.bool(r, scope, pred)})`;
       case 'not': return `(NOT ${this.bool(l, scope, false)})`;
@@ -643,8 +653,8 @@ export class Emitter {
       }
       case 'in': {
         const vals = x.a.slice(1), blank = vals.some(v => v.k === 'lit' && v.v === null);
-        const list = vals.filter(v => !(v.k === 'lit' && v.v === null)).map(v => S(v));
-        const L = S(l);
+        const listed = vals.filter(v => !(v.k === 'lit' && v.v === null));
+        const [L, ...list] = this.nocase([l, ...listed], [S(l), ...listed.map(v => S(v))]);
         let s = list.length ? `${L} IN (${list.join(', ')})` : 'FALSE';
         if (blank) s = `(${s} OR ${L} IS NULL)`;
         return pred || blank ? `(${s})` : `COALESCE(${s}, FALSE)`;
@@ -662,25 +672,42 @@ export class Emitter {
     throw semantic(`a ${v.t} cannot be used as TRUE/FALSE`);
   }
 
-  // DAX compares a blank as the other side's default (0, "", FALSE); a comparison is never
-  // blank. Against a constant, the column is compared as it is and the blank case added.
+  // DAX compares a blank as the other side's default (0, "", FALSE), and text without regard
+  // to case; a comparison is never blank. Against a constant, the column is compared as it is
+  // and the blank case added.
   compare(o, l, r, scope, pred) {
     const sym = { eq: '=', ne: '<>', lt: '<', le: '<=', gt: '>', ge: '>=' }[o];
     const t = [l.t, r.t].find(x => x !== 'blank' && x !== 'variant') ?? 'int';
     const L = this.scalar(l, scope), R = this.scalar(r, scope);
-    if (l.nn && r.nn) return `(${L} ${sym} ${R})`;
+    if (l.nn && r.nn) {
+      const [a, b] = this.nocase([l, r], [L, R]);
+      return `(${a} ${sym} ${b})`;
+    }
     const constant = (v, side) => v.k === 'lit' && v.v !== null ? side : null;
     const litSide = constant(r, 'r') ?? constant(l, 'l');
     if (litSide) {
-      const [lit, colSql, litSql] = litSide === 'r' ? [r, L, R] : [l, R, L];
+      const [lit, col, colSql, litSql] = litSide === 'r' ? [r, l, L, R] : [l, r, R, L];
       const blankHolds = compareJs(o, ...(litSide === 'r' ? [blankOf(t), lit.v] : [lit.v, blankOf(t)]));
-      const c = litSide === 'r' ? `${colSql} ${sym} ${litSql}` : `${litSql} ${sym} ${colSql}`;
+      const [x, v] = this.nocase([lit, col], [litSql, colSql]);
+      const c = litSide === 'r' ? `${v} ${sym} ${x}` : `${x} ${sym} ${v}`;
       if (blankHolds) return `(${c} OR ${colSql} IS NULL)`;
       return pred ? `(${c})` : `COALESCE(${c}, FALSE)`;
     }
     const z = this.d.blankOf(t);
     const side = (v, s) => (v.nn ? s : v.k === 'lit' && v.v === null ? z : `COALESCE(${s}, ${z})`);
-    return `(${side(l, L)} ${sym} ${side(r, R)})`;
+    // A blank side is z, text when the other is.
+    const [a, b] = this.nocase([l, r], [side(l, L), side(r, R)], l.t === 'string' || r.t !== 'string' ? 0 : 1);
+    return `(${a} ${sym} ${b})`;
+  }
+
+  // The SQL of the sides of a comparison, written to compare text without regard to case when
+  // every side is text or a blank. Side `i` is one whose SQL is text for certain: by default
+  // the first that is text and not the constant blank.
+  nocase(nodes, sqls, i = nodes.findIndex(isText)) {
+    if (i < 0 || nodes[i].t !== 'string' || !nodes.every(textOrBlank)) return sqls;
+    const [a, ...others] = this.d.nocase(sqls[i], ...sqls.filter((_, j) => j !== i));
+    others.splice(i, 0, a);
+    return others;
   }
 
   // --- aggregates --------------------------------------------------------------------------
@@ -1349,6 +1376,9 @@ function canonical(sql) {
   });
 }
 
+// A value that is text, and not the constant blank; one that is text or a blank.
+const isText = v => v.t === 'string' && !(v.k === 'lit' && v.v === null);
+const textOrBlank = v => v.t === 'string' || v.t === 'blank';
 const blankOf = t => (t === 'string' ? '' : t === 'bool' ? false : t === 'datetime' || t === 'date' ? '1899-12-30' : 0);
 function compareJs(o, a, b) {
   switch (o) {

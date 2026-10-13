@@ -301,10 +301,19 @@ export class Emitter {
   // relationships are those security moves along (model.securityState), so they reach the
   // scan as other filters do: from its expanded table, and as semi-joins across relationships
   // that filter both ways for security and many-to-many ones. A row is kept when some role
-  // keeps it.
+  // keeps it. A secured table that reaches the scan two ways, one of them back over a
+  // relationship a CROSSFILTER makes filter both ways (model.securityPaths), is an error, as
+  // in DAX.
   securityConds(table, res, scope) {
     const roles = this.options.security;
     if (!roles?.length || this.insecure) return [];
+    for (const f of roles.flatMap(r => r.filters)) {
+      const two = this.model.securityPaths(f.table, table, res.state);
+      if (two) {
+        const path = p => p.map(t => `'${t.name}'`).join('->');
+        throw semantic(`join paths must form a tree, but '${f.table.name}' has two join paths to '${table.name}' under row-level security: ${path(two[0])} and ${path(two[1])}`);
+      }
+    }
     const per = roles.map(role => this.unsecured(() => this.conds(table, role.ctx, res, scope)));
     if (per.some(c => !c.length)) return [];
     return [per.length === 1 ? per[0].join(' AND ') : `(${per.map(c => `(${c.join(' AND ')})`).join(' OR ')})`];

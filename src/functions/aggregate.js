@@ -29,9 +29,12 @@ const column = (fn, type) => (c, args, env) => {
   const { src, row, arg } = overColumn(c, args[0], env);
   return ir.agg(fn, src, row, arg, type(arg.t));
 };
+// MINX and MAXX of text are text, but DAX types them as a variant (`dax`: a value's DAX type
+// where it is not its kind of value). It shows where DAX compares types: the natural joins.
 const iterator = (fn, type) => (c, args, env) => {
   const { src, row, arg } = overTable(c, args, env);
-  return ir.agg(fn, src, row, arg, type(arg.t));
+  const x = ir.agg(fn, src, row, arg, type(arg.t));
+  return (fn === 'min' || fn === 'max') && arg.t === 'string' ? { ...x, dax: 'variant' } : x;
 };
 const same = t => t, num = t => numType(t), dbl = () => 'double', int = () => 'int';
 

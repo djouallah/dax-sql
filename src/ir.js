@@ -114,7 +114,8 @@ export function kase(w, e, t) {
   if (!w.length) return e;
   const all = [...w.map(x => x[1]), e];
   t ??= unify(all.map(x => x.t));
-  return { k: 'case', w, e, t, nn: all.every(x => x.nn) };
+  const x = { k: 'case', w, e, t, nn: all.every(x => x.nn) };
+  return all.some(v => v.dax) ? { ...x, dax: unify(all.map(v => v.dax ?? v.t)) } : x;
 }
 export const agg = (f, src, row, arg, t, a = []) => ({ k: 'agg', fn: f, src, row, arg, a, t, nn: false });
 export const exists = src => ({ k: 'exists', src, t: 'bool', nn: true });
@@ -129,7 +130,8 @@ export const scan = (table, ctx) => ({ k: 'scan', table, ctx, base: table,
 export const filter = (src, row, pred) => isLit(pred, true) ? src : ({ k: 'filter', src, row, pred, cols: src.cols, base: src.base });
 
 export function project(src, row, items, keep = false) {
-  const cols = [...(keep ? src.cols : []), ...items.map(i => ({ name: i.name, lineage: i.lineage ?? null, t: i.t ?? i.expr.t }))];
+  const cols = [...(keep ? src.cols : []), ...items.map(i => ({ name: i.name, lineage: i.lineage ?? null, t: i.t ?? i.expr.t,
+    ...(i.expr?.dax ? { dax: i.expr.dax } : {}) }))];
   return { k: 'project', src, row, items, keep, cols, base: keep ? src.base : null };
 }
 // Distinct rows of a model table are still rows of it.

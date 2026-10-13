@@ -444,6 +444,9 @@ and gives each aggregate the filters that reach its table.
     the query's filters.
   - With several roles, a table keeps the rows that some role keeps.
   - `ALL` and the other modifiers do not bring back rows that security removes.
+  - A `CROSSFILTER` that lets a secured table's rows reach a table a second way (Customer
+    secured, and Sales made to filter Customer back) is an error, as in DAX: its join paths
+    must form a tree.
   - Calculated tables and calculated columns are computed without security, as at refresh.
 
 **Functions.**
@@ -456,7 +459,8 @@ and gives each aggregate the filters that reach its table.
   `CONTAINS`, `CONTAINSROW`, `ISEMPTY`, `IN`.
 - **Window functions:** `INDEX`, `OFFSET`, `WINDOW` (`ABS` and `REL`), `RANK` (`DENSE` and
   `SKIP`) and `ROWNUMBER`, with `ORDERBY` (and its `ASC BLANKS LAST` kind of order),
-  `PARTITIONBY` (also a related table's column), `MATCHBY`, and the blanks argument.
+  `PARTITIONBY` (also a related table's column, but not one a table function added, which DAX
+  rejects), `MATCHBY`, and the blanks argument.
   - The current row is the row of the relation whose columns hold the outer values: those of
     a row context, or the value the filter context fixes a column to (a group, or a context
     transition). For RANK, only the `ORDERBY` and `PARTITIONBY` columns need one, and the
@@ -474,7 +478,9 @@ and gives each aggregate the filters that reach its table.
     `TOPNSKIP`, `ADDMISSINGITEMS`; `ROLLUP`/`ROLLUPGROUP` and `ISSUBTOTAL` in `SUMMARIZE`;
   - combining: `CROSSJOIN`, `UNION`, `INTERSECT`, `EXCEPT`, `GENERATE(ALL)`, `TREATAS`,
     `NATURALINNERJOIN`, `NATURALLEFTOUTERJOIN` (on the columns of the same lineage, or of the
-    same name for columns without one, a blank matching a blank), `SUBSTITUTEWITHINDEX`;
+    same name for columns without one, a blank matching a blank; columns of the same name with
+    different data types are an error, `MINX` and `MAXX` of text being a variant as in DAX),
+    `SUBSTITUTEWITHINDEX`;
   - constructing: `ROW`, `DATATABLE`, `{ }`, `GENERATESERIES`, `CALENDAR`, `CALENDARAUTO`;
   - `FIRSTNONBLANK`, `LASTNONBLANK`, over a column or a table of one column.
 - **Time intelligence:**

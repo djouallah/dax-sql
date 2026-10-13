@@ -238,15 +238,25 @@ function topNSkip(c, args, env) {
 }
 
 // The columns two tables join on, as [left position, right position]: those of the same
-// lineage, and those of the same name that both lack one.
+// lineage, and those of the same name that both lack one. Those must be of the same kind of
+// data type (DAX's: a variant is none of the others).
 function joinColumns(l, r, what) {
   const on = [];
   l.cols.forEach((a, i) => {
     const j = r.cols.findIndex(b => (a.lineage ? b.lineage === a.lineage : !b.lineage && lc(b.name) === lc(a.name)));
-    if (j >= 0) on.push([i, j]);
+    if (j < 0) return;
+    const [ka, kb] = [a, r.cols[j]].map(kindOf);
+    if (ka && kb && ka !== kb) throw semantic(`${what}: the join column [${a.name}] has different data types on the two sides (${ka}, ${kb})`);
+    on.push([i, j]);
   });
   if (!on.length) throw semantic(`${what}: the tables have no column to join on (the same lineage, or the same name and none)`);
   return on;
+}
+
+// A column's kind of data type as DAX has it; null for a column of blanks.
+function kindOf(col) {
+  const t = col.dax ?? col.t;
+  return !t || t === 'blank' ? null : ir.isNum(t) ? 'number' : t === 'date' ? 'datetime' : t;
 }
 
 // NATURALINNERJOIN(left, right), NATURALLEFTOUTERJOIN: the pairs of rows equal on the

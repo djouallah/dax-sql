@@ -172,6 +172,39 @@ export class Model {
     return this._security;
   }
 
+  // Two join paths along which the rows a role keeps of table `from` reach table `to`, when
+  // one of them crosses a relationship that `state` (a CROSSFILTER) makes filter from its many
+  // side to its one side for the query only; null otherwise. Security moves along the
+  // relationships as securityState says, and the secured rows of that many side filter its
+  // one side. DAX joins the tables that filter a table as a tree, so a second path is an
+  // error: a secured table that filters a fact table is filtered back by it, say. Each path
+  // is the list of its tables.
+  securityPaths(from, to, state) {
+    const edges = [];
+    for (const { rel, active, cross } of this.securityState()) {
+      if (!active || rel.security === 'none') continue;
+      edges.push({ a: rel.to.table, b: rel.from.table, query: false });
+      if (cross === 'both') edges.push({ a: rel.from.table, b: rel.to.table, query: false });
+    }
+    for (const { rel, active, cross } of state) {
+      if (!active || rel.fromCard !== 'many' || rel.toCard !== 'one' || rel.cross !== 'single') continue;
+      if (rel.security === 'both' || cross !== 'both' && cross !== 'reverse') continue;
+      edges.push({ a: rel.from.table, b: rel.to.table, query: true });
+    }
+    if (!edges.some(e => e.query)) return null;
+    const paths = from === to ? [{ path: [from], query: false }] : [];
+    const walk = (t, path, query) => {
+      for (const e of edges) {
+        if (e.a !== t) continue;
+        if (e.b === to) paths.push({ path: [...path, to], query: query || e.query });
+        else if (!path.includes(e.b)) walk(e.b, [...path, e.b], query || e.query);
+      }
+    };
+    walk(from, [from], false);
+    const q = paths.find(p => p.query);
+    return q && paths.length > 1 ? [paths.find(p => p !== q).path, q.path] : null;
+  }
+
   // The expanded table of `table`: Map(table name -> [hops]) where a hop is
   // { rel, from: column on this side, to: column on the far side }. `exclude` names tables
   // the walk does not enter. For filters, a relationship CROSSFILTER turned off (or turned

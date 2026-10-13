@@ -68,12 +68,14 @@ function windowArgs(c, args, env, fn) {
     return i;
   };
   // PARTITIONBY: columns of the relation, or of a table related to it (read with RELATED).
+  // Not a column a table function added (one with no lineage): DAX rejects it.
   const partExprs = [], parts = [];
   for (const a of part) {
     let i = -1;
     try { i = index(a, 'PARTITIONBY'); } catch (e) {
       if (!(a.k === 'col' && a.table && rel.base && c.model.findColumn(a.table, a.name))) throw e;
     }
+    if (i >= 0 && !rel.cols[i].lineage) throw semantic(`PARTITIONBY cannot be used with columns added by table functions ([${rel.cols[i].name}])`);
     if (i >= 0) { parts.push(i); partExprs.push(ir.col(row, i)); } else partExprs.push(c.scalar({ k: 'call', fn: 'RELATED', args: [a] }, inner));
   }
   const related = partExprs.length > parts.length;

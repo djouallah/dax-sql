@@ -748,18 +748,24 @@ export class Emitter {
     const k = this.alias('k');
     const active = L.active.map(c => x.keyCols.indexOf(c));
     const keyRes = new WrapRes(this, null, x.keyCols.map((c, i) => ({ sql: `${k}.${this.ident(keyNames[i])}`, lineage: c })), this.model.state(x.ctx0.mods));
-    const fusion = new Fusion(this, x.keyRow, active, x.keyCols);
+    // The filters of SUMMARIZECOLUMNS that decide which combinations of the keys there are:
+    // those that reach a key's table.
+    const state0 = this.model.state(x.ctx0.mods), keyTables = new Set(L.active.map(c => c.table));
+    const domain = x.ctx0.filters.filter(f => f.cols.some(c => [...keyTables].some(t => this.model.reaches(c.table, t, state0))));
+    const fusion = new Fusion(this, x.keyRow, active, x.keyCols, domain);
     this.fusions.push(fusion);
     let items;
     try { items = L.items.map(i => this.scalar(i.expr, withRow(scope, x.keyRow, keyRes))); } finally { this.fusions.pop(); }
     const groupsSql = fusion.finish();
 
     // The groups: from the fused aggregates when every expression is blank without their
-    // rows; else every combination of the keys' values.
+    // rows, and those rows are under all the filters that decide the combinations (an
+    // expression that removed one, REMOVEFILTERS in a CALCULATE, has rows of groups that
+    // SUMMARIZECOLUMNS does not have); else every combination of the keys' values.
     const counted = L.items.filter(i => !i.ignore);
     let keys;
     const supports = counted.map(i => support(i.expr, this.fusedIn));
-    const full = g => g.keys.length === active.length;
+    const full = g => g.keys.length === active.length && !g.outside;
     if (active.length && counted.length && supports.every(s => s && [...s].every(full))) {
       const gs = [...new Set(supports.flatMap(s => [...s]))];
       keys = gs.length
@@ -859,8 +865,9 @@ export class Emitter {
 // scan, reading no row but the group's keys, which they filter by. A group is one CTE: the
 // scan's table and its other filters (compared as SQL), and the keys that filter it.
 class Fusion {
-  constructor(em, keyRow, active, keyCols) {
+  constructor(em, keyRow, active, keyCols, domain = []) {
     this.em = em;
+    this.domain = domain;
     this.keyRow = keyRow;
     this.active = active;
     this.keyCols = keyCols;
@@ -974,6 +981,9 @@ class Fusion {
       parts = g.block === block && parts ? parts : em.isolated(() => em.aggParts(x, withRow(new Map(), x.row, g.block.res)));
       conds = [...g.block.where];
     }
+    // A group with an aggregate whose scan lacks one of the filters that decide the
+    // combinations of the keys can hold keys that are not one of them.
+    if (!this.domain.every(f => S.ctx.filters.includes(f))) g.outside = true;
     const p = { ...parts, arg: parts.arg && rename(parts.arg), extra: Object.fromEntries(Object.entries(parts.extra)
       .map(([k, v]) => [k, Array.isArray(v) ? v.map(rename) : rename(v)])) };
     const make = filter => em.d.agg(p.fn, p.arg, filter ? { ...p.extra, filter } : p.extra);

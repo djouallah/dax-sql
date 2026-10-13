@@ -61,7 +61,11 @@ CALCULATE (`compiler.js`, `calculateCtx`) works in four steps:
 4. It removes what the context said about the filters' columns (unless `KEEPFILTERS`) and
    adds the filters.
 
-A filter on a date table's date column also clears the rest of that table.
+A filter on a date table's date column also clears the rest of that table, and one on a
+calculation group's column clears its other column (the name and the ordinal are one item's).
+
+SUMMARIZECOLUMNS' filter arguments on the columns of one table are one filter (auto-exist,
+`autoExist`): the combinations of those columns the table holds under all of them.
 
 **ALLSELECTED.** The environment holds the shadow filter contexts, innermost last. Each one
 covers some columns and says what values they had:
@@ -201,10 +205,12 @@ Inside a fused scan, a filter that reads a key the scan is itself filtered to re
 own column instead. Its correlation moves from the group to the row, which joins well.
 
 **The groups of SUMMARIZECOLUMNS.** Every expression can be blank only when its fused groups
-have no row (`support`). When that holds, the groups are the union of those groups' keys.
-Otherwise they are the combinations of the keys' values (each table's existing combinations,
-cross-joined, plus a dimension's blank row) and the expressions are evaluated on each.
-`ROLLUPADDISSUBTOTAL` is a `UNION ALL` of the levels.
+have no row (`support`). When that holds, and each of those groups' scans keeps the filters
+that decide the keys' combinations (those reaching a key's table), the groups are the union of
+those groups' keys. Otherwise they are the combinations of the keys' values (each table's
+existing combinations, cross-joined, plus a dimension's blank row) and the expressions are
+evaluated on each. `ROLLUPADDISSUBTOTAL` is a `UNION ALL` of the levels; each call is an axis,
+and the levels of several are crossed.
 
 **One value as a table.** `VALUES(c)` under a bind on `c` is `onerow(v, exists)`, not a scan.
 

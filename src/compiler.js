@@ -544,8 +544,11 @@ export class Compiler {
       if (keep) continue;
       for (const c of f.cols) {
         replaced.add(c);
-        // A filter on a date table's date removes the filters on the rest of that table.
-        if (isDateKey(this.model, c)) for (const x of c.table.columns) replaced.add(x);
+        // A filter on a date table's date removes the filters on the rest of that table; one
+        // on a calculation group's column, those on its other column: the name and the
+        // ordinal are one item's, so a filter selecting an item by name replaces the ordinal
+        // the context had (a group by both, as a visual sorted by the ordinal writes it).
+        if (isDateKey(this.model, c) || c.table.calcGroup) for (const x of c.table.columns) replaced.add(x);
       }
     }
     if (replaced.size) ctx = ctx.remove(c => replaced.has(c));

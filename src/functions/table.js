@@ -302,25 +302,39 @@ function nonBlank(fn) {
 // table, the combinations it holds; across tables, all of them), and each expression
 // evaluated with the group's values as filters. A group whose expressions are all blank is
 // left out. With ROLLUPADDISSUBTOTAL, each level of subtotals is the same with fewer keys.
+// Each ROLLUPADDISSUBTOTAL is an axis of its own (a matrix's rows, its columns): within one,
+// the levels drop its columns from the last; across several, every level of one goes with
+// every level of the others (a row total by each column, a column total by each row, the
+// corner).
 function summarizeColumns(c, args, env) {
-  const plain = [], rolls = [], keyCols = [];
+  const plain = [], rolls = [], axes = [], keyCols = [];
   let i = 0;
   for (; i < args.length; i++) {
     const a = args[i];
     if (a.k === 'col' && a.table && c.model.findColumn(a.table, a.name)) { const k = c.modelColumn(a, env); plain.push(k); keyCols.push(k); continue; }
-    if (a.k === 'call' && a.fn === 'ROLLUPADDISSUBTOTAL') { const r = rollup(c, a.args, env); rolls.push(...r); keyCols.push(...r.flatMap(x => x.cols)); continue; }
+    if (a.k === 'call' && a.fn === 'ROLLUPADDISSUBTOTAL') {
+      const r = rollup(c, a.args, env);
+      axes.push(r.map((_, n) => rolls.length + n));
+      rolls.push(...r);
+      keyCols.push(...r.flatMap(x => x.cols));
+      continue;
+    }
     if (a.k === 'call' && a.fn === 'ROLLUPGROUP') { const ks = a.args.map(x => c.modelColumn(x, env)); plain.push(...ks); keyCols.push(...ks); continue; }
     break;
   }
   const filterArgs = [];
   for (; i < args.length && args[i].k !== 'str'; i++) filterArgs.push(args[i]);
   const exprs = pairs(args, i, 'SUMMARIZECOLUMNS');
-  const ctx0 = filterArgs.length ? c.calculateCtx(filterArgs, { ...env, rows: [] }) : env.ctx;
+  const ctx0 = filterArgs.length ? autoExist(c, c.calculateCtx(filterArgs, { ...env, rows: [] }), env.ctx) : env.ctx;
   if (new Set(keyCols).size !== keyCols.length) throw semantic('SUMMARIZECOLUMNS groups by the same column twice');
   const keyRow = ir.newRow(keyCols.map(k => ({ name: k.name, lineage: k, t: k.type })), 'key');
+  // The levels: how many of each axis' columns stay, the detail first.
+  let depths = [[]];
+  for (const ax of axes) depths = depths.flatMap(d => Array.from({ length: ax.length + 1 }, (_, n) => [...d, ax.length - n]));
   const levels = [];
-  for (let j = rolls.length; j >= 0; j--) {
-    const on = new Set([...plain, ...rolls.slice(0, j).flatMap(r => r.cols)]);
+  for (const depth of depths) {
+    const kept = axes.flatMap((ax, n) => ax.slice(0, depth[n]));
+    const on = new Set([...plain, ...kept.flatMap(r => rolls[r].cols)]);
     const active = keyCols.filter(k => on.has(k));
     let ctx = ctx0;
     for (const k of active) ctx = ctx.add({ kind: 'bind', cols: [k], val: ir.col(keyRow, keyCols.indexOf(k)) });
@@ -333,12 +347,35 @@ function summarizeColumns(c, args, env) {
       const expr = c.scalar(ignore ? x.args[0] : x, inner);
       return { name, expr, t: expr.t, ignore: x.k === 'call' && x.fn === 'IGNORE' };
     });
-    levels.push({ active, flags: rolls.map((_, n) => n >= j), items });
+    levels.push({ active, flags: rolls.map((_, n) => !kept.includes(n)), items });
   }
   const cols = [...keyCols.map(k => ({ name: k.name, lineage: k, t: k.type })),
     ...rolls.map(r => ({ name: r.flag, lineage: null, t: 'bool' })),
     ...exprs.map(([name], n) => ({ name, lineage: null, t: levels[0].items[n].t }))];
   return { k: 'sc', keyRow, keyCols, rolls, levels, ctx0, cols, base: null };
+}
+
+// Auto-exist: the filters SUMMARIZECOLUMNS' arguments put on the columns of one table are
+// one filter, the combinations of those columns the table holds under all of them. Removing
+// one column's filter later (REMOVEFILTERS in a measure) leaves the others' columns to the
+// values those combinations have: T[a] = "x" and T[b] IN {1, 2}, without the filter on a,
+// is the values among 1 and 2 that b has in a row where a is "x".
+function autoExist(c, ctx, outer) {
+  const byTable = new Map();
+  for (const f of ctx.filters) {
+    if (outer.filters.includes(f) || (f.kind === 'rel' && f.base)) continue;
+    const t = f.cols[0].table;
+    if (f.cols.some(x => x.table !== t)) continue;
+    if (!byTable.has(t)) byTable.set(t, []);
+    byTable.get(t).push(f);
+  }
+  for (const [t, fs] of byTable) {
+    if (fs.length < 2) continue;
+    const cols = [...new Set(fs.flatMap(f => f.cols))];
+    const src = ir.values(t, new Ctx(fs, ctx.mods), cols, (tb, x) => c.scan(tb, x), c.blankRowRels(t).length > 0);
+    ctx = new Ctx(ctx.filters.filter(f => !fs.includes(f)), ctx.mods).add({ kind: 'rel', cols, src, idx: cols.map((_, i) => i), base: null });
+  }
+  return ctx;
 }
 
 // ROLLUPADDISSUBTOTAL(col | ROLLUPGROUP(cols), "flag", ...) -> [{ cols, flag }].

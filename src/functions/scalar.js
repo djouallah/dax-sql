@@ -106,6 +106,8 @@ function edate(c, args, env) { return ir.fn('add_interval', [s(c, args[0], env),
 function weekday(c, args, env) { return ir.fn('weekday', [s(c, args[0], env), opt(c, args[1], env, ir.lit(1))], 'int', { strict: true }); }
 function weeknum(c, args, env) { return ir.fn('weeknum', [s(c, args[0], env), opt(c, args[1], env, ir.lit(1))], 'int', { strict: true }); }
 
+// FIND and SEARCH read a blank as "": nothing is found in a blank text (the NotFoundValue), and
+// a blank to find is found where the search starts.
 function search(name) {
   return (c, args, env) => ir.fn(name, [s(c, args[0], env), s(c, args[1], env), opt(c, args[2], env, ir.lit(1)), opt(c, args[3], env, ir.BLANK)], 'int');
 }
@@ -141,6 +143,26 @@ function formatValue(x, fmt) {
   else if (!date && x.t !== 'bool' && (kind === 'date' || isNamedDate(fmt))) x = ir.fn('serial_date', [x], 'datetime', { strict: true });
   if (x.t === 'datetime' || x.t === 'date') return ir.fn('format_date', [x, ir.lit(JSON.stringify(dateFormat(fmt)), 'string')], 'string', { nn: true });
   return ir.fn('format_number', [x, ir.lit(JSON.stringify(numberFormat(fmt)), 'string')], 'string', { nn: true });
+}
+
+// FIXED(number[, decimals[, no_commas]]): the number rounded to that many places (2; fewer
+// than none rounds left of the point), with thousands separators unless no_commas, as text.
+// A blank is 0. The decimals and no_commas are constants here, as FORMAT's pattern is.
+function fixed(c, args, env) {
+  if (!args.length) throw semantic('FIXED needs a number');
+  let x = s(c, args[0], env);
+  const k = (a, dflt, what) => {
+    const v = opt(c, a, env, ir.lit(dflt));
+    if (v.k !== 'lit') throw unsupported(`FIXED with ${what} that is not a constant`);
+    return v.v;
+  };
+  const n = Math.trunc(Number(k(args[1], 2, 'decimals') ?? 0)), plainDigits = !!k(args[2], false, 'no_commas');
+  if (n > 22) throw unsupported('FIXED with more than 22 decimal places');
+  if (x.t === 'blank') x = ir.lit(0);
+  else if (!x.nn) x = ir.fn('coalesce', [x, ir.lit(0)], x.t, { nn: true });
+  if (n < 0) x = ir.fn('round', [x, ir.lit(n)], 'double', { strict: true });
+  const pattern = `${plainDigits ? '0' : '#,##0'}${n > 0 ? `.${'0'.repeat(n)}` : ''}`;
+  return ir.fn('format_number', [x, ir.lit(JSON.stringify(numberFormat(pattern)), 'string')], 'string', { nn: true });
 }
 
 // PATH(T[key], T[parent]): the keys from the hierarchy's root down to the row's, joined by
@@ -201,7 +223,7 @@ export const scalar = {
   'ISO.CEILING': plain('ceiling', 'double'), MROUND: plain('mround', 'double'), PI: () => ir.lit(Math.PI, 'double'),
   RAND: () => ir.fn('rand', [], 'double', { nn: true }), RANDBETWEEN: plain('randbetween', 'int'),
   GCD: plain('gcd', 'int'), LCM: plain('lcm', 'int'), FACT: plain('fact', 'int'), EVEN: plain('even', 'int'), ODD: plain('odd', 'int'),
-  CONVERT: convert, CURRENCY: castTo('decimal'), VALUE: plain('value', 'double'), FIXED: unsupportedFn('FIXED'),
+  CONVERT: convert, CURRENCY: castTo('decimal'), VALUE: plain('value', 'double'), FIXED: fixed,
   // text
   CONCATENATE: concatenate, COMBINEVALUES: combineValues, LEFT: plain('left', 'string'), RIGHT: plain('right', 'string'),
   MID: plain('mid', 'string', { arity: 3 }), LEN: plain('len', 'int'), UPPER: plain('upper', 'string'), LOWER: plain('lower', 'string'),
@@ -212,7 +234,7 @@ export const scalar = {
   CONTAINSSTRINGEXACT: plain('containsstringexact', 'bool', { strict: false, nn: true }), FORMAT: format,
   // parent-child hierarchies
   PATH: path, PATHITEM: pathItem('pathitem'), PATHITEMREVERSE: pathItem('pathitemreverse'),
-  PATHLENGTH: plain('pathlength', 'int', { arity: 1, strict: false, nn: true }),
+  PATHLENGTH: plain('pathlength', 'int', { arity: 1 }),
   PATHCONTAINS: plain('pathcontains', 'bool', { arity: 2, strict: false, nn: true }),
   // dates
   DATE: date, TIME: plain('time', 'datetime'), YEAR: plain('year', 'int'), MONTH: plain('month', 'int'), DAY: plain('day', 'int'),

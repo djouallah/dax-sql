@@ -554,9 +554,10 @@ and gives each aggregate the filters that reach its table.
     `Scientific`, `Yes/No`, `True/False`, `On/Off`, `General Date`, `Long Date`, `Medium
     Date`, `Short Date`, `Long Time`, `Medium Time`, `Short Time`;
   - custom number patterns: `0` and `#`, the point, thousands separators, a comma before the
-    point or at the end dividing by 1000, `%`, `E+ E- e+ e-`, literals (`"text"`, `\c`, also
-    between the digits as in `(###) ###-####`), and up to three sections (positive; negative;
-    zero), a negative value that rounds to zero showing the zero section;
+    point or at the end of the integer digits dividing by 1000 (after the fraction's digits it
+    is nothing), `%`, `E+ E- e+ e-`, literals (`"text"`, `\c`, also between the digits as in
+    `(###) ###-####`), and up to three sections (positive; negative; zero), a negative value
+    that rounds to zero showing the zero section;
   - rounding at 15 significant digits, then half away from zero (`FORMAT(1.005, "0.00")` is
     `1.01`);
   - custom date patterns: `d` to `dddddd`, `w`, `ww`, `m` to `mmmm`, `q`, `y`, `yy`, `yyyy`,
@@ -564,8 +565,18 @@ and gives each aggregate the filters that reach its table.
     right after an hour is minutes;
   - a blank is `""` (so a measure that is FORMAT is never blank, and SUMMARIZECOLUMNS keeps
     every group, as in DAX); a date with a number pattern is its serial number.
-- **Values as text** (`&`, the text functions) follow DAX too: `0.1 + 0.2` is `0.3` (15
-  digits), `1E+20`, `TRUE` is `True`, and a date is `1/5/2024`, with its time when it has one.
+  - `Percent` is `0.00%`, without thousands separators.
+- **FIXED** is FORMAT with `#,##0.00` (or `0.00` with no_commas, and the given decimals, which
+  are constants); a blank is 0.
+- **Values as text** (`&`, `COMBINEVALUES`, the text functions) follow DAX too: `0.1 + 0.2` is
+  `0.3` (15 digits), `1E+20`, `TRUE` is `TRUE`, and a date is `1/5/2024`, with its time when it
+  has one.
+- **Text functions and blanks:** `LEN`, `TRIM` and `PATHLENGTH` of a blank are blank (of `""`,
+  0, `""` and 0). `FIND` and `SEARCH` read a blank as `""`: nothing is found in it, so they
+  return the NotFoundValue.
+- **Stored text has no trailing spaces:** the model drops them as it loads the data, so a text
+  column of an imported table is read without them (`"a "` is `"a"`, in its value, its length,
+  filters and relationships). Leading spaces stay.
 
 ### How it works
 

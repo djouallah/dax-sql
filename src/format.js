@@ -3,9 +3,10 @@
 // Numbers (Microsoft's "Custom numeric formats"): up to three sections, positive;negative;zero
 // (an empty one is the first's). In a section: 0 a digit or 0, # a digit or nothing, . the
 // decimal point, , a thousands separator between digit placeholders, or scaling by 1000 next
-// to the point or at the end of the digits, % times 100, E+ E- e+ e- an exponent, "text" and
-// \c literal, anything else literal. And the named formats: General Number, Currency, Fixed,
-// Standard, Percent, Scientific, Yes/No, True/False, On/Off.
+// to the point or at the end of the integer digits (nothing after the fraction's), % times
+// 100, E+ E- e+ e- an exponent, "text" and \c literal, anything else literal. And the named
+// formats: General Number, Currency, Fixed, Standard, Percent, Scientific, Yes/No, True/False,
+// On/Off.
 //
 // Dates ("Custom date and time formats"): d dd ddd dddd ddddd dddddd w ww m mm mmm mmmm q y yy
 // yyyy h hh n nn s ss ttttt AM/PM am/pm A/P a/p AMPM c / :, m and mm being minutes right
@@ -18,7 +19,7 @@ const NUMBER_NAMES = {
   currency: '$#,##0.00;($#,##0.00)',
   fixed: '0.00',
   standard: '#,##0.00',
-  percent: '#,##0.00 %',
+  percent: '0.00%',
   scientific: '0.00E+00',
   'yes/no': { bool: ['Yes', 'No'] },
   'true/false': { bool: ['True', 'False'] },
@@ -85,9 +86,10 @@ function section(src) {
       const next = src[i + n];
       const afterDigit = tokens.length && tokens.at(-1).t === part;
       if (part === 'int' && afterDigit && placeholder(next)) thousands = true;
-      // Right before the point, or after the last digit: each one divides by 1000.
-      else if (afterDigit && (part === 'int' ? !placeholder(next) : !src.slice(i + n).split('').some(placeholder))) scale += n;
-      else tokens.push({ t: 'lit', v: ','.repeat(n) });
+      // Right before the point, or after the integer digits when there is no point: each one
+      // divides by 1000. After the fraction's last digit, they are nothing.
+      else if (afterDigit && part === 'int' && !placeholder(next)) scale += n;
+      else if (!(afterDigit && part === 'frac' && !src.slice(i + n).split('').some(placeholder))) tokens.push({ t: 'lit', v: ','.repeat(n) });
       i += n - 1;
       continue;
     }

@@ -30,6 +30,7 @@ const QUERIES = [
   'EVALUATE ADDCOLUMNS(VALUES(\'Date\'[Month]), "prev", CALCULATE([Sales Amount], OFFSET(-1, ALLSELECTED(\'Date\'[Month]), ORDERBY(\'Date\'[Month]))))',
   'EVALUATE ADDCOLUMNS(VALUES(Product[Name]), "r", RANK(DENSE, ALL(Product[Name]), ORDERBY([Sales Amount], DESC)))',
   'EVALUATE ROW("f", FORMAT(1234.5, "#,##0.00"), "d", FORMAT(DATE(2024, 1, 5), "yyyy-mm-dd"), "t", "x" & BLANK())',
+  'EVALUATE ADDCOLUMNS(VALUES(Product[Name]), "l", LEN(Product[Name]), "x", FIXED([Sales Amount], 1, TRUE), "f", FIND("a", Product[Name], 1, 0))',
   'DEFINE MEASURE Sales[Twice] = [Sales Amount] * 2 VAR x = 3 EVALUATE ROW("t", [Twice] + x)',
   'EVALUATE DATATABLE("a", INTEGER, "b", STRING, {{1, "x"}, {2, "y"}})',
   'EVALUATE TOPN(2, SUMMARIZECOLUMNS(Product[Name], "s", [Sales Amount]), [s], DESC) ORDER BY [s] DESC',

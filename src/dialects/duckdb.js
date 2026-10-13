@@ -22,9 +22,9 @@ export class DuckDBDialect extends Dialect {
   blankAdd(a, b, sub) { return `list_sum([${a}, ${sub ? `-(${b})` : b}])`; }
 
   // As DAX converts: 3.0 as "3", 0.1 + 0.2 as "0.3" (15 digits), 1E+20; a date as 1/5/2024, with
-  // the time when it is not midnight; TRUE as "True".
+  // the time when it is not midnight; TRUE as "TRUE".
   text(sql, t) {
-    if (t === 'double' || t === 'decimal' || t === 'bool') return generalNumber(sql, t);
+    if (t === 'double' || t === 'decimal') return generalNumber(sql, t);
     if (t === 'datetime' || t === 'date') return `[${generalDate('dax_tv')} FOR dax_tv IN [${sql}]][1]`;
     return super.text(sql, t);
   }
@@ -82,7 +82,7 @@ export class DuckDBDialect extends Dialect {
       case 'left': return `left(${x}, ${y ?? 1})`;
       case 'right': return `right(${x}, ${y ?? 1})`;
       case 'mid': return `substring(${x}, ${y}, ${z})`;
-      case 'len': return `length(COALESCE(${x}, ''))`;
+      case 'len': return `length(${x})`;
       case 'upper': return `upper(${x})`;
       case 'lower': return `lower(${x})`;
       case 'trim': return `regexp_replace(trim(${x}), ' {2,}', ' ', 'g')`;
@@ -101,7 +101,7 @@ export class DuckDBDialect extends Dialect {
       case 'replace': return `(left(${x}, ${y} - 1) || ${w} || substring(${x}, ${y} + ${z}))`;
       case 'search': case 'find': {
         const low = s => (name === 'search' ? `lower(${s})` : s);
-        const pos = `instr(${low(`substring(${y}, ${z})`)}, ${low(x)})`;
+        const pos = `instr(${low(`substring(COALESCE(${y}, ''), ${z})`)}, ${low(`COALESCE(${x}, '')`)})`;
         return `CASE WHEN ${pos} = 0 THEN ${w} ELSE ${pos} + ${z} - 1 END`;
       }
       case 'rept': return `repeat(${x}, CAST(${y} AS INTEGER))`;
@@ -110,8 +110,9 @@ export class DuckDBDialect extends Dialect {
       case 'unicode': return `unicode(${x})`;
       case 'containsstring': return `contains(lower(COALESCE(${x}, '')), lower(COALESCE(${y}, '')))`;
       case 'containsstringexact': return `contains(COALESCE(${x}, ''), COALESCE(${y}, ''))`;
-      // A path's items: blank or "" is a path of none; a position past either end is blank.
-      case 'pathlength': return `COALESCE(length(string_split(NULLIF(${x}, ''), '|')), 0)`;
+      // A path's items: "" is a path of none, and a blank path's length is blank; a position past
+      // either end is blank.
+      case 'pathlength': return `CASE WHEN ${x} = '' THEN 0 ELSE length(string_split(${x}, '|')) END`;
       case 'pathitem': return `CASE WHEN ${y} >= 1 THEN string_split(NULLIF(${x}, ''), '|')[CAST(${y} AS BIGINT)] END`;
       case 'pathitemreverse': return `CASE WHEN ${y} >= 1 THEN string_split(NULLIF(${x}, ''), '|')[-CAST(${y} AS BIGINT)] END`;
       case 'pathcontains': return `COALESCE(list_contains(string_split(NULLIF(${x}, ''), '|'), ${y}), FALSE)`;

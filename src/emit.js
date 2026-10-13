@@ -233,6 +233,13 @@ export class Emitter {
     return b;
   }
 
+  // A stored column of an imported table, on the row of `alias`: text without its trailing
+  // spaces, which the model drops as it loads the data ("a " is "a").
+  stored(alias, c) {
+    const sql = `${alias}.${this.ident(c.source)}`;
+    return c.type === 'string' && !c.table.calc && !c.table.calcGroup ? this.d.storedText(sql) : sql;
+  }
+
   source(table) {
     if (table.calc) return this.calcTableSource(table);
     if (table.calcGroup) return this.calcGroupSource(table);
@@ -984,8 +991,8 @@ export class Emitter {
   // Whether some of `keys` (SQL of rows with the column k) is a key that relationship r's one
   // side lacks: those rows belong to its blank row.
   lacking(r, keys) {
-    const f = this.alias('o'), d = this.alias('o'), k = `${d}.${this.ident(r.to.source)}`;
-    return `EXISTS (SELECT 1 FROM ${keys} AS ${f} LEFT JOIN ${this.source(r.to.table)} AS ${d} ON ${k} = ${f}.k WHERE ${k} IS NULL)`;
+    const f = this.alias('o'), d = this.alias('o'), k = this.stored(d, r.to);
+    return `EXISTS (SELECT 1 FROM ${keys} AS ${f} LEFT JOIN ${this.source(r.to.table)} AS ${d} ON ${k} = ${f}.k WHERE ${d}.${this.ident(r.to.source)} IS NULL)`;
   }
 
   // Whether the table has a blank row: some row on the many side of a relationship to it has a
@@ -997,7 +1004,8 @@ export class Emitter {
     const parts = [];
     for (const r of this.model.relationships) {
       if (r.to.table !== table || r.fromCard !== 'many' || r.toCard !== 'one' || r.ri) continue;
-      let keys = `(SELECT ${this.ident(r.from.source)} AS k FROM ${this.source(r.from.table)})`;
+      const o = this.alias('o');
+      let keys = `(SELECT ${this.stored(o, r.from)} AS k FROM ${this.source(r.from.table)} AS ${o})`;
       if (this.options.security?.length && !this.insecure) {
         const b = this.isolated(() => this.scanBlock(r.from.table, EMPTY, new Map()));
         b.setOut([{ name: 'k', lineage: null }], [b.res.meta(r.from)]);
@@ -1333,13 +1341,13 @@ class Res {
     const hop = path.at(-1);
     a = this.em.alias('j');
     if (!this.block) throw semantic(`'${hop.to.table.name}' cannot be joined here`);
-    this.block.joins.push(`LEFT JOIN ${this.em.source(hop.to.table)} AS ${a} ON ${a}.${this.em.ident(hop.to.source)} = ${from}`);
+    this.block.joins.push(`LEFT JOIN ${this.em.source(hop.to.table)} AS ${a} ON ${this.em.stored(a, hop.to)} = ${from}`);
     this.joinAlias.set(key, a);
     (this.joinKey ??= new Map()).set(a, `${a}.${this.em.ident(hop.to.source)}`);
     return a;
   }
   physical(alias, m) {
-    if (!m.expr) return `${alias}.${this.em.ident(m.source)}`;
+    if (!m.expr) return this.em.stored(alias, m);
     // A calculated column: its expression on this row, in an empty filter context and without
     // row-level security, as computed at refresh. A column the query defines is computed when
     // the query runs, under the roles' security. Blank on the blank row (a join that found no

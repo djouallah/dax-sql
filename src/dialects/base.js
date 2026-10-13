@@ -60,9 +60,12 @@ export class Dialect {
   // A value as text, the way & joins it.
   text(sql, t) {
     if (t === 'string') return sql;
-    if (t === 'bool') return `CASE WHEN ${sql} THEN 'TRUE' ELSE 'FALSE' END`;
+    if (t === 'bool') return `CASE ${sql} WHEN TRUE THEN 'TRUE' WHEN FALSE THEN 'FALSE' END`;
     return `CAST(${sql} AS VARCHAR)`;
   }
+
+  // A text column of an imported table as the model holds it: without its trailing spaces.
+  storedText(sql) { return `RTRIM(${sql})`; }
 
   // PATH over a parent-child table: from `edges` (a SELECT of columns k, the key, of type t,
   // and p, its parent), a row (key, path) per key reached from a row with a blank parent, its

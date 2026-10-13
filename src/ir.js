@@ -130,7 +130,9 @@ export function kase(w, e, t) {
   const all = [...w.map(x => x[1]), e];
   t ??= unify(all.map(x => x.t));
   const x = { k: 'case', w, e, t, nn: all.every(x => x.nn) };
-  return all.some(v => v.dax) ? { ...x, dax: unify(all.map(v => v.dax ?? v.t)) } : x;
+  // A branch's DAX type (`dax`) and the type a measure of it declares (`decl`) carry over.
+  const typed = key => all.some(v => v[key]) ? { [key]: unify(all.map(v => v[key] ?? v.dax ?? v.t)) } : {};
+  return { ...x, ...typed('dax'), ...typed('decl') };
 }
 export const agg = (f, src, row, arg, t, a = []) => ({ k: 'agg', fn: f, src, row, arg, a, t, nn: false });
 export const exists = src => ({ k: 'exists', src, t: 'bool', nn: true });

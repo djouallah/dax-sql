@@ -167,12 +167,14 @@ export class Compiler {
   }
 
   // [Measure]: its expression under CALCULATE, through the calculation groups the filter
-  // context selects an item of.
+  // context selects an item of. Its DAX type is the measure's declared one (`decl`), which
+  // can be wider than the expression's written inline: a MAXX of text is a variant measure.
   measureRef(m, env) {
     if (env.stack.includes(m)) throw semantic(`measure [${m.name}] refers to itself`);
     if (env.boolFilter) throw semantic(`a True/False filter of CALCULATE cannot use a measure ([${m.name}]): it has to be FILTER over a table`);
     const ctx = this.transition(env);
-    return this.applyGroups(m, { ...env, ctx, rows: [], cg: null }, 0);
+    const x = this.applyGroups(m, { ...env, ctx, rows: [], cg: null }, 0);
+    return x.decl ? { ...x, dax: x.decl } : x;
   }
   measureBody(m, env) {
     m.ast ??= parse(m.text, `measure [${m.name}]`);

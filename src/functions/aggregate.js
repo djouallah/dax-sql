@@ -29,12 +29,12 @@ const column = (fn, type) => (c, args, env) => {
   const { src, row, arg } = overColumn(c, args[0], env);
   return ir.agg(fn, src, row, arg, type(arg.t));
 };
-// MINX and MAXX of text are text, but DAX types them as a variant (`dax`: a value's DAX type
-// where it is not its kind of value). It shows where DAX compares types: the natural joins.
+// MINX and MAXX of text are text, but a measure of them is declared a variant (`decl`: the
+// type a measure of the expression has, where it is not the expression's; see measureRef).
 const iterator = (fn, type) => (c, args, env) => {
   const { src, row, arg } = overTable(c, args, env);
   const x = ir.agg(fn, src, row, arg, type(arg.t));
-  return (fn === 'min' || fn === 'max') && arg.t === 'string' ? { ...x, dax: 'variant' } : x;
+  return (fn === 'min' || fn === 'max') && arg.t === 'string' ? { ...x, decl: 'variant' } : x;
 };
 const same = t => t, num = t => numType(t), dbl = () => 'double', int = () => 'int';
 

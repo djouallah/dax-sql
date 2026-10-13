@@ -393,7 +393,9 @@ and gives each aggregate the filters that reach its table.
 - **Row context:**
   - Iterators create row contexts. In context transition, a date table's date replaces the
     filters on the rest of its table, as a filter argument on it does.
-  - A measure is its expression under CALCULATE.
+  - A measure is its expression under CALCULATE. Its data type is the one DAX declares for
+    the measure, which can be wider than the expression's inline: a measure that is `MAXX` of
+    text (or an `IF` over one) is a variant, the same `MAXX` written in the query is text.
   - Context transition turns every row context into filters, one on each column of the row.
   - `EARLIER`, `RELATED` and `RELATEDTABLE` work. `RELATED` follows a relationship whichever
     way `CROSSFILTER` makes it filter, but not one it turns off (`None`).
@@ -547,7 +549,8 @@ and gives each aggregate the filters that reach its table.
   - combining: `CROSSJOIN`, `UNION`, `INTERSECT`, `EXCEPT`, `GENERATE(ALL)`, `TREATAS`,
     `NATURALINNERJOIN`, `NATURALLEFTOUTERJOIN` (on the columns of the same lineage, or of the
     same name for columns without one, a blank matching a blank; columns of the same name with
-    different data types are an error, `MINX` and `MAXX` of text being a variant as in DAX),
+    different data types are an error; `MINX` and `MAXX` of text are text, but a measure of
+    them, alone or in an `IF`, is a variant, as DAX declares it),
     `SUBSTITUTEWITHINDEX`;
   - constructing: `ROW`, `DATATABLE`, `{ }`, `GENERATESERIES`, `CALENDAR`, `CALENDARAUTO`;
   - `FIRSTNONBLANK`, `LASTNONBLANK`, over a column or a table of one column.

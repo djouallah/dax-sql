@@ -47,6 +47,9 @@ export class Dialect {
 
   isNotDistinct(a, b) { return `${a} IS NOT DISTINCT FROM ${b}`; }
 
+  // A query's LIMIT and OFFSET, after its ORDER BY.
+  limit(n, offset) { return `${n != null ? ` LIMIT ${n}` : ''}${offset ? ` OFFSET ${offset}` : ''}`; }
+
   // The sides of a comparison of text (=, <, IN, a table filter's values), written so that it
   // is without regard to case, as DAX compares text. `a` is a side that is text for certain;
   // the others can be a blank.

@@ -1,4 +1,5 @@
-- **In:** a Tabular model (`model.bim`), a DAX query, options ([DESIGN.md](DESIGN.md#api)).
+- **In:** a Tabular model (`model.bim`), a DAX query or a SQL `SELECT` over the model, options
+  ([DESIGN.md](DESIGN.md#api)).
 - **Out:** one SQL `SELECT` and its columns.
 - **Errors:** `SYNTAX`, `SEMANTIC`, `UNSUPPORTED`.
 

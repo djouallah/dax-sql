@@ -30,11 +30,13 @@ import { Dialect } from './dialects/base.js';
 import { newRow } from './ir.js';
 import { DaxError, semantic } from './errors.js';
 import { Ctx } from './context.js';
+import { SqlTranslator, isSql } from './sql.js';
 
 export { DaxError } from './errors.js';
 export { Dialect } from './dialects/base.js';
 export { DuckDBDialect } from './dialects/duckdb.js';
 export { parseQuery, parseExpression } from './parser.js';
+export { parseSql } from './sql.js';
 export { Model } from './model.js';
 
 const DIALECTS = { duckdb: () => new DuckDBDialect() };
@@ -118,11 +120,19 @@ export function createCompiler(bim, options = {}) {
     cache.set(dax, out);
     return out;
   }
+  // A SELECT over the model: its DAX, compiled, with its LIMIT and OFFSET.
+  const sqlTranslator = new SqlTranslator(model);
+  function compileSql(text) {
+    const { dax, limit, offset } = sqlTranslator.translate(text);
+    const [out] = compileAll(dax);
+    return limit == null && offset == null ? out : { ...out, sql: out.sql + dialect.limit(limit, offset) };
+  }
   return {
     model,
     dialect,
-    // One EVALUATE -> { sql, columns: [{ name, dax, type, lineage }] }.
+    // One EVALUATE, or a SELECT over the model -> { sql, columns: [{ name, dax, type, lineage }] }.
     compile(dax) {
+      if (isSql(dax)) return compileSql(dax);
       const out = compileAll(dax);
       if (out.length !== 1) throw new DaxError(`the query has ${out.length} EVALUATE statements; use compileAll`);
       return out[0];
@@ -130,6 +140,10 @@ export function createCompiler(bim, options = {}) {
     compileAll,
     // Whether a text is a DAX query (it starts with DEFINE or EVALUATE).
     isDax: text => /^\s*(DEFINE|EVALUATE)\b/i.test(text),
+    // Whether a text is a SELECT over the model, and the DAX query it stands for, with its
+    // LIMIT and OFFSET ({ dax, limit, offset }).
+    isSql,
+    sqlToDax: text => sqlTranslator.translate(text),
     fieldParameters: () => fieldParameters(model),
     // The fields a field parameter's selection stands for (all of them without `labels`), in
     // its order: what Power BI puts in a visual's query in the parameter's place.

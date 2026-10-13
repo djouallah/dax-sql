@@ -1,0 +1,608 @@
+// SQL over the model -> a DAX query. A SELECT names the model's columns to group by and
+// aggregates of its measures (or columns), with the clauses of an aggregate query:
+//
+//   SELECT Product.Color, AGG(Orders) AS orders
+//   FROM model
+//   WHERE Customer.City IN ('Paris', 'Lyon')
+//   GROUP BY ALL
+//   HAVING orders > 2
+//   ORDER BY orders DESC
+//   LIMIT 10
+//
+// is SUMMARIZECOLUMNS of the groups and the aggregates, under CALCULATETABLE of the WHERE's
+// conditions, FILTERed by the HAVING, with the ORDER BY of DAX; LIMIT and OFFSET are the
+// SQL's. A measure keeps its own definition: there is no way to change the filter context
+// besides WHERE.
+//
+// Names: table.column, "quoted"."names" ('text' is text),
+// [bracketed] ones, 'Table'[Column] as in DAX, or a column's name alone when one table has
+// it. AGG(m) and MEASURE(m) are measure m (AGG(Orders), AGG(Sales.Orders)); SUM, AVG,
+// MIN, MAX and COUNT (COUNT(DISTINCT c)) aggregate a column. FROM names the model.
+import { DaxError } from './errors.js';
+
+const lc = s => String(s).toLowerCase();
+const sqlSyntax = (msg, pos, src) => new DaxError(`SQL syntax: ${msg}`, { code: 'SYNTAX', pos, src });
+const sqlSemantic = msg => new DaxError(`SQL: ${msg}`, { code: 'SEMANTIC' });
+const sqlUnsupported = msg => new DaxError(`SQL: ${msg} is not supported`, { code: 'UNSUPPORTED' });
+
+// --- tokens ------------------------------------------------------------------------------
+//   num, str ('text'), id (a bare name), qid ("name", [name], `name`), op
+
+const OPS = ['<>', '!=', '<=', '>=', '||', '=', '<', '>', '+', '-', '*', '/', '%', '(', ')', ',', '.', ';'];
+
+function lex(src) {
+  const out = [];
+  let i = 0;
+  const n = src.length;
+  const quoted = (close, kind, at) => {
+    let v = '';
+    i++;
+    for (;;) {
+      if (i >= n) throw sqlSyntax(`unterminated ${kind}`, at, src);
+      if (src[i] === close) {
+        if (src[i + 1] === close) { v += close; i += 2; continue; }
+        i++;
+        return v;
+      }
+      v += src[i++];
+    }
+  };
+  while (i < n) {
+    const c = src[i];
+    if (/\s/.test(c)) { i++; continue; }
+    if (c === '-' && src[i + 1] === '-') { while (i < n && src[i] !== '\n') i++; continue; }
+    if (c === '/' && src[i + 1] === '*') {
+      const e = src.indexOf('*/', i + 2);
+      if (e < 0) throw sqlSyntax('unterminated comment', i, src);
+      i = e + 2;
+      continue;
+    }
+    const at = i;
+    if (c === "'") { out.push({ t: 'str', v: quoted("'", 'string', at), at, end: i }); continue; }
+    if (c === '"') { out.push({ t: 'qid', v: quoted('"', 'quoted name', at), at, end: i }); continue; }
+    if (c === '`') { out.push({ t: 'qid', v: quoted('`', 'quoted name', at), at, end: i }); continue; }
+    if (c === '[') { out.push({ t: 'qid', v: quoted(']', '[name]', at), at, end: i }); continue; }
+    if (/[0-9]/.test(c) || (c === '.' && /[0-9]/.test(src[i + 1] ?? ''))) {
+      const m = /^(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?/.exec(src.slice(i));
+      out.push({ t: 'num', v: m[0], at, end: i + m[0].length });
+      i += m[0].length;
+      continue;
+    }
+    if (/[\p{L}_]/u.test(c)) {
+      const m = /^[\p{L}_][\p{L}\p{N}_$]*/u.exec(src.slice(i));
+      out.push({ t: 'id', v: m[0], at, end: i + m[0].length });
+      i += m[0].length;
+      continue;
+    }
+    const op = OPS.find(o => src.startsWith(o, i));
+    if (!op) throw sqlSyntax(`unexpected character "${c}"`, i, src);
+    out.push({ t: 'op', v: op, at, end: i + op.length });
+    i += op.length;
+  }
+  return out;
+}
+
+// --- the syntax tree ---------------------------------------------------------------------
+//   { k:'num'|'str', v }  { k:'null' }  { k:'bool', v }  { k:'date', v, time }
+//   { k:'name', parts }  { k:'call', fn, args, distinct, star }  { k:'bin', op, l, r }
+//   { k:'not', e }  { k:'neg', e }  { k:'in', e, list, not }  { k:'between', e, lo, hi, not }
+//   { k:'isnull', e, not }  { k:'like', e, pat, not }  { k:'case', base, whens, else }
+//   { k:'cast', e, type }
+// Each node has `pos`, and `src`, the text it was written as.
+
+const KEYWORDS = new Set(['SELECT', 'FROM', 'WHERE', 'GROUP', 'BY', 'HAVING', 'ORDER', 'LIMIT', 'OFFSET', 'AS', 'AND',
+  'OR', 'NOT', 'IN', 'IS', 'NULL', 'BETWEEN', 'LIKE', 'CASE', 'WHEN', 'THEN', 'ELSE', 'END', 'ASC', 'DESC', 'NULLS',
+  'ALL', 'DISTINCT', 'TRUE', 'FALSE', 'CAST', 'JOIN', 'UNION', 'ON', 'WITH', 'QUALIFY', 'WINDOW', 'OVER', 'INTERSECT',
+  'EXCEPT', 'FETCH']);
+
+class Parser {
+  constructor(src) { this.src = src; this.toks = lex(src); this.i = 0; }
+  get tok() { return this.toks[this.i]; }
+  err(msg, t = this.tok) { return sqlSyntax(msg, t ? t.at : this.src.length, this.src); }
+  isKw(w, t = this.tok) { return t?.t === 'id' && t.v.toUpperCase() === w; }
+  isOp(v, t = this.tok) { return t?.t === 'op' && t.v === v; }
+  eatKw(w) { if (this.isKw(w)) { this.i++; return true; } return false; }
+  eat(v) { if (this.isOp(v)) { this.i++; return true; } return false; }
+  needKw(w) { if (!this.eatKw(w)) throw this.err(`expected ${w}`); }
+  need(v) { if (!this.eat(v)) throw this.err(`expected "${v}"`); }
+  node(x, from) {
+    const last = this.toks[this.i - 1];
+    return { ...x, pos: from, src: this.src.slice(from, last ? last.end : from).trim() };
+  }
+
+  query() {
+    if (this.isKw('WITH')) throw sqlUnsupported('WITH');
+    this.needKw('SELECT');
+    if (this.isKw('DISTINCT')) throw sqlUnsupported('SELECT DISTINCT (GROUP BY groups already)');
+    this.eatKw('ALL');
+    const select = [];
+    do {
+      if (this.isOp('*')) throw sqlUnsupported('SELECT *: name the columns and aggregates');
+      const at = this.tok?.at ?? this.src.length;
+      const e = this.expr();
+      let alias = null;
+      if (this.eatKw('AS')) alias = this.name1();
+      else if (this.tok && (this.tok.t === 'qid' || (this.tok.t === 'id' && !KEYWORDS.has(this.tok.v.toUpperCase())))) alias = this.name1();
+      select.push({ e, alias, pos: at });
+    } while (this.eat(','));
+    this.needKw('FROM');
+    const from = this.name1();
+    if (this.isKw('JOIN') || this.isOp(',') || this.isOp('.')) throw sqlUnsupported('a FROM other than the model');
+    if (this.eatKw('AS')) this.name1();
+    let where = null, groupBy = null, having = null, limit = null, offset = null;
+    const orderBy = [];
+    if (this.eatKw('WHERE')) where = this.expr();
+    if (this.eatKw('GROUP')) {
+      this.needKw('BY');
+      if (this.eatKw('ALL')) groupBy = 'all';
+      else { groupBy = []; do groupBy.push(this.expr()); while (this.eat(',')); }
+    }
+    if (this.eatKw('HAVING')) having = this.expr();
+    if (this.isKw('QUALIFY') || this.isKw('WINDOW')) throw sqlUnsupported(this.tok.v.toUpperCase());
+    if (this.eatKw('ORDER')) {
+      this.needKw('BY');
+      do {
+        const e = this.expr();
+        let desc = false, nulls = null;
+        if (this.eatKw('DESC')) desc = true; else this.eatKw('ASC');
+        if (this.eatKw('NULLS')) {
+          if (this.eatKw('FIRST')) nulls = 'first';
+          else if (this.eatKw('LAST')) nulls = 'last';
+          else throw this.err('expected FIRST or LAST after NULLS');
+        }
+        orderBy.push({ e, desc, nulls });
+      } while (this.eat(','));
+    }
+    if (this.eatKw('LIMIT')) limit = this.count();
+    if (this.eatKw('OFFSET')) offset = this.count();
+    this.eat(';');
+    if (this.isKw('UNION') || this.isKw('INTERSECT') || this.isKw('EXCEPT')) throw sqlUnsupported(this.tok.v.toUpperCase());
+    if (this.tok) throw this.err('unexpected text after the query');
+    return { select, from, where, groupBy, having, orderBy, limit, offset };
+  }
+  count() {
+    const t = this.tok;
+    if (t?.t !== 'num' || !/^\d+$/.test(t.v)) throw this.err('expected a whole number');
+    this.i++;
+    return Number(t.v);
+  }
+  name1() {
+    const t = this.tok;
+    if (t?.t === 'qid' || (t?.t === 'id' && !KEYWORDS.has(t.v.toUpperCase()))) { this.i++; return t.v; }
+    throw this.err('expected a name');
+  }
+
+  expr() { return this.or(); }
+  or() {
+    const at = this.tok?.at;
+    let l = this.and();
+    while (this.eatKw('OR')) l = this.node({ k: 'bin', op: 'OR', l, r: this.and() }, at);
+    return l;
+  }
+  and() {
+    const at = this.tok?.at;
+    let l = this.not();
+    while (this.eatKw('AND')) l = this.node({ k: 'bin', op: 'AND', l, r: this.not() }, at);
+    return l;
+  }
+  not() {
+    const at = this.tok?.at;
+    if (this.eatKw('NOT')) return this.node({ k: 'not', e: this.not() }, at);
+    return this.cmp();
+  }
+  cmp() {
+    const at = this.tok?.at;
+    const l = this.add();
+    const t = this.tok;
+    if (t?.t === 'op' && ['=', '<>', '!=', '<', '<=', '>', '>='].includes(t.v)) {
+      this.i++;
+      return this.node({ k: 'bin', op: t.v === '!=' ? '<>' : t.v, l, r: this.add() }, at);
+    }
+    if (this.eatKw('IS')) {
+      const not = this.eatKw('NOT');
+      this.needKw('NULL');
+      return this.node({ k: 'isnull', e: l, not }, at);
+    }
+    const not = this.isKw('NOT') && ['IN', 'BETWEEN', 'LIKE'].some(w => this.isKw(w, this.toks[this.i + 1])) && (this.i++, true);
+    if (this.eatKw('IN')) {
+      this.need('(');
+      if (this.isKw('SELECT')) throw sqlUnsupported('a subquery');
+      const list = [];
+      do list.push(this.expr()); while (this.eat(','));
+      this.need(')');
+      return this.node({ k: 'in', e: l, list, not }, at);
+    }
+    if (this.eatKw('BETWEEN')) {
+      const lo = this.add();
+      this.needKw('AND');
+      return this.node({ k: 'between', e: l, lo, hi: this.add(), not }, at);
+    }
+    if (this.eatKw('LIKE')) return this.node({ k: 'like', e: l, pat: this.add(), not }, at);
+    if (not) throw this.err('expected IN, BETWEEN or LIKE');
+    return l;
+  }
+  add() {
+    const at = this.tok?.at;
+    let l = this.mul();
+    for (;;) {
+      const t = this.tok;
+      if (!(t?.t === 'op' && ['+', '-', '||'].includes(t.v))) return l;
+      this.i++;
+      l = this.node({ k: 'bin', op: t.v, l, r: this.mul() }, at);
+    }
+  }
+  mul() {
+    const at = this.tok?.at;
+    let l = this.unary();
+    for (;;) {
+      const t = this.tok;
+      if (!(t?.t === 'op' && ['*', '/', '%'].includes(t.v))) return l;
+      this.i++;
+      l = this.node({ k: 'bin', op: t.v, l, r: this.unary() }, at);
+    }
+  }
+  unary() {
+    const at = this.tok?.at;
+    if (this.eat('-')) return this.node({ k: 'neg', e: this.unary() }, at);
+    if (this.eat('+')) return this.unary();
+    return this.primary();
+  }
+  primary() {
+    const t = this.tok;
+    if (!t) throw this.err('the query ends too soon');
+    const at = t.at;
+    this.i++;
+    if (t.t === 'num') return this.node({ k: 'num', v: t.v }, at);
+    if (t.t === 'str') {
+      // 'Table'[Column], as DAX writes it.
+      if (this.tok?.t === 'qid' && this.src[this.tok.at] === '[') {
+        const c = this.tok;
+        this.i++;
+        return this.node({ k: 'name', parts: [t.v, c.v] }, at);
+      }
+      return this.node({ k: 'str', v: t.v }, at);
+    }
+    if (t.t === 'op' && t.v === '(') {
+      if (this.isKw('SELECT')) throw sqlUnsupported('a subquery');
+      const e = this.expr();
+      this.need(')');
+      return e;
+    }
+    if (t.t === 'qid') return this.dotted(t.v, at);
+    if (t.t === 'id') {
+      const up = t.v.toUpperCase();
+      if (up === 'NULL') return this.node({ k: 'null' }, at);
+      if (up === 'TRUE' || up === 'FALSE') return this.node({ k: 'bool', v: up === 'TRUE' }, at);
+      if ((up === 'DATE' || up === 'TIMESTAMP') && this.tok?.t === 'str') {
+        const s = this.tok;
+        this.i++;
+        return this.node({ k: 'date', v: s.v, time: up === 'TIMESTAMP' }, at);
+      }
+      if (up === 'CASE') return this.caseExpr(at);
+      if (up === 'CAST' && this.isOp('(')) {
+        this.i++;
+        const e = this.expr();
+        this.needKw('AS');
+        const type = this.name1();
+        if (this.eat('(')) { while (!this.isOp(')') && this.tok) this.i++; this.need(')'); }
+        this.need(')');
+        return this.node({ k: 'cast', e, type }, at);
+      }
+      if (this.isOp('(')) {
+        this.i++;
+        if (this.isKw('SELECT')) throw sqlUnsupported('a subquery');
+        const distinct = this.eatKw('DISTINCT');
+        const args = [];
+        let star = false;
+        if (this.isOp('*')) { this.i++; star = true; }
+        else if (!this.isOp(')')) do args.push(this.expr()); while (this.eat(','));
+        this.need(')');
+        if (this.isKw('OVER')) throw sqlUnsupported('a window function');
+        return this.node({ k: 'call', fn: up, args, distinct, star }, at);
+      }
+      if (KEYWORDS.has(up)) { this.i--; throw this.err(`unexpected ${t.v}`); }
+      return this.dotted(t.v, at);
+    }
+    this.i--;
+    throw this.err('unexpected token');
+  }
+  dotted(first, at) {
+    const parts = [first];
+    while (this.eat('.')) {
+      if (this.isOp('*')) throw sqlUnsupported('table.*');
+      parts.push(this.name1());
+    }
+    return this.node({ k: 'name', parts }, at);
+  }
+  caseExpr(at) {
+    const base = this.isKw('WHEN') ? null : this.expr();
+    const whens = [];
+    while (this.eatKw('WHEN')) {
+      const w = this.expr();
+      this.needKw('THEN');
+      whens.push([w, this.expr()]);
+    }
+    if (!whens.length) throw this.err('expected WHEN');
+    const els = this.eatKw('ELSE') ? this.expr() : null;
+    this.needKw('END');
+    return this.node({ k: 'case', base, whens, else: els }, at);
+  }
+}
+
+export function parseSql(src) { return new Parser(src).query(); }
+
+// --- SQL -> DAX --------------------------------------------------------------------------
+
+const AGGS = { SUM: 'SUM', AVG: 'AVERAGE', AVERAGE: 'AVERAGE', MIN: 'MIN', MAX: 'MAX', COUNT: 'COUNTA' };
+const FUNCS = { LENGTH: 'LEN', CHAR_LENGTH: 'LEN', SUBSTRING: 'MID', SUBSTR: 'MID', CEIL: 'CEILING' };
+const CASTS = { INT: 'INTEGER', INTEGER: 'INTEGER', BIGINT: 'INTEGER', SMALLINT: 'INTEGER', TINYINT: 'INTEGER',
+  DOUBLE: 'DOUBLE', FLOAT: 'DOUBLE', REAL: 'DOUBLE', DECIMAL: 'DOUBLE', NUMERIC: 'DOUBLE',
+  VARCHAR: 'STRING', TEXT: 'STRING', STRING: 'STRING', CHAR: 'STRING', BOOLEAN: 'BOOLEAN', BOOL: 'BOOLEAN',
+  DATE: 'DATETIME', TIMESTAMP: 'DATETIME', DATETIME: 'DATETIME' };
+
+const daxStr = v => `"${String(v).replace(/"/g, '""')}"`;
+const daxTable = t => `'${t.name.replace(/'/g, "''")}'`;
+const daxCol = c => `${daxTable(c.table)}[${c.name.replace(/]/g, ']]')}]`;
+const daxName = n => `[${String(n).replace(/]/g, ']]')}]`;
+const isAggCall = e => e.k === 'call' && (e.fn === 'AGG' || e.fn === 'MEASURE' || e.fn in AGGS);
+
+function kids(e) {
+  switch (e.k) {
+    case 'bin': return [e.l, e.r];
+    case 'not': case 'neg': case 'isnull': case 'cast': return [e.e];
+    case 'in': return [e.e, ...e.list];
+    case 'between': return [e.e, e.lo, e.hi];
+    case 'like': return [e.e, e.pat];
+    case 'call': return e.args;
+    case 'case': return [e.base, ...e.whens.flat(), e.else].filter(Boolean);
+    default: return [];
+  }
+}
+const hasAgg = e => isAggCall(e) || kids(e).some(hasAgg);
+
+export class SqlTranslator {
+  constructor(model) { this.model = model; }
+
+  // A column by its parts: [table, column] or [column], of the one table that has it.
+  column(parts) {
+    if (parts.length === 2) return this.model.findColumn(parts[0], parts[1]);
+    if (parts.length !== 1) return null;
+    const found = [...this.model.tables.values()].map(t => t.colMap.get(lc(parts[0]))).filter(c => c && !c.query);
+    if (found.length > 1) throw sqlSemantic(`column ${parts[0]} is in several tables (${found.map(c => c.table.name).join(', ')}); name its table`);
+    return found[0] ?? null;
+  }
+  measure(parts) {
+    const m = parts.length <= 2 ? this.model.measure(parts[parts.length - 1]) : null;
+    if (!m || (parts.length === 2 && lc(m.table.name) !== lc(parts[0]))) return null;
+    return m;
+  }
+  // A measure as DAX: qualified, so a column of the same name in a row does not hide it.
+  measureDax(m) { return this.model.findColumn(m.table.name, m.name) ? daxName(m.name) : `${daxTable(m.table)}${daxName(m.name)}`; }
+
+  // An expression as DAX. `ctx.mode`:
+  //   'where'  conditions on columns, no aggregate
+  //   'agg'    a SELECT expression with aggregates: no column outside one
+  //   'having' on a group's row: its columns, the SELECT's names, aggregates
+  // `ctx.items` (having) maps the DAX of the SELECT's aggregates to their columns.
+  dax(e, ctx) {
+    if (ctx.items && hasAgg(e)) {
+      const hit = ctx.items.get(this.dax(e, { ...ctx, items: null }));
+      if (hit) return hit;
+    }
+    const sub = x => this.dax(x, ctx);
+    switch (e.k) {
+      case 'num': return e.v;
+      case 'str': return daxStr(e.v);
+      case 'null': return 'BLANK()';
+      case 'bool': return e.v ? 'TRUE()' : 'FALSE()';
+      case 'date': {
+        const m = /^(\d{4})-(\d{1,2})-(\d{1,2})(?:[ T](\d{1,2}):(\d{2})(?::(\d{2}))?)?$/.exec(e.v.trim());
+        if (!m) throw sqlSemantic(`${e.src} is not a date`);
+        const d = `DATE(${+m[1]}, ${+m[2]}, ${+m[3]})`;
+        return m[4] != null ? `(${d} + TIME(${+m[4]}, ${+m[5]}, ${+(m[6] ?? 0)}))` : d;
+      }
+      case 'name': return this.nameDax(e, ctx);
+      case 'neg': return `(-${sub(e.e)})`;
+      case 'not': return `NOT(${sub(e.e)})`;
+      case 'bin': {
+        const l = sub(e.l), r = sub(e.r);
+        if (e.op === '%') return `MOD(${l}, ${r})`;
+        const op = { AND: '&&', OR: '||', '||': '&' }[e.op] ?? e.op;
+        return `(${l} ${op} ${r})`;
+      }
+      case 'isnull': return e.not ? `NOT(ISBLANK(${sub(e.e)}))` : `ISBLANK(${sub(e.e)})`;
+      case 'in': {
+        const x = `(${sub(e.e)} IN {${e.list.map(sub).join(', ')}})`;
+        return e.not ? `NOT(${x})` : x;
+      }
+      case 'between': {
+        const x = sub(e.e), b = `(${x} >= ${sub(e.lo)} && ${x} <= ${sub(e.hi)})`;
+        return e.not ? `NOT(${b})` : b;
+      }
+      case 'like': {
+        if (e.pat.k !== 'str') throw sqlUnsupported('LIKE with a pattern that is not a constant');
+        const p = e.pat.v, inner = p.replace(/^%/, '').replace(/%$/, '');
+        if (/[%_]/.test(inner)) throw sqlUnsupported(`LIKE '${p}' (only 'x', 'x%', '%x' and '%x%')`);
+        const x = sub(e.e), s = daxStr(inner), n = [...inner].length;
+        const starts = p.startsWith('%'), ends = p.length > 1 && p.endsWith('%');
+        const c = starts && ends ? `CONTAINSSTRING(${x}, ${s})` : ends ? `(LEFT(${x}, ${n}) = ${s})`
+          : starts ? `(RIGHT(${x}, ${n}) = ${s})` : `(${x} = ${s})`;
+        return e.not ? `NOT(${c})` : c;
+      }
+      case 'case': {
+        const parts = e.whens.flatMap(([w, t]) => [sub(w), sub(t)]);
+        if (e.else) parts.push(sub(e.else));
+        return `SWITCH(${e.base ? sub(e.base) : 'TRUE()'}, ${parts.join(', ')})`;
+      }
+      case 'cast': {
+        const t = CASTS[e.type.toUpperCase()];
+        if (!t) throw sqlUnsupported(`CAST to ${e.type}`);
+        return `CONVERT(${sub(e.e)}, ${t})`;
+      }
+      case 'call': {
+        if (isAggCall(e)) return this.aggDax(e, ctx);
+        if (e.star || e.distinct) throw sqlSyntax(`${e.fn} is not an aggregate`, e.pos, e.src);
+        return `${FUNCS[e.fn] ?? e.fn}(${e.args.map(sub).join(', ')})`;
+      }
+    }
+    throw sqlUnsupported(e.src);
+  }
+
+  nameDax(e, ctx) {
+    if (ctx.mode === 'having' && e.parts.length === 1) {
+      const a = ctx.aliases.get(lc(e.parts[0]));
+      if (a) return a;
+    }
+    const c = this.column(e.parts);
+    if (!c) {
+      const m = this.measure(e.parts);
+      if (m) throw sqlSemantic(`${e.src} is a measure: aggregate it with AGG(${e.src})`);
+      throw sqlSemantic(`the model has no column ${e.src}`);
+    }
+    if (ctx.mode === 'agg') throw sqlUnsupported(`column ${e.src} in an expression with an aggregate`);
+    if (ctx.mode === 'having' && !ctx.groups.includes(c)) throw sqlSemantic(`column ${e.src} must be in GROUP BY to be used in HAVING`);
+    return daxCol(c);
+  }
+
+  aggDax(e, ctx) {
+    if (ctx.mode === 'where') throw sqlSemantic(`an aggregate in WHERE (${e.src}): use HAVING`);
+    if (ctx.inAgg) throw sqlSemantic(`an aggregate inside an aggregate (${e.src})`);
+    const arg = e.args[0];
+    if (e.fn === 'AGG' || e.fn === 'MEASURE') {
+      if (e.args.length !== 1 || e.distinct || arg.k !== 'name') throw sqlSemantic(`${e.fn} takes a measure: ${e.src}`);
+      const m = this.measure(arg.parts);
+      if (!m) throw sqlSemantic(`the model has no measure ${arg.src}`);
+      return this.measureDax(m);
+    }
+    if (e.star) throw sqlUnsupported(`${e.src}: a model has no single table to count; COUNT a column, or AGG a measure`);
+    if (e.args.length !== 1 || arg.k !== 'name') throw sqlUnsupported(`${e.src}: an aggregate of something other than a column`);
+    const c = this.column(arg.parts);
+    if (!c) {
+      if (this.measure(arg.parts)) throw sqlSemantic(`${arg.src} is a measure: use AGG(${arg.src})`);
+      throw sqlSemantic(`the model has no column ${arg.src}`);
+    }
+    if (e.distinct) {
+      if (e.fn !== 'COUNT') throw sqlUnsupported(`${e.fn}(DISTINCT …)`);
+      return `DISTINCTCOUNTNOBLANK(${daxCol(c)})`;
+    }
+    return `${AGGS[e.fn]}(${daxCol(c)})`;
+  }
+
+  // The query -> { dax, limit, offset }.
+  translate(src) {
+    const q = parseSql(src);
+    // The SELECT's items: a column (a group), or an expression of aggregates.
+    const names = new Set();
+    const items = q.select.map(({ e, alias }) => {
+      if (!hasAgg(e)) {
+        if (e.k !== 'name') throw sqlUnsupported(`${e.src}: a SELECT item is a column or an expression of aggregates`);
+        const c = this.column(e.parts);
+        if (!c) {
+          if (this.measure(e.parts)) throw sqlSemantic(`${e.src} is a measure: aggregate it with AGG(${e.src})`);
+          throw sqlSemantic(`the model has no column ${e.src}`);
+        }
+        return { e, col: c, name: alias ?? c.name, renamed: alias != null && alias !== c.name };
+      }
+      const dax = this.dax(e, { mode: 'agg' });
+      const m = isAggCall(e) && (e.fn === 'AGG' || e.fn === 'MEASURE') ? this.measure(e.args[0].parts) : null;
+      return { e, dax, name: alias ?? m?.name ?? e.src };
+    });
+    for (const it of items) {
+      if (names.has(lc(it.name))) throw sqlSemantic(`two columns of the result are named ${it.name}`);
+      names.add(lc(it.name));
+    }
+    const dims = items.filter(it => it.col), aggs = items.filter(it => !it.col);
+
+    // The groups.
+    let groups;
+    if (q.groupBy === 'all') groups = dims.map(d => d.col);
+    else if (q.groupBy) {
+      groups = [];
+      for (const g of q.groupBy) {
+        let c;
+        if (g.k === 'num' && /^\d+$/.test(g.v)) {
+          const it = items[Number(g.v) - 1];
+          if (!it) throw sqlSemantic(`GROUP BY ${g.v}: the SELECT has ${items.length} items`);
+          if (!it.col) throw sqlSemantic(`GROUP BY ${g.v} is an aggregate`);
+          c = it.col;
+        } else if (g.k === 'name') {
+          c = (g.parts.length === 1 && dims.find(d => lc(d.name) === lc(g.parts[0]))?.col) || this.column(g.parts);
+          if (!c) throw sqlSemantic(`the model has no column ${g.src}`);
+        } else throw sqlUnsupported(`GROUP BY ${g.src}: groups are columns`);
+        if (!groups.includes(c)) groups.push(c);
+      }
+      for (const d of dims) if (!groups.includes(d.col)) throw sqlSemantic(`column ${d.e.src} must be in GROUP BY`);
+    } else {
+      if (dims.length) throw sqlSemantic(`column ${dims[0].e.src} is not aggregated: add GROUP BY ALL`);
+      groups = [];
+    }
+
+    // HAVING's names: the SELECT's, on the groups' rows.
+    const itemRef = it => it.col ? daxCol(it.col) : daxName(it.name);
+    const aliases = new Map(items.map(it => [lc(it.name), itemRef(it)]));
+    const aggItems = new Map(aggs.map(it => [it.dax, daxName(it.name)]));
+    const having = q.having && this.dax(q.having, { mode: 'having', groups, aliases, items: aggItems });
+
+    const aggArgs = aggs.flatMap(it => [daxStr(it.name), it.dax]);
+    let table = groups.length || (q.groupBy && !aggs.length)
+      ? `SUMMARIZECOLUMNS(${[...groups.map(daxCol), ...aggArgs].join(', ')})`
+      : `ROW(${aggArgs.join(', ')})`;
+    if (having) table = `FILTER(${table}, ${having})`;
+
+    // WHERE: one filter of CALCULATETABLE per condition joined by AND, each on the columns of
+    // one table or, if not, of the columns it names.
+    if (q.where) {
+      const conj = [];
+      const split = e => (e.k === 'bin' && e.op === 'AND' ? (split(e.l), split(e.r)) : conj.push(e));
+      split(q.where);
+      const filters = conj.map(e => {
+        const dax = this.dax(e, { mode: 'where' });
+        const cols = [];
+        const walk = x => {
+          if (x.k === 'name') { const c = this.column(x.parts); if (c && !cols.includes(c)) cols.push(c); }
+          kids(x).forEach(walk);
+        };
+        walk(e);
+        if (!cols.length) throw sqlUnsupported(`WHERE ${e.src}: a condition on no column`);
+        if (new Set(cols.map(c => c.table)).size === 1) return dax;
+        return `FILTER(${cols.length === 1 ? `ALL(${daxCol(cols[0])})` : `CROSSJOIN(${cols.map(c => `ALL(${daxCol(c)})`).join(', ')})`}, ${dax})`;
+      });
+      table = `CALCULATETABLE(${table}, ${filters.join(', ')})`;
+    }
+
+    // The result's columns in the SELECT's order and names.
+    const scOrder = [...groups.map(g => dims.find(d => d.col === g)), ...aggs];
+    const same = scOrder.length === items.length && scOrder.every((it, i) => it === items[i]) && !dims.some(d => d.renamed);
+    if (!same) table = `SELECTCOLUMNS(${table}, ${items.map(it => `${daxStr(it.name)}, ${itemRef(it)}`).join(', ')})`;
+
+    // ORDER BY: a SELECT item (its name, its position, or the same expression), or an
+    // aggregate on the result's rows.
+    const outRef = it => it.col && !it.renamed ? daxCol(it.col) : daxName(it.name);
+    const order = q.orderBy.map(({ e, desc, nulls }) => {
+      if (nulls && nulls !== (desc ? 'last' : 'first')) throw sqlUnsupported(`NULLS ${nulls.toUpperCase()} with ${desc ? 'DESC' : 'ASC'} (blanks sort first ascending, last descending)`);
+      let it = null;
+      if (e.k === 'num' && /^\d+$/.test(e.v)) {
+        it = items[Number(e.v) - 1];
+        if (!it) throw sqlSemantic(`ORDER BY ${e.v}: the SELECT has ${items.length} items`);
+      } else if (e.k === 'name') {
+        it = (e.parts.length === 1 && items.find(x => lc(x.name) === lc(e.parts[0])))
+          || dims.find(d => d.col === this.column(e.parts));
+        if (!it) throw sqlSemantic(`ORDER BY ${e.src}: not a column of the result`);
+      } else if (hasAgg(e)) {
+        const d = this.dax(e, { mode: 'agg' });
+        it = aggs.find(a => a.dax === d);
+        if (!it) {
+          const outAliases = new Map(items.map(x => [lc(x.name), outRef(x)]));
+          const outItems = new Map(aggs.map(a => [a.dax, daxName(a.name)]));
+          return `${this.dax(e, { mode: 'having', groups: dims.map(x => x.col), aliases: outAliases, items: outItems })}${desc ? ' DESC' : ''}`;
+        }
+      } else throw sqlUnsupported(`ORDER BY ${e.src}: order by a column of the result`);
+      return `${outRef(it)}${desc ? ' DESC' : ''}`;
+    });
+
+    const dax = `EVALUATE ${table}${order.length ? ` ORDER BY ${order.join(', ')}` : ''}`;
+    return { dax, limit: q.limit, offset: q.offset };
+  }
+}
+
+export const isSql = text => /^\s*(?:(?:--[^\n]*\n|\/\*[\s\S]*?\*\/)\s*)*SELECT\b/i.test(text);

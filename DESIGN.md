@@ -316,9 +316,12 @@ What the README leaves out: the API, what the compiler does, and how.
 
 - `compile(dax)`: one `EVALUATE` returns `{ sql, columns }`. It throws a `DaxError` when the
   query has several `EVALUATE`s.
+  It also takes a SQL `SELECT` over the model ([SQL](#sql)).
 - `compileAll(dax)`: every `EVALUATE` of the query, in order. The same text is compiled once
   and then cached.
 - `isDax(text)`: whether a text starts with `DEFINE` or `EVALUATE`.
+- `isSql(text)`: whether a text starts with `SELECT`.
+- `sqlToDax(sql)`: the DAX query a `SELECT` stands for, `{ dax, limit, offset }`.
 - `fieldParameters()`: the model's field parameters, each with its fields in order.
 - `expandFieldParameter(table, labels)`: the fields a selection of a field parameter stands
   for (all of them without `labels`), each `{ label, ref, order, kind, name, tableName }`.
@@ -608,6 +611,43 @@ and gives each aggregate the filters that reach its table.
   column of an imported table is read without them (`"a "` is `"a"`, in its value, its length,
   filters and relationships). Leading spaces stay.
 
+### SQL
+
+A `SELECT` over the model is a DAX query, compiled as any other (`sql.js`):
+
+```sql
+SELECT Product.Color, AGG(Orders) AS orders
+FROM model
+WHERE Customer.City IN ('Paris', 'Lyon')
+GROUP BY ALL
+HAVING orders > 2
+ORDER BY orders DESC
+LIMIT 10
+```
+
+- **SELECT:** columns to group by, and expressions of aggregates: `AGG(m)` or `MEASURE(m)` is
+  measure `m`; `SUM`, `AVG`, `MIN`, `MAX`, `COUNT` and `COUNT(DISTINCT …)` aggregate a column.
+  An aggregate's column is named by its alias, else by its measure, else by its text.
+- **Names:** `table.column`, a measure as `AGG(Orders)` or
+  `AGG(Sales.Orders)`, a column's name alone when one table has it. A name with spaces is
+  quoted with double quotes (`AGG("Sales Amount")`), or `[brackets]`; single quotes are text, so
+  `AGG('Sales Amount')` is an error. DAX's `'Table'[Column]` works too. `FROM` names the model.
+- **WHERE** is `CALCULATETABLE`'s filters, one per condition joined by `AND`: a True/False
+  filter on one table's columns, or `FILTER` of the columns it names. It has no aggregate.
+- **GROUP BY ALL** groups by the SELECT's columns; `GROUP BY` can list them (names, positions,
+  or other columns). The groups are `SUMMARIZECOLUMNS`', so a group whose aggregates are all
+  blank is left out. Without `GROUP BY` the result is one row (`ROW`).
+- **HAVING** is a `FILTER` of the groups. It reads the SELECT's names and aggregates, the
+  groups' columns, and measures the SELECT leaves out, on each group (context transition).
+- **ORDER BY** is DAX's, by the result's columns (names, positions) or aggregates, blanks first
+  ascending. **LIMIT** and **OFFSET** are the SQL's.
+- Conditions: comparisons, `AND`, `OR`, `NOT`, `IN`, `BETWEEN`, `IS NULL` (`ISBLANK`), `LIKE`
+  (`'x'`, `'x%'`, `'%x'`, `'%x%'`), `CASE`, `CAST`, `DATE '…'`, `TIMESTAMP '…'`, `||`, `%`;
+  other functions are DAX's of the same name. Values compare as in DAX: text without regard
+  to case, a blank equal to 0 or `""`.
+- A measure keeps its definition: nothing changes the filter context but `WHERE`. `SELECT *`,
+  `DISTINCT`, joins, subqueries, `UNION`, window functions and `COUNT(*)` are not supported.
+
 ### How it works
 
 `src/`, in the order a query goes through it:
@@ -615,6 +655,7 @@ and gives each aggregate the filters that reach its table.
 | File | |
 |---|---|
 | `lexer.js`, `parser.js` | DAX text into a syntax tree |
+| `sql.js` | a SQL `SELECT` over the model into a DAX query |
 | `model.js` | the TMSL model: tables, columns, measures, relationships; expanded tables and filter propagation |
 | `compiler.js` | the tree into an intermediate form, with the filter context as a value (`context.js`) |
 | `functions/` | the function library, by kind |
@@ -650,6 +691,8 @@ npm install   # DuckDB for Node, for the tests only
 npm test
 ```
 
+- `test/sql.test.js`: each SQL query answers what its DAX query answers; its errors carry their
+  codes.
 - `test/smoke.test.js`, on a small sales model (`test/fixtures/contoso.js`): representative
   queries compile and run on DuckDB, with and without roles; errors carry their codes; the SQL
   keeps its shape (a filter inline on the fact, a selected total read off the groups).

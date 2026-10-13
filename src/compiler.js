@@ -38,10 +38,11 @@ export class Compiler {
     this.options = options;
   }
 
-  // A DAX query -> [{ table, order, define }] one per EVALUATE, handed to `then` (which writes
-  // the SQL) while the query's DEFINE COLUMNs are columns of their tables.
+  // A DAX query (its text, or its tree: a SELECT over the model builds the tree itself) ->
+  // [{ table, order, define }] one per EVALUATE, handed to `then` (which writes the SQL) while
+  // the query's DEFINE COLUMNs are columns of their tables.
   query(src, then = statements => statements) {
-    const q = parseQuery(src);
+    const q = typeof src === 'string' ? parseQuery(src) : src;
     const model = this.model.fork(), c = new Compiler(model, this.options);
     const queryVars = new Map(), queryTables = new Map(), queryCols = [];
     const env0 = c.env({ vars: queryVars, queryTables, queryVarsTop: queryVars });

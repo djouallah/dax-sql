@@ -626,7 +626,11 @@ and gives each aggregate the filters that reach its table.
 
 ### SQL
 
-A `SELECT` over the model is a DAX query, compiled as any other (`sql.js`):
+A `SELECT` over the model is a DAX query (`sql.js`). The translator builds the query's syntax
+tree, the one `parser.js` builds for DAX, and the compiler takes it as it takes a parsed
+DAX query: one plan, two languages, as Spark's SQL and DataFrames build the same logical plan.
+No DAX text is written on the way; `sqlToDax` prints the tree as DAX for a log to show, and
+parsing that text gives the same tree (a test holds it).
 
 ```sql
 SELECT Product.Color, AGG(Orders) AS orders
@@ -650,10 +654,17 @@ LIMIT 10
 - **GROUP BY ALL** groups by the SELECT's columns; `GROUP BY` can list them (names, positions,
   or other columns). The groups are `SUMMARIZECOLUMNS`', so a group whose aggregates are all
   blank is left out. Without `GROUP BY` the result is one row (`ROW`).
+- **ROLLUP:** `GROUP BY a, ROLLUP(b)` adds the subtotal rows over `b`
+  (`ROLLUPADDISSUBTOTAL(b, "name")`); a level in parentheses rolls its columns up together
+  (`ROLLUP((b, c))`, `ROLLUPGROUP`), and several levels are DAX's hierarchy of them. Each level
+  is named by a `GROUPING(col) AS name` of the SELECT, `col` one of its columns: the subtotal
+  rows' flag, a True/False as DAX has it (not SQL's 1/0).
 - **HAVING** is a `FILTER` of the groups. It reads the SELECT's names and aggregates, the
   groups' columns, and measures the SELECT leaves out, on each group (context transition).
 - **ORDER BY** is DAX's, by the result's columns (names, positions) or aggregates, blanks first
-  ascending. **LIMIT** and **OFFSET** are the SQL's.
+  ascending. **LIMIT** and **OFFSET** are the SQL's, and `FETCH FIRST n ROWS ONLY` is
+  `LIMIT n`. **`FETCH FIRST n ROWS WITH TIES`** is `TOPN(n, …)` on the ORDER BY's keys, which
+  keeps the rows tied with the n-th.
 - Conditions: comparisons, `AND`, `OR`, `NOT`, `IN`, `BETWEEN`, `IS NULL` (`ISBLANK`), `LIKE`
   (`'x'`, `'x%'`, `'%x'`, `'%x%'`), `CASE`, `CAST`, `DATE '…'`, `TIMESTAMP '…'`, `||`, `%`;
   other functions are DAX's of the same name. Values compare as in DAX: text without regard

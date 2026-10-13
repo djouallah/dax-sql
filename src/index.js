@@ -30,7 +30,7 @@ import { Dialect } from './dialects/base.js';
 import { newRow } from './ir.js';
 import { DaxError, semantic } from './errors.js';
 import { Ctx } from './context.js';
-import { SqlTranslator, isSql } from './sql.js';
+import { SqlTranslator, isSql, printDaxQuery } from './sql.js';
 
 export { DaxError } from './errors.js';
 export { Dialect } from './dialects/base.js';
@@ -112,19 +112,21 @@ export function createCompiler(bim, options = {}) {
   }));
 
   const cache = new Map();
-  function compileAll(dax) {
-    let out = cache.get(dax);
+  // `dax`: the query's text, or its tree (keyed by `key`, the text it was built from).
+  function compileAll(dax, key = dax) {
+    let out = cache.get(key);
     if (out) return out;
     out = base.query(dax, statements => statements.map(s => new Emitter(model, dialect, { ...options, calcColumn, calcTable, security }).query(s)));
     if (cache.size >= 500) cache.clear();
-    cache.set(dax, out);
+    cache.set(key, out);
     return out;
   }
-  // A SELECT over the model: its DAX, compiled, with its LIMIT and OFFSET.
+  // A SELECT over the model: the DAX query's tree it builds, compiled as DAX's is (no DAX text
+  // between them), with its LIMIT and OFFSET.
   const sqlTranslator = new SqlTranslator(model);
   function compileSql(text) {
-    const { dax, limit, offset } = sqlTranslator.translate(text);
-    const [out] = compileAll(dax);
+    const { query, limit, offset } = sqlTranslator.translate(text);
+    const [out] = compileAll(query, `SQL ${text}`);
     return limit == null && offset == null ? out : { ...out, sql: out.sql + dialect.limit(limit, offset) };
   }
   return {
@@ -143,7 +145,10 @@ export function createCompiler(bim, options = {}) {
     // Whether a text is a SELECT over the model, and the DAX query it stands for, with its
     // LIMIT and OFFSET ({ dax, limit, offset }).
     isSql,
-    sqlToDax: text => sqlTranslator.translate(text),
+    sqlToDax: text => {
+      const { query, limit, offset } = sqlTranslator.translate(text);
+      return { dax: printDaxQuery(query), limit, offset };
+    },
     fieldParameters: () => fieldParameters(model),
     // The fields a field parameter's selection stands for (all of them without `labels`), in
     // its order: what Power BI puts in a visual's query in the parameter's place.

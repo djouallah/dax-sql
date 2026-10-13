@@ -4,6 +4,8 @@ import { test, before } from 'node:test';
 import assert from 'node:assert/strict';
 import { harness, sorted } from './helpers.js';
 import { bim, setup } from './fixtures/contoso.js';
+import { parseQuery } from '../src/parser.js';
+import { SqlTranslator } from '../src/sql.js';
 
 let h;
 before(async () => { h = await harness(bim, setup); });
@@ -31,6 +33,15 @@ const PAIRS = [
     WHERE Product.Color NOT IN ('Blue') GROUP BY 2`,
     `EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS(Category[Category], "s", [Sales Amount]), NOT(Product[Color] IN {"Blue"})),
       "s", [s], "cat", Category[Category])`],
+  // Subtotals: ROLLUP of a column and of a group, each flagged by its GROUPING.
+  [`SELECT Category.Category, Product.Color, AGG("Sales Amount") AS s, GROUPING(Product.Color) AS sub FROM m
+    GROUP BY Category.Category, ROLLUP(Product.Color)`,
+    `EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS(Category[Category], ROLLUPADDISSUBTOTAL(Product[Color], "sub"), "s", [Sales Amount]),
+      "Category", Category[Category], "Color", Product[Color], "s", [s], "sub", [sub])`],
+  [`SELECT Category, Color, AGG(Orders) o, GROUPING(Category) "all" FROM m WHERE Customer.City <> 'Paris'
+    GROUP BY ROLLUP((Category, Color)) HAVING o > 1`,
+    `EVALUATE SELECTCOLUMNS(CALCULATETABLE(FILTER(SUMMARIZECOLUMNS(ROLLUPADDISSUBTOTAL(ROLLUPGROUP(Category[Category], Product[Color]), "all"), "o", [Orders]), [o] > 1),
+      Customer[City] <> "Paris"), "Category", Category[Category], "Color", Product[Color], "o", [o], "all", [all])`],
   // CASE, a date, an expression of aggregates.
   [`SELECT 'Date'[Month], CASE WHEN AGG(Orders) > 2 THEN 'many' ELSE 'few' END AS n,
       AGG("Sales Amount") / AGG(Orders) AS per
@@ -50,6 +61,25 @@ test('ORDER BY, LIMIT and OFFSET', async () => {
   // By an aggregate the SELECT leaves out.
   const byQty = await h.run(`EVALUATE SUMMARIZECOLUMNS(Product[Name], "s", [Sales Amount]) ORDER BY [Quantity] DESC, Product[Name]`);
   assert.deepEqual(await h.run(`SELECT Product.Name, AGG("Sales Amount") s FROM m GROUP BY ALL ORDER BY AGG(Quantity) DESC, Name`), byQty);
+});
+
+test('FETCH FIRST n ROWS WITH TIES keeps the ties, ONLY is LIMIT', async () => {
+  const top = `EVALUATE TOPN(2, SUMMARIZECOLUMNS(Product[Color], "o", [Orders]), [o], DESC) ORDER BY [o] DESC, Product[Color]`;
+  assert.deepEqual(await h.run(`SELECT Color, AGG(Orders) o FROM m GROUP BY ALL ORDER BY o DESC, Color FETCH FIRST 2 ROWS WITH TIES`),
+    await h.run(`EVALUATE TOPN(2, SUMMARIZECOLUMNS(Product[Color], "o", [Orders]), [o], DESC, Product[Color], ASC) ORDER BY [o] DESC, Product[Color]`));
+  assert.deepEqual(sorted(await h.run(`SELECT Color, AGG(Orders) o FROM m GROUP BY ALL ORDER BY o DESC FETCH FIRST 2 ROWS WITH TIES`)), sorted(await h.run(top)));
+  assert.deepEqual(await h.run(`SELECT Color, AGG(Orders) o FROM m GROUP BY ALL ORDER BY o DESC, Color FETCH FIRST 2 ROWS ONLY`),
+    await h.run(`SELECT Color, AGG(Orders) o FROM m GROUP BY ALL ORDER BY o DESC, Color LIMIT 2`));
+});
+
+test('a SELECT is the tree of the DAX it prints', () => {
+  const t = new SqlTranslator(h.dax.model);
+  const bare = x => JSON.parse(JSON.stringify(x, (k, v) => (k === 'pos' ? undefined : v)));
+  for (const sql of [...PAIRS.map(([s]) => s), `SELECT Color, AGG(Orders) o FROM m GROUP BY ALL ORDER BY o DESC FETCH FIRST 2 ROWS WITH TIES`,
+    `SELECT Product.Name, AGG("Sales Amount") s FROM m WHERE 'Date'[Date] >= TIMESTAMP '2024-01-01 10:30' AND Product.Name LIKE 'Mount%' GROUP BY ALL ORDER BY AGG(Quantity) DESC`]) {
+    const { query } = t.translate(sql);
+    assert.deepEqual(bare(parseQuery(h.dax.sqlToDax(sql).dax)), bare(query), sql);
+  }
 });
 
 test('a measure keeps its own filters', async () => {
@@ -83,6 +113,11 @@ test('SQL errors carry their codes', async () => {
   await fails('SELECT UPPER(Color), AGG(Orders) FROM m GROUP BY ALL', 'UNSUPPORTED');
   await fails(`SELECT AGG(Orders) FROM m WHERE Product.Name LIKE 'a_c'`, 'UNSUPPORTED');
   await fails('SELECT Color, AGG(Orders) FROM m GROUP BY ALL ORDER BY Color NULLS LAST', 'UNSUPPORTED');
+  await fails('SELECT Color, AGG(Orders) FROM m GROUP BY ROLLUP(Color)', 'SEMANTIC');
+  await fails('SELECT Color, AGG(Orders), GROUPING(Color) g FROM m GROUP BY ALL', 'SEMANTIC');
+  await fails('SELECT Color, AGG(Orders), GROUPING(Color) g FROM m GROUP BY Color, ROLLUP(Color)', 'SEMANTIC');
+  await fails('SELECT Color, AGG(Orders) FROM m GROUP BY ALL FETCH FIRST 2 ROWS WITH TIES', 'SEMANTIC');
+  await fails('SELECT Color, AGG(Orders) FROM m GROUP BY ALL ORDER BY 2 LIMIT 1 FETCH FIRST 2 ROWS ONLY', 'SYNTAX');
 });
 
 test('isSql and sqlToDax', () => {

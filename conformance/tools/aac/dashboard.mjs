@@ -17,7 +17,8 @@
 //
 // The checkout's compiler (its dax-sql submodule) is not loaded: toDax needs none, and a stub
 // stands in for it.
-import { mkdirSync, mkdtempSync, writeFileSync, readFileSync, rmSync, copyFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, writeFileSync, readFileSync, rmSync, copyFileSync, existsSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -34,8 +35,14 @@ copyFileSync(path.join(repo, 'dashboard/github/dax/frontend/queries.js'), path.j
 writeFileSync(path.join(page, 'semantic/dax-sql/index.js'), 'export const createCompiler = () => ({ compile() { throw new Error("no compiler here"); } });\n');
 writeFileSync(path.join(page, 'page_states.mjs'), readFileSync(path.join(repo, 'scripts/parity/page_states.mjs'), 'utf8')
   .replace(/^import \{ DuckDBInstance \} from '@duckdb\/node-api';$/m, ''));
-const bim = JSON.parse(readFileSync(path.join(repo, 'semantic_model/model.bim'), 'utf8'));
-globalThis.fetch = async () => ({ ok: true, json: async () => bim });
+// The page's semantic/query.js fetches its model next to itself: model.bim in a checkout from
+// before 2026-10-14, the Ossie model (staged as ossie.json, read with formats/ossie.js) after.
+mkdirSync(path.join(page, 'semantic/formats'));
+for (const f of ['tmsl.js', 'ossie.js']) copyFileSync(new URL(`../../../formats/${f}`, import.meta.url), path.join(page, 'semantic/formats', f));
+const bimPath = path.join(repo, 'semantic_model/model.bim');
+const model = existsSync(bimPath) ? JSON.parse(readFileSync(bimPath, 'utf8'))
+  : createRequire(import.meta.url)('yaml').parse(readFileSync(path.join(repo, 'semantic_model/ossie.yaml'), 'utf8'));
+globalThis.fetch = async () => ({ ok: true, json: async () => model });
 const { toDax } = await import(pathToFileURL(path.join(page, 'semantic/query.js')));
 const { createQueries } = await import(pathToFileURL(path.join(page, 'frontend/queries.js')));
 const { pageOf, states, lists, asked, shiftDate } = await import(pathToFileURL(path.join(page, 'page_states.mjs')));

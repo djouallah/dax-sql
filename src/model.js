@@ -1,4 +1,4 @@
-// The semantic model: a TMSL model (model.bim) read into tables, columns, measures and
+// The semantic model: dax-sql's model object (below) read into tables, columns, measures and
 // relationships, and the two questions the compiler asks of relationships:
 //   expand(table)      the tables whose columns a row of `table` reaches by following
 //                      relationships from the many side to the one side (DAX's expanded
@@ -8,35 +8,42 @@
 // USERELATIONSHIP and CROSSFILTER change inside a CALCULATE: a `RelState` says that.
 // Names are looked up without regard to case, as in DAX.
 //
-// Besides tables of the lakehouse (an entity partition), a table can be calculated (a DAX
-// table expression, `calc`) or a calculation group (`calcGroup`: its items); `roles` hold the
-// row-level security filters of each role.
-// An Apache Ossie model is read as the TMSL it stands for (ossie.js).
+// The model object is no file format: a reader turns one into it (formats/: TMSL, Apache
+// Ossie). Its shape (DESIGN.md, "The model"), every property optional unless said:
+//   { tables: [{ name (required), source: { schema, entity }, dax (a calculated table),
+//       hidden, dataCategory,
+//       columns: [{ name (required), type: string|int|double|decimal|datetime|bool|variant,
+//         source (the stored column; its name by default), dax (a calculated column), key,
+//         nullable, dataCategory, fieldParameter (the fields column of a field parameter) }],
+//       measures: [{ name (required), dax (required), formatString }],
+//       calculationGroup: { precedence, items: [{ name, ordinal, dax, formatString }],
+//         multipleOrEmpty, noSelection } }],
+//     relationships: [{ name, from: { table, column }, to: { table, column } (required),
+//       active (true), crossFilter: single|both (single), fromCardinality: many|one (many),
+//       toCardinality: many|one (one), assumeIntegrity, securityFilter: single|both|none }],
+//     roles: [{ name, filters: [{ table, dax }] }] }
+// A table is one of the lakehouse (`source`, else its name), calculated (`dax`: `calc` here)
+// or a calculation group (`calcGroup`: its items); `roles` hold the row-level security
+// filters of each role.
 import { semantic } from './errors.js';
-import { isOssie, fromOssie } from './ossie.js';
 
-const TYPES = { string: 'string', int64: 'int', double: 'double', decimal: 'decimal', dateTime: 'datetime',
-  boolean: 'bool', binary: 'string', variant: 'variant', unknown: 'variant' };
+const TYPES = new Set(['string', 'int', 'double', 'decimal', 'datetime', 'bool', 'variant']);
 
 const lc = s => String(s).toLowerCase();
-const text = e => Array.isArray(e) ? e.join('\n') : e ?? '';
 
 export class Model {
-  constructor(bim) {
-    if (isOssie(bim)) bim = fromOssie(bim);
-    const m = bim.model ?? bim;
-    if (!Array.isArray(m?.tables)) throw semantic('the model has no tables (expected a TMSL model.bim)');
+  constructor(model) {
+    if (!Array.isArray(model?.tables)) throw semantic('the model has no tables (a model object: { tables, relationships, roles })');
     this.tables = new Map();
     this.measures = new Map();
-    for (const t of m.tables) this.addTable(t);
-    this.relationships = (m.relationships ?? []).map((r, i) => this.relationship(r, i));
+    for (const t of model.tables) this.addTable(t);
+    this.relationships = (model.relationships ?? []).map((r, i) => this.relationship(r, i));
     // Calculation groups, the one with the highest precedence first (it is applied outermost).
     this.calcGroups = [...this.tables.values()].filter(t => t.calcGroup).map(t => t.calcGroup)
       .sort((a, b) => b.precedence - a.precedence);
-    this.roles = (m.roles ?? []).map(r => ({
+    this.roles = (model.roles ?? []).map(r => ({
       name: r.name,
-      filters: (r.tablePermissions ?? []).filter(p => text(p.filterExpression).trim())
-        .map(p => ({ table: this.table(p.name), text: text(p.filterExpression) })),
+      filters: (r.filters ?? []).filter(f => f.dax?.trim()).map(f => ({ table: this.table(f.table), text: f.dax })),
     }));
     // A column is unique when it is a key, or the one side of a relationship.
     for (const r of this.relationships) {
@@ -50,45 +57,42 @@ export class Model {
 
   addTable(t) {
     const table = { name: t.name, columns: [], colMap: new Map(), key: null, dataCategory: t.dataCategory ?? null,
-      source: sourceOf(t), hidden: !!t.isHidden };
-    const part = t.partitions?.[0]?.source;
-    if (part?.type === 'calculated') table.calc = text(part.expression);
+      source: { schema: t.source?.schema ?? null, entity: t.source?.entity ?? t.name }, hidden: !!t.hidden };
+    if (t.dax != null) table.calc = t.dax;
     for (const c of t.columns ?? []) {
-      if (c.type === 'rowNumber') continue;
       const col = {
         table, name: c.name, id: `${lc(t.name)}[${lc(c.name)}]`,
-        type: TYPES[c.dataType] ?? 'variant',
-        source: c.sourceColumn ?? c.name,
-        expr: c.type === 'calculated' ? text(c.expression) : null,
-        unique: !!c.isKey, nullable: c.isNullable !== false, dataCategory: c.dataCategory ?? null,
-        // The fields column of a field parameter (Power BI marks it in its extended properties).
-        fieldParameter: (c.extendedProperties ?? []).some(p => p.name === 'ParameterMetadata'),
+        type: TYPES.has(c.type) ? c.type : 'variant',
+        source: c.source ?? c.name,
+        expr: c.dax ?? null,
+        unique: !!c.key, nullable: c.nullable !== false, dataCategory: c.dataCategory ?? null,
+        fieldParameter: !!c.fieldParameter,
       };
-      if (c.isKey) table.key = col;
+      if (c.key) table.key = col;
       table.columns.push(col);
       table.colMap.set(lc(c.name), col);
     }
-    if (t.calculationGroup) table.calcGroup = calcGroupOf(t, table);
+    if (t.calculationGroup) table.calcGroup = calcGroupOf(t.calculationGroup, table);
     this.tables.set(lc(t.name), table);
-    for (const ms of t.measures ?? []) this.addMeasure(table, ms.name, text(ms.expression), ms.formatString);
+    for (const ms of t.measures ?? []) this.addMeasure(table, ms.name, ms.dax, ms.formatString);
     return table;
   }
 
   addMeasure(table, name, expression, formatString = null) {
-    this.measures.set(lc(name), { name, table, text: expression, ast: null, formatString });
+    this.measures.set(lc(name), { name, table, text: expression, ast: null, formatString: formatString ?? null });
   }
 
   relationship(r, i) {
-    const from = this.column(r.fromTable, r.fromColumn), to = this.column(r.toTable, r.toColumn);
+    const from = this.column(r.from.table, r.from.column), to = this.column(r.to.table, r.to.column);
     return {
       name: r.name ?? `rel${i}`, from, to,
-      active: r.isActive !== false,
-      cross: r.crossFilteringBehavior === 'bothDirections' ? 'both' : 'single',
+      active: r.active !== false,
+      cross: r.crossFilter === 'both' ? 'both' : 'single',
       fromCard: r.fromCardinality ?? 'many',
       toCard: r.toCardinality ?? 'one',
-      ri: !!r.relyOnReferentialIntegrity,
+      ri: !!r.assumeIntegrity,
       // Row-level security moves from the one side to the many side, and back if set so.
-      security: r.securityFilteringBehavior === 'bothDirections' ? 'both' : r.securityFilteringBehavior === 'none' ? 'none' : 'single',
+      security: r.securityFilter === 'both' || r.securityFilter === 'none' ? r.securityFilter : 'single',
     };
   }
 
@@ -307,25 +311,18 @@ export class Model {
   }
 }
 
-function sourceOf(t) {
-  const s = t.partitions?.[0]?.source;
-  if (s?.type === 'entity' || s?.entityName) return { schema: s.schemaName ?? null, entity: s.entityName };
-  return { schema: null, entity: t.name };
-}
-
 // A calculation group: its items, the column that names them (and the one that orders them),
 // its precedence, and what it does when the filter context selects none or several of them.
-function calcGroupOf(t, table) {
-  const g = t.calculationGroup;
+function calcGroupOf(g, table) {
   const named = table.columns.find(c => lc(c.source) === 'name') ?? table.columns.find(c => c.type === 'string');
   const ordinal = table.columns.find(c => lc(c.source) === 'ordinal') ?? null;
-  const expr = e => (e && text(e.expression ?? e).trim() ? text(e.expression ?? e) : null);
+  const expr = e => (e?.trim() ? e : null);
   return {
     table, column: named, ordinal, precedence: g.precedence ?? 0,
-    items: (g.calculationItems ?? []).map((it, i) => ({ name: it.name, ordinal: it.ordinal ?? i, text: text(it.expression), ast: null,
-      formatString: expr(it.formatStringDefinition) })),
-    multipleOrEmpty: expr(g.multipleOrEmptySelectionExpression),
-    noSelection: expr(g.noSelectionExpression),
+    items: (g.items ?? []).map((it, i) => ({ name: it.name, ordinal: it.ordinal ?? i, text: it.dax, ast: null,
+      formatString: expr(it.formatString) })),
+    multipleOrEmpty: expr(g.multipleOrEmpty),
+    noSelection: expr(g.noSelection),
   };
 }
 

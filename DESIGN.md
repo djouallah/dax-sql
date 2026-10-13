@@ -330,9 +330,42 @@ plus a year of daily rows):
 
 What the README leaves out: the API, what the compiler does, and how.
 
+### The model
+
+`createCompiler` takes dax-sql's model object, which is no file format. Each model holds:
+
+- `tables`: `{ name, source: { schema, entity }, dax, hidden, dataCategory, columns,
+  measures, calculationGroup }`. A table has a `source` (a table of the lakehouse; its name
+  by default) or `dax` (a calculated table).
+  - `columns`: `{ name, type, source, dax, key, nullable, dataCategory, fieldParameter }`.
+    `type` is one of `string int double decimal datetime bool variant`. `source` is the
+    stored column (its name by default) and `dax` a calculated column's expression.
+  - `measures`: `{ name, dax, formatString }`.
+  - `calculationGroup`: `{ precedence, items: [{ name, ordinal, dax, formatString }],
+    multipleOrEmpty, noSelection }`.
+- `relationships`: `{ name, from: { table, column }, to: { table, column }, active,
+  crossFilter, fromCardinality, toCardinality, assumeIntegrity, securityFilter }`. The
+  defaults are active, `single`, many to one, no assumption and `single`.
+- `roles`: `{ name, filters: [{ table, dax }] }`.
+
+Only a name, a measure's `dax` and a relationship's ends are required. `src/model.js` says
+the same at its top.
+
+A file is read into a model object by a reader in `formats/`. These readers sit outside the
+package: they are not exported and the compiler never imports them.
+
+- `formats/tmsl.js`: `tmslToModel(bim)` reads a TMSL model (`model.bim`, the JSON of Power BI
+  and Analysis Services).
+- `formats/ossie.js` reads an [Apache Ossie](https://github.com/apache/ossie) model whose
+  metrics are DAX, and goes both ways between it and TMSL. `ossieToModel(doc)`,
+  `tmslToOssie(bim)` and `ossieToTmsl(doc)` take parsed objects, so the YAML is the caller's
+  to parse. Every TMSL property Ossie has no place for (a relationship's cross-filter
+  direction, a measure's table, the partitions, the roles, ...) is kept in a `POWER_BI`
+  custom extension on its object, so `ossieToTmsl(tmslToOssie(bim))` is the bim.
+
 ### API
 
-`createCompiler(bim, options)` returns:
+`createCompiler(model, options)` returns:
 
 - `compile(dax)`: one `EVALUATE` returns `{ sql, columns }`. It throws a `DaxError` when the
   query has several `EVALUATE`s.
@@ -718,7 +751,7 @@ SELECT m.*, p.n FROM m JOIN (SELECT "Color", COUNT(*) AS n FROM "Product" GROUP 
 |---|---|
 | `lexer.js`, `parser.js` | DAX text into a syntax tree |
 | `sql.js` | a SQL `SELECT` over the model into a DAX query |
-| `model.js` | the TMSL model: tables, columns, measures, relationships; expanded tables and filter propagation |
+| `model.js` | the model object read: tables, columns, measures, relationships; expanded tables and filter propagation |
 | `compiler.js` | the tree into an intermediate form, with the filter context as a value (`context.js`) |
 | `functions/` | the function library, by kind |
 | `ir.js` | the intermediate form: scalars, tables, rows, aggregates over scans |
@@ -758,6 +791,9 @@ npm test
 
 - `test/sql.test.js`: each SQL query answers what its DAX query answers; its errors carry their
   codes.
+- `formats/test/formats.test.js`: TMSL to Ossie and back is the model, for contoso and aac
+  (`conformance/models/aac`, whose `ossie.yaml` is its `model.bim` as Ossie). The compiler
+  gives the same SQL from either reading.
 - `test/smoke.test.js`, on a small sales model (`test/fixtures/contoso.js`): representative
   queries compile and run on DuckDB, with and without roles; errors carry their codes; the SQL
   keeps its shape (a filter inline on the fact, a selected total read off the groups).

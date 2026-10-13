@@ -5,7 +5,10 @@
 //   node engines/dax-sql/adapter.mjs <dax-sql checkout> <request.json>
 //
 // The compiler and DuckDB both come from the checkout (its src/ and its node_modules), so the
-// suite tests whichever commit is there and needs no dependency of its own.
+// suite tests whichever commit is there and needs no dependency of its own. The compiler
+// takes a model object, read from the TMSL with the checkout's formats/tmsl.js (a checkout
+// from before formats/ took the TMSL itself). A model given as an Apache Ossie YAML file is
+// read as the TMSL it stands for (formats/ossie.js; `yaml` from the checkout).
 import { readFileSync, existsSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { join, resolve } from 'node:path';
@@ -13,14 +16,23 @@ import { pathToFileURL } from 'node:url';
 
 const engine = resolve(process.argv[2]);
 const { createCompiler } = await import(pathToFileURL(join(engine, 'src', 'index.js')));
-const { DuckDBInstance } = createRequire(join(engine, 'package.json'))('@duckdb/node-api');
+const require = createRequire(join(engine, 'package.json'));
+const { DuckDBInstance } = require('@duckdb/node-api');
+const formats = existsSync(join(engine, 'formats', 'tmsl.js'));
+const { tmslToModel } = formats ? await import(pathToFileURL(join(engine, 'formats', 'tmsl.js'))) : { tmslToModel: bim => bim };
+async function readModel(path) {
+  const text = readFileSync(path, 'utf8');
+  if (!/\.ya?ml$/i.test(path)) return JSON.parse(text);
+  const { ossieToTmsl } = await import(pathToFileURL(join(engine, 'formats', 'ossie.js')));
+  return ossieToTmsl(require('yaml').parse(text));
+}
 
 const DUCK_TYPE = { int64: 'BIGINT', double: 'DOUBLE', decimal: 'DECIMAL(18,4)', string: 'VARCHAR', boolean: 'BOOLEAN' };
 const sqlString = s => `'${String(s).replace(/'/g, "''")}'`;
 const ident = s => `"${String(s).replace(/"/g, '""')}"`;
 
 async function database(modelPath, dataDir) {
-  const bim = JSON.parse(readFileSync(modelPath, 'utf8'));
+  const bim = await readModel(modelPath);
   const db = await DuckDBInstance.create(':memory:');
   const con = await db.connect();
   for (const t of bim.model.tables) {
@@ -37,7 +49,7 @@ async function database(modelPath, dataDir) {
     const columns = `{${cols.map((c, i) => `${sqlString(c.sourceColumn ?? c.name)}: ${sqlString(types[i])}`).join(', ')}}`;
     await con.run(`CREATE TABLE ${ident(s.entityName)} AS SELECT * FROM read_csv(${sqlString(file)}, header = true, columns = ${columns}, nullstr = '', allow_quoted_nulls = false, quote = '"', escape = '"')`);
   }
-  return { bim, con, compilers: new Map() };
+  return { bim, model: tmslToModel(bim), con, compilers: new Map() };
 }
 
 function value(v) {
@@ -59,7 +71,7 @@ for (const q of request.queries) {
     if (!dbs.has(key)) dbs.set(key, await database(q.model, q.data));
     const db = dbs.get(key);
     const roles = JSON.stringify(q.roles ?? null);
-    if (!db.compilers.has(roles)) db.compilers.set(roles, createCompiler(db.bim, { columnNames: 'dax', ...(q.roles ? { roles: q.roles } : {}) }));
+    if (!db.compilers.has(roles)) db.compilers.set(roles, createCompiler(db.model, { columnNames: 'dax', ...(q.roles ? { roles: q.roles } : {}) }));
     const { sql, columns } = db.compilers.get(roles).compile(q.dax);
     const reader = await db.con.runAndReadAll(sql);
     answer = { id: q.id, columns: columns.map(c => c.name), rows: reader.getRowsJS().map(r => r.map(value)) };

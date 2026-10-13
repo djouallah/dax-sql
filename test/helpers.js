@@ -1,12 +1,14 @@
-// Runs DAX through the compiler on DuckDB and returns plain rows.
+// Runs DAX through the compiler on DuckDB and returns plain rows. The model is a TMSL one
+// (the fixtures'), read with formats/tmsl.js.
 import { DuckDBInstance } from '@duckdb/node-api';
 import { createCompiler } from '../src/index.js';
+import { tmslToModel } from '../formats/tmsl.js';
 
 export async function harness(bim, setup, options = {}) {
   const db = await DuckDBInstance.create(':memory:');
   const con = await db.connect();
   if (setup) await con.run(setup);
-  const dax = createCompiler(bim, options);
+  const dax = createCompiler(tmslToModel(bim), options);
   async function sql(text) {
     const r = await con.runAndReadAll(text);
     return r.getRowObjectsJS().map(plain);

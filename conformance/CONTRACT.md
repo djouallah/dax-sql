@@ -15,6 +15,9 @@ works, and the queries are written without looking at one.
 - `model.bim`: the Tabular model, as TMSL (the JSON Power BI and Analysis Services use).
   Tables that hold data have one partition, of type `entity`, whose `entityName` names its
   file.
+- `ossie.yaml` (optional): the same model as [Apache Ossie](https://github.com/apache/ossie),
+  its measures in the DAX dialect and the rest of the TMSL in `POWER_BI` extensions. It is for
+  engines that read Ossie. The goldens are Power BI's answers on `model.bim`.
 - `data/<entityName>.csv`: the table's rows, in this format:
   - a header line of the source column names;
   - every text value quoted, `""` inside a quoted value standing for one `"`;

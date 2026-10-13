@@ -379,11 +379,11 @@ export class Compiler {
     return { ...env, rows: [...env.rows, row], shadows };
   }
 
-  // Whether a table can have DAX's blank row: it is the one side of a relationship whose many
-  // side may hold keys it lacks.
+  // Whether a table can have DAX's blank row: it is the one side of a relationship whose other
+  // side may hold keys it lacks (model.oneSides).
   blankRowRels(table) {
     if (this.options.blankRows === false || this.options.assumeIntegrity) return [];
-    return this.model.relationships.filter(r => r.to.table === table && r.fromCard === 'many' && r.toCard === 'one' && !r.ri);
+    return this.model.oneSides(table);
   }
 
   // Context transition: each row context becomes filters on its columns.
@@ -618,7 +618,7 @@ export class Compiler {
         });
       }
       const m = MODIFIERS.get(ast.fn);
-      if (m) return [m(this, ast.args, env)];
+      if (m) return [m(this, ast.args, env, ast)].flat();
     }
     if (this.isTable(ast, env)) {
       const f = this.tableFilter(this.table(ast, env), env.ctx);

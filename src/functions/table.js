@@ -596,6 +596,17 @@ function removeMod(c, args, env) {
     return x => hit.has(x);
   } };
 }
+// ALLNOBLANKROW(...) as a filter argument: ALL's removal, and the table's rows (or the
+// columns' values) without its blank row as a filter, so the rows that belong to the blank
+// row (a sale of an unknown product) are left out.
+function allNoBlankRowMod(c, args, env, ast) {
+  const remove = removeMod(c, args, env);
+  if (!args.length || args.every(a => a.k === 'empty')) return remove;
+  const t = isModelTableName(c, args[0], env) ? c.model.table(args[0].name) : c.modelColumn(args[0], env).table;
+  if (!c.blankRowRels(t).length) return remove;
+  const filters = [c.tableFilter(all(c, args, env, ast), env.ctx)].flat().filter(Boolean);
+  return [remove, ...filters.map(filter => ({ kind: 'filter', filter, keep: false }))];
+}
 function allExceptMod(c, args, env) {
   if (!isModelTableName(c, args[0], env)) throw semantic('ALLEXCEPT(table, column, ...)');
   const t = c.model.table(args[0].name), keep = new Set(args.slice(1).map(a => c.modelColumn(a, env)));
@@ -647,7 +658,7 @@ export const table = {
 };
 
 export const modifiers = {
-  ALL: removeMod, ALLNOBLANKROW: removeMod, REMOVEFILTERS: removeMod, ALLCROSSFILTERED: removeMod,
+  ALL: removeMod, ALLNOBLANKROW: allNoBlankRowMod, REMOVEFILTERS: removeMod, ALLCROSSFILTERED: removeMod,
   ALLEXCEPT: allExceptMod, ALLSELECTED: allSelectedMod,
   USERELATIONSHIP: useRelationship, CROSSFILTER: crossFilter,
 };

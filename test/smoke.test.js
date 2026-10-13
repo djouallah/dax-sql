@@ -35,6 +35,7 @@ const QUERIES = [
   'EVALUATE DATATABLE("a", INTEGER, "b", STRING, {{1, "x"}, {2, "y"}})',
   'EVALUATE TOPN(2, SUMMARIZECOLUMNS(Product[Name], "s", [Sales Amount]), [s], DESC) ORDER BY [s] DESC',
   'EVALUATE SUMMARIZECOLUMNS(Product[Color], "p", PERCENTILEX.INC(VALUES(Customer[City]), [Sales Amount], 0.3), "m", MEDIANX(VALUES(Customer[City]), [Sales Amount]), "c", PERCENTILE.EXC(Sales[Amount], 0.5), "a", AVERAGEX(Sales, Sales[Amount] * 1.5))',
+  'EVALUATE SUMMARIZECOLUMNS(Customer[City], "t", [Target], "n", CALCULATE([Sales Amount], ALLNOBLANKROW(Customer)), "b", CALCULATE([Sales Amount], TREATAS({BLANK()}, Sales[CustomerKey])))',
 ];
 
 test('the queries compile and run', async () => {

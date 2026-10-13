@@ -7,7 +7,6 @@
 - Grouping, `DISTINCT`, sorting and relationships on text are case-sensitive (comparisons,
   `IN` and table filters are not, as in DAX).
 - `FORMAT` is en-US only, with a constant pattern; model format strings are not applied.
-- A NULL stored in the data doesn't match a blank in a table filter (`TREATAS`, `VALUES`).
 - A column that mixes numbers and text comes back as text.
 - `IFERROR` returns its first argument: SQL has no error values.
 - `DATEDIFF` with `WEEK` counts Sunday week boundaries.

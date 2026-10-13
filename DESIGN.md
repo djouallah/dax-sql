@@ -153,12 +153,13 @@ filters on its expanded table's columns only.
 ### The blank row
 
 `VALUES`, `ALL` and `ALLSELECTED` over a table that can have a blank row (the one side of a
-relationship that does not rely on referential integrity, `blankRowRels`) are `withblank`: the
-rows, in a `UNION` with a row of blanks (`blankRow`).
+relationship that does not rely on referential integrity, either side of a one-to-one one:
+`oneSides`) are `withblank`: the rows, in a `UNION` with a row of blanks (`blankRow`).
 
-- The row is there when some row of a many side has a key the table lacks, or a many-side
-  table has a blank row itself (`orphans`, recursively: a snowflake's dimensions). Under
-  row-level security, a row of the many side that security keeps.
+- The row is there when some row of the other side has a key the table lacks, or that table
+  has a blank row itself (`orphans`, recursively: a snowflake's dimensions). Row-level
+  security does not remove it, except over a relationship that filters the table back
+  (both ways, `CROSSFILTER`): there the other side's rows are those security keeps.
 - A filter that comes back from a many side (`conds`, the inbound relationships) keeps it
   when the many side's rows it keeps have a key the table lacks (`lacking`). That is for
   `VALUES`; `DISTINCTCOUNT` is `COUNTROWS(VALUES)` without it (`unmatched`, on `withblank`
@@ -168,13 +169,17 @@ rows, in a `UNION` with a row of blanks (`blankRow`).
 - Under a bind, `VALUES` is `onerow`, whose condition gains "or the value is blank and the
   row is there" (`blankexists`).
 - `DISTINCT`, `ALLNOBLANKROW`, the table's name and `COUNTROWS` of the table do not add it.
+  `ALLNOBLANKROW` as a CALCULATE modifier is `ALL`'s removal and its table as a filter, which
+  leaves out the rows that belong to the blank row.
 
-A blank in a table filter must match the blank row and the fact rows that have none, so
-membership (`member`) is null-safe where both sides can be blank (`blankSide`, `mayBeBlank`):
-a blank row, a column read through a join that may find no row, a constant blank. It stays a
-plain `IN` elsewhere, a NULL stored in a column aside. When the table reads no outer row, the
-null-safe form is `x IN (…) OR x IS NULL AND EXISTS (… IS NULL)`, as fast as `IN`; otherwise
-it is `EXISTS` with `IS NOT DISTINCT FROM`.
+A blank in a table filter must match the blank row, the fact rows that have none, and a NULL
+stored in a column, so membership (`member`) is null-safe where both sides can be blank
+(`blankSide`, `mayHoldNull`, `mayBeBlank`): a blank row, a column read through a join that
+may find no row, a column that is not a key, a constant blank. It stays a plain `IN`
+elsewhere. When the table reads no outer row, the null-safe form is
+`x IN (…) OR x IS NULL AND EXISTS (… IS NULL)`, as fast as `IN`; otherwise it is `EXISTS`
+with `IS NOT DISTINCT FROM`. A many-to-many relationship matches its columns' values the same
+way, a blank meeting a blank (`conds`, and the fused groups' join to its pairs).
 
 ### Relationships
 
@@ -358,7 +363,8 @@ and gives each aggregate the filters that reach its table.
     them.
 - **Modifiers:** `ALL`, `ALLNOBLANKROW`, `REMOVEFILTERS`, `ALLEXCEPT`, `ALLSELECTED`,
   `USERELATIONSHIP` and `CROSSFILTER`. `ALL` on a table clears its expanded table, so
-  `ALL(Sales)` also clears the filters on Sales' dimensions.
+  `ALL(Sales)` also clears the filters on Sales' dimensions. `ALLNOBLANKROW` clears them too,
+  and keeps out the table's blank row: the fact rows without a row in the table.
 - **ALLSELECTED** works with shadow filter contexts, as SQLBI's "definitive guide" describes
   them:
   - An iterator (`SUMX`, `FILTER`, `ADDCOLUMNS`, `SUMMARIZE`, …) is a shadow on the columns it
@@ -379,7 +385,9 @@ and gives each aggregate the filters that reach its table.
 - **Relationships:**
   - A filter reaches a table through many-to-one relationships, read off the expanded table.
   - It also reaches tables through bidirectional and many-to-many relationships, as
-    semi-joins. A blank row the filter keeps reaches the other table's blank row.
+    semi-joins. A blank row the filter keeps reaches the other table's blank row. A
+    many-to-many relationship matches values, a blank meeting a blank: a NULL on one side
+    meets a NULL, or the blank row, on the other.
   - Relationships can be active or inactive. One-to-one relationships filter both ways.
   - A table filter (`FILTER(Sales, …)`) filters its expanded table.
 - **Row context:**
@@ -432,17 +440,22 @@ and gives each aggregate the filters that reach its table.
   - A filter on the dimension's columns leaves it out, unless the filter keeps blanks: a blank
     in a table filter (`TREATAS({BLANK()}, …)`, or a filter on the fact table that keeps the
     fact rows without a dimension row) keeps it.
+  - A blank in a table filter also matches a NULL stored in a column (`TREATAS({BLANK()},
+    Sales[CustomerKey])` keeps the sales with no customer key).
   - A filter that comes back from the fact table (a relationship that filters both ways,
     `CROSSFILTER(…, BOTH)`) keeps it when the fact rows it keeps include some without a
     dimension row: `VALUES` lists it then. `DISTINCTCOUNT` of a column, like `COUNTROWS` of
     the table, counts the dimension's rows, which that filter keeps by their keys: not the
     blank row.
-  - Under row-level security, the fact rows are those security keeps: a dimension has no
-    blank row when security removes every fact row without a dimension row.
+  - Row-level security does not remove it: `VALUES` lists it when security hides every fact
+    row without a dimension row. Over a relationship that filters the dimension back from the
+    fact table (`CROSSFILTER(…, BOTH)`), though, the fact rows are those security keeps.
   - Its calculated columns are blank too.
   - A table on the one side of a relationship to such a dimension has a blank row as well,
     since the dimension's blank row matches none of its rows. A sale of an unknown product
     belongs to the blank category.
+  - Each side of a one-to-one relationship has one when the other side has keys it lacks: the
+    other side's rows with such keys belong to it.
   - The compiler adds a check for such fact rows wherever a dimension's values are listed. A
     relationship that relies on referential integrity, the `assumeIntegrity` option, or
     `blankRows: false` means there are none, and the check is left out.

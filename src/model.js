@@ -57,7 +57,7 @@ export class Model {
         type: TYPES[c.dataType] ?? 'variant',
         source: c.sourceColumn ?? c.name,
         expr: c.type === 'calculated' ? text(c.expression) : null,
-        unique: !!c.isKey, dataCategory: c.dataCategory ?? null,
+        unique: !!c.isKey, nullable: c.isNullable !== false, dataCategory: c.dataCategory ?? null,
         // The fields column of a field parameter (Power BI marks it in its extended properties).
         fieldParameter: (c.extendedProperties ?? []).some(p => p.name === 'ParameterMetadata'),
       };
@@ -250,6 +250,20 @@ export class Model {
       if (rel.to.table === table && rel.fromCard === 'many' && (cross === 'both' || cross === 'reverse' || mm && cross !== 'single'))
         out.push({ rel, here: rel.to, there: rel.from });
       if (mm && rel.from.table === table && cross !== 'reverse') out.push({ rel, here: rel.from, there: rel.to });
+    }
+    return out;
+  }
+
+  // The relationships `table` is a one side of, whose other side may hold keys it lacks (they
+  // do not rely on referential integrity): the one side of a many-to-one relationship, and
+  // either side of a one-to-one relationship. [{ rel, one: column of `table`, many: the other
+  // side's }]. The rows of the other side whose key `table` lacks belong to its blank row.
+  oneSides(table) {
+    const out = [];
+    for (const r of this.relationships) {
+      if (r.ri || r.toCard !== 'one') continue;
+      if (r.to.table === table) out.push({ rel: r, one: r.to, many: r.from });
+      if (r.fromCard === 'one' && r.from.table === table) out.push({ rel: r, one: r.from, many: r.to });
     }
     return out;
   }

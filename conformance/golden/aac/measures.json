@@ -1,6 +1,6 @@
 {
  "measures-available-mwh": {
-  "hash": "703b5e3cf0b29d1f54b7b4797a08af079565418c",
+  "hash": "a36d86d547e5cd85344ab7e114e18f722892ddda",
   "columns": [
    "dim_duid[FuelSourceDescriptor]",
    "[Available MWh]"
@@ -21,7 +21,7 @@
   ]
  },
  "measures-average-demand-mw": {
-  "hash": "d041c144cea28c45381f0b6043b81d14c23b62fe",
+  "hash": "e143d2c1680bff8379a6a7ee40dad7e372c6c248",
   "columns": [
    "dim_calendar[date]",
    "[Average demand MW]"
@@ -58,7 +58,7 @@
   ]
  },
  "measures-average-generation-mw": {
-  "hash": "10e4117d07e7da1be671ef8790c0cfc98d18b345",
+  "hash": "db0b520a5beaec6ab0d34132919453fbef0e76b8",
   "columns": [
    "dim_region[Region]",
    "[Average generation MW]"
@@ -87,7 +87,7 @@
   ]
  },
  "measures-average-generation-mw-change": {
-  "hash": "8084448577f3b077aca9c5a69d5560f0e8526a17",
+  "hash": "11a75ad4aff34d52f811fc9c1cc29ca106ca4107",
   "columns": [
    "dim_region[Region]",
    "[Average generation MW change]"
@@ -116,7 +116,7 @@
   ]
  },
  "measures-average-mw": {
-  "hash": "cf118730371ec6085d4a22905008c38b90ef380b",
+  "hash": "b43315021acb1be1e0ec13865b0589d989fe33a2",
   "columns": [
    "dim_duid[DUID]",
    "[Average MW]"
@@ -193,7 +193,7 @@
   ]
  },
  "measures-average-mw-at-hour": {
-  "hash": "9193f6c0c67338f0a192aec265c6bce1554cb1e1",
+  "hash": "fed11af925af5bbc1357d163bb6fa624478f5e5e",
   "columns": [
    "fct_summary_hourly[hour]",
    "[Average MW at hour]"
@@ -214,7 +214,7 @@
   ]
  },
  "measures-average-mwh-a-day": {
-  "hash": "5a08b62122c9a5115063ff4a2ffa63cbc0c032c9",
+  "hash": "1f2e8802981b225e04005429884862edd51a34d6",
   "columns": [
    "dim_duid[DUID]",
    "[Average MWh a day]"
@@ -291,7 +291,7 @@
   ]
  },
  "measures-average-price": {
-  "hash": "9538fa27c1be3d4b62fe1b547c6180cdfddeeb81",
+  "hash": "003a8951929ef5ce915ea7e73e92daa01b17c29e",
   "columns": [
    "dim_region[Region]",
    "[Average price]"
@@ -320,7 +320,7 @@
   ]
  },
  "measures-average-price-change": {
-  "hash": "e1b5f3379cc296982595ed482d5941eec6ebdd43",
+  "hash": "830607c3d2a5fc437a19524c78514dbc57e435ac",
   "columns": [
    "dim_region[Region]",
    "[Average price change]"
@@ -349,7 +349,7 @@
   ]
  },
  "measures-battery-spread": {
-  "hash": "6602758e0fdeaea597e68493dd76cded64e8b606",
+  "hash": "ef9fc6caff19984d1295a124ae0788daa9fd9b33",
   "columns": [
    "dim_duid[DUID]",
    "[Battery spread]"
@@ -362,7 +362,7 @@
   ]
  },
  "measures-capacity-factor": {
-  "hash": "ca6c3564de1dd58c1cf6284fe5299a6a191d6339",
+  "hash": "532a6aa31b32031b511e5bd14a5ae9159b4a2060",
   "columns": [
    "dim_duid[FuelSourceDescriptor]",
    "[Capacity factor]"
@@ -403,7 +403,7 @@
   ]
  },
  "measures-capacity-mw": {
-  "hash": "4e40c9737022d9a5fbe955bb5e797eab9bd8f49d",
+  "hash": "44526abc74a4505a3597270708ad3e1491d49bb0",
   "columns": [
    "dim_duid[FuelSourceDescriptor]",
    "[Capacity MW]"
@@ -444,7 +444,7 @@
   ]
  },
  "measures-capture-price": {
-  "hash": "4f2bba1865cd4374334ad64866200cf8de139fe8",
+  "hash": "908a34c40ae59b1cf4b3a2a81462218bb48bc42b",
   "columns": [
    "dim_duid[FuelSourceDescriptor]",
    "[Capture price]"
@@ -493,7 +493,7 @@
   ]
  },
  "measures-charging-mw": {
-  "hash": "208310b725c4e715d536cbb0c3628d1e296b8eb0",
+  "hash": "109eb4b9160cab3628607e5cf5623c43a60cd1a9",
   "columns": [
    "dim_time[time]",
    "[Charging MW]"
@@ -514,7 +514,7 @@
   ]
  },
  "measures-charging-mw-on-an-average-day": {
-  "hash": "51f468f8ec0c51e786237d0df43220b8fd43a1bf",
+  "hash": "015ce2f2d1804df2f1835c8a974ede89444cc47b",
   "columns": [
    "dim_time[time]",
    "[Charging MW on an average day]"
@@ -535,7 +535,7 @@
   ]
  },
  "measures-charging-mwh": {
-  "hash": "457d0b376ecc1ce859432fb07ccc4ce277371b18",
+  "hash": "4a66b2bc8b501f2d02daf2effc47b88a64e868d3",
   "columns": [
    "dim_calendar[date]",
    "[Charging MWh]"
@@ -572,7 +572,7 @@
   ]
  },
  "measures-charging-price": {
-  "hash": "d8881f4efc7b554209ad444e96b6dfd40a971fd0",
+  "hash": "761dd43e3faeba3384529fd733fd542c5a54f2fd",
   "columns": [
    "dim_duid[DUID]",
    "[Charging price]"
@@ -585,7 +585,7 @@
   ]
  },
  "measures-curtailed-mwh": {
-  "hash": "1f51562e83ce3e564c57179154e9dc87a966518a",
+  "hash": "043d00a40e64469958949a3e4101230ad220c83f",
   "columns": [
    "dim_duid[DUID]",
    "[Curtailed MWh]"
@@ -610,7 +610,7 @@
   ]
  },
  "measures-curtailment-rate": {
-  "hash": "165afa3d6adca356e6a3534233e2f4b9783e6d29",
+  "hash": "f54e9a8d904b1e0151f162faca44a72925aa250d",
   "columns": [
    "dim_calendar[date]",
    "[Curtailment rate]"
@@ -639,7 +639,7 @@
   ]
  },
  "measures-days-with-output": {
-  "hash": "7ee5a1581e17a304d3c9560092f9651866599637",
+  "hash": "7ef637f6a12199f749e9c009bbf2d50ad507dce8",
   "columns": [
    "dim_duid[DUID]",
    "[Days with output]"
@@ -716,7 +716,7 @@
   ]
  },
  "measures-demand-mw": {
-  "hash": "8b534702fecc663aaaa54824b09cbb2d2cb7f52c",
+  "hash": "3fd9b396981c4cc66fa8941220dffa8e7ac5724b",
   "columns": [
    "dim_region[Region]",
    "dim_time[time]",
@@ -796,7 +796,7 @@
   ]
  },
  "measures-demand-mwh": {
-  "hash": "e69528053eec4aadd8cf8cf0f43915bc52dc97e1",
+  "hash": "b3d936bddb5a05789029d67b805b71ac863e5084",
   "columns": [
    "dim_calendar[date]",
    "[Demand MWh]"
@@ -833,7 +833,7 @@
   ]
  },
  "measures-demand-with-rooftop-mw": {
-  "hash": "01304fb662a320f68500bd267ba6eb4c7b1bf90e",
+  "hash": "5fd6fe2b8bbc5822b271e5a1175ca7376c18a87b",
   "columns": [
    "dim_time[time]",
    "[Demand with rooftop MW]"
@@ -854,7 +854,7 @@
   ]
  },
  "measures-demand-with-rooftop-mwh": {
-  "hash": "df86d562b22f1019dc39d2f36d539ac145e78b3d",
+  "hash": "67dc04d2bfb0462ba705c474eb05d126e63223ba",
   "columns": [
    "dim_region[Region]",
    "[Demand with rooftop MWh]"
@@ -883,7 +883,7 @@
   ]
  },
  "measures-emissions-intensity": {
-  "hash": "53cc7aa96113ab20cd23ee89095d75057584a5c8",
+  "hash": "e4ecacdeeaaa1ca099927c90a2bfbf02b4373166",
   "columns": [
    "dim_calendar[date]",
    "[Emissions intensity]"
@@ -920,7 +920,7 @@
   ]
  },
  "measures-emissions-intensity-change": {
-  "hash": "7b2ea9c85703059a88b364b47bf5da04d6bafa55",
+  "hash": "8dd7cb5c0740662f201fd7dac7b6e01a6bef14f2",
   "columns": [
    "dim_region[Region]",
    "[Emissions intensity change]"
@@ -945,7 +945,7 @@
   ]
  },
  "measures-emissions-t": {
-  "hash": "cb94d1f66acef8aea30737920956b024ca32eee7",
+  "hash": "6bf95a8db00a737d83119e1f2b61a80bbdd2cd14",
   "columns": [
    "dim_duid[FuelSourceDescriptor]",
    "[Emissions t]"
@@ -982,7 +982,7 @@
   ]
  },
  "measures-flow-mw": {
-  "hash": "d61115c5f53804ad60538b53e9d0443d989c8c2c",
+  "hash": "0b8b253e072327c3261ea00b1d7e0677b2d65094",
   "columns": [
    "dim_interconnector[interconnector]",
    "[Flow MW]"
@@ -1015,7 +1015,7 @@
   ]
  },
  "measures-flow-utilisation": {
-  "hash": "0a84486eece071e8d8c8f9f0c627091be885dfff",
+  "hash": "c930bf3a5d2be99f612b1aba2a85caa50db96546",
   "columns": [
    "fct_interconnector[interconnector]",
    "fct_interconnector[time]",
@@ -1115,7 +1115,7 @@
   ]
  },
  "measures-generation-mw": {
-  "hash": "7656e030fbd7befa8805a63c41fb0518ae449fe0",
+  "hash": "f4dd561c9b5f34dfffc8c148869b0296121cda7a",
   "columns": [
    "dim_time[time]",
    "[Generation MW]"
@@ -1136,7 +1136,7 @@
   ]
  },
  "measures-generation-mw-on-an-average-day": {
-  "hash": "79986d15f966e5ef3acc41795a0839cecc0136aa",
+  "hash": "375b10934076bbf627626e4cd9cbdde2505ff0d5",
   "columns": [
    "dim_time[time]",
    "[Generation MW on an average day]"
@@ -1157,7 +1157,7 @@
   ]
  },
  "measures-generation-mwh": {
-  "hash": "d402e5883215315085eb3f18b360838b44288db3",
+  "hash": "706858cfa0848999f82e2a5ce9a0094734a222ca",
   "columns": [
    "dim_duid[FuelSourceDescriptor]",
    "[Generation MWh]"
@@ -1206,7 +1206,7 @@
   ]
  },
  "measures-generation-share": {
-  "hash": "78126cff39bfb6f980fcdfc77d55001686972ac1",
+  "hash": "16932b6a2cf123d56a75649aa9a8fc6ea296260b",
   "columns": [
    "dim_duid[FuelSourceDescriptor]",
    "[Generation share]"
@@ -1255,7 +1255,7 @@
   ]
  },
  "measures-hours": {
-  "hash": "927402b345f798467dd52a0b27c2b8cc85147bd1",
+  "hash": "82ccd441cac14834cbaf29624108dbe8efb04750",
   "columns": [
    "dim_region[Region]",
    "[Hours]"
@@ -1284,7 +1284,7 @@
   ]
  },
  "measures-latest-update": {
-  "hash": "6863c196a3698c2d5696ed1f249ec84d8c56d699",
+  "hash": "1806845d73daeca400c91c641ea5a3c4abb4ecbb",
   "columns": [
    "dim_region[Region]",
    "[Latest update]"
@@ -1321,7 +1321,7 @@
   ]
  },
  "measures-lowest-daily-price": {
-  "hash": "d818401a1d372c4dcdacc819743bc272109d3c76",
+  "hash": "64f2a380717107a57bc231795970c412ebd53469",
   "columns": [
    "dim_region[Region]",
    "[Lowest daily price]"
@@ -1350,7 +1350,7 @@
   ]
  },
  "measures-lowest-price": {
-  "hash": "2d9485668cbd977a2260b73188f8a8da3fa6d06d",
+  "hash": "c0c2613376423a7cb78aaaf741e120dca32b0d88",
   "columns": [
    "dim_region[Region]",
    "[Lowest price]"
@@ -1379,7 +1379,7 @@
   ]
  },
  "measures-month-days": {
-  "hash": "d0d8a2640fcb2a1b0a628083781f13e6ea105dfd",
+  "hash": "f4942fa50b5685c5205b7693e44b4f9b29c11883",
   "columns": [
    "dim_month[month]",
    "[Month days]"
@@ -1396,7 +1396,7 @@
   ]
  },
  "measures-negative-price-days-share": {
-  "hash": "083d86bf488aa33e9e70adae2a7a7dc79f177904",
+  "hash": "820657a0377e856642d6afd72fc2b5fdc44bfbf4",
   "columns": [
    "dim_region[Region]",
    "[Negative price days share]"
@@ -1425,7 +1425,7 @@
   ]
  },
  "measures-negative-price-share": {
-  "hash": "e4bc3a8fc7aeaf7176c9628cf40a7c14d81ef118",
+  "hash": "b4ed2be7cb5fad4e0197f824f72d58a6bd47577b",
   "columns": [
    "dim_region[Region]",
    "[Negative price share]"
@@ -1454,7 +1454,7 @@
   ]
  },
  "measures-net-interchange-mw": {
-  "hash": "6acde8a584f57d2314f3c426f9ef12e7294530b0",
+  "hash": "43a69c6fd92f31e00e247855540485275ff3e6bf",
   "columns": [
    "dim_region[Region]",
    "[Net interchange MW]"
@@ -1483,7 +1483,7 @@
   ]
  },
  "measures-newest-whole-day": {
-  "hash": "f2459d62997f58f3af9ae60038340af246fc0ce1",
+  "hash": "0039c3c449544540b4b3cd8fc038cc8043445bae",
   "columns": [
    "dim_region[Region]",
    "[Newest whole day]"
@@ -1520,7 +1520,7 @@
   ]
  },
  "measures-newest-whole-day-regional": {
-  "hash": "d4f4ac70a770efd355de82997acc5697d8939ed4",
+  "hash": "ceeba41155fec3a9a697ebc723fdb79a5183027f",
   "columns": [
    "dim_region[Region]",
    "[Newest whole day regional]"
@@ -1557,7 +1557,7 @@
   ]
  },
  "measures-no-flow": {
-  "hash": "3682b2ba34146126156c76c4870a795c2168bd33",
+  "hash": "40cb18b545b7244b4d479cba4ba171c9430adebd",
   "columns": [
    "fct_interconnector[interconnector]",
    "fct_interconnector[time]",
@@ -1657,7 +1657,7 @@
   ]
  },
  "measures-output-mwh-hourly": {
-  "hash": "f8d3f6caf608565ef0ea40fa903b16be22efa170",
+  "hash": "6e52a283032ce44df2ce7b7f5aace115006b7316",
   "columns": [
    "dim_month[month]",
    "fct_summary_hourly[hour]",
@@ -1697,7 +1697,7 @@
   ]
  },
  "measures-price-at-hour": {
-  "hash": "283858fe9fbe398e5c0abee6afa7e16f5ae5baf3",
+  "hash": "74f5a776dc13a12f125a48fc6b55e95220942e5f",
   "columns": [
    "dim_region[Region]",
    "fct_region_hourly[hour]",
@@ -1782,7 +1782,7 @@
   ]
  },
  "measures-price-seen": {
-  "hash": "3d441d1529ed288db94638c4c514fdf1c0a8e9c5",
+  "hash": "700f8898d028886ed3b9089430dc929f415449b2",
   "columns": [
    "dim_duid[Region]",
    "[Price seen]"
@@ -1811,7 +1811,7 @@
   ]
  },
  "measures-reads-5-minutes": {
-  "hash": "e1dad1cd0e83eedf7cda339535d6e3e4f3b2e919",
+  "hash": "faf6e35619c911c39a2e180c9e5938643e1fbacf",
   "columns": [
    "dim_time[hour]",
    "[Reads 5 minutes]"
@@ -1832,7 +1832,7 @@
   ]
  },
  "measures-reads-5-minutes-regional": {
-  "hash": "043dbd30b6fd08b15801694f66a43dfee51d030c",
+  "hash": "e2cfac4d66af1409dc23101d2795586ccb960b6f",
   "columns": [
    "dim_region[Region]",
    "[Reads 5 minutes regional]"
@@ -1869,7 +1869,7 @@
   ]
  },
  "measures-regional-solar-available-mwh": {
-  "hash": "cf1fc39ea985253fc5eacf10d285dfb191dc1994",
+  "hash": "660ea4544388541d737f2d5ec752d0f7e6a0b0ac",
   "columns": [
    "dim_time[time]",
    "[Regional solar available MWh]"
@@ -1890,7 +1890,7 @@
   ]
  },
  "measures-regional-solar-curtailed-mwh": {
-  "hash": "7f1fbfefc00d6f4f31a7318a64413175d876e589",
+  "hash": "025c6abbcc8d64cd0777e168953a8cded65a2719",
   "columns": [
    "dim_region[Region]",
    "[Regional solar curtailed MWh]"
@@ -1919,7 +1919,7 @@
   ]
  },
  "measures-regional-wind-available-mwh": {
-  "hash": "8793f513ed156514a02d4c4372d61cfb894e2bdb",
+  "hash": "602763ed57e6be41dc23111405c39688a563e899",
   "columns": [
    "dim_calendar[date]",
    "[Regional wind available MWh]"
@@ -1940,7 +1940,7 @@
   ]
  },
  "measures-regional-wind-curtailed-mwh": {
-  "hash": "37447d1f306b8cc0e26dcbfc4760be50fab0ecac",
+  "hash": "75ef32d635908b29744defa3bbe4655281fdd341",
   "columns": [
    "dim_region[Region]",
    "[Regional wind curtailed MWh]"
@@ -1969,7 +1969,7 @@
   ]
  },
  "measures-registered-mw": {
-  "hash": "d364f2ab71413f37eab2b7c2e2b90d96d0d0144b",
+  "hash": "3e340aba4d9f058ea739925922b309481fb54759",
   "columns": [
    "dim_region[Region]",
    "[Registered MW]"
@@ -2002,7 +2002,7 @@
   ]
  },
  "measures-registered-units": {
-  "hash": "18021c6e6451c90595ffcf6fa62b235a60319d69",
+  "hash": "3052aed78c865810f31a0fa10095b5717e9f897c",
   "columns": [
    "dim_duid[FuelSourceDescriptor]",
    "[Registered units]"
@@ -2055,7 +2055,7 @@
   ]
  },
  "measures-renewable-share": {
-  "hash": "43d530361dffa249761a441b86b7a1d1fee66590",
+  "hash": "a4d7143115814286ebe12f270ce845a8d816606d",
   "columns": [
    "dim_region[Region]",
    "[Renewable share]"
@@ -2084,7 +2084,7 @@
   ]
  },
  "measures-renewable-share-change": {
-  "hash": "59ee24f8194b0627a225d795650fc4f44af1e270",
+  "hash": "0c56f2f0ea45f1fc7b28805219463888bd508eb9",
   "columns": [
    "dim_region[Region]",
    "[Renewable share change]"
@@ -2113,7 +2113,7 @@
   ]
  },
  "measures-revenue": {
-  "hash": "27f0c09a630471260cbfa468ee38918507c3fe66",
+  "hash": "f03447a8c3dba1531d13e88324a42c31091e7ca7",
   "columns": [
    "dim_duid[Region]",
    "[Revenue]"
@@ -2142,7 +2142,7 @@
   ]
  },
  "measures-storage-mwh": {
-  "hash": "c60668cc5a411c593521912a5a44ea522127abb7",
+  "hash": "237ac5c8dd8d631b708ba2e52e324fb1575a591a",
   "columns": [
    "dim_duid[Region]",
    "[Storage MWh]"
@@ -2155,7 +2155,7 @@
   ]
  },
  "measures-units": {
-  "hash": "aa8ed84a6735d4dc299f66cf5517603ff7a66a67",
+  "hash": "f8ac634ad69f3b0f4291102576e4d2c80c0ee623",
   "columns": [
    "dim_region[Region]",
    "[Units]"
@@ -2184,7 +2184,7 @@
   ]
  },
  "measures-wind-and-solar-available-mwh": {
-  "hash": "6198d41947855f8f66b4d4fb69aed878f65e7489",
+  "hash": "1144625fb0b6d3a5e9fe51cdc11cb7073ab65a9d",
   "columns": [
    "fct_curtailment_region[fuel]",
    "fct_curtailment_region[source]",
@@ -2214,7 +2214,7 @@
   ]
  },
  "measures-wind-and-solar-curtailed-mwh": {
-  "hash": "583f14501f01821b8557b8890d7d48361cc65f55",
+  "hash": "6d13bd9377f45622c70961afb2ed210df10c6c2c",
   "columns": [
    "dim_region[Region]",
    "[Wind and solar curtailed MWh]"
@@ -2243,7 +2243,7 @@
   ]
  },
  "measures-wind-and-solar-curtailment-rate": {
-  "hash": "9654e8b1728d4ceabc166ff3d25d1d265bcf61fd",
+  "hash": "02345d77a1561b9af73505a790386d7c43cfb05c",
   "columns": [
    "dim_calendar[date]",
    "[Wind and solar curtailment rate]"

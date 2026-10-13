@@ -30,11 +30,14 @@ if (!repo) { console.error('usage: node tools/aac/dashboard.mjs <analytics-as-co
 const page = mkdtempSync(path.join(tmpdir(), 'aac-page-'));
 mkdirSync(path.join(page, 'semantic/dax-sql'), { recursive: true });
 mkdirSync(path.join(page, 'frontend'));
-copyFileSync(path.join(repo, 'dashboard/github/dax/semantic/query.js'), path.join(page, 'semantic/query.js'));
+// semantic/query.js is common/'s since 2026-10-13, dax/'s before.
+copyFileSync(['common', 'dax'].map(d => path.join(repo, `dashboard/github/${d}/semantic/query.js`)).find(existsSync), path.join(page, 'semantic/query.js'));
 copyFileSync(path.join(repo, 'dashboard/github/dax/frontend/queries.js'), path.join(page, 'frontend/queries.js'));
 writeFileSync(path.join(page, 'semantic/dax-sql/index.js'), 'export const createCompiler = () => ({ compile() { throw new Error("no compiler here"); } });\n');
 writeFileSync(path.join(page, 'page_states.mjs'), readFileSync(path.join(repo, 'scripts/parity/page_states.mjs'), 'utf8')
-  .replace(/^import \{ DuckDBInstance \} from '@duckdb\/node-api';$/m, ''));
+  .replace(/^import \{ DuckDBInstance \} from '@duckdb\/node-api';$/m, '')
+  // What page_states needs to read a checkout's model (since 2026-10-14); this tool does not.
+  .replace(/^import \{ ossieToTmsl \} from .*$/m, '').replace(/^import \{ readOssie \} from .*$/m, ''));
 // The page's semantic/query.js fetches its model next to itself: model.bim in a checkout from
 // before 2026-10-14, the Ossie model (staged as ossie.json, read with formats/ossie.js) after.
 mkdirSync(path.join(page, 'semantic/formats'));

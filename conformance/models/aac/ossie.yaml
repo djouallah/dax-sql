@@ -1,4 +1,4 @@
-# conformance/models/aac/model.bim as Apache Ossie (formats/ossie.js, tmslToOssie): the same model.
+# models/aac/model.bim as Apache Ossie (formats/ossie.js, tmslToOssie): the same model.
 version: 0.2.0.dev0
 name: aac
 description: "Australia's National Electricity Market, over the Iceberg tables of the nem lakehouse, in Direct Lake: nothing is imported and no SQL endpoint is involved. Deployed by scripts/deploy_model.py, which writes the workspace and the lakehouse into the DirectLake expression. A quantity is one measure whatever the grain and whoever asks: the measures of fct_summary and fct_region pick the daily table or the 5-minute one themselves, by whether a time of day is asked for. Power BI and the dashboard's page (through its compiler) call the same measures."

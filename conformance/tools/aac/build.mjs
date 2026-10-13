@@ -1,9 +1,11 @@
 // Builds models/aac: the semantic model of djouallah/analytics-as-code (Australia's National
 // Electricity Market, the model its dashboard and its Power BI report both read), as
-// model.bim and data/<table>.csv, so the queries its dashboard sends are answered by Power BI.
+// model.bim, ossie.yaml and data/<table>.csv, so the queries its dashboard sends are answered
+// by Power BI.
 //
-// semantic_model.bim next to this file is that repo's semantic_model/model.bim, verbatim, as
-// of commit c5d087d42ce56b790693b54e2f105fd9a2d7a792. Its 15 tables, 22 relationships and
+// ossie.yaml next to this file is that repo's semantic_model/ossie.yaml, verbatim, as of
+// commit f8c1569b202855db58d363ce069988ba86ac0067: an Apache Ossie model whose measures are
+// DAX, read as the TMSL it stands for (formats/ossie.js). Its 15 tables, 22 relationships and
 // measures are kept as they are. Adapted, only for an Import model with entity partitions:
 //   - each table's Direct Lake partition (on a mart table of the nem lakehouse) becomes an
 //     entity partition of the same name, and the lakehouse's DirectLake expression goes;
@@ -15,10 +17,12 @@
 //
 //   node tools/aac/build.mjs
 import { mkdirSync, writeFileSync, rmSync, readFileSync } from 'node:fs';
+import { parse, stringify } from 'yaml';
 import { csv } from '../csv.mjs';
 import { generate } from './data.js';
+import { ossieToTmsl, tmslToOssie } from '../../../formats/ossie.js';
 
-const source = JSON.parse(readFileSync(new URL('semantic_model.bim', import.meta.url), 'utf8'));
+const source = ossieToTmsl(parse(readFileSync(new URL('ossie.yaml', import.meta.url), 'utf8')));
 const text = e => (Array.isArray(e) ? e.join('\n') : e);
 
 const { expressions, ...model } = source.model;
@@ -65,6 +69,8 @@ const out = new URL('../../models/aac/', import.meta.url);
 rmSync(new URL('data/', out), { recursive: true, force: true });
 mkdirSync(new URL('data/', out), { recursive: true });
 writeFileSync(new URL('model.bim', out), `${JSON.stringify(bim, null, 2)}\n`);
+// The same model as Ossie, for engines that read Ossie (CONTRACT.md).
+writeFileSync(new URL('ossie.yaml', out), `# models/aac/model.bim as Apache Ossie (formats/ossie.js, tmslToOssie): the same model.\n${stringify(tmslToOssie(bim, 'aac'), { lineWidth: 0 })}`);
 let n = 0;
 for (const t of bim.model.tables) {
   const rows = data[t.name];

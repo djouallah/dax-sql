@@ -48,9 +48,11 @@ export function createCompiler(bim, options = {}) {
   // A calculated column: its expression on a row of its table, in an empty filter context.
   const calc = new Map();
   const calcColumn = col => {
+    // One the query defines (DEFINE COLUMN) was compiled with the query.
+    if (col.query) return col.query;
     let c = calc.get(col);
     if (!c) {
-      const row = newRow(col.table.columns.map(x => ({ name: x.name, lineage: x, t: x.type })), 'scan', { base: col.table });
+      const row = newRow(col.table.columns.filter(x => !x.query).map(x => ({ name: x.name, lineage: x, t: x.type })), 'scan', { base: col.table });
       calc.set(col, { busy: true });
       let ast;
       try { ast = parseExpression(col.expr); } catch (e) {
@@ -111,8 +113,7 @@ export function createCompiler(bim, options = {}) {
   function compileAll(dax) {
     let out = cache.get(dax);
     if (out) return out;
-    const statements = base.query(dax);
-    out = statements.map(s => new Emitter(model, dialect, { ...options, calcColumn, calcTable, security }).query(s));
+    out = base.query(dax, statements => statements.map(s => new Emitter(model, dialect, { ...options, calcColumn, calcTable, security }).query(s)));
     if (cache.size >= 500) cache.clear();
     cache.set(dax, out);
     return out;

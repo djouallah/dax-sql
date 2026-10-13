@@ -469,7 +469,14 @@ function summarizeColumns(c, args, env) {
   const filterArgs = [];
   for (; i < args.length && args[i].k !== 'str'; i++) filterArgs.push(args[i]);
   const exprs = pairs(args, i, 'SUMMARIZECOLUMNS');
-  const ctx0 = filterArgs.length ? autoExist(c, c.calculateCtx(filterArgs, { ...env, rows: [] }), env.ctx) : env.ctx;
+  const ctx0 = filterArgs.length ? autoExist(c, c.calculateCtx(filterArgs, { ...env, rows: [] }, true), env.ctx) : env.ctx;
+  // Its groups are a shadow filter context on the columns it groups by: their values under its
+  // filters. Those marked NONVISUAL filter the groups and the expressions, but are not part
+  // of that shadow: it covers their columns too, with the values the other filters leave them,
+  // so ALLSELECTED takes them off.
+  const nonvisual = ctx0.filters.filter(f => f.nonvisual);
+  const shadow = { cols: new Set([...keyCols, ...nonvisual.flatMap(f => f.cols)]), src: null,
+    ctx: nonvisual.length ? new Ctx(ctx0.filters.filter(f => !f.nonvisual), ctx0.mods) : ctx0 };
   if (new Set(keyCols).size !== keyCols.length) throw semantic('SUMMARIZECOLUMNS groups by the same column twice');
   const keyRow = ir.newRow(keyCols.map(k => ({ name: k.name, lineage: k, t: k.type })), 'key');
   // The levels: how many of each axis' columns stay, the detail first.
@@ -482,9 +489,7 @@ function summarizeColumns(c, args, env) {
     const active = keyCols.filter(k => on.has(k));
     let ctx = ctx0;
     for (const k of active) ctx = ctx.add({ kind: 'bind', cols: [k], val: ir.col(keyRow, keyCols.indexOf(k)) });
-    // Its groups are a shadow filter context on the columns it groups by: their values under
-    // its filters.
-    const shadows = keyCols.length ? [...env.shadows, { cols: new Set(keyCols), src: null, ctx: ctx0 }] : env.shadows;
+    const shadows = shadow.cols.size ? [...env.shadows, shadow] : env.shadows;
     const inner = { ...env, ctx, rows: [], grouped: new Set(active), shadows };
     const items = exprs.map(([name, x]) => {
       const ignore = x.k === 'call' && (x.fn === 'IGNORE' || x.fn === 'NONVISUAL') ;
@@ -507,7 +512,7 @@ function summarizeColumns(c, args, env) {
 function autoExist(c, ctx, outer) {
   const byTable = new Map();
   for (const f of ctx.filters) {
-    if (outer.filters.includes(f) || (f.kind === 'rel' && f.base)) continue;
+    if (outer.filters.includes(f) || (f.kind === 'rel' && f.base) || f.nonvisual) continue;
     const t = f.cols[0].table;
     if (f.cols.some(x => x.table !== t)) continue;
     if (!byTable.has(t)) byTable.set(t, []);

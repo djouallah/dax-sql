@@ -31,20 +31,43 @@ export class Compiler {
     this.options = options;
   }
 
-  // A DAX query -> [{ table, order, define }] one per EVALUATE.
-  query(src) {
+  // A DAX query -> [{ table, order, define }] one per EVALUATE, handed to `then` (which writes
+  // the SQL) while the query's DEFINE COLUMNs are columns of their tables.
+  query(src, then = statements => statements) {
     const q = parseQuery(src);
     const model = this.model.fork(), c = new Compiler(model, this.options);
-    const queryVars = new Map(), queryTables = new Map();
+    const queryVars = new Map(), queryTables = new Map(), queryCols = [];
     const env0 = c.env({ vars: queryVars, queryTables, queryVarsTop: queryVars });
-    for (const d of q.defines) {
-      if (d.kind === 'measure') {
-        const table = model.table(d.table);
-        model.measures.set(lc(d.name), { name: d.name, table, text: null, ast: d.e, query: true });
-      } else if (d.kind === 'var') queryVars.set(lc(d.name), { ast: d.e, env: { ...env0, vars: new Map(queryVars) } });
-      else if (d.kind === 'table') queryTables.set(lc(d.name), { ast: d.e, env: { ...env0, vars: new Map(queryVars) } });
-      else throw unsupported(`DEFINE ${d.kind.toUpperCase()}`);
+    try {
+      for (const d of q.defines) {
+        if (d.kind === 'measure') {
+          const table = model.table(d.table);
+          model.measures.set(lc(d.name), { name: d.name, table, text: null, ast: d.e, query: true });
+        } else if (d.kind === 'var') queryVars.set(lc(d.name), { ast: d.e, env: { ...env0, vars: new Map(queryVars) } });
+        else if (d.kind === 'table') queryTables.set(lc(d.name), { ast: d.e, env: { ...env0, vars: new Map(queryVars) } });
+        else if (d.kind === 'column') queryCols.push([model.addQueryColumn(model.table(d.table), d.name), d]);
+        else throw unsupported(`DEFINE ${d.kind.toUpperCase()}`);
+      }
+      // A column defined in the query is a calculated column: its expression on a row of its
+      // table, in an empty filter context (and, as it is written, without row-level security).
+      for (const [col, d] of queryCols) {
+        const row = ir.newRow(col.table.columns.map(x => ({ name: x.name, lineage: x, t: x.type })), 'scan', { base: col.table });
+        let expr;
+        try { expr = c.scalar(d.e, { ...env0, rows: [row] }); } catch (e) {
+          if (e instanceof DaxError) e.message = `column '${col.table.name}'[${col.name}]: ${e.message}`;
+          throw e;
+        }
+        Object.assign(col.query, { row, expr });
+        col.type = expr.t ?? 'variant';
+      }
+      return then(c.evaluates(q, env0));
+    } finally {
+      model.dropQueryColumns(queryCols.map(([col]) => col));
     }
+  }
+
+  evaluates(q, env0) {
+    const c = this;
     return q.evaluates.map(ev => {
       const table = c.table(ev.e, env0);
       const row = ir.rowOf(table, 'table');
@@ -526,9 +549,10 @@ export class Compiler {
   // --- CALCULATE -------------------------------------------------------------------------
 
   // The filter context CALCULATE(_, args) evaluates its expression in.
-  calculateCtx(args, env) {
+  // `nonvisual`: the arguments are SUMMARIZECOLUMNS', where NONVISUAL can mark a filter.
+  calculateCtx(args, env, nonvisual = false) {
     // 1. The filter arguments, in the context outside.
-    const actions = args.filter(a => a.k !== 'empty').flatMap(a => this.filterArg(a, env, false));
+    const actions = args.filter(a => a.k !== 'empty').flatMap(a => this.filterArg(a, env, false, nonvisual));
     // 2. Context transition.
     let ctx = this.transition(env);
     // 3. The modifiers: relationships first, then what is removed.
@@ -558,9 +582,19 @@ export class Compiler {
 
   // One filter argument -> actions: { kind:'filter', filter, keep } | { kind:'remove', drop } |
   // { kind:'mods', change } | { kind:'selected', cols }.
-  filterArg(ast, env, keep) {
+  filterArg(ast, env, keep, nonvisual = false) {
     if (ast.k === 'call') {
       if (ast.fn === 'KEEPFILTERS') return this.filterArg(ast.args[0], env, true);
+      // NONVISUAL(filter) in SUMMARIZECOLUMNS: a filter like the others, marked so that the
+      // shadow filter context of its groups (what ALLSELECTED puts back) leaves it out.
+      if (ast.fn === 'NONVISUAL') {
+        if (!nonvisual) throw semantic('NONVISUAL can only mark a filter of SUMMARIZECOLUMNS');
+        if (ast.args.length !== 1) throw semantic('NONVISUAL(filter)');
+        return this.filterArg(ast.args[0], env, keep).map(a => {
+          if (a.kind !== 'filter') throw semantic('NONVISUAL takes a filter, not a modifier');
+          return { ...a, filter: { ...a.filter, nonvisual: true } };
+        });
+      }
       const m = MODIFIERS.get(ast.fn);
       if (m) return [m(this, ast.args, env)];
     }

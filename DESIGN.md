@@ -73,6 +73,8 @@ covers some columns and says what values they had:
 - An iterator's (`iter`) covers the columns of the table it iterates that have a lineage. Its
   values are that table's rows.
 - SUMMARIZECOLUMNS' covers the columns it groups by. Its values are theirs under its filters.
+  A filter marked `NONVISUAL` is not one of those: the shadow covers its columns too, and
+  their values are those the other filters leave them.
 
 `ALLSELECTED` (`allSelected`) removes the filters on each column it acts on that a shadow
 covers, and adds the filter of the last shadow that covers it (`shadowFilter`):
@@ -366,6 +368,8 @@ and gives each aggregate the filters that reach its table.
   - A group whose expressions are all blank is left out (`IGNORE` excludes an expression from
     that test).
   - Filter tables, `ROLLUPADDISSUBTOTAL`/`ROLLUPGROUP`, and `ISINSCOPE` are supported.
+  - A filter table wrapped in `NONVISUAL` filters the groups and the expressions, but is not
+    part of the selection: `ALLSELECTED` removes it.
 - **The blank row:** when some rows of a fact table have a key that matches no row of a
   dimension, DAX adds a blank row to the dimension, and those fact rows belong to it.
   - `VALUES`, `ALL` and `ALLSELECTED` over the dimension list it, and SUMMARIZECOLUMNS groups
@@ -382,8 +386,11 @@ and gives each aggregate the filters that reach its table.
     relationship that relies on referential integrity, the `assumeIntegrity` option, or
     `blankRows: false` means there are none, and the check is left out.
 - **TOPN** keeps rows tied with the last one. **ORDER BY** puts blanks first when ascending.
-- `DEFINE MEASURE`, `DEFINE VAR` and `DEFINE TABLE` are supported, as are several `EVALUATE`s
-  and lazy `VAR`s. Calculated columns are evaluated per row in an empty filter context.
+- `DEFINE MEASURE`, `DEFINE VAR`, `DEFINE TABLE` and `DEFINE COLUMN` are supported, as are
+  several `EVALUATE`s and lazy `VAR`s. Calculated columns are evaluated per row in an empty
+  filter context. A `DEFINE COLUMN` is one for the query: a column of its table while the
+  query is compiled (to group by, filter, or clear with `ALL` of the table), computed as the
+  model's are, without row-level security.
 - **`START AT`** after `ORDER BY` starts the rows at the given values, compared in the order's
   columns and directions as a whole (the first value first, then the next among ties). The
   values are constants or query parameters (`@name`, from `options.params`).

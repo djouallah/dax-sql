@@ -115,6 +115,26 @@ export class Model {
     return f;
   }
 
+  // DEFINE COLUMN: a calculated column of a table for the time of one query. The table is
+  // the model's, so the column is there for everything that reads the table's columns (ALL
+  // of the table, context transition, a scan) until dropQueryColumns takes it out again.
+  // `query` computes it: { row, expr } once compiled.
+  addQueryColumn(table, name) {
+    if (table.colMap.has(lc(name))) throw semantic(`DEFINE COLUMN: '${table.name}' already has a column [${name}]`);
+    const col = { table, name, id: `${lc(table.name)}[${lc(name)}]`, type: 'variant', source: name, expr: name,
+      unique: false, dataCategory: null, fieldParameter: false, query: {} };
+    table.columns.push(col);
+    table.colMap.set(lc(name), col);
+    return col;
+  }
+  dropQueryColumns(cols) {
+    for (const col of cols) {
+      const t = col.table, i = t.columns.indexOf(col);
+      if (i >= 0) t.columns.splice(i, 1);
+      if (t.colMap.get(lc(col.name)) === col) t.colMap.delete(lc(col.name));
+    }
+  }
+
   // The relationships as a RelState changes them: [{ rel, active, cross }], cross one of
   // 'single' (one side filters many), 'both', 'none', 'reverse' (many side filters one).
   state(mods) {

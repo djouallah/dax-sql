@@ -147,26 +147,29 @@ export const itemOf = (row, ref, name) => {
 // Where the context binds the one column to a value (a group key, a context transition),
 // that is the value, when a row holds it: a table of one row, with no scan to group.
 // With `blank` (VALUES and ALL, not DISTINCT and ALLNOBLANKROW), the table's blank row is one
-// of them when it has one.
-export function values(table, ctx, columns, scanOf, blank = false) {
+// of them when it has one. `unmatched`: as withBlank's.
+export function values(table, ctx, columns, scanOf, blank = false, unmatched = true) {
   const src = scanOf(table, ctx);
   if (columns.length === 1) {
     const b = ctx.filters.find(f => f.kind === 'bind' && f.cols[0] === columns[0]);
     if (b) {
       let cond = exists(src);
-      if (blank) cond = op('or', cond, op('and', fn('isblank', [b.val], 'bool', { nn: true }), { k: 'blankexists', table, ctx, t: 'bool', nn: true }));
+      if (blank) cond = op('or', cond, op('and', fn('isblank', [b.val], 'bool', { nn: true }), { k: 'blankexists', table, ctx, unmatched, t: 'bool', nn: true }));
       return oneRow([b.val], cond, [columns[0]]);
     }
   }
   const row = rowOf(src);
   const out = distinct(project(src, row, columns.map(c => itemOf(row, c))));
-  return blank ? withBlank(out, table, ctx) : out;
+  return blank ? withBlank(out, table, ctx, unmatched) : out;
 }
 
 // The rows of `src` (of model table `table`, or values of its columns) and the table's blank
 // row, as the filter context `ctx` leaves it.
 // `lineage`: the columns of the table the blank row is read as (TREATAS may rename `cols`).
-export const withBlank = (src, table, ctx) => ({ k: 'withblank', src, table, ctx, cols: src.cols, base: src.base,
+// `unmatched`: whether a filter that comes back from a many side keeps the blank row when the
+// many side's rows it keeps have keys the table lacks (VALUES lists it; DISTINCTCOUNT, which
+// counts the table's rows, does not).
+export const withBlank = (src, table, ctx, unmatched = true) => ({ k: 'withblank', src, table, ctx, unmatched, cols: src.cols, base: src.base,
   lineage: src.cols.map(c => c.lineage) });
 
 // A table of one row, the values `vals` in columns of lineage `lineages`, when `cond` holds;

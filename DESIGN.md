@@ -146,7 +146,12 @@ relationship that does not rely on referential integrity, `blankRowRels`) are `w
 rows, in a `UNION` with a row of blanks (`blankRow`).
 
 - The row is there when some row of a many side has a key the table lacks, or a many-side
-  table has a blank row itself (`orphans`, recursively: a snowflake's dimensions).
+  table has a blank row itself (`orphans`, recursively: a snowflake's dimensions). Under
+  row-level security, a row of the many side that security keeps.
+- A filter that comes back from a many side (`conds`, the inbound relationships) keeps it
+  when the many side's rows it keeps have a key the table lacks (`lacking`). That is for
+  `VALUES`; `DISTINCTCOUNT` is `COUNTROWS(VALUES)` without it (`unmatched`, on `withblank`
+  and `blankexists`).
 - The filter context applies to it as to any row. Its calculated columns are blank, as are
   those read through a join that found no row.
 - Under a bind, `VALUES` is `onerow`, whose condition gains "or the value is blank and the
@@ -397,6 +402,13 @@ and gives each aggregate the filters that reach its table.
   - A filter on the dimension's columns leaves it out, unless the filter keeps blanks: a blank
     in a table filter (`TREATAS({BLANK()}, …)`, or a filter on the fact table that keeps the
     fact rows without a dimension row) keeps it.
+  - A filter that comes back from the fact table (a relationship that filters both ways,
+    `CROSSFILTER(…, BOTH)`) keeps it when the fact rows it keeps include some without a
+    dimension row: `VALUES` lists it then. `DISTINCTCOUNT` of a column, like `COUNTROWS` of
+    the table, counts the dimension's rows, which that filter keeps by their keys: not the
+    blank row.
+  - Under row-level security, the fact rows are those security keeps: a dimension has no
+    blank row when security removes every fact row without a dimension row.
   - Its calculated columns are blank too.
   - A table on the one side of a relationship to such a dimension has a blank row as well,
     since the dimension's blank row matches none of its rows. A sale of an unknown product

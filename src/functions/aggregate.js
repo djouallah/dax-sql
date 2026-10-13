@@ -60,10 +60,14 @@ function countRows(c, args, env) {
 }
 
 // DISTINCTCOUNT(T[c]) is COUNTROWS(VALUES(T[c])): the blank row counts, when the table has one.
+// It counts the values of T's rows, though: a filter that comes back to T from a many side
+// keeps the rows whose keys its rows hold, and the blank row that VALUES adds for those it
+// lacks is not one of them.
 function distinctCount(c, args, env) {
   const col = c.modelColumn(args[0], env);
   if (!c.blankRowRels(col.table).length) return column('dcount', int)(c, args, env);
-  return countRows(c, [{ k: 'call', fn: 'VALUES', args: [args[0]] }], env);
+  const src = ir.values(col.table, env.ctx, [col], (tb, ctx) => c.scan(tb, ctx), true, false);
+  return ir.agg('countrows', src, ir.rowOf(src), null, 'int');
 }
 
 function minMax(fn) {

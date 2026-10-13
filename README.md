@@ -30,7 +30,6 @@ No runtime dependencies; ES modules, browser and Node 18+. `npm test` runs the t
 - A NULL stored in the data doesn't match a blank in a table filter (`TREATAS`, `VALUES`).
 - A column that mixes numbers and text comes back as text.
 - `IFERROR` returns its first argument: SQL has no error values.
-- `LOOKUPVALUE` respects the filters on its table, its search columns replacing theirs.
 - `DATEDIFF` with `WEEK` counts Sunday week boundaries.
 - Not supported: object-level security, dynamic format strings, the window functions' reset
   argument, and anything not listed in [DESIGN.md](DESIGN.md#what-it-does).

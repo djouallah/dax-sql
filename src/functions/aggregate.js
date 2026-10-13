@@ -180,16 +180,16 @@ export function filtersTable(c, col, env) {
   return ir.distinct(ir.project(src, row, [ir.itemOf(row, col)]));
 }
 
+// LOOKUPVALUE(result, search, value, ..., alternate): the result column on the rows where each
+// search column holds its value, searched without the filter context (row-level security still
+// applies), or the alternate (blank) when it holds no single value.
 function lookupValue(c, args, env) {
   const result = c.modelColumn(args[0], env);
-  let ctx = env.ctx, i = 1;
-  const binds = [];
+  let ctx = env.ctx.removeAll(), i = 1;
   for (; i + 1 < args.length; i += 2) {
     const s = c.modelColumn(args[i], env), v = c.scalar(args[i + 1], env);
-    binds.push({ kind: 'bind', cols: [s], val: v });
+    ctx = ctx.add({ kind: 'bind', cols: [s], val: v });
   }
-  ctx = ctx.remove(x => binds.some(b => b.cols[0] === x));
-  for (const b of binds) ctx = ctx.add(b);
   const alt = i < args.length && args[i].k !== 'empty' ? c.scalar(args[i], env) : ir.BLANK;
   const src = c.scan(result.table, ctx), row = ir.rowOf(src), value = ir.col(row, result);
   return ir.kase([[ir.agg('hasone', src, row, value, 'bool'), ir.agg('min', src, row, value, value.t)]], alt);

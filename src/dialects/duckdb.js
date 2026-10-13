@@ -181,20 +181,25 @@ export class DuckDBDialect extends Dialect {
       case 'hasone': return `COALESCE(COUNT(DISTINCT ${x})${f} + MAX(CASE WHEN ${x} IS NULL THEN 1 ELSE 0 END)${f} = 1, FALSE)`;
       case 'product': return `product(${x})${f}`;
       case 'median': return `median(${x})${f}`;
-      case 'pct_inc': return `quantile_cont(${x}, ${extra.k})${f}`;
       case 'stdev_s': return `stddev_samp(${x})${f}`;
       case 'stdev_p': return `stddev_pop(${x})${f}`;
       case 'var_s': return `var_samp(${x})${f}`;
       case 'var_p': return `var_pop(${x})${f}`;
       case 'concat': return `string_agg(COALESCE(${x}, ''), ${extra.delim}${extra.order?.length ? ` ORDER BY ${extra.order.join(', ')}` : ''})${f}`;
-      // The value at rank k(n + 1) of the n values in order, between the two around it as
-      // that rank is between theirs; blank when the rank is not between 1 and n. The sorted
-      // values and the rank are bound once.
-      case 'pct_exc': {
-        const nb = ` FILTER (WHERE ${x} IS NOT NULL${extra.filter ? ` AND ${extra.filter}` : ''})`;
-        const i = 'CAST(floor(dax_r) AS BIGINT)';
-        const body = `CASE WHEN dax_r >= 1 AND dax_r <= len(dax_l) THEN dax_l[${i}] + (dax_r - ${i}) * (dax_l[least(${i} + 1, len(dax_l))] - dax_l[${i}]) END`;
-        return `[[${body} FOR dax_r IN [${extra.k} * (len(dax_l) + 1)]][1] FOR dax_l IN [list(${x} ORDER BY ${x})${nb}]][1]`;
+      // The value at rank k(n - 1) + 1 (INC) or k(n + 1) (EXC) of the n values in order,
+      // between the two around it as that rank is between theirs. The blanks are values too:
+      // they count in n and come first, and a blank on either side of the rank gives blank.
+      // A rank outside 1..n is an error, as in DAX (for EXC, k outside 1/(n + 1)..n/(n + 1));
+      // no values give blank. The sorted values and the rank are bound once.
+      case 'pct_inc': case 'pct_exc': {
+        const i = 'CAST(floor(dax_r) AS BIGINT)', k = `COALESCE(${extra.k}, 0)`;
+        const r = fn === 'pct_inc' ? `${k} * (len(dax_l) - 1) + 1` : `${k} * (len(dax_l) + 1)`;
+        const range = fn === 'pct_inc' ? 'PERCENTILE.INC: k must lie in 0..1' : 'PERCENTILE.EXC: k must lie in 1/(n + 1)..n/(n + 1)';
+        const body = `CASE WHEN len(dax_l) = 0 THEN NULL
+          WHEN dax_r < 1 OR dax_r > len(dax_l) THEN error('${range}')
+          WHEN dax_r = ${i} THEN dax_l[${i}]
+          ELSE dax_l[${i}] + (dax_r - ${i}) * (dax_l[${i} + 1] - dax_l[${i}]) END`;
+        return `[[${body} FOR dax_r IN [${r}]][1] FOR dax_l IN [COALESCE(list(${x} ORDER BY ${x} ASC NULLS FIRST)${f}, [])]][1]`;
       }
     }
     return super.agg(fn, x);

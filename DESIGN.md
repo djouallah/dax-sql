@@ -374,6 +374,9 @@ and gives each aggregate the filters that reach its table.
   - `1 / BLANK()` is infinity.
   - `RANKX` compares a blank as 0 (or ""): a blank and 0 tie, and `DENSE` counts them as one
     value.
+  - `PERCENTILE(X).INC/EXC` count the blanks among the values, first in the order; a rank on
+    a blank, or between a blank and a value, is blank. A `k` out of range (for EXC, outside
+    1/(n + 1)..n/(n + 1)) is an error.
 - **SUMMARIZECOLUMNS:**
   - Its groups are the key combinations that exist within each table, and every combination
     across tables.

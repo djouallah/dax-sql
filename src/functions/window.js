@@ -126,14 +126,6 @@ function node(k, fn, w, cur, extra) {
 const allCols = w => w.rel.cols.map((_, i) => i);
 // The columns that say which partition is the current one: PARTITIONBY's.
 const partCols = w => w.parts;
-// RANK's current row: the ORDERBY and PARTITIONBY columns, as the documentation says (when
-// every ORDERBY expression is a column of the relation; else the whole row). Rows tied on
-// them share the rank.
-function rankCols(w) {
-  const ids = w.orderBy.map(o => (o.expr.k === 'col' && o.expr.row === w.row
-    ? (typeof o.expr.ref === 'number' ? o.expr.ref : w.rel.cols.findIndex(c => c.lineage === o.expr.ref)) : -1));
-  return ids.includes(-1) ? allCols(w) : [...new Set([...ids, ...w.parts])];
-}
 
 function offset(c, args, env) {
   const delta = c.scalar(args[0], env);
@@ -168,7 +160,7 @@ function rank(fn) {
     if (fn === 'rank' && word(args[0], ['DENSE', 'SKIP'])) { dense = args[0].name.toUpperCase() === 'DENSE'; rest = args.slice(1); }
     else if (fn === 'rank' && args[0]?.k === 'empty') rest = args.slice(1);
     const w = windowArgs(c, rest, env, fn.toUpperCase());
-    const x = node('wrank', fn, w, currentRow(c, env, w.rel, w.matched ?? (fn === 'rank' ? rankCols(w) : allCols(w))), { dense, needCur: true });
+    const x = node('wrank', fn, w, currentRow(c, env, w.rel, w.matched ?? allCols(w)), { dense, needCur: true });
     return { ...x, t: 'int', nn: false };
   };
 }

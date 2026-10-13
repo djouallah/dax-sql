@@ -29,6 +29,7 @@ const QUERIES = [
   'EVALUATE ROW("v", SELECTEDVALUE(Product[Color], "many"), "l", LOOKUPVALUE(Product[Price], Product[Name], "Cap"), "c", CONCATENATEX(VALUES(Customer[City]), Customer[City], ", "))',
   'EVALUATE ADDCOLUMNS(VALUES(\'Date\'[Month]), "prev", CALCULATE([Sales Amount], OFFSET(-1, ALLSELECTED(\'Date\'[Month]), ORDERBY(\'Date\'[Month]))))',
   'EVALUATE ADDCOLUMNS(VALUES(Product[Name]), "r", RANK(DENSE, ALL(Product[Name]), ORDERBY([Sales Amount], DESC)))',
+  'EVALUATE SUMMARIZECOLUMNS(Product[Color], Product[Name], "r", RANK(SKIP, ALL(Product[Color], Product[Name]), ORDERBY(Product[Color], DESC)))',
   'EVALUATE ROW("f", FORMAT(1234.5, "#,##0.00"), "d", FORMAT(DATE(2024, 1, 5), "yyyy-mm-dd"), "t", "x" & BLANK())',
   'EVALUATE ADDCOLUMNS(VALUES(Product[Name]), "l", LEN(Product[Name]), "x", FIXED([Sales Amount], 1, TRUE), "f", FIND("a", Product[Name], 1, 0))',
   'DEFINE MEASURE Sales[Twice] = [Sales Amount] * 2 VAR x = 3 EVALUATE ROW("t", [Twice] + x)',

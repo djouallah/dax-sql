@@ -267,7 +267,7 @@ columns, the ORDERBY and PARTITIONBY values, and `ROW_NUMBER`, `COUNT`, `RANK` a
 whose columns equal the outer values (`currentRows`); a column with no outer value matches
 any of its values in the filter context, through `EXISTS`. INDEX, OFFSET and WINDOW join the
 numbered rows to the current rows on position (`windowRows`); RANK and ROWNUMBER read the
-current row's number.
+current row's number, when there is one current row.
 
 **START AT** is a `WHERE` on the ordered columns: the rows after the values, compared one
 column after the other in each column's direction, or equal to them.
@@ -528,8 +528,9 @@ and gives each aggregate the filters that reach its table.
   added, which DAX rejects), `MATCHBY`, and the blanks argument.
   - The current row is the row of the relation whose columns hold the outer values: those of
     a row context, or the value the filter context fixes a column to (a group, or a context
-    transition). For RANK, only the `ORDERBY` and `PARTITIONBY` columns need one, and the
-    rows tied on them share the rank.
+    transition). RANK finds it as the others do, by all the relation's columns (or the
+    `MATCHBY` and `PARTITIONBY` ones), not by the `ORDERBY` columns alone: when more than one
+    row of the relation is current, RANK is blank, even if those rows tie in the order.
   - A column with no outer value takes each of its values in the filter context, and the
     result is the union over them, as DAX does it.
   - Without a relation, the relation is `ALLSELECTED` of the `ORDERBY` and `PARTITIONBY`

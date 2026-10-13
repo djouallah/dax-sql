@@ -672,9 +672,12 @@ export class Emitter {
       case 'wrank': {
         const { num, names } = this.numbered(x, scope);
         const cur = this.currentRows(x, scope, num, names);
-        // One current row (rows tied in the order share a rank); several give no value.
+        // One current row, its rank; several (rows that differ, or ROWNUMBER's equal rows)
+        // give no value, even when they tie in the order.
         const c = this.alias('c'), col = x.fn === 'rownumber' ? '__rn' : x.dense ? '__drank' : '__rank';
-        return `(SELECT CASE WHEN COUNT(DISTINCT ${c}.${col}) = 1 THEN MIN(${c}.${col}) END FROM (${cur}) AS ${c})`;
+        const cols = [...names.slice(0, x.rel.cols.length), col].map(n => `${c}.${this.ident(n)}`).join(', ');
+        const d = this.alias('d');
+        return `(SELECT CASE WHEN COUNT(*) = 1 THEN MIN(${d}.${col}) END FROM (SELECT DISTINCT ${cols} FROM (${cur}) AS ${c}) AS ${d})`;
       }
       case 'blankexists': {
         const sql = this.blankRow(x.table, x.ctx, scope, b => { b.setOut([{ name: 'one', lineage: null }], ['1']); return b.render(); }, null, x.unmatched !== false);

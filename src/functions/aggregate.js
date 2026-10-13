@@ -225,9 +225,14 @@ function rankX(c, args, env) {
   const desc = isDesc(args[3], true);
   const dense = args[4] && args[4].k === 'name' && args[4].name.toUpperCase() === 'DENSE';
   const ahead = ir.op(desc ? 'gt' : 'lt', arg, value);
-  const n = dense ? ir.agg('dcount0', src, row, ir.kase([[ahead, arg]], ir.BLANK, arg.t), 'int')
-    : ir.agg('count0', src, row, ir.kase([[ahead, ir.lit(1)]], ir.BLANK, 'int'), 'int');
-  return ir.op('add', n, ir.lit(1));
+  if (!dense) return ir.op('add', ir.agg('count0', src, row, ir.kase([[ahead, ir.lit(1)]], ir.BLANK, 'int'), 'int'), ir.lit(1));
+  // DENSE: the distinct values ahead, and a blank is one of them (ascending, it is ahead of
+  // every positive value), though a distinct count of SQL leaves it out.
+  const distinct = ir.agg('dcount0', src, row, ir.kase([[ahead, arg]], ir.BLANK, arg.t), 'int');
+  const blankAhead = ir.agg('count0', src, row,
+    ir.kase([[ir.op('and', ahead, ir.fn('isblank', [arg], 'bool', { nn: true })), ir.lit(1)]], ir.BLANK, 'int'), 'int');
+  const blank = ir.kase([[ir.op('gt', blankAhead, ir.lit(0)), ir.lit(1)]], ir.lit(0), 'int');
+  return ir.op('add', ir.op('add', distinct, blank), ir.lit(1));
 }
 
 function contains(c, args, env) {

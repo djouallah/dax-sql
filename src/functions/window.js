@@ -91,7 +91,14 @@ function currentRow(c, env, rel, idx) {
   const match = [], loose = [];
   for (const i of idx) {
     const l = rel.cols[i].lineage;
-    if (!l) continue;   // a column a table function added has no outer value
+    // A column a table function added has no lineage: its outer value is the row context's
+    // column of that name (the relation iterated by an outer ADDCOLUMNS, say); with none,
+    // it does not say which row is the current one.
+    if (!l) {
+      const byName = c.rowColumn(env, null, rel.cols[i].name);
+      if (byName) match.push({ i, val: byName });
+      continue;
+    }
     const fromRow = c.rowColumn(env, l.table.name, l.name);
     if (fromRow) { match.push({ i, val: fromRow }); continue; }
     const b = env.ctx.filters.find(f => f.kind === 'bind' && f.cols[0] === l);
@@ -106,7 +113,8 @@ function currentRow(c, env, rel, idx) {
       if (!byTable.has(l.table)) byTable.set(l.table, []);
       byTable.get(l.table).push(i);
     }
-    const parts = [...byTable].map(([t, is]) => ir.values(t, env.ctx, is.map(i => rel.cols[i].lineage), (tb, x) => c.scan(tb, x)));
+    // Their values as VALUES has them: the table's blank row is one, when it has one.
+    const parts = [...byTable].map(([t, is]) => ir.values(t, env.ctx, is.map(i => rel.cols[i].lineage), (tb, x) => c.scan(tb, x), c.blankRowRels(t).length > 0));
     const order = [...byTable.values()].flat();
     const table = parts.length === 1 ? parts[0] : { k: 'cross', srcs: parts, cols: parts.flatMap(p => p.cols), base: null };
     unbound = { table, idx: order };

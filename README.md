@@ -1,4 +1,4 @@
-- **In:** a Tabular model (`model.bim`), a DAX query or a SQL `SELECT` over the model, options
+- **In:** a Tabular model (`model.bim`, or an [Apache Ossie](https://github.com/apache/ossie) model whose metrics are DAX: what Ossie has no property for is read from its `POWER_BI` extensions, as TMSL), a DAX query or a SQL `SELECT` over the model, options
   ([DESIGN.md](DESIGN.md#api)); or any SQL with `SELECT`s over the model as relations in it.
 - **Out:** one SQL `SELECT` and its columns; for a statement, its SQL with each of them compiled in place.
 - **Errors:** `SYNTAX`, `SEMANTIC`, `UNSUPPORTED`.

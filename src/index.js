@@ -1,4 +1,4 @@
-// dax-sql: DAX queries over a Tabular semantic model (TMSL, model.bim) -> SQL.
+// dax-sql: DAX queries over a Tabular semantic model (TMSL, model.bim, or Apache Ossie with DAX metrics) -> SQL.
 //
 //   import { createCompiler } from 'dax-sql';
 //   const dax = createCompiler(bim, { tableSource: t => `v_${t.name}` });
@@ -38,6 +38,7 @@ export { DuckDBDialect } from './dialects/duckdb.js';
 export { parseQuery, parseExpression } from './parser.js';
 export { parseSql, modelRelations } from './sql.js';
 export { Model } from './model.js';
+export { isOssie, fromOssie } from './ossie.js';
 
 const DIALECTS = { duckdb: () => new DuckDBDialect() };
 

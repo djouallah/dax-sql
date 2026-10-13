@@ -11,7 +11,9 @@
 // Besides tables of the lakehouse (an entity partition), a table can be calculated (a DAX
 // table expression, `calc`) or a calculation group (`calcGroup`: its items); `roles` hold the
 // row-level security filters of each role.
+// An Apache Ossie model is read as the TMSL it stands for (ossie.js).
 import { semantic } from './errors.js';
+import { isOssie, fromOssie } from './ossie.js';
 
 const TYPES = { string: 'string', int64: 'int', double: 'double', decimal: 'decimal', dateTime: 'datetime',
   boolean: 'bool', binary: 'string', variant: 'variant', unknown: 'variant' };
@@ -21,6 +23,7 @@ const text = e => Array.isArray(e) ? e.join('\n') : e ?? '';
 
 export class Model {
   constructor(bim) {
+    if (isOssie(bim)) bim = fromOssie(bim);
     const m = bim.model ?? bim;
     if (!Array.isArray(m?.tables)) throw semantic('the model has no tables (expected a TMSL model.bim)');
     this.tables = new Map();

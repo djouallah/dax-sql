@@ -22,6 +22,7 @@ import { isDateKey } from './model.js';
 import * as ir from './ir.js';
 import { dateLit, rowsTable } from './ir.js';
 import { SCALAR, TABLE, MODIFIERS } from './functions/index.js';
+import { visualTable } from './functions/visual.js';
 
 const lc = s => String(s).toLowerCase();
 // A column a table function named Table[Column] (ir.qualifiedName), named so.
@@ -30,22 +31,6 @@ const isNamed = (colName, table, name) => {
   return !!q && lc(q.table) === lc(table) && lc(q.name) === lc(name);
 };
 
-// A visual calculation's table, as DAX without one: the table WITH VISUAL SHAPE's rows, its
-// DENSIFY column (FALSE: one axis has no combinations to add), and each COLUMN on it added in
-// turn. In a column, RANK, ROWNUMBER, INDEX, OFFSET and WINDOW with no relation are over the
-// rows so far, those of the row's level (its TOTAL columns' values), in the axis's ORDER BY.
-function visualTable(d, columns) {
-  const { axes, densify } = d.shape;
-  if (axes.length > 1 || axes[0].groups.length > 1) throw unsupported('a visual shape with more than one axis or level');
-  const [axis] = axes, levels = axis.groups.map(g => g.total).filter(Boolean);
-  const order = axis.order.map(o => ({ col: o.col, desc: o.desc }));
-  const name = i => ({ k: 'name', name: ` visual ${i}` });
-  const add = (src, cols) => ({ k: 'call', fn: 'ADDCOLUMNS', args: [src, ...cols.flatMap(([n, e]) => [{ k: 'str', v: n }, e])] });
-  const defs = [{ name: name(0).name, e: densify ? add(d.e, [[densify, { k: 'bool', v: false }]]) : d.e }];
-  columns.forEach((c, i) => defs.push({ name: name(i + 1).name,
-    e: add(name(i), [[c.name, { k: 'visual', e: c.e, rel: name(i), levels, order }]]) }));
-  return { k: 'var', defs, body: name(columns.length), pos: d.pos };
-}
 
 export class Compiler {
   constructor(model, options = {}) {
@@ -66,7 +51,7 @@ export class Compiler {
     try {
       for (let d of q.defines) {
         if (d.kind === 'column' && visuals.has(lc(d.table))) continue;
-        if (d.kind === 'table' && d.shape) d = { ...d, e: visualTable(d, visuals.get(lc(d.name))) };
+        if (d.kind === 'table' && d.shape) d = { ...d, e: { k: 'visualtable', input: d.e, shape: d.shape, columns: visuals.get(lc(d.name)), pos: d.pos } };
         if (d.kind === 'measure') {
           const table = model.table(d.table);
           model.measures.set(lc(d.name), { name: d.name, table, text: null, ast: d.e, query: true });
@@ -130,7 +115,7 @@ export class Compiler {
         if (v) return this.isTable(v.ast, v.env);
         return env.queryTables.has(lc(ast.name)) || this.model.hasTable(ast.name);
       }
-      case 'table': return true;
+      case 'table': case 'visualtable': return true;
       case 'var': return this.isTable(ast.body, env);
       default: return false;
     }
@@ -460,7 +445,7 @@ export class Compiler {
         throw semantic(`there is no variable ${ast.name}`);
       }
       case 'var': return this.scalar(ast.body, this.withVars(ast.defs, env));
-      // A visual calculation's column: its window functions with no relation take the visual's rows.
+      // A column of a visual calculation's (functions/visual.js).
       case 'visual': return this.scalar(ast.e, { ...env, visual: ast });
       case 'neg': return ir.op('neg', this.scalar(ast.e, env));
       case 'not': return ir.op('not', this.scalar(ast.e, env));
@@ -561,6 +546,7 @@ export class Compiler {
         return this.scan(this.model.table(ast.name), env.ctx);
       }
       case 'var': return this.table(ast.body, this.withVars(ast.defs, env));
+      case 'visualtable': return visualTable(this, ast, env);
       case 'call': {
         const f = TABLE.get(ast.fn);
         if (!f) {

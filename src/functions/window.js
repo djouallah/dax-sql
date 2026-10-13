@@ -10,6 +10,7 @@
 import * as ir from '../ir.js';
 import { semantic, unsupported } from '../errors.js';
 import { isDesc } from './aggregate.js';
+import { visualWindow, isReset } from './visual.js';
 
 const lc = s => String(s).toLowerCase();
 const word = (a, set) => a?.k === 'name' && set.includes(a.name.toUpperCase());
@@ -17,17 +18,23 @@ const BLANKS = ['DEFAULT', 'FIRST', 'LAST'];
 
 // The arguments after the leading ones: relation, ORDERBY(), blanks, PARTITIONBY(), MATCHBY().
 function windowArgs(c, args, env, fn) {
-  let relAst = null, orderAst = null, partAst = null, matchAst = null, blanks = 'default';
+  let relAst = null, orderAst = null, partAst = null, matchAst = null, blanks = 'default', axisName = null, resetAst = null;
   for (const a of args) {
     if (a.k === 'empty') continue;
     if (a.k === 'call' && a.fn === 'ORDERBY') orderAst = a;
     else if (a.k === 'call' && a.fn === 'PARTITIONBY') partAst = a;
     else if (a.k === 'call' && a.fn === 'MATCHBY') matchAst = a;
     else if (word(a, BLANKS)) blanks = a.name.toLowerCase();
-    else if (word(a, ['NONE', 'LOWESTPARENT', 'HIGHESTPARENT'])) throw unsupported(`${fn}'s reset (visual calculations only)`);
-    else if (!relAst && c.isTable(a, env)) relAst = a;
+    else if (env.visual && word(a, ['ROWS', 'COLUMNS'])) {
+      if (axisName) throw unsupported(`${fn} over more than one axis`);
+      axisName = a.name;
+    } else if (isReset(a)) {
+      if (!env.visual) throw semantic(`${fn}: a reset is only valid in a visual calculation`);
+      resetAst = a;
+    } else if (!relAst && c.isTable(a, env)) relAst = a;
     else throw semantic(`${fn}: unexpected argument`);
   }
+  if (resetAst && (orderAst || partAst)) throw semantic('The RESET parameter cannot be used in combination with ORDERBY or PARTITIONBY.');
   // ORDERBY(expr, [ASC|DESC], [FIRST|LAST|DEFAULT], ...)
   const order = [];
   if (orderAst) {
@@ -44,13 +51,13 @@ function windowArgs(c, args, env, fn) {
     }
   }
   const part = partAst?.args ?? [], match = matchAst?.args ?? null;
-  // In a visual calculation's column, no relation is the visual's rows at the row's level.
-  const visual = relAst ? null : env.visual;
-  if (visual && !orderAst) for (const o of visual.order) order.push({ ast: { k: 'col', table: null, name: o.col }, desc: o.desc, blanks: null });
+  // In a visual calculation's column, no relation is the visual's rows (functions/visual.js).
+  const visual = relAst || !env.visual ? null : visualWindow(c, env, { axisName, resetAst });
+  if (visual && !orderAst) order.push(...visual.order);
 
   let rel;
   if (relAst) rel = c.table(relAst, env);
-  else if (visual) rel = c.table(visual.rel, env);
+  else if (visual) rel = visual.rel;
   else {
     if (!orderAst) throw semantic(`${fn} needs a relation or an ORDERBY`);
     const cols = [...order.map(o => o.ast), ...part].map(a => {
@@ -63,7 +70,7 @@ function windowArgs(c, args, env, fn) {
     const ctx = c.allSelected(env.ctx.removeAll(), env, new Set(unique), true);
     rel = ir.values(unique[0].table, ctx, unique, (t, x) => c.scan(t, x), c.blankRowRels(unique[0].table).length > 0);
   }
-  const row = ir.rowOf(rel, 'table'), inner = c.iter(env, row);
+  const row = visual ? visual.row : ir.rowOf(rel, 'table'), inner = c.iter(env, row);
   const index = (a, what) => {
     if (a.k !== 'col') throw semantic(`${fn}: ${what} takes columns`);
     let i = a.table ? rel.cols.findIndex(x => x.lineage && lc(x.lineage.table.name) === lc(a.table) && lc(x.lineage.name) === lc(a.name)) : -1;
@@ -78,15 +85,13 @@ function windowArgs(c, args, env, fn) {
     if (!rel.cols[i].lineage) throw semantic(`PARTITIONBY cannot be used with columns added by table functions ([${rel.cols[i].name}])`);
     return i;
   });
-  // The level: its TOTAL columns, which SUMMARIZECOLUMNS added.
-  if (visual) parts.push(...visual.levels.map(n => index({ k: 'col', table: null, name: n }, 'PARTITIONBY')));
-  const partExprs = parts.map(i => ir.col(row, i));
+  const partExprs = [...parts.map(i => ir.col(row, i)), ...(visual?.parts ?? [])];
   const orderBy = order.length
     ? order.map(o => { const expr = c.scalar(o.ast, inner); return { expr, desc: o.desc, blanks: o.blanks ?? blanks, t: expr.t }; })
     : rel.cols.map((x, i) => (parts.includes(i) ? null : { expr: ir.col(row, i), desc: false, blanks, t: x.t })).filter(Boolean);
   // The columns that say which row is the current one.
   const matched = match ? [...new Set([...match.map(a => index(a, 'MATCHBY')), ...parts])] : null;
-  return { rel, row, orderBy, parts, partExprs, matched, hasMatch: !!match };
+  return { rel, row, orderBy, parts, partExprs, matched, hasMatch: !!match, visual: !!visual };
 }
 
 // The current row's columns' outer values; those with none, from their values in context.
@@ -130,8 +135,9 @@ function node(k, fn, w, cur, extra) {
     match: cur.match, unbound: cur.unbound, cols: w.rel.cols, base: w.rel.base, ...extra };
 }
 const allCols = w => w.rel.cols.map((_, i) => i);
-// The columns that say which partition is the current one: PARTITIONBY's.
-const partCols = w => w.parts;
+// The columns that say which partition is the current one: PARTITIONBY's; in a visual
+// calculation, whose partitions are expressions, the current row's.
+const partCols = w => (w.visual ? allCols(w) : w.parts);
 
 function offset(c, args, env) {
   const delta = c.scalar(args[0], env);

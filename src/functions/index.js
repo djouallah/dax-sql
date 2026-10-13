@@ -8,7 +8,8 @@ import * as aggregateFns from './aggregate.js';
 import * as tableFns from './table.js';
 import * as timeFns from './time.js';
 import * as windowFns from './window.js';
+import * as visualFns from './visual.js';
 
-export const SCALAR = new Map(Object.entries({ ...scalarFns.scalar, ...aggregateFns.scalar, ...timeFns.scalar, ...windowFns.scalar }));
+export const SCALAR = new Map(Object.entries({ ...scalarFns.scalar, ...aggregateFns.scalar, ...timeFns.scalar, ...windowFns.scalar, ...visualFns.scalar }));
 export const TABLE = new Map(Object.entries({ ...tableFns.table, ...timeFns.table, ...windowFns.table }));
 export const MODIFIERS = new Map(Object.entries(tableFns.modifiers));

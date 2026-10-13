@@ -86,19 +86,33 @@ export function op(o, ...a) {
   }
   if (o === 'not' && l.k === 'lit' && typeof l.v === 'boolean') return lit(!l.v);
   if (o === 'neg' && l.k === 'lit' && typeof l.v === 'number') return lit(-l.v, l.t);
+  const fx = r && fixed(o, l.t, r.t);
   let t;
-  if (['eq', 'eqs', 'ne', 'lt', 'le', 'gt', 'ge', 'and', 'or', 'not', 'in'].includes(o)) t = 'bool';
+  if (fx) t = o === 'add' || o === 'sub' ? 'decimal' : 'double';
+  else if (['eq', 'eqs', 'ne', 'lt', 'le', 'gt', 'ge', 'and', 'or', 'not', 'in'].includes(o)) t = 'bool';
   else if (o === 'concat') t = 'string';
   else if (o === 'div' || o === 'pow') t = 'double';
   else if (o === 'neg') t = l.t;
   else if ((o === 'add' || o === 'sub') && (l.t === 'datetime' || l.t === 'date')) t = isNum(r.t) ? l.t : o === 'add' ? 'datetime' : 'double';
   else if (o === 'add' && isNum(l.t) && (r.t === 'datetime' || r.t === 'date')) t = 'datetime';
-  else t = l.t === 'int' && r.t === 'int' ? 'int' : l.t === 'decimal' && r.t === 'decimal' && o !== 'mul' ? 'decimal' : 'double';
+  else t = l.t === 'int' && r.t === 'int' ? 'int' : 'double';
   // Comparisons and logic never give a blank; + and - give one only when both sides do.
   const nn = t === 'bool' || o === 'concat' || (o === 'add' || o === 'sub') && (l.nn || r.nn)
     || (o === 'mul' || o === 'neg') && a.every(x => x.nn);
-  return { k: 'op', op: o, a, t, nn };
+  const x = { k: 'op', op: o, a, t, nn };
+  return fx && t !== 'decimal' ? currency(x) : x;
 }
+// A fixed decimal (currency) with a number, as DAX types it: + and - with a whole number or
+// another fixed decimal are one; * by a whole or decimal number (either side), and / by one,
+// are one too, rounded to its four places (half away from zero). Two of them multiplied or
+// divided, and one with a decimal number added, give a decimal number.
+const fixed = (o, a, b) => {
+  const n = t => t === 'int' || t === 'double';
+  if (o === 'add' || o === 'sub') return (a === 'decimal' || b === 'decimal') && [a, b].every(t => t === 'decimal' || t === 'int');
+  if (o === 'mul') return (a === 'decimal' && n(b)) || (n(a) && b === 'decimal');
+  return o === 'div' && a === 'decimal' && n(b);
+};
+export const currency = x => fn('round', [x, lit(4)], 'decimal', { strict: true });
 const boolOf = x => x.t === 'bool' && x.nn ? x : { k: 'op', op: 'bool', a: [x], t: 'bool', nn: true };
 
 // `strict`: the function gives a blank when its first argument is blank (and on a constant

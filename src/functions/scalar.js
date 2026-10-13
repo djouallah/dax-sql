@@ -58,7 +58,10 @@ function coalesce(c, args, env) {
 
 function divide(c, args, env) {
   const a = s(c, args[0], env), b = s(c, args[1], env), alt = opt(c, args[2], env, null);
-  return ir.fn('divide', alt ? [a, b, alt] : [a, b], 'double');
+  const q = ir.fn('divide', alt ? [a, b, alt] : [a, b], 'double');
+  // A fixed decimal divided by a number is one, as with /.
+  const fixed = a.t === 'decimal' && (b.t === 'int' || b.t === 'double') && (!alt || ['int', 'decimal', 'blank'].includes(alt.t));
+  return fixed ? ir.currency(q) : q;
 }
 
 function isBlank(c, args, env) { return ir.fn('isblank', [s(c, args[0], env)], 'bool', { nn: true }); }

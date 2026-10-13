@@ -372,10 +372,10 @@ test('SUMMARIZE: its expressions are per group; DATATABLE', async () => {
 // --- found by review ----------------------------------------------------------------------------
 
 test('branches of different types: numbers widen, other kinds are text', async () => {
-  // Red 4350/7, Black 1600/7, Blue 180/7.
+  // Red 4350/7, Black 1600/7, Blue 180/7: a fixed decimal divided by a number stays one, to 4 places.
   const row = r('Color', 'a');
   await eq('EVALUATE SUMMARIZECOLUMNS(Product[Color], "a", IF([Orders] > 100, 0, DIVIDE([Sales Amount], 7)))',
-    [row('Red', 621.428571429), row('Black', 228.571428571), row('Blue', 25.714285714)]);
+    [row('Red', 621.4286), row('Black', 228.5714), row('Blue', 25.7143)]);
   await eq(`EVALUATE ROW("a", IF([Orders] > 100, 1, 0.5), "b", SWITCH(TRUE(), [Orders] > 100, 1, [Orders] > 5, 0.25, 0.5),
     "c", MOD(8, 2.5), "d", SELECTEDVALUE('Date'[Year], "multi"), "e", SWITCH(TRUE(), 1 = 2, 5, "none"))`,
   [{ a: 0.5, b: 0.25, c: 0.5, d: 'multi', e: 'none' }]);

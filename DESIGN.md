@@ -388,6 +388,11 @@ and gives each aggregate the filters that reach its table.
   - `PERCENTILE(X).INC/EXC` count the blanks among the values, first in the order; a rank on
     a blank, or between a blank and a value, is blank. A `k` out of range (for EXC, outside
     1/(n + 1)..n/(n + 1)) is an error.
+- **Fixed decimal numbers** (currency) keep their type as DAX types them: `+` and `-` with a
+  whole number or another fixed decimal; `*` by a whole or decimal number; `/` and `DIVIDE`
+  by one. A product or quotient is rounded to four places, half away from zero, so an amount
+  spread by shares sums the rounded shares. Two fixed decimals multiplied or divided, or one
+  plus a decimal number, are a decimal number.
 - **SUMMARIZECOLUMNS:**
   - Its groups are the key combinations that exist within each table, and every combination
     across tables.

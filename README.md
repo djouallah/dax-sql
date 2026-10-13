@@ -1,5 +1,3 @@
-# dax-sql
-
 DAX to SQL for Tabular semantic models: a model and a DAX query in, one SQL query out, with
 DAX's semantics (filter context, context transition, relationships, blanks). Tested on DuckDB.
 Written by [N.S. Devaraj](https://github.com/nsdevaraj).
@@ -12,8 +10,6 @@ Written by [N.S. Devaraj](https://github.com/nsdevaraj).
 - **Or a `DaxError`:** `SYNTAX` (not DAX), `SEMANTIC` (wrong for this model), `UNSUPPORTED`
   (DAX it does not translate). It never guesses.
 - **Not its job:** writing DAX, running the SQL, fetching data.
-
-No runtime dependencies; ES modules, browser and Node 18+. `npm test` runs the tests on DuckDB.
 
 ## Known limitations
 

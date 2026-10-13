@@ -175,10 +175,16 @@ export class DuckDBDialect extends Dialect {
 
   // extra.filter: the aggregate over the rows that condition keeps (FILTER on each call).
   get aggFilter() { return true; }
+  // agg('sum_currency'): a sum of fixed decimals, the range checked once.
+  get sumCurrency() { return true; }
   agg(fn, x, extra = {}) {
     const f = extra.filter ? ` FILTER (WHERE ${extra.filter})` : '';
     switch (fn) {
       case 'sum': return `SUM(${x})${f}`;
+      // A sum of fixed decimals (x is the value before it is made one): each rounded to four
+      // places, and an error if one is out of range, as currency() does row by row; the range
+      // checked once, on the largest.
+      case 'sum_currency': return `CASE WHEN MAX(abs(${x}))${f} >= 922337203685477.5808 THEN error('DAX: the result of a conversion or arithmetic operation is too large or too small for a fixed decimal number') ELSE SUM(round(${x}, 4))${f} END`;
       case 'avg': return `AVG(${x})${f}`;
       case 'min': return `MIN(${x})${f}`;
       case 'max': return `MAX(${x})${f}`;

@@ -236,6 +236,26 @@ SELECT <keys>, <aggregates> FROM <table + joins> WHERE <other filters> GROUP BY 
 The CTE is `LEFT JOIN`ed to the groups. Aggregates are grouped together when they share the
 same table, relationship state, keys, and other filters (the filters compared as SQL).
 
+- **Filters of their own.** Aggregates by the same keys over the same tables whose filters
+  differ only on the tables the scan joins share the scan: the filters they all have are its
+  `WHERE`, each one's others its `FILTER`. The filters on the scanned table's own columns
+  must be the same: they are what lets the engine skip rows. By keys, only aggregates that
+  are blank over no rows join such a group (not `count0`, `dcount0`, `hasone`): the group
+  has a row for a key where only another aggregate has rows, and there each of them must be
+  blank, as its own group would have no row.
+- **Totals from the groups.** An aggregate by some of a group's keys, or by none, over the
+  same rows or fewer (filters of its own on the joined tables, as its `FILTER` in the group):
+  the group's values added up by those keys, from the group's CTE, not a second scan. Sums,
+  counts, minima and maxima; an average is its sum over its count. The group can be in a
+  level before, so a `ROLLUPADDISSUBTOTAL` subtotal reads the detail level's group. The
+  levels' CTEs are written once every level is known.
+- **Blanks a scan rules out.** Where one condition of a scan compares a column with a
+  constant that a blank fails (`date >= DATE '…'`), the others need not say what a blank
+  does: `OR date IS NULL` and `COALESCE(date, <blank>)` go, and the engine can skip rows on
+  what is left.
+- **A sum of fixed decimals** (`SUMX` of a product of currencies) rounds each row to four
+  places and checks the range once, on the largest (`MAX(abs(x))`), instead of row by row.
+
 Inside a fused scan, a filter that reads a key the scan is itself filtered to reads the scan's
 own column instead. Its correlation moves from the group to the row, which joins well.
 
@@ -720,8 +740,11 @@ The SQL it writes:
   relationships that rely on referential integrity. There is no subquery, so the engine can
   skip the rows the condition rules out.
 - A total over the rows of a fused group, like `CALCULATE(x, ALLSELECTED(…))` next to `x` by
-  group, is the group's values added up, not a second scan. This holds for sums, counts,
-  minima and maxima.
+  group, is the group's values added up, not a second scan: by none of its keys or by some
+  (a share within a date and time), from a level before (a subtotal), and with filters of its
+  own on the joined tables. This holds for sums, counts, minima, maxima and averages.
+- Aggregates by the same keys whose filters differ on the joined tables share one scan, each
+  with its `FILTER`.
 
 To add an engine, extend `Dialect` in `src/dialects/base.js` (it lists the functions and
 aggregates to write) and pass an instance as `dialect`.

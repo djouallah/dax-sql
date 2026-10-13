@@ -15,7 +15,7 @@
 //   paths     pathlength pathitem pathitemreverse pathcontains
 // agg(fn, arg, extra) the aggregates of ir.js: sum avg min max count countrows dcount dcountnb
 //   countblank product median pct_inc pct_exc pctx_inc pctx_exc stdev_s stdev_p var_s var_p concat
-//   hasone count0 dcount0
+//   hasone count0 dcount0 sum_currency
 export class Dialect {
   name = 'ansi';
 
@@ -102,4 +102,6 @@ export class Dialect {
   agg(name) { throw new Error(`${this.name}: aggregate ${name} is not implemented`); }
   // Whether agg() takes extra.filter: the aggregate over the rows a condition keeps.
   get aggFilter() { return false; }
+  // Whether agg() takes 'sum_currency': SUM of currency(x), written from x.
+  get sumCurrency() { return false; }
 }

@@ -28,6 +28,11 @@ export class Emitter {
     this.memo = new Map();        // shared IR -> CTE name
     this.fusions = [];            // stack: the Fusion aggregates go to, or null
     this.fusedIn = new WeakMap(); // agg node -> fused group
+    // Comparisons of a value with a constant as compare() writes them (nonBlank): those that
+    // keep no row where the value is blank, SQL -> the value; and those that keep the blank
+    // too, SQL -> { base: the comparison alone, col: the value }.
+    this.rejects = new Map();
+    this.nullArms = new Map();
   }
 
   alias(p) { return `${p}${++this.n}`; }
@@ -229,8 +234,25 @@ export class Emitter {
       scope = withRow(scope, row, { col: i => res.meta(cols[i]), meta: m => res.meta(m) });
     }
     // The same condition once: a date range on a fact and on its date table is one.
-    b.where.push(...new Set([...this.conds(table, ctx, b.res, scope, excluded), ...this.securityConds(table, b.res, scope)]));
+    b.where.push(...this.nonBlank([...new Set([...this.conds(table, ctx, b.res, scope, excluded), ...this.securityConds(table, b.res, scope)])]));
     return b;
+  }
+
+  // Conditions that hold together (a scan's WHERE): where one keeps no row whose value v is
+  // blank (v compared with a constant the blank fails), the others need not say what a blank
+  // v does: `OR v IS NULL` goes, and COALESCE(v, <a blank>) is v. What is left compares the
+  // column itself, which lets the engine skip the rows it rules out.
+  nonBlank(where) {
+    const inner = w => (w.startsWith('(') && w.endsWith(')') ? w.slice(1, -1) : w);
+    const cols = new Set(where.map(w => this.rejects.get(inner(w))).filter(Boolean));
+    if (!cols.size) return where;
+    const blanks = [...new Set(['int', 'double', 'decimal', 'string', 'bool', 'datetime'].map(t => this.d.blankOf(t)))];
+    return where.map(w => {
+      const arm = this.nullArms.get(inner(w));
+      if (arm && cols.has(arm.col)) w = `(${arm.base})`;
+      for (const c of cols) for (const z of blanks) w = w.split(`COALESCE(${c}, ${z})`).join(c);
+      return w;
+    });
   }
 
   // A stored column of an imported table, on the row of `alias`: text without its trailing
@@ -809,8 +831,14 @@ export class Emitter {
       const blankHolds = compareJs(o, ...(litSide === 'r' ? [blankOf(t), lit.v] : [lit.v, blankOf(t)]));
       const [x, v] = this.nocase([lit, col], [litSql, colSql]);
       const c = litSide === 'r' ? `${v} ${sym} ${x}` : `${x} ${sym} ${v}`;
-      if (blankHolds) return `(${c} OR ${colSql} IS NULL)`;
-      return pred ? `(${c})` : `COALESCE(${c}, FALSE)`;
+      if (blankHolds) {
+        const s = `(${c} OR ${colSql} IS NULL)`;
+        this.nullArms.set(s, { base: `(${c})`, col: colSql });
+        return s;
+      }
+      if (!pred) return `COALESCE(${c}, FALSE)`;
+      this.rejects.set(`(${c})`, colSql);
+      return `(${c})`;
     }
     const z = this.d.blankOf(t);
     const side = (v, s) => (v.nn ? s : v.k === 'lit' && v.v === null ? z : `COALESCE(${s}, ${z})`);
@@ -869,6 +897,9 @@ export class Emitter {
 
   // What an aggregate is written from: its function, its argument and the rest, as SQL.
   aggParts(x, scope) {
+    // A sum of fixed decimals: the range checked on the largest, not on every row.
+    if (x.fn === 'sum' && x.arg?.k === 'fn' && x.arg.name === 'currency' && this.d.sumCurrency)
+      return { fn: 'sum_currency', arg: this.scalar(x.arg.a[0], scope), extra: {} };
     const arg = x.arg ? this.scalar(x.arg, scope) : null;
     const extra = {};
     if (x.fn === 'concat') {
@@ -886,22 +917,29 @@ export class Emitter {
     const keyNames = uniqNames(x.keyCols.map(c => c.name));
     const flagNames = x.rolls.map(r => r.flag), itemNames = x.levels[0].items.map(i => i.name);
     const names = uniqNames([...keyNames, ...flagNames, ...itemNames]);
-    const levels = x.levels.map(L => this.level(x, L, scope, names, keyNames));
+    // The levels' fused groups are written once every level is known: a subtotal level reads
+    // the groups of the levels before it (Fusion.over) and can add aggregates to them.
+    const fusions = [];
+    const levels = x.levels.map(L => this.level(x, L, scope, names, keyNames, fusions));
+    for (const f of fusions) f.finish();
     return this.fromSql(levels.length === 1 ? `(${levels[0]})` : `(${levels.join(' UNION ALL ')})`, x.cols, names);
   }
 
-  level(x, L, scope, names, keyNames) {
+  // One level of SUMMARIZECOLUMNS. `fusions`: those of the levels before it; this level's is
+  // added, for the caller to finish.
+  level(x, L, scope, names, keyNames, fusions) {
     const k = this.alias('k');
     const active = L.active.map(c => x.keyCols.indexOf(c));
     const keyRes = new WrapRes(this, null, x.keyCols.map((c, i) => ({ sql: `${k}.${this.ident(keyNames[i])}`, lineage: c })), this.model.state(x.ctx0.mods));
     // The filters that decide which combinations of the keys there are (keyFilters).
     const keyTables = new Set(L.active.map(c => c.table));
     const domain = [...new Set([...keyTables].flatMap(t => this.keyFilters(x, t).map(f => f.of)))];
-    const fusion = new Fusion(this, x.keyRow, active, x.keyCols, domain);
+    const fusion = new Fusion(this, x.keyRow, active, x.keyCols, domain, [...fusions]);
+    fusions.push(fusion);
     this.fusions.push(fusion);
     let items;
     try { items = L.items.map(i => this.scalar(i.expr, withRow(scope, x.keyRow, keyRes))); } finally { this.fusions.pop(); }
-    const groupsSql = fusion.finish();
+    const groupsSql = fusion.groups;
 
     // The groups: from the fused aggregates when every expression is blank without their
     // rows, and those rows are under all the filters that decide the combinations (an
@@ -1056,13 +1094,16 @@ export class Emitter {
 // The aggregates of one SUMMARIZECOLUMNS level (or ROW) that can share a GROUP BY: over a
 // scan, reading no row but the group's keys, which they filter by. A group is one CTE: the
 // scan's table and its other filters (compared as SQL), and the keys that filter it.
+// `prior`: the fusions of the levels of the same SUMMARIZECOLUMNS before this one, whose
+// groups this one's can be added up from (over).
 class Fusion {
-  constructor(em, keyRow, active, keyCols, domain = []) {
+  constructor(em, keyRow, active, keyCols, domain = [], prior = []) {
     this.em = em;
     this.domain = domain;
     this.keyRow = keyRow;
     this.active = active;
     this.keyCols = keyCols;
+    this.prior = prior;
     this.groups = [];
   }
 
@@ -1144,42 +1185,51 @@ class Fusion {
     const keyList = [...keys].sort((a, b) => a - b);
     const body = canonical(`${block.from} ${block.joins.join(' ')} ${block.where.join(' AND ')}`);
     const sig = `${S.table.name}|${state.key}|${keyList.join(',')}|${body}`, rows = `${S.table.name}|${state.key}|${body}`;
-    let g = this.groups.find(x => x.sig === sig), rename = s => s, conds = null, parts = null;
-    // An aggregate over all the rows of a group of the same scan by keys: the group's
-    // aggregates added up, with no second scan.
-    if (!g && !keyList.length && !readsKeys && !edge && !guards.length && OVER[x.fn]) {
-      const h = this.groups.find(y => y.rows === rows && y.keys.length && !y.edge && !y.readsKeys);
-      if (h) return this.over(x, h);
+    const keyed = keyList.length > 0, nullEmpty = NULL_EMPTY.has(x.fn);
+    // A group whose aggregates differ in their conditions (FILTER) has the rows of any of
+    // them: an aggregate that is not blank over no rows does not join it.
+    let g = this.groups.find(y => y.sig === sig && !(y.mixed && !nullEmpty)), conds = null, parts = null;
+    // An aggregate over the rows of a group of the same scan by more keys, of this level or
+    // of a level before it: that group's aggregates added up by these keys (by none: one
+    // row), with no second scan. By some keys, only an aggregate blank over no rows: the
+    // group can have rows for keys this one has none of (it is mixed).
+    // Its scan can also keep fewer rows than the group's, by conditions on the tables it
+    // joins: those are the aggregate's FILTER in the group.
+    if (!g && !readsKeys && !edge && !guards.length && (OVER[x.fn] || x.fn === 'avg') && (!keyed || nullEmpty)) {
+      for (const h of [...this.groups, ...this.prior.flatMap(f => f.groups)]) {
+        if (h.over || h.edge || h.readsKeys || h.tables !== `${S.table.name}|${state.key}`) continue;
+        if (h.keys.length <= keyList.length || !keyList.every(i => h.keys.includes(i))) continue;
+        const conds = h.rows === rows ? [...h.block.where] : this.condsOn(h, S, rest);
+        if (conds) return this.over(x, h, keyList, S, conds);
+      }
     }
-    if (!g && !keyList.length && !readsKeys && em.d.aggFilter) {
-      // An aggregate over the whole of another scan of the same tables (no keys: one row
-      // each) is that scan's, over the rows its own conditions on the joined tables keep:
-      // one scan for both. Its
-      // SQL is written first, on its own scan, since that can join a table to it.
-      parts = em.isolated(() => em.aggParts(x, withRow(new Map(), x.row, block.res)));
-      const into = `${S.table.name}|${state.key}`;
-      const from = b => [b.from, ...b.joins].join(' ');
-      const same = this.groups.find(x => x.merge === into && canonical(from(x.block)) === canonical(from(block)));
-      const map = same && aliasMap(from(block), from(same.block));
-      // Only conditions on joined tables may differ: a condition on the scanned table's own
-      // columns is what lets the engine skip its rows, so the scans must agree on those.
-      const base = same && / AS (\w+)$/.exec(same.block.from)?.[1];
-      const own = cs => cs.filter(c => c.split(/('(?:[^']|'')*')/).some((part, i) => i % 2 === 0 && part.includes(`${base}.`))).sort().join(' AND ');
-      const mapped = map && block.where.map(s => renameAliases(s, map));
-      if (map && base && own(mapped) === own(same.aggs[0].conds)) {
-        g = same;
-        rename = s => renameAliases(s, map);
-        conds = mapped;
+    if (!g && !readsKeys && !edge && em.d.aggFilter && (!keyed || nullEmpty)) {
+      // An aggregate over another scan of the same tables by the same keys is that scan's,
+      // over the rows its own conditions on the joined tables keep: one scan for both, its
+      // conditions (written on the group's rows, which join what they need) the group's or
+      // its FILTER. With no keys there is one row each; by keys, the group has the rows of
+      // either, and an aggregate is blank for a key its own conditions keep no row of, as its
+      // own group would have no row for it: so only aggregates blank over no rows.
+      const into = `${S.table.name}|${state.key}|${keyList.join(',')}`;
+      for (const y of this.groups) {
+        if (y.merge !== into || (keyed && !y.nullEmpty)) continue;
+        const c = this.condsOn(y, S, rest, false);
+        if (!c) continue;
+        g = y;
+        conds = c;
+        parts = em.isolated(() => em.aggParts(x, withRow(new Map(), x.row, g.block.res)));
+        if (keyed && [...c].sort().join(' AND ') !== [...g.block.where].sort().join(' AND ')) g.mixed = true;
+        break;
       }
     }
     if (!g) {
-      g = { sig, rows, edge: !!edge, readsKeys, alias: em.alias('f'), block, keys: keyList, aggs: [], merge: !keyList.length && !readsKeys ? `${S.table.name}|${state.key}` : null };
+      g = { sig, rows, tables: `${S.table.name}|${state.key}`, edge: !!edge, readsKeys, alias: em.alias('f'), block, keys: keyList, aggs: [], nullEmpty: true,
+        merge: !readsKeys && !edge ? `${S.table.name}|${state.key}|${keyList.join(',')}` : null };
       g.keyExprs = keyList.map(i => keyExpr.get(i) ?? block.res.meta(this.keyCols[i]));
-      g.on = (k, keyNames) => keyList.length
-        ? keyList.map((ki, j) => em.d.isNotDistinct(`${g.alias}.g${j}`, `${k}.${em.ident(keyNames[ki])}`)).join(' AND ')
-        : 'TRUE';
+      g.on = onKeys(em, g, keyList);
       this.groups.push(g);
     }
+    if (!nullEmpty) g.nullEmpty = false;
     // Each aggregate keeps the conditions of its own scan; finish() writes the ones the
     // others of its group lack as its FILTER.
     if (!conds) {
@@ -1189,8 +1239,7 @@ class Fusion {
     // A group with an aggregate whose scan lacks one of the filters that decide the
     // combinations of the keys can hold keys that are not one of them.
     if (!this.domain.every(f => S.ctx.filters.includes(f))) g.outside = true;
-    const p = { ...parts, arg: parts.arg && rename(parts.arg), extra: Object.fromEntries(Object.entries(parts.extra)
-      .map(([k, v]) => [k, Array.isArray(v) ? v.map(rename) : rename(v)])) };
+    const p = parts;
     const make = filter => em.d.agg(p.fn, p.arg, filter ? { ...p.extra, filter } : p.extra);
     const key = `${make(null)}|${[...conds].sort().join(' AND ')}`;
     let i = g.aggs.findIndex(a => a.key === key);
@@ -1201,35 +1250,66 @@ class Fusion {
     return `CASE WHEN ${when} THEN ${g.alias}.a${i}${x.fn === 'count0' || x.fn === 'dcount0' ? ' ELSE 0' : ''} END`;
   }
 
-  // The CTEs, written once every aggregate is known.
-  // Aggregate x over the rows of keyed group h, whole: h's aggregate of it (added to h if h
-  // lacks it), added up over h's groups in a group of its own that reads h. Every row of the
-  // scan is in exactly one of h's groups (its keys are columns of the scan's expanded table,
-  // a blank key a group too), so the sum of the groups' sums is the sum, and so on.
-  over(x, h) {
+  // Aggregate x over the rows of keyed group h, by `keys`, some of h's (or none): h's
+  // aggregate of it (added to h if h lacks it), added up over h's groups by those keys in a
+  // group of its own that reads h. Every row of the scan is in exactly one of h's groups (its
+  // keys are columns of the scan's expanded table, a blank key a group too), so the sum of
+  // the groups' sums is the sum, and so on. h can be a group of a level before this one.
+  // `conds`: the conditions of x's rows, h's and any more (its FILTER in h). An average is
+  // its sum over its count.
+  over(x, h, keys, S, conds) {
     const em = this.em;
     const parts = em.isolated(() => em.aggParts(x, withRow(new Map(), x.row, h.block.res)));
-    const conds = [...h.block.where];
-    const make = filter => em.d.agg(parts.fn, parts.arg, filter ? { ...parts.extra, filter } : parts.extra);
-    const key = `${make(null)}|${[...conds].sort().join(' AND ')}`;
-    let i = h.aggs.findIndex(a => a.key === key);
-    if (i < 0) { h.aggs.push({ key, conds, make }); i = h.aggs.length - 1; }
-    let d = this.groups.find(y => y.over === h);
+    const add = fn => {
+      const make = filter => em.d.agg(fn, parts.arg, filter ? { ...parts.extra, filter } : parts.extra);
+      const key = `${make(null)}|${[...conds].sort().join(' AND ')}`;
+      let i = h.aggs.findIndex(a => a.key === key);
+      if (i < 0) { h.aggs.push({ key, conds, make }); i = h.aggs.length - 1; }
+      return `${h.alias}.a${i}`;
+    };
+    const sql = x.fn === 'avg' ? `(CAST(SUM(${add('sum')}) AS DOUBLE) / SUM(${add('count0')}))` : OVER[x.fn](add(parts.fn));
+    if (!NULL_EMPTY.has(x.fn)) h.nullEmpty = false;
+    h.reread = true;
+    let d = this.groups.find(y => y.over === h && y.keys.join(',') === keys.join(','));
     if (!d) {
-      d = { sig: `over|${h.sig}`, over: h, alias: em.alias('f'), keys: [], aggs: [], keyExprs: [], merge: null, on: () => 'TRUE' };
+      d = { sig: `over|${h.sig}|${keys.join(',')}`, over: h, alias: em.alias('f'), keys, aggs: [], merge: null,
+        keyExprs: keys.map(ki => `${h.alias}.g${h.keys.indexOf(ki)}`),
+        // Its keys are h's: outside the combinations of the keys when h's are, or when x's
+        // scan lacks a filter that decides them.
+        get outside() { return this.own || !!h.outside; } };
+      d.on = onKeys(em, d, keys);
       this.groups.push(d);
     }
-    const sql = OVER[x.fn](`${h.alias}.a${i}`);
+    if (!this.domain.every(f => S.ctx.filters.includes(f))) d.own = true;
     let j = d.aggs.indexOf(sql);
     if (j < 0) { d.aggs.push(sql); j = d.aggs.length - 1; }
     em.fusedIn.set(x, d);
     return `${d.alias}.a${j}`;
   }
 
+  // The conditions of a scan of S's table under filters `rest`, written on the rows of group
+  // h (joining to h's scan what they need), when they differ from h's only on the tables it
+  // joins (`superset`: and have all of h's: x's rows are then h's that the others keep).
+  // Else null, and h as it was.
+  condsOn(h, S, rest, superset = true) {
+    const em = this.em, res = h.block.res, joins = h.block.joins.length, aliases = new Map(res.joinAlias);
+    const theirs = new Map(h.block.where.map(c => [canonical(c), c]));
+    const conds = em.nonBlank(em.isolated(() => [...new Set([...em.conds(S.table, new Ctx(rest, S.ctx.mods), res, new Map()),
+      ...em.securityConds(S.table, res, new Map())])])).map(c => theirs.get(canonical(c)) ?? c);
+    const base = scanAlias(h);
+    if (base && (!superset || h.block.where.every(c => conds.includes(c))) && ownConds(conds, base) === ownConds(h.block.where, base)) return conds;
+    h.block.joins.length = joins;
+    res.joinAlias = aliases;
+    return null;
+  }
+
+  // The CTEs, written once every aggregate is known (a level's after those of the levels
+  // before it, whose groups it can read).
   finish() {
     for (const g of this.groups) {
       if (g.over) {
-        this.em.ctes.push(`${g.alias} AS (SELECT ${g.aggs.map((a, j) => `${a} AS a${j}`).join(', ')} FROM ${g.over.alias})`);
+        const sel = [...g.keyExprs.map((k, j) => `${k} AS g${j}`), ...g.aggs.map((a, j) => `${a} AS a${j}`)];
+        this.em.ctes.push(`${g.alias} AS (SELECT ${sel.join(', ')} FROM ${g.over.alias}${g.keyExprs.length ? ` GROUP BY ${g.keyExprs.join(', ')}` : ''})`);
         continue;
       }
       const b = g.block;
@@ -1244,12 +1324,31 @@ class Fusion {
       b._names = [...g.keyExprs.map((_, j) => `g${j}`), ...aggs.map((_, i) => `a${i}`)];
       if (g.keyExprs.length) b.group = g.keyExprs;
       // Read again by a group over it: written once.
-      const twice = this.groups.some(y => y.over === g);
-      this.em.ctes.push(`${g.alias} AS ${twice ? this.em.d.materialized : ''}(${b.render()})`);
+      this.em.ctes.push(`${g.alias} AS ${g.reread ? this.em.d.materialized : ''}(${b.render()})`);
     }
     return this.groups;
   }
 }
+
+// The alias of a group's scanned table, and its conditions on that table's own columns (as
+// text, the aliases inside them numbered): what lets the engine skip its rows, so two scans
+// that share a group must agree on those.
+const scanAlias = g => / AS (\w+)$/.exec(g.block.from)?.[1];
+const ownConds = (cs, base) => cs.filter(c => c.split(/('(?:[^']|'')*')/).some((part, i) => i % 2 === 0 && part.includes(`${base}.`)))
+  .map(canonical).sort().join(' AND ');
+
+// How a fused group's CTE is joined to the groups of the level: on its keys, a blank
+// matching a blank (none: its one row).
+function onKeys(em, g, keys) {
+  return (k, keyNames) => keys.length
+    ? keys.map((ki, j) => em.d.isNotDistinct(`${g.alias}.g${j}`, `${k}.${em.ident(keyNames[ki])}`)).join(' AND ')
+    : 'TRUE';
+}
+
+// The aggregates that are blank over no rows (the dialect's NULL): fused by keys with others
+// whose conditions differ, a key their own conditions keep no row of reads as blank, as a
+// group of their own would have no row for it.
+const NULL_EMPTY = new Set(['sum', 'avg', 'min', 'max', 'count', 'countrows', 'dcount', 'dcountnb', 'countblank', 'median', 'stdev_s', 'stdev_p', 'var_s', 'var_p']);
 
 // The aggregates whose value over all rows is their values over a partition of the rows,
 // added up: how, from the column of the parts.
@@ -1530,20 +1629,6 @@ function outputNames(cols, style) {
   }));
 }
 
-// SQL with its generated aliases numbered by first appearance: the same filters give the
-// same text.
-// The aliases of one FROM (with its joins) as those of another written the same way
-// (canonical), or null.
-function aliasMap(from, to) {
-  const re = /\b[a-z]\d+\b/g, a = from.match(re) ?? [], b = to.match(re) ?? [];
-  if (a.length !== b.length) return null;
-  const map = new Map();
-  for (let i = 0; i < a.length; i++) {
-    if (map.has(a[i]) && map.get(a[i]) !== b[i]) return null;
-    map.set(a[i], b[i]);
-  }
-  return map;
-}
 // SQL with its aliases renamed, outside its string literals.
 function renameAliases(sql, map) {
   return sql.split(/('(?:[^']|'')*')/).map((part, i) => i % 2 ? part

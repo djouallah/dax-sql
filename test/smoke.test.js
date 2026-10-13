@@ -85,4 +85,31 @@ test('the SQL keeps its shape', async () => {
   const q = `EVALUATE SUMMARIZECOLUMNS(Product[Color], "s", [Sales Amount],
     "share", DIVIDE([Sales Amount], CALCULATE([Sales Amount], ALLSELECTED(Product))))`;
   assert.equal(h.dax.compile(q).sql.match(/FROM "Sales" AS t/g).length, 1);
+  // So is one by some of the keys (a share within a city), a subtotal level's (it reads the
+  // detail level's group), and one with filters of its own on a joined table (a FILTER).
+  const scans = dax => h.dax.compile(dax).sql.match(/FROM "Sales" AS t/g).length;
+  assert.equal(scans(`EVALUATE SUMMARIZECOLUMNS(Customer[City], Product[Color], "s", [Sales Amount],
+    "share", DIVIDE([Sales Amount], CALCULATE([Sales Amount], ALLSELECTED(Product))))`), 1);
+  assert.equal(scans(`EVALUATE SUMMARIZECOLUMNS(Customer[City], ROLLUPADDISSUBTOTAL(Product[Color], "t"), "s", [Sales Amount], "a", AVERAGE(Sales[Amount]))`), 1);
+  assert.equal(scans(`EVALUATE SUMMARIZECOLUMNS(ROLLUPADDISSUBTOTAL(Customer[City], "t"), "s", [Sales Amount], "r", CALCULATE([Sales Amount], Product[Color] = "Red"))`), 1);
+  // Aggregates by the same keys whose filters differ on a joined table: one scan, a FILTER each.
+  const red = `EVALUATE SUMMARIZECOLUMNS(Customer[City], "r", CALCULATE([Sales Amount], Product[Color] = "Red"), "b", CALCULATE([Sales Amount], Product[Color] = "Blue"))`;
+  assert.equal(scans(red), 1);
+  assert.match(h.dax.compile(red).sql, /FILTER \(WHERE/);
+  // A column a condition already keeps blanks out of is compared as it is in the others.
+  const range = h.dax.compile(`EVALUATE CALCULATETABLE(ROW("s", [Sales Amount]), Sales[OrderDate] >= DATE(2024, 1, 1), Sales[OrderDate] <= DATE(2024, 6, 30))`).sql;
+  assert.doesNotMatch(range, /"OrderDate" IS NULL|COALESCE\(t\d+\."OrderDate"/);
+});
+
+test('totals from the groups answer what their own scans answer', async () => {
+  // The same figures written so that nothing is shared (each its own ROW over the filter).
+  const shared = await h.run(`EVALUATE SUMMARIZECOLUMNS(Customer[City], ROLLUPADDISSUBTOTAL(Product[Color], "t"), "s", [Sales Amount], "a", AVERAGE(Sales[Amount]), "r", CALCULATE([Sales Amount], Category[Category] = "Clothing"), "share", DIVIDE([Sales Amount], CALCULATE([Sales Amount], ALLSELECTED(Product))))`);
+  for (const r of shared) {
+    const city = r['Customer[City]'] ?? r.City, color = r['Product[Color]'] ?? r.Color;
+    const f = [city == null ? 'ISBLANK(Customer[City])' : `Customer[City] = "${city}"`, ...(r.t ? [] : [color == null ? 'ISBLANK(Product[Color])' : `Product[Color] = "${color}"`])];
+    const [one] = await h.run(`EVALUATE CALCULATETABLE(ROW("s", [Sales Amount], "a", AVERAGE(Sales[Amount]), "r", CALCULATE([Sales Amount], Category[Category] = "Clothing"), "all", CALCULATE([Sales Amount], REMOVEFILTERS(Product))), ${f.join(', ')})`);
+    const close = (x, y) => (x == null ? y == null : Math.abs(x - y) <= 1e-9 * Math.max(1, Math.abs(y)));
+    assert.ok(close(r.s, one.s) && close(r.a, one.a) && close(r.r, one.r), JSON.stringify({ r, one }));
+    if (r.s != null) assert.ok(close(r.share, one.all ? r.s / one.all : null), JSON.stringify({ r, one }));
+  }
 });

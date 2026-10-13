@@ -66,7 +66,10 @@ calculation group's name does not clear its ordinal: grouped by both, the row's 
 in the context, while the item applied follows the name (see calculation groups below).
 
 SUMMARIZECOLUMNS' filter arguments on the columns of one table are one filter (auto-exist,
-`autoExist`): the combinations of those columns the table holds under all of them.
+`autoExist`): the combinations of those columns the table holds under all of them. The
+columns it groups by on that table are among them, each level of groups with its own (a
+subtotal's without the ones it drops), and each group binds its values: a measure that
+removes one filter leaves the others to the values they have with that group's key.
 
 **ALLSELECTED.** The environment holds the shadow filter contexts, innermost last. Each one
 covers some columns and says what values they had:

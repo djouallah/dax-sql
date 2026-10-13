@@ -469,7 +469,8 @@ function summarizeColumns(c, args, env) {
   const filterArgs = [];
   for (; i < args.length && args[i].k !== 'str'; i++) filterArgs.push(args[i]);
   const exprs = pairs(args, i, 'SUMMARIZECOLUMNS');
-  const ctx0 = filterArgs.length ? autoExist(c, c.calculateCtx(filterArgs, { ...env, rows: [] }, true), env.ctx) : env.ctx;
+  const given = filterArgs.length ? c.calculateCtx(filterArgs, { ...env, rows: [] }, true) : null;
+  const ctx0 = given ? autoExist(c, given, env.ctx, []) : env.ctx;
   // Its groups are a shadow filter context on the columns it groups by: their values under its
   // filters. Those marked NONVISUAL filter the groups and the expressions, but are not part
   // of that shadow: it covers their columns too, with the values the other filters leave them,
@@ -487,7 +488,8 @@ function summarizeColumns(c, args, env) {
     const kept = axes.flatMap((ax, n) => ax.slice(0, depth[n]));
     const on = new Set([...plain, ...kept.flatMap(r => rolls[r].cols)]);
     const active = keyCols.filter(k => on.has(k));
-    let ctx = ctx0;
+    // Each level's own keys join its filters' combinations (a subtotal's, without the keys it drops).
+    let ctx = given && active.length ? autoExist(c, given, env.ctx, active) : ctx0;
     for (const k of active) ctx = ctx.add({ kind: 'bind', cols: [k], val: ir.col(keyRow, keyCols.indexOf(k)) });
     const shadows = shadow.cols.size ? [...env.shadows, shadow] : env.shadows;
     const inner = { ...env, ctx, rows: [], grouped: new Set(active), shadows };
@@ -508,8 +510,11 @@ function summarizeColumns(c, args, env) {
 // one filter, the combinations of those columns the table holds under all of them. Removing
 // one column's filter later (REMOVEFILTERS in a measure) leaves the others' columns to the
 // values those combinations have: T[a] = "x" and T[b] IN {1, 2}, without the filter on a,
-// is the values among 1 and 2 that b has in a row where a is "x".
-function autoExist(c, ctx, outer) {
+// is the values among 1 and 2 that b has in a row where a is "x". The columns it groups by
+// on that table (keys) are part of the combinations, and each group binds its own values: so
+// removing one filter leaves the others to the values they have with that group's key, not
+// with any group's.
+function autoExist(c, ctx, outer, keys) {
   const byTable = new Map();
   for (const f of ctx.filters) {
     if (outer.filters.includes(f) || (f.kind === 'rel' && f.base) || f.nonvisual) continue;
@@ -520,7 +525,7 @@ function autoExist(c, ctx, outer) {
   }
   for (const [t, fs] of byTable) {
     if (fs.length < 2) continue;
-    const cols = [...new Set(fs.flatMap(f => f.cols))];
+    const cols = [...new Set([...fs.flatMap(f => f.cols), ...keys.filter(k => k.table === t)])];
     const src = ir.values(t, new Ctx(fs, ctx.mods), cols, (tb, x) => c.scan(tb, x), c.blankRowRels(t).length > 0);
     ctx = new Ctx(ctx.filters.filter(f => !fs.includes(f)), ctx.mods).add({ kind: 'rel', cols, src, idx: cols.map((_, i) => i), base: null });
   }

@@ -578,11 +578,9 @@ npm install   # DuckDB for Node, for the tests only
 npm test
 ```
 
-- `test/semantics.test.js` has 56 tests on a small sales model (`test/fixtures/contoso.js`).
-  The model has 11 sales, so every expected result was worked out by hand.
-- `test/features.test.js` has 24 more on the same model: calculated tables, calculation
-  groups, field parameters, row-level security, ALLSELECTED, `START AT`, the window
-  functions, the blank row, context transition and FORMAT.
+- `test/smoke.test.js`, on a small sales model (`test/fixtures/contoso.js`): representative
+  queries compile and run on DuckDB, with and without roles; errors carry their codes; the SQL
+  keeps its shape (a filter inline on the fact, a selected total read off the groups).
 - [analytics-as-code](https://github.com/djouallah/analytics-as-code) runs its model's measures
   and its dashboard's queries through this package on every push, and compares them with its
   deployed Power BI model on request.

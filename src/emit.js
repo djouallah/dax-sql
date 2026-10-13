@@ -302,19 +302,10 @@ export class Emitter {
   // relationships are those security moves along (model.securityState), so they reach the
   // scan as other filters do: from its expanded table, and as semi-joins across relationships
   // that filter both ways for security and many-to-many ones. A row is kept when some role
-  // keeps it. A secured table that reaches the scan two ways, one of them back over a
-  // relationship a CROSSFILTER makes filter both ways (model.securityPaths), is an error, as
-  // in DAX.
+  // keeps it.
   securityConds(table, res, scope) {
     const roles = this.options.security;
     if (!roles?.length || this.insecure) return [];
-    for (const f of roles.flatMap(r => r.filters)) {
-      const two = this.model.securityPaths(f.table, table, res.state);
-      if (two) {
-        const path = p => p.map(t => `'${t.name}'`).join('->');
-        throw semantic(`join paths must form a tree, but '${f.table.name}' has two join paths to '${table.name}' under row-level security: ${path(two[0])} and ${path(two[1])}`);
-      }
-    }
     const per = roles.map(role => this.unsecured(() => this.conds(table, role.ctx, res, scope)));
     if (per.some(c => !c.length)) return [];
     return [per.length === 1 ? per[0].join(' AND ') : `(${per.map(c => `(${c.join(' AND ')})`).join(' OR ')})`];
@@ -519,6 +510,7 @@ export class Emitter {
           if (exp.has(X.name) || excluded?.has(X.name)) continue;
           const skip = new Set([...(excluded ?? []), ...exp.keys()]);
           if (!this.unsecured(() => this.scanBlock(X, ctx, scope, skip)).where.length) continue;
+          this.securityTree(this.model.table(name), e.rel, state);
           const key = b => { b.setOut([{ name: 'k', lineage: null }], [b.res.meta(e.there)]); return b.render(); };
           const sub = key(this.scanBlock(X, ctx, scope, skip));
           const here = res.meta(e.here), side = this.blankSide(table, e.here, res, state);
@@ -534,6 +526,22 @@ export class Emitter {
       }
     } finally { this.fusions.pop(); }
     return out;
+  }
+
+  // A filter that comes back to `table` over `rel`, which a CROSSFILTER makes filter both ways,
+  // from a table that row-level security filters: when a secured table reaches `table` that
+  // way and another (it filters the fact table that filters it back, say), DAX raises an
+  // error, as the tables that filter a table must join as a tree (model.securityPaths). The
+  // way back is only taken when the query filters the fact table, so this is decided here.
+  securityTree(table, rel, state) {
+    const roles = this.options.security;
+    if (!roles?.length || this.insecure) return;
+    for (const f of roles.flatMap(r => r.filters)) {
+      const two = this.model.securityPaths(f.table, table, state, rel);
+      if (!two) continue;
+      const path = p => p.map(t => `'${t.name}'`).join('->');
+      throw semantic(`join paths must form a tree, but '${f.table.name}' has two join paths to '${table.name}' under row-level security: ${path(two[0])} and ${path(two[1])}`);
+    }
   }
 
   // A filter that is a table, on the columns D of the scan's expanded table.
@@ -1074,6 +1082,7 @@ class Fusion {
         for (const e of em.model.inbound(em.model.table(name), state)) if (e.there.table === X) edge ??= e;
       }
       if (!edge) return null;
+      em.securityTree(edge.here.table, edge.rel, state);
     }
     // The other filters read no row, or only keys the scan is filtered to: those are its own
     // columns, row by row.
@@ -1332,8 +1341,9 @@ class Res {
   physical(alias, m) {
     if (!m.expr) return `${alias}.${this.em.ident(m.source)}`;
     // A calculated column: its expression on this row, in an empty filter context and without
-    // row-level security, as computed at refresh. Blank on the blank row (a join that found
-    // no row, or the blank row itself).
+    // row-level security, as computed at refresh. A column the query defines is computed when
+    // the query runs, under the roles' security. Blank on the blank row (a join that found no
+    // row, or the blank row itself).
     if (alias === this.alias && this.blankRow) return this.em.d.cast('NULL', m.type);
     const { row, expr } = this.em.options.calcColumn(m);
     const res = new ScanRes(this.em, this.block, m.table, alias, this.state);
@@ -1342,7 +1352,8 @@ class Res {
     if (busy.has(m)) throw semantic(`calculated column '${m.table.name}'[${m.name}] depends on itself`);
     busy.add(m);
     let sql;
-    try { sql = `(${this.em.unsecured(() => this.em.isolated(() => this.em.scalar(expr, new Map([[row.id, res]]))))})`; } finally { busy.delete(m); }
+    const value = () => this.em.isolated(() => this.em.scalar(expr, new Map([[row.id, res]])));
+    try { sql = `(${m.query ? value() : this.em.unsecured(value)})`; } finally { busy.delete(m); }
     const key = this.joinKey?.get(alias);
     return key ? `CASE WHEN ${key} IS NULL THEN NULL ELSE ${sql} END` : sql;
   }

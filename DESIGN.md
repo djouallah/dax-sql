@@ -134,10 +134,14 @@ filters on its expanded table's columns only.
   (`conds`). The filters then reach the scan from its expanded table, and as semi-joins across
   relationships that filter both ways and many-to-many ones, from table to table. The
   conditions of several roles are joined with `OR`. They are not part of the query's filter
-  context, so no modifier removes them. Calculated tables and columns, and the security
-  filters themselves, are written without them (`unsecured`). A table filters another back
-  over a relationship that filters both ways only for the query when the query filters it:
-  that is decided on its scan without security, and the rows that filter are its secured ones.
+  context, so no modifier removes them. Calculated tables and the model's calculated columns,
+  and the security filters themselves, are written without them (`unsecured`); a column the
+  query defines is computed with the query, under them. A table filters another back over a
+  relationship that filters both ways only for the query when the query filters it: that is
+  decided on its scan without security, and the rows that filter are its secured ones. When
+  it does, and a secured table reaches the filtered table that way and another (it filters
+  the table that filters it back), that is DAX's error that join paths must form a tree
+  (`securityTree`, where the filter comes back: `conds`, and a fused group's keys).
 - **PATH** is a calculated column's value: the table's paths, over all its rows, are one
   `MATERIALIZED` CTE per pair of key and parent columns (`paths`), a recursive walk down from
   the rows with a blank parent, and PATH on a row is the path of the row's key in it. The
@@ -348,6 +352,10 @@ and gives each aggregate the filters that reach its table.
     the modifiers, then the filters.
   - A filter replaces the filters on its columns, unless it is wrapped in `KEEPFILTERS`.
   - A filter on a date table's date removes the filters on the rest of that table.
+  - A True/False filter (`T[c] > 5`) names the model columns of one table. It cannot use a
+    measure or `CALCULATE`, nor a column of an outer row that is not one of the model's (an
+    iterator's `[Value]`): DAX rejects these, and `FILTER` over a table is the way to write
+    them.
 - **Modifiers:** `ALL`, `ALLNOBLANKROW`, `REMOVEFILTERS`, `ALLEXCEPT`, `ALLSELECTED`,
   `USERELATIONSHIP` and `CROSSFILTER`. `ALL` on a table clears its expanded table, so
   `ALL(Sales)` also clears the filters on Sales' dimensions.
@@ -379,7 +387,8 @@ and gives each aggregate the filters that reach its table.
     filters on the rest of its table, as a filter argument on it does.
   - A measure is its expression under CALCULATE.
   - Context transition turns every row context into filters, one on each column of the row.
-  - `EARLIER`, `RELATED` and `RELATEDTABLE` work.
+  - `EARLIER`, `RELATED` and `RELATEDTABLE` work. `RELATED` follows a relationship whichever
+    way `CROSSFILTER` makes it filter, but not one it turns off (`None`).
   - SUMMARIZE's expressions have their group as its rows of the table, a table filter (on the
     expanded table, for a model table's rows), besides its values: a filter that removes or
     replaces a grouping column's keeps the group's rows. `ALLSELECTED`, putting back the
@@ -442,7 +451,7 @@ and gives each aggregate the filters that reach its table.
   several `EVALUATE`s and lazy `VAR`s. Calculated columns are evaluated per row in an empty
   filter context. A `DEFINE COLUMN` is one for the query: a column of its table while the
   query is compiled (to group by, filter, or clear with `ALL` of the table), computed as the
-  model's are, without row-level security.
+  model's are, but with the query, so under its row-level security.
 - **`START AT`** after `ORDER BY` starts the rows at the given values, compared in the order's
   columns and directions as a whole (the first value first, then the next among ties). The
   values are constants or query parameters (`@name`, from `options.params`).
@@ -484,10 +493,13 @@ and gives each aggregate the filters that reach its table.
     the query's filters.
   - With several roles, a table keeps the rows that some role keeps.
   - `ALL` and the other modifiers do not bring back rows that security removes.
-  - A `CROSSFILTER` that lets a secured table's rows reach a table a second way (Customer
-    secured, and Sales made to filter Customer back) is an error, as in DAX: its join paths
-    must form a tree.
-  - Calculated tables and calculated columns are computed without security, as at refresh.
+  - A `CROSSFILTER` that lets a secured table's rows reach a table a second way (Category
+    secured, and Subcategory made to filter Category back) is an error, as in DAX: its join
+    paths must form a tree. It is one only where the filter does come back, when the query
+    filters the table it comes back from by more than the secured table (the subcategory
+    grouped by, say).
+  - Calculated tables and the model's calculated columns are computed without security, as at
+    refresh. A `DEFINE COLUMN` is computed with the query, under security.
 
 **Functions.**
 
@@ -499,8 +511,8 @@ and gives each aggregate the filters that reach its table.
   `CONTAINS`, `CONTAINSROW`, `ISEMPTY`, `IN`.
 - **Window functions:** `INDEX`, `OFFSET`, `WINDOW` (`ABS` and `REL`), `RANK` (`DENSE` and
   `SKIP`) and `ROWNUMBER`, with `ORDERBY` (and its `ASC BLANKS LAST` kind of order),
-  `PARTITIONBY` (also a related table's column, but not one a table function added, which DAX
-  rejects), `MATCHBY`, and the blanks argument.
+  `PARTITIONBY` (columns of the relation: not a related table's, nor one a table function
+  added, which DAX rejects), `MATCHBY`, and the blanks argument.
   - The current row is the row of the relation whose columns hold the outer values: those of
     a row context, or the value the filter context fixes a column to (a group, or a context
     transition). For RANK, only the `ORDERBY` and `PARTITIONBY` columns need one, and the
@@ -514,7 +526,9 @@ and gives each aggregate the filters that reach its table.
     order, where DAX raises an error.
 - **Tables:**
   - building and shaping: `FILTER`, `VALUES`, `DISTINCT`, `ALL…`, `SUMMARIZE`,
-    `SUMMARIZECOLUMNS`, `ADDCOLUMNS`, `SELECTCOLUMNS`, `GROUPBY`/`CURRENTGROUP`, `TOPN`,
+    `SUMMARIZECOLUMNS`, `ADDCOLUMNS`, `SELECTCOLUMNS`, `GROUPBY`/`CURRENTGROUP` (the table of
+    `SUMX`, `AVERAGEX`, `MINX`, `MAXX`, `COUNTX`, `COUNTAX`, `PRODUCTX`, `GEOMEANX`, `STDEVX`
+    and `VARX` only, as in DAX: not `CONCATENATEX`, say), `TOPN`,
     `TOPNSKIP`, `ADDMISSINGITEMS`; `ROLLUP`/`ROLLUPGROUP` and `ISSUBTOTAL` in `SUMMARIZE`;
   - combining: `CROSSJOIN`, `UNION`, `INTERSECT`, `EXCEPT`, `GENERATE(ALL)`, `TREATAS`,
     `NATURALINNERJOIN`, `NATURALLEFTOUTERJOIN` (on the columns of the same lineage, or of the

@@ -131,6 +131,7 @@ const average = make => (c, args, env) => {
 
 function calculate(c, args, env) {
   if (!args.length) throw semantic('CALCULATE needs an expression');
+  if (env.boolFilter) throw semantic('a True/False filter of CALCULATE cannot use CALCULATE: it has to be FILTER over a table');
   const ctx = c.calculateCtx(args.slice(1), env);
   // Inside CALCULATE the row contexts are filters now: no row context is left.
   return c.scalar(args[0], { ...env, ctx, rows: [] });
@@ -215,17 +216,24 @@ function lookupValue(c, args, env) {
   return ir.kase([[ir.agg('hasone', src, row, value, 'bool'), ir.agg('min', src, row, value, value.t)]], alt);
 }
 
+// RELATED follows the active relationships, whichever way they filter, but not one CROSSFILTER
+// turns off (None): there is no relationship to follow then.
 function related(c, args, env) {
   const col = c.modelColumn(args[0], env, 'RELATED needs a column');
   const state = c.model.state(env.ctx.mods);
+  const off = new Set(state.filter(s => env.ctx.mods?.cross?.get(s.rel.name) === 'none').map(s => s.rel));
+  const path = from => {
+    const p = c.model.expand(from, state, null, true).get(col.table.name);
+    return p && !p.some(h => off.has(h.rel)) ? p : null;
+  };
   for (let i = env.rows.length - 1; i >= 0; i--) {
     const row = env.rows[i];
-    if (row.base && c.model.expand(row.base, state, null, true).has(col.table.name)) return ir.col(row, col);
+    if (row.base && path(row.base)) return ir.col(row, col);
     // A row of another table that holds the key of a model table: from there.
     for (const rc of row.cols) {
       if (!rc.lineage) continue;
-      const path = c.model.expand(rc.lineage.table, state, null, true).get(col.table.name);
-      if (path?.length && row.cols.some(x => x.lineage === path[0].from)) return ir.col(row, col);
+      const p = path(rc.lineage.table);
+      if (p?.length && row.cols.some(x => x.lineage === p[0].from)) return ir.col(row, col);
     }
   }
   throw semantic(`RELATED('${col.table.name}'[${col.name}]): no row context reaches '${col.table.name}' through a relationship`);

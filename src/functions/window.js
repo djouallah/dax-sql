@@ -67,25 +67,20 @@ function windowArgs(c, args, env, fn) {
     if (i < 0) throw semantic(`${fn}: the relation has no column ${a.table ? `'${a.table}'` : ''}[${a.name}]`);
     return i;
   };
-  // PARTITIONBY: columns of the relation, or of a table related to it (read with RELATED).
-  // Not a column a table function added (one with no lineage): DAX rejects it.
-  const partExprs = [], parts = [];
-  for (const a of part) {
-    let i = -1;
-    try { i = index(a, 'PARTITIONBY'); } catch (e) {
-      if (!(a.k === 'col' && a.table && rel.base && c.model.findColumn(a.table, a.name))) throw e;
-    }
-    if (i >= 0 && !rel.cols[i].lineage) throw semantic(`PARTITIONBY cannot be used with columns added by table functions ([${rel.cols[i].name}])`);
-    if (i >= 0) { parts.push(i); partExprs.push(ir.col(row, i)); } else partExprs.push(c.scalar({ k: 'call', fn: 'RELATED', args: [a] }, inner));
-  }
-  const related = partExprs.length > parts.length;
+  // PARTITIONBY: columns of the relation, not those of a table related to it, nor a column a
+  // table function added (one with no lineage): DAX rejects both.
+  const parts = part.map(a => {
+    const i = index(a, 'PARTITIONBY');
+    if (!rel.cols[i].lineage) throw semantic(`PARTITIONBY cannot be used with columns added by table functions ([${rel.cols[i].name}])`);
+    return i;
+  });
+  const partExprs = parts.map(i => ir.col(row, i));
   const orderBy = order.length
     ? order.map(o => { const expr = c.scalar(o.ast, inner); return { expr, desc: o.desc, blanks: o.blanks ?? blanks, t: expr.t }; })
     : rel.cols.map((x, i) => (parts.includes(i) ? null : { expr: ir.col(row, i), desc: false, blanks, t: x.t })).filter(Boolean);
-  // The columns that say which row is the current one. With a related table's column in
-  // PARTITIONBY, the whole row (its partition follows from it).
-  const matched = match ? [...new Set([...match.map(a => index(a, 'MATCHBY')), ...(related ? allCols({ rel }) : parts)])] : null;
-  return { rel, row, orderBy, parts: related ? null : parts, partExprs, matched, hasMatch: !!match };
+  // The columns that say which row is the current one.
+  const matched = match ? [...new Set([...match.map(a => index(a, 'MATCHBY')), ...parts])] : null;
+  return { rel, row, orderBy, parts, partExprs, matched, hasMatch: !!match };
 }
 
 // The current row's columns' outer values; those with none, from their values in context.
@@ -129,14 +124,12 @@ function node(k, fn, w, cur, extra) {
     match: cur.match, unbound: cur.unbound, cols: w.rel.cols, base: w.rel.base, ...extra };
 }
 const allCols = w => w.rel.cols.map((_, i) => i);
-// The columns that say which partition is the current one: PARTITIONBY's (all of the
-// relation's when one is a related table's).
-const partCols = w => w.parts ?? allCols(w);
+// The columns that say which partition is the current one: PARTITIONBY's.
+const partCols = w => w.parts;
 // RANK's current row: the ORDERBY and PARTITIONBY columns, as the documentation says (when
 // every ORDERBY expression is a column of the relation; else the whole row). Rows tied on
 // them share the rank.
 function rankCols(w) {
-  if (!w.parts) return allCols(w);
   const ids = w.orderBy.map(o => (o.expr.k === 'col' && o.expr.row === w.row
     ? (typeof o.expr.ref === 'number' ? o.expr.ref : w.rel.cols.findIndex(c => c.lineage === o.expr.ref)) : -1));
   return ids.includes(-1) ? allCols(w) : [...new Set([...ids, ...w.parts])];

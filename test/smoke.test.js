@@ -59,6 +59,12 @@ test('errors carry their codes', async () => {
   await fails('EVALUATE ROW("x", [No such measure])', 'SEMANTIC');
   await fails('EVALUATE ROW("x", Sales[Qty])', 'SEMANTIC');
   await fails('EVALUATE ROW("x", SUM(Sales[Qty]', 'SYNTAX');
+  // What DAX rejects though the rest of the query could be answered.
+  await fails('EVALUATE ROW("x", CALCULATE([Sales Amount], Sales[Qty] > [Sales Amount]))', 'SEMANTIC');
+  await fails('EVALUATE ROW("x", SUMX({1, 2}, CALCULATE([Sales Amount], Sales[Qty] = [Value])))', 'SEMANTIC');
+  await fails('EVALUATE GROUPBY(Sales, Product[Color], "n", CONCATENATEX(CURRENTGROUP(), Sales[Qty], ","))', 'SEMANTIC');
+  await fails('EVALUATE ROW("x", CALCULATE(SUMX(Sales, RELATED(Product[Price])), CROSSFILTER(Sales[ProductKey], Product[ProductKey], None)))', 'SEMANTIC');
+  await fails('EVALUATE OFFSET(-1, ALL(Product), ORDERBY(Product[Price]), PARTITIONBY(Category[Category]))', 'SEMANTIC');
 });
 
 test('the SQL keeps its shape', async () => {

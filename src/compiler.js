@@ -49,7 +49,8 @@ export class Compiler {
         else throw unsupported(`DEFINE ${d.kind.toUpperCase()}`);
       }
       // A column defined in the query is a calculated column: its expression on a row of its
-      // table, in an empty filter context (and, as it is written, without row-level security).
+      // table, in an empty filter context. Unlike the model's, it is computed with the query,
+      // so under its row-level security (emit.js).
       for (const [col, d] of queryCols) {
         const row = ir.newRow(col.table.columns.map(x => ({ name: x.name, lineage: x, t: x.type })), 'scan', { base: col.table });
         let expr;
@@ -133,6 +134,16 @@ export class Compiler {
 
   // [Name]: a column of the row (a renamed or added one first), else a measure.
   ref(ast, env) {
+    const x = this.refOf(ast, env);
+    // A True/False filter of CALCULATE is a predicate on model columns of one table: it cannot
+    // read a column of an outer row context by its name (an iterator's [Value]).
+    const b = env.boolFilter;
+    if (b && x.k === 'col' && x.row !== b && env.rows.indexOf(x.row) < env.rows.indexOf(b))
+      throw semantic(`column [${ast.name}] cannot be used in a True/False filter of CALCULATE, which names model columns only`);
+    return x;
+  }
+  // What [Name] or Table[Name] stands for here.
+  refOf(ast, env) {
     const { table, name } = ast;
     if (table) {
       const t = env.vars.get(lc(table)) || env.queryTables.get(lc(table));
@@ -159,6 +170,7 @@ export class Compiler {
   // context selects an item of.
   measureRef(m, env) {
     if (env.stack.includes(m)) throw semantic(`measure [${m.name}] refers to itself`);
+    if (env.boolFilter) throw semantic(`a True/False filter of CALCULATE cannot use a measure ([${m.name}]): it has to be FILTER over a table`);
     const ctx = this.transition(env);
     return this.applyGroups(m, { ...env, ctx, rows: [], cg: null }, 0);
   }
@@ -439,6 +451,9 @@ export class Compiler {
   }
 
   call(ast, env) {
+    // CURRENTGROUP() is the table of one of GROUPBY's aggregations only.
+    if (ast.args?.[0]?.k === 'call' && ast.args[0].fn === 'CURRENTGROUP' && !GROUPBY_AGGREGATES.has(ast.fn))
+      throw semantic(`GROUPBY's expressions aggregate CURRENTGROUP() with ${[...GROUPBY_AGGREGATES].join(', ')}, not ${ast.fn}`);
     const f = SCALAR.get(ast.fn);
     if (f) return f(this, ast.args, env, ast);
     if (TABLE.has(ast.fn)) return this.single(this.table(ast, env));
@@ -643,7 +658,7 @@ export class Compiler {
     const tables = new Set(cols.map(c => c.table));
     if (tables.size > 1) throw semantic(`a CALCULATE filter can name the columns of one table only (${[...tables].map(t => `'${t.name}'`).join(', ')})`);
     const row = ir.newRow(cols.map(c => ({ name: c.name, lineage: c, t: c.type })), 'virtual', { open: true });
-    const pred = this.scalar(ast, { ...env, rows: [...env.rows, row] });
+    const pred = this.scalar(ast, { ...env, rows: [...env.rows, row], boolFilter: row });
     row.open = false;
     if (!row.cols.length) throw semantic('a CALCULATE filter has to name a column');
     return { kind: 'pred', cols: row.cols.map(c => c.lineage), row, pred };
@@ -710,6 +725,8 @@ export class Compiler {
   }
 }
 
+const GROUPBY_AGGREGATES = new Set(['SUMX', 'AVERAGEX', 'MINX', 'MAXX', 'COUNTX', 'COUNTAX', 'PRODUCTX', 'GEOMEANX',
+  'STDEVX.S', 'STDEVX.P', 'VARX.S', 'VARX.P']);
 const BINOPS = { '+': 'add', '-': 'sub', '*': 'mul', '/': 'div', '^': 'pow', '&': 'concat', '=': 'eq', '==': 'eqs',
   '<>': 'ne', '<': 'lt', '<=': 'le', '>': 'gt', '>=': 'ge', '&&': 'and', '||': 'or' };
 

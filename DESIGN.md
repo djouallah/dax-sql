@@ -72,6 +72,9 @@ SUMMARIZECOLUMNS' filter arguments on the columns of one table are one filter (a
 columns it groups by on that table are among them, each level of groups with its own (a
 subtotal's without the ones it drops), and each group binds its values: a measure that
 removes one filter leaves the others to the values they have with that group's key.
+The values a table's grouping columns take are decided by those filters on its own columns
+and by the context around SUMMARIZECOLUMNS (`keyFilters`), not by its filter arguments on
+other tables, even ones that reach it: those only make expressions blank.
 
 **ALLSELECTED.** The environment holds the shadow filter contexts, innermost last. Each one
 covers some columns and says what values they had:
@@ -79,7 +82,8 @@ covers some columns and says what values they had:
 - An iterator's (`iter`) covers the columns of the table it iterates that have a lineage. Its
   values are that table's rows.
 - SUMMARIZECOLUMNS' covers the columns it groups by. Its values are theirs under its filters
-  on them: a filter on another column (auto-exist) narrows the groups, not the shadow.
+  on them: a filter on another column alone narrows the groups, not the shadow. One merged
+  with a filter on them (auto-exist) narrows both.
   A filter marked `NONVISUAL` is not one of those: the shadow covers its columns too, and
   their values are those the other filters leave them.
 
@@ -94,7 +98,8 @@ covers, and adds the filter of the last shadow that covers it (`shadowFilter`):
 - Otherwise it is `VALUES` of the columns under the shadow's filter context.
 
 Columns no shadow covers keep their filters, or lose them for `ALLSELECTED(column)`. As a
-table, `ALLSELECTED(column)` starts from no filter at all.
+table, `ALLSELECTED(column)` starts from no filter at all, and `ALLSELECTED(table)` from the
+filters on its expanded table's columns only.
 
 ### The model's features
 
@@ -352,12 +357,15 @@ and gives each aggregate the filters that reach its table.
     iterates, holding the values it iterates over. SUMMARIZECOLUMNS is one on the columns it
     groups by, holding their values under its filters on those columns (the query's and its
     filter tables'): `ALLSELECTED(Product[Product])` is every product under a filter on
-    `Product[Category]`.
+    `Product[Category]`, and the products of that category among those listed when a filter
+    on `Product[Product]` joins it (auto-exist).
   - `ALLSELECTED()` gives every column a shadow covers the filter of the last shadow covering
     it, and leaves the filters on other columns alone. `ALLSELECTED(table)` does the same for
     the table's columns. `ALLSELECTED(column)` gives the column its last shadow's filter, or
     none.
-  - As a table, `ALLSELECTED(table)` is the table's rows in that filter context, and
+  - As a table, `ALLSELECTED(table)` is the table's rows in that filter context, less the
+    filters on tables outside its expanded table (a filter on Product does not narrow
+    `ALLSELECTED(Customer)` over a relationship that filters both ways), and
     `ALLSELECTED(column)` is the column's values under its last shadow only (all of its values
     when there is none).
 - **Relationships:**
@@ -396,6 +404,10 @@ and gives each aggregate the filters that reach its table.
 - **SUMMARIZECOLUMNS:**
   - Its groups are the key combinations that exist within each table, and every combination
     across tables.
+  - A filter table on another table does not limit a table's keys, even when it reaches that
+    table: by `Product[Name]` under a filter on `Category[Category]`, every product is a
+    group, kept when one of its expressions is not blank. Filter tables on the table's own
+    columns do (auto-exist).
   - A group whose expressions are all blank is left out (`IGNORE` excludes an expression from
     that test).
   - Filter tables, `ROLLUPADDISSUBTOTAL`/`ROLLUPGROUP`, and `ISINSCOPE` are supported.

@@ -867,10 +867,9 @@ export class Emitter {
     const k = this.alias('k');
     const active = L.active.map(c => x.keyCols.indexOf(c));
     const keyRes = new WrapRes(this, null, x.keyCols.map((c, i) => ({ sql: `${k}.${this.ident(keyNames[i])}`, lineage: c })), this.model.state(x.ctx0.mods));
-    // The filters of SUMMARIZECOLUMNS that decide which combinations of the keys there are:
-    // those that reach a key's table.
-    const state0 = this.model.state(x.ctx0.mods), keyTables = new Set(L.active.map(c => c.table));
-    const domain = x.ctx0.filters.filter(f => f.cols.some(c => [...keyTables].some(t => this.model.reaches(c.table, t, state0))));
+    // The filters that decide which combinations of the keys there are (keyFilters).
+    const keyTables = new Set(L.active.map(c => c.table));
+    const domain = [...new Set([...keyTables].flatMap(t => this.keyFilters(x, t).map(f => f.of)))];
     const fusion = new Fusion(this, x.keyRow, active, x.keyCols, domain);
     this.fusions.push(fusion);
     let items;
@@ -908,8 +907,29 @@ export class Emitter {
     return sql;
   }
 
+  // The filters that decide which values the grouping columns of table t take: those that
+  // SUMMARIZECOLUMNS' filter arguments put on t's own columns (auto-exist), and those of the
+  // context around it that reach t. An argument's filter on another table does not, even
+  // when it reaches t: grouped by Product[Name] under a filter on Category[Category], every
+  // product is a group, and one goes only when its expressions are all blank. Each is { f, of }: the
+  // filter, narrowed to t's columns when it is on others' too, and the filter it comes from.
+  keyFilters(x, t) {
+    const state = this.model.state(x.ctx0.mods), out = [];
+    for (const f of x.ctx0.filters) {
+      if (x.outer.includes(f)) {
+        if (f.cols.some(c => this.model.reaches(c.table, t, state))) out.push({ f, of: f });
+      } else if (f.kind === 'rel' && f.base) {
+        if (f.base === t) out.push({ f, of: f });
+      } else {
+        const own = f.cols.filter(c => c.table === t);
+        if (own.length) out.push({ f: own.length === f.cols.length ? f : narrow(f, own), of: f });
+      }
+    }
+    return out;
+  }
+
   // Every combination of the grouping columns' values: within a table those it holds, under
-  // the query's filters; across tables, all.
+  // the filters on it (keyFilters); across tables, all.
   keyCombinations(x, L, keyNames, scope) {
     const byTable = new Map();
     for (const c of L.active) {
@@ -922,8 +942,9 @@ export class Emitter {
         b.distinct = true;
         return b.render();
       };
-      const rows = out(this.isolated(() => this.scanBlock(t, x.ctx0, scope)));
-      const blank = this.blankRow(t, x.ctx0, scope, out);
+      const ctx = new Ctx(this.keyFilters(x, t).map(k => k.f), x.ctx0.mods);
+      const rows = out(this.isolated(() => this.scanBlock(t, ctx, scope)));
+      const blank = this.blankRow(t, ctx, scope, out);
       return blank ? `${rows} UNION ${blank}` : rows;
     });
     if (parts.length === 1) return parts[0];

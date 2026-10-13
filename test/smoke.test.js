@@ -15,6 +15,7 @@ const QUERIES = [
   'EVALUATE SUMMARIZECOLUMNS(Category[Category], Customer[City], "s", [Sales Amount], "o", [Orders])',
   'EVALUATE SUMMARIZECOLUMNS(ROLLUPADDISSUBTOTAL(Category[Category], "t"), "s", [Sales Amount], "in", ISINSCOPE(Category[Category]))',
   'EVALUATE SUMMARIZECOLUMNS(Product[Color], "share", DIVIDE([Sales Amount], CALCULATE([Sales Amount], ALLSELECTED(Product))))',
+  'EVALUATE SUMMARIZECOLUMNS(Product[Name], TREATAS({"Paris"}, Customer[City]), TREATAS({"Red"}, Product[Color]), "s", [Sales Amount], "a", CALCULATE([Sales Amount], ALL(Customer)), "n", COUNTROWS(ALLSELECTED(Customer)))',
   'EVALUATE ROW("k", CALCULATE([Sales Amount], KEEPFILTERS(Product[Color] = "Red")), "a", CALCULATE([Sales Amount], ALL(Sales)))',
   'EVALUATE ROW("u", CALCULATE([Sales Amount], USERELATIONSHIP(Sales[ShipDate], \'Date\'[Date])), "c", CALCULATE(COUNTROWS(Customer), CROSSFILTER(Sales[CustomerKey], Customer[CustomerKey], BOTH)))',
   'EVALUATE ROW("m", MAXX(VALUES(Customer[Customer]), [Sales Amount]), "f", COUNTROWS(FILTER(Product, [Sales Amount] > 100)))',

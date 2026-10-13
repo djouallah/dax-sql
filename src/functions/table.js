@@ -54,14 +54,17 @@ function allExcept(c, args, env) {
   return rowsOf(c, t, env.ctx.remove(x => exp.has(x) && !keep.has(x)), 'ALLEXCEPT');
 }
 
-// ALLSELECTED as a table. Of a table: its rows, the columns some shadow filter context covers
-// filtered as the last such says, the others as the filter context says. Of columns: their
+// ALLSELECTED as a table. Of a table: its rows, the columns of its expanded table that some
+// shadow filter context covers filtered as the last such says, the others as the filter
+// context says. Filters on other tables are not on its columns, and are left out as ALL(T)
+// leaves them: one that reaches the table only by filtering it back over a relationship (a
+// filter on Product reaching Customer through Sales) does not narrow it. Of columns: their
 // values under the last shadow on them only (all their values when there is none).
 function allSelected(c, args, env) {
   if (!args.length) throw semantic('ALLSELECTED() with no argument is only valid as a CALCULATE filter');
   if (args.length === 1 && isModelTableName(c, args[0], env)) {
-    const t = c.model.table(args[0].name);
-    return rowsOf(c, t, c.allSelected(env.ctx, env, c.expandedColumns(t, env.ctx)), 'ALLSELECTED');
+    const t = c.model.table(args[0].name), exp = c.expandedColumns(t, env.ctx);
+    return rowsOf(c, t, c.allSelected(env.ctx.remove(x => !exp.has(x)), env, exp), 'ALLSELECTED');
   }
   const list = args.map(a => c.modelColumn(a, env));
   if (list.some(x => x.table !== list[0].table)) throw semantic('ALLSELECTED takes columns of one table');
@@ -462,8 +465,9 @@ function nonBlank(fn) {
 }
 
 // --- SUMMARIZECOLUMNS -------------------------------------------------------------------
-// The groups: the combinations of the grouping columns' values the filters keep (within one
-// table, the combinations it holds; across tables, all of them), and each expression
+// The groups: the combinations of the grouping columns' values the filters on their own
+// tables keep (within one table, the combinations it holds; across tables, all of them; a
+// filter argument on another table only makes expressions blank), and each expression
 // evaluated with the group's values as filters. A group whose expressions are all blank is
 // left out. With ROLLUPADDISSUBTOTAL, each level of subtotals is the same with fewer keys.
 // Each ROLLUPADDISSUBTOTAL is an axis of its own (a matrix's rows, its columns): within one,
@@ -491,17 +495,18 @@ function summarizeColumns(c, args, env) {
   const exprs = pairs(args, i, 'SUMMARIZECOLUMNS');
   const given = filterArgs.length ? c.calculateCtx(filterArgs, { ...env, rows: [] }, true) : null;
   const ctx0 = given ? autoExist(c, given, env.ctx, []) : env.ctx;
-  const selected = given ?? env.ctx;
   // Its groups are a shadow filter context on the columns it groups by: their values under
-  // its filters on those columns. A filter on another column narrows the groups (auto-exist)
-  // but not the shadow: ALLSELECTED(Product[Product]) is every product under a filter on
-  // Product[Category]. Those marked NONVISUAL filter the groups and the expressions, but are
-  // not part of that shadow: it covers their columns too, with the values the other filters
-  // leave them, so ALLSELECTED takes them off.
+  // its filters on those columns, the filters on the columns of one table being one
+  // (auto-exist). A filter on another column alone narrows the groups but not the shadow:
+  // ALLSELECTED(Product[Product]) is every product under a filter on Product[Category]. With
+  // a filter on Product[Product] as well, the two are one filter, and the shadow is the
+  // products it keeps: the listed ones of that category. Those marked NONVISUAL filter the
+  // groups and the expressions, but are not part of that shadow: it covers their columns
+  // too, with the values the other filters leave them, so ALLSELECTED takes them off.
   const nonvisual = ctx0.filters.filter(f => f.nonvisual);
   const shadowCols = new Set([...keyCols, ...nonvisual.flatMap(f => f.cols)]);
   const shadow = { cols: shadowCols, src: null,
-    ctx: new Ctx(selected.filters.filter(f => !f.nonvisual), selected.mods).remove(x => !shadowCols.has(x)) };
+    ctx: new Ctx(ctx0.filters.filter(f => !f.nonvisual), ctx0.mods).remove(x => !shadowCols.has(x)) };
   if (new Set(keyCols).size !== keyCols.length) throw semantic('SUMMARIZECOLUMNS groups by the same column twice');
   const keyRow = ir.newRow(keyCols.map(k => ({ name: k.name, lineage: k, t: k.type })), 'key');
   // The levels: how many of each axis' columns stay, the detail first.
@@ -527,7 +532,7 @@ function summarizeColumns(c, args, env) {
   const cols = [...keyCols.map(k => ({ name: k.name, lineage: k, t: k.type })),
     ...rolls.map(r => ({ name: r.flag, lineage: null, t: 'bool' })),
     ...exprs.map(([name], n) => ({ name, lineage: null, t: levels[0].items[n].t }))];
-  return { k: 'sc', keyRow, keyCols, rolls, levels, ctx0, cols, base: null };
+  return { k: 'sc', keyRow, keyCols, rolls, levels, ctx0, outer: env.ctx.filters, cols, base: null };
 }
 
 // Auto-exist: the filters SUMMARIZECOLUMNS' arguments put on the columns of one table are

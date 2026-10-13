@@ -114,7 +114,9 @@ table, `ALLSELECTED(column)` starts from no filter at all.
   relationships that filter both ways and many-to-many ones, from table to table. The
   conditions of several roles are joined with `OR`. They are not part of the query's filter
   context, so no modifier removes them. Calculated tables and columns, and the security
-  filters themselves, are written without them (`unsecured`).
+  filters themselves, are written without them (`unsecured`). A table filters another back
+  over a relationship that filters both ways only for the query when the query filters it:
+  that is decided on its scan without security, and the rows that filter are its secured ones.
 - **Field parameters** are calculated tables with `NAMEOF` cells, which are constants.
   `expandFieldParameter` reads the table's expression to list the fields a selection stands
   for.

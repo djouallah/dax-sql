@@ -274,11 +274,20 @@ function keepFiltersTable(c, args, env) { return c.table(args[0], env); }
 
 function filters(c, args, env) { return filtersTable(c, c.modelColumn(args[0], env), env); }
 
-// FIRSTNONBLANK(T[c], expr): the first value of the column for which expr is not blank.
+// FIRSTNONBLANK(T[c], expr): the first value of the column for which expr is not blank. The
+// column is its values in the filter context; a table of one column (FILTER(ALL(T[c]), ...))
+// is those values, the column its lineage.
 function nonBlank(fn) {
   return (c, args, env) => {
-    const col = c.modelColumn(args[0], env);
-    const src = ir.values(col.table, env.ctx, [col], (tb, ctx) => c.scan(tb, ctx));
+    let col, src;
+    if (args[0].k === 'col') {
+      col = c.modelColumn(args[0], env);
+      src = ir.values(col.table, env.ctx, [col], (tb, ctx) => c.scan(tb, ctx));
+    } else {
+      src = c.table(args[0], env);
+      col = src.cols.length === 1 ? src.cols[0].lineage : null;
+      if (!col) throw semantic(`${fn === 'min' ? 'FIRSTNONBLANK' : 'LASTNONBLANK'} takes a column, or a table of one column of the model`);
+    }
     const row = ir.rowOf(src, 'table');
     const e = c.scalar(args[1], c.iter(env, row));
     const kept = ir.filter(src, row, ir.op('not', ir.fn('isblank', [e], 'bool', { nn: true })));

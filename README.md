@@ -104,11 +104,12 @@ and gives each aggregate the filters that reach its table.
 - **Relationships:**
   - A filter reaches a table through many-to-one relationships, read off the expanded table.
   - It also reaches tables through bidirectional and many-to-many relationships, as
-    semi-joins.
+    semi-joins. A blank row the filter keeps reaches the other table's blank row.
   - Relationships can be active or inactive. One-to-one relationships filter both ways.
   - A table filter (`FILTER(Sales, …)`) filters its expanded table.
 - **Row context:**
-  - Iterators create row contexts.
+  - Iterators create row contexts. In context transition, a date table's date replaces the
+    filters on the rest of its table, as a filter argument on it does.
   - A measure is its expression under CALCULATE.
   - Context transition turns every row context into filters, one on each column of the row.
   - `EARLIER`, `RELATED` and `RELATEDTABLE` work.
@@ -177,6 +178,8 @@ and gives each aggregate the filters that reach its table.
     relationships as other filters do, onward from table to table.
   - A relationship carries them as its security filtering says: from the one side to the
     many side, both ways, or not at all. A many-to-many relationship carries them too.
+    Security alone does not filter back over a relationship that filters both ways only for
+    the query's filters.
   - With several roles, a table keeps the rows that some role keeps.
   - `ALL` and the other modifiers do not bring back rows that security removes.
   - Calculated tables and calculated columns are computed without security, as at refresh.
@@ -208,7 +211,7 @@ and gives each aggregate the filters that reach its table.
     `SUMMARIZECOLUMNS`, `ADDCOLUMNS`, `SELECTCOLUMNS`, `GROUPBY`/`CURRENTGROUP`, `TOPN`;
   - combining: `CROSSJOIN`, `UNION`, `INTERSECT`, `EXCEPT`, `GENERATE(ALL)`, `TREATAS`;
   - constructing: `ROW`, `DATATABLE`, `{ }`, `GENERATESERIES`, `CALENDAR`, `CALENDARAUTO`;
-  - `FIRSTNONBLANK`, `LASTNONBLANK`.
+  - `FIRSTNONBLANK`, `LASTNONBLANK`, over a column or a table of one column.
 - **Time intelligence:**
   - `DATESYTD/QTD/MTD`, `TOTALYTD/QTD/MTD`, `DATESBETWEEN`, `DATESINPERIOD`;
   - `DATEADD` and `DATESINPERIOD` (from the last day of a month to the end of the moved

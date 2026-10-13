@@ -420,15 +420,23 @@ export class Emitter {
         else if (f.kind === 'pred' && D.length === f.cols.length) out.push(paren(this.scalar(f.pred, withRow(scope, f.row, res), true)));
         else out.push(this.relCond(f.kind === 'pred' ? narrow(f, D) : f, D, table, res, scope, state));
       }
-      // Filters that arrive over bidirectional and many-to-many relationships.
+      // Filters that arrive over bidirectional and many-to-many relationships: X's rows the
+      // filter context keeps, when it filters X at all. Row-level security alone is no such
+      // filter (it reaches the scan as securityConds says), so whether X is filtered is
+      // decided without it; the rows that filter are X's visible ones, with its blank row
+      // when the context keeps it (it is blank in the key: the scan's blank row matches it).
       for (const name of exp.keys()) {
         for (const e of this.model.inbound(this.model.table(name), state)) {
           const X = e.there.table;
           if (exp.has(X.name) || excluded?.has(X.name)) continue;
-          const sub = this.scanBlock(X, ctx, scope, new Set([...(excluded ?? []), ...exp.keys()]));
-          if (!sub.where.length) continue;
-          sub.setOut([{ name: 'k', lineage: null }], [sub.res.meta(e.there)]);
-          out.push(`${res.meta(e.here)} IN (${sub.render()})`);
+          const skip = new Set([...(excluded ?? []), ...exp.keys()]);
+          if (!this.unsecured(() => this.scanBlock(X, ctx, scope, skip)).where.length) continue;
+          const key = b => { b.setOut([{ name: 'k', lineage: null }], [b.res.meta(e.there)]); return b.render(); };
+          const sub = key(this.scanBlock(X, ctx, scope, skip));
+          const blank = this.blankSide(table, e.here, res, state) && this.blankRow(X, ctx, scope, key, skip);
+          if (!blank) { out.push(`${res.meta(e.here)} IN (${sub})`); continue; }
+          const a = this.alias('r');
+          out.push(this.member([res.meta(e.here)], [`${a}.k`], `(${sub} UNION ALL ${blank}) AS ${a}`, true));
         }
       }
     } finally { this.fusions.pop(); }
@@ -800,12 +808,13 @@ export class Emitter {
   // The blank row DAX adds to a table on the one side of a relationship when rows of the
   // many side match none of its rows: with the filters on it (it is blank in every column),
   // when there are such rows. None where the relationship relies on referential integrity.
-  blankRow(table, ctx, scope, out) {
+  // `excluded`: as scanBlock's.
+  blankRow(table, ctx, scope, out, excluded = null) {
     const rels = this.model.relationships.filter(r => r.to.table === table && r.fromCard === 'many' && r.toCard === 'one'
       && !r.ri && !this.options.assumeIntegrity);
     if (!rels.length || this.options.blankRows === false) return null;
     const nulls = table.columns.filter(c => !c.expr).map(c => `${c.type === 'variant' ? 'NULL' : this.d.cast('NULL', c.type)} AS ${this.ident(c.source)}`);
-    const b = this.isolated(() => this.scanBlock(table, ctx, scope, null, null, `(SELECT ${nulls.join(', ')})`));
+    const b = this.isolated(() => this.scanBlock(table, ctx, scope, excluded, null, `(SELECT ${nulls.join(', ')})`));
     b.where.push(`(${this.orphans(table)})`);
     return out(b);
   }

@@ -361,11 +361,13 @@ export class Compiler {
       for (const c of cols) if (!key || c !== t.key) ctx = ctx.add({ kind: 'bind', cols: [c], val: ir.col(row, c), implied: key });
       return ctx;
     }
+    // Each column's value replaces the filters on it; a date table's date, like a filter
+    // argument on it, replaces the filters on the rest of that table too.
     row.open = false;
-    row.cols.forEach((c, i) => {
-      if (!c.lineage) return;
-      ctx = ctx.remove(x => x === c.lineage).add({ kind: 'bind', cols: [c.lineage], val: ir.col(row, row.kind === 'virtual' ? c.lineage : i) });
-    });
+    const cols = new Map(row.cols.map((c, i) => [c.lineage, i]).filter(([l]) => l));
+    const dates = new Set([...cols.keys()].filter(l => isDateKey(this.model, l)).map(l => l.table));
+    ctx = ctx.remove(x => cols.has(x) || dates.has(x.table));
+    for (const [l, i] of cols) ctx = ctx.add({ kind: 'bind', cols: [l], val: ir.col(row, row.kind === 'virtual' ? l : i) });
     return ctx;
   }
 

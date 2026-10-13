@@ -114,6 +114,21 @@ export class Emitter {
         return b;
       }
       case 'topn': return this.topn(x, scope);
+      case 'topnskip': return this.topnSkip(x, scope);
+      case 'subindex': return this.subIndex(x, scope);
+      case 'join': {
+        // NATURALINNERJOIN, NATURALLEFTOUTERJOIN: on the common columns, a blank matching a
+        // blank.
+        const l = this.wrap(this.table(x.left, scope));
+        const r = this.table(x.right, scope), rn = r.names(), a = this.alias('n');
+        const on = x.on.map(([i, j]) => this.d.isNotDistinct(l.res.col(i), `${a}.${this.ident(rn[j])}`));
+        l.from += ` ${x.outer ? 'LEFT JOIN' : 'JOIN'} (${r.render()}) AS ${a} ON ${on.join(' AND ')}`;
+        const cols = [...l.res.list, ...x.rest.map(j => ({ sql: `${a}.${this.ident(rn[j])}`, lineage: x.right.cols[j].lineage }))];
+        l.res = new WrapRes(this, l, cols, l.res.state);
+        l.cols = x.cols;
+        l._names = null;
+        return l;
+      }
       case 'cross': {
         const parts = x.srcs.map(s => this.wrap(this.table(s, scope)));
         return this.combine(parts, ' CROSS JOIN ', x.cols);
@@ -330,6 +345,44 @@ export class Emitter {
       return w;
     }
     b.qualify = `RANK() OVER (ORDER BY ${order.map(o => `${o.sql} ${o.desc ? 'DESC NULLS LAST' : 'ASC NULLS FIRST'}`).join(', ')}) <= ${n}`;
+    b.open = false;
+    return b;
+  }
+
+  // The rows of table `src` with their place in the order (`fn`: ROW_NUMBER, DENSE_RANK), as
+  // "__rn": the ordering values first, as columns (a window cannot order by a subquery), ties
+  // broken by every column of the rows. -> { sql, names }
+  ranked(src, row, order, scope, fn) {
+    const b = this.wrap(this.table(src, scope));
+    const s2 = withRow(scope, row, b.res);
+    const base = b.outList();
+    const os = order.map(o => this.scalar(o.expr, s2));
+    b.setOut([...src.cols, ...os.map((_, i) => ({ name: `__o${i}` }))], [...base.map(o => o.sql), ...os]);
+    const names = b.names(), n = this.alias('w'), q = v => `${n}.${this.ident(v)}`;
+    const terms = [...order.map((o, i) => orderTerm(q(names[base.length + i]), o)), ...src.cols.map((_, i) => `${q(names[i])} ASC NULLS FIRST`)];
+    return { sql: `SELECT ${n}.*, ${fn}() OVER (${terms.length ? `ORDER BY ${terms.join(', ')}` : ''}) AS "__rn" FROM (${b.render()}) AS ${n}`, names };
+  }
+
+  // TOPNSKIP: the rows whose place is after `skip`, n of them. Rows equal in every column
+  // share a place.
+  topnSkip(x, scope) {
+    const { sql, names } = this.ranked(x.src, x.row, x.order, scope, 'DENSE_RANK');
+    const r = this.alias('x'), n = this.scalar(x.n, scope), k = `COALESCE(${this.scalar(x.skip, scope)}, 0)`;
+    const sel = x.cols.map((_, i) => `${r}.${this.ident(names[i])}`).join(', ');
+    return this.fromSql(`(SELECT ${sel || '1 AS one'} FROM (${sql}) AS ${r} WHERE ${r}."__rn" > ${k} AND ${r}."__rn" <= ${k} + ${n})`, x.cols, names.slice(0, x.cols.length));
+  }
+
+  // SUBSTITUTEWITHINDEX: the rows of the table joined to the index table's rows on the common
+  // columns, a blank matching a blank, those columns replaced by the first matching row's
+  // place, from 0.
+  subIndex(x, scope) {
+    const { sql, names } = this.ranked(x.idx, x.row, x.order, scope, 'ROW_NUMBER');
+    const w = this.alias('x'), g = this.alias('n');
+    const keys = x.on.map(([, j]) => `${w}.${this.ident(names[j])}`);
+    const idx = `SELECT ${keys.map((k, j) => `${k} AS ${this.ident(`k${j}`)}`).join(', ')}, MIN(${w}."__rn") - 1 AS ${this.ident('i')} FROM (${sql}) AS ${w} GROUP BY ${keys.join(', ')}`;
+    const b = this.wrap(this.table(x.src, scope));
+    b.from += ` JOIN (${idx}) AS ${g} ON ${x.on.map(([i], j) => this.d.isNotDistinct(b.res.col(i), `${g}.${this.ident(`k${j}`)}`)).join(' AND ')}`;
+    b.setOut(x.cols, [...x.rest.map(i => b.res.col(i)), `${g}.${this.ident('i')}`]);
     b.open = false;
     return b;
   }
@@ -1291,7 +1344,7 @@ function mayBeBlank(x, i) {
   switch (x.k) {
     case 'rows': return x.rows.some(r => !lit(r[i]));
     case 'onerow': return !lit(x.vals[i]) && !x.vals[i]?.nn;
-    case 'distinct': case 'shared': case 'filter': case 'topn': return mayBeBlank(x.src, i);
+    case 'distinct': case 'shared': case 'filter': case 'topn': case 'topnskip': return mayBeBlank(x.src, i);
     case 'project': {
       if (x.keep && i < x.src.cols.length) return mayBeBlank(x.src, i);
       const e = x.items[x.keep ? i - x.src.cols.length : i]?.expr;

@@ -137,6 +137,13 @@ function isInScope(c, args, env) {
   return ir.lit(env.grouped.has(c.modelColumn(args[0], env)));
 }
 
+// ISSUBTOTAL(T[c]) in an expression of SUMMARIZE: whether its row is a subtotal over the
+// column (a level of ROLLUP without it).
+function isSubtotal(c, args, env) {
+  if (!env.rolledUp) throw semantic('ISSUBTOTAL is only valid in the expressions of SUMMARIZE');
+  return ir.lit(env.rolledUp.has(c.modelColumn(args[0], env)));
+}
+
 // The visible values of a column: one of them, or whether there is exactly one.
 // The values of a column in the filter context (HASONEVALUE, SELECTEDVALUE): its table's rows,
 // or VALUES with the blank row when the table has one.
@@ -285,7 +292,7 @@ export const scalar = {
   'PERCENTILEX.INC': percentile('pct_inc', true), 'PERCENTILEX.EXC': percentile('pct_exc', true),
   COUNTROWS: countRows, CONCATENATEX: concatenateX, RANKX: rankX,
   CALCULATE: calculate,
-  ISFILTERED: isFiltered, ISCROSSFILTERED: isCrossFiltered, ISINSCOPE: isInScope,
+  ISFILTERED: isFiltered, ISCROSSFILTERED: isCrossFiltered, ISINSCOPE: isInScope, ISSUBTOTAL: isSubtotal,
   HASONEVALUE: hasOneValue, HASONEFILTER: hasOneFilter, SELECTEDVALUE: selectedValue,
   LOOKUPVALUE: lookupValue, RELATED: related, EARLIER: earlier, EARLIEST: earlier,
   CONTAINS: contains, CONTAINSROW: containsRow, ISEMPTY: isEmpty,

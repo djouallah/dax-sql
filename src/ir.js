@@ -25,6 +25,9 @@
 //   rows     { rows: [[scalar]] }    a table constructor, ROW, DATATABLE
 //   series   { start, end, step }
 //   topn     { src, row, n, order: [{ expr, desc }] }
+//   topnskip { src, row, n, skip, order: [{ expr, desc, t }] }
+//   join     { left, right, on: [[i, j]], rest: [j], outer }   NATURALINNERJOIN and its kind
+//   subindex { src, idx, row, on: [[i, j]], rest: [i], order }  SUBSTITUTEWITHINDEX
 //   generate { left, lrow, right, outer }
 //   sc       SUMMARIZECOLUMNS (see compiler.js)
 //   shared   { src }                 a table VAR: written once when nothing outside it varies
@@ -227,6 +230,9 @@ export function freeRows(x) {
     case 'series': add(x.start); add(x.end); add(x.step); break;
     case 'paths': break;
     case 'topn': add(x.src); add(x.n); x.order.forEach(o => add(o.expr)); bound.add(x.row.id); break;
+    case 'topnskip': add(x.src); add(x.n); add(x.skip); x.order.forEach(o => add(o.expr)); bound.add(x.row.id); break;
+    case 'join': add(x.left); add(x.right); break;
+    case 'subindex': add(x.src); add(x.idx); x.order.forEach(o => add(o.expr)); bound.add(x.row.id); break;
     case 'generate': add(x.left); add(x.right); bound.add(x.lrow.id); break;
     case 'sc': add(x.ctx0 && { k: 'scan', ctx: x.ctx0 }); x.levels.forEach(l => l.items.forEach(i => add(i.expr))); bound.add(x.keyRow.id); break;
     case 'currentgroup': break;

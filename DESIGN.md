@@ -76,7 +76,8 @@ covers some columns and says what values they had:
 
 - An iterator's (`iter`) covers the columns of the table it iterates that have a lineage. Its
   values are that table's rows.
-- SUMMARIZECOLUMNS' covers the columns it groups by. Its values are theirs under its filters.
+- SUMMARIZECOLUMNS' covers the columns it groups by. Its values are theirs under its filters
+  on them: a filter on another column (auto-exist) narrows the groups, not the shadow.
   A filter marked `NONVISUAL` is not one of those: the shadow covers its columns too, and
   their values are those the other filters leave them.
 
@@ -342,7 +343,9 @@ and gives each aggregate the filters that reach its table.
   them:
   - An iterator (`SUMX`, `FILTER`, `ADDCOLUMNS`, `SUMMARIZE`, …) is a shadow on the columns it
     iterates, holding the values it iterates over. SUMMARIZECOLUMNS is one on the columns it
-    groups by, holding their values under its filters (the query's and its filter tables').
+    groups by, holding their values under its filters on those columns (the query's and its
+    filter tables'): `ALLSELECTED(Product[Product])` is every product under a filter on
+    `Product[Category]`.
   - `ALLSELECTED()` gives every column a shadow covers the filter of the last shadow covering
     it, and leaves the filters on other columns alone. `ALLSELECTED(table)` does the same for
     the table's columns. `ALLSELECTED(column)` gives the column its last shadow's filter, or
@@ -369,6 +372,8 @@ and gives each aggregate the filters that reach its table.
   - `COUNTROWS` and `DISTINCTCOUNT` of nothing are blank, and `DISTINCTCOUNT` counts a blank
     as a value.
   - `1 / BLANK()` is infinity.
+  - `RANKX` compares a blank as 0 (or ""): a blank and 0 tie, and `DENSE` counts them as one
+    value.
 - **SUMMARIZECOLUMNS:**
   - Its groups are the key combinations that exist within each table, and every combination
     across tables.

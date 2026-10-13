@@ -471,13 +471,17 @@ function summarizeColumns(c, args, env) {
   const exprs = pairs(args, i, 'SUMMARIZECOLUMNS');
   const given = filterArgs.length ? c.calculateCtx(filterArgs, { ...env, rows: [] }, true) : null;
   const ctx0 = given ? autoExist(c, given, env.ctx, []) : env.ctx;
-  // Its groups are a shadow filter context on the columns it groups by: their values under its
-  // filters. Those marked NONVISUAL filter the groups and the expressions, but are not part
-  // of that shadow: it covers their columns too, with the values the other filters leave them,
-  // so ALLSELECTED takes them off.
+  const selected = given ?? env.ctx;
+  // Its groups are a shadow filter context on the columns it groups by: their values under
+  // its filters on those columns. A filter on another column narrows the groups (auto-exist)
+  // but not the shadow: ALLSELECTED(Product[Product]) is every product under a filter on
+  // Product[Category]. Those marked NONVISUAL filter the groups and the expressions, but are
+  // not part of that shadow: it covers their columns too, with the values the other filters
+  // leave them, so ALLSELECTED takes them off.
   const nonvisual = ctx0.filters.filter(f => f.nonvisual);
-  const shadow = { cols: new Set([...keyCols, ...nonvisual.flatMap(f => f.cols)]), src: null,
-    ctx: nonvisual.length ? new Ctx(ctx0.filters.filter(f => !f.nonvisual), ctx0.mods) : ctx0 };
+  const shadowCols = new Set([...keyCols, ...nonvisual.flatMap(f => f.cols)]);
+  const shadow = { cols: shadowCols, src: null,
+    ctx: new Ctx(selected.filters.filter(f => !f.nonvisual), selected.mods).remove(x => !shadowCols.has(x)) };
   if (new Set(keyCols).size !== keyCols.length) throw semantic('SUMMARIZECOLUMNS groups by the same column twice');
   const keyRow = ir.newRow(keyCols.map(k => ({ name: k.name, lineage: k, t: k.type })), 'key');
   // The levels: how many of each axis' columns stay, the detail first.

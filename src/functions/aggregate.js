@@ -233,12 +233,14 @@ function rankX(c, args, env) {
   const dense = args[4] && args[4].k === 'name' && args[4].name.toUpperCase() === 'DENSE';
   const ahead = ir.op(desc ? 'gt' : 'lt', arg, value);
   if (!dense) return ir.op('add', ir.agg('count0', src, row, ir.kase([[ahead, ir.lit(1)]], ir.BLANK, 'int'), 'int'), ir.lit(1));
-  // DENSE: the distinct values ahead, and a blank is one of them (ascending, it is ahead of
-  // every positive value), though a distinct count of SQL leaves it out.
-  const distinct = ir.agg('dcount0', src, row, ir.kase([[ahead, arg]], ir.BLANK, arg.t), 'int');
-  const blankAhead = ir.agg('count0', src, row,
-    ir.kase([[ir.op('and', ahead, ir.fn('isblank', [arg], 'bool', { nn: true })), ir.lit(1)]], ir.BLANK, 'int'), 'int');
-  const blank = ir.kase([[ir.op('gt', blankAhead, ir.lit(0)), ir.lit(1)]], ir.lit(0), 'int');
+  // DENSE: the distinct values ahead. RANKX compares a blank as its type's default (0, ""),
+  // so a blank and the default are one value: the other values ahead counted apart, and one
+  // more when a blank or the default is ahead (ascending, it is ahead of every positive
+  // value), though a distinct count of SQL would leave the blank out.
+  const isDefault = ir.op('eq', arg, ir.BLANK);
+  const distinct = ir.agg('dcount0', src, row, ir.kase([[ir.op('and', ahead, ir.op('not', isDefault)), arg]], ir.BLANK, arg.t), 'int');
+  const defaultAhead = ir.agg('count0', src, row, ir.kase([[ir.op('and', ahead, isDefault), ir.lit(1)]], ir.BLANK, 'int'), 'int');
+  const blank = ir.kase([[ir.op('gt', defaultAhead, ir.lit(0)), ir.lit(1)]], ir.lit(0), 'int');
   return ir.op('add', ir.op('add', distinct, blank), ir.lit(1));
 }
 

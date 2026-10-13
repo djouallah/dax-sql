@@ -104,9 +104,9 @@ table, `ALLSELECTED(column)` starts from no filter at all.
   query's filters and without row-level security.
 - **Calculation groups** are applied where a measure is referenced (`applyGroups`), from the
   highest precedence. What a group's filters select is read off the filter context, from the
-  filters on its name column (`itemFilters`; with none, those on its ordinal). They do not
-  meet a filter on the ordinal: name "PY" on a row of another item's ordinal applies PY,
-  though `VALUES` of the group there is empty.
+  filters on its name column (`itemFilters`) only. They do not meet a filter on the ordinal:
+  name "PY" on a row of another item's ordinal applies PY, though `VALUES` of the group there
+  is empty.
   - Filters known at compile time (a constant, a predicate on the group's column, a table of
     constants) keep the items they allow. One item replaces the measure. Several, or none,
     take the group's selection expressions, or else leave the measure alone.
@@ -450,6 +450,9 @@ and gives each aggregate the filters that reach its table.
     (sideways recursion), as in a "YOY" item that computes
     `CALCULATE(SELECTEDMEASURE(), 'Time Calc'[Time Calc] = "PY")`.
   - Grouping by the group's column evaluates each item on its row.
+  - Only a filter on the group's name column selects an item. One on its ordinal alone
+    (grouping by the ordinal, `TREATAS` of ordinals) selects none: the measure is evaluated
+    as it is (or the no-selection expression is), while `VALUES` of the group sees the filter.
   - `multipleOrEmptySelectionExpression` and `noSelectionExpression` are used when set. A
     selection of several items without them leaves the measure as it is.
   - `SELECTEDMEASURENAME`, `SELECTEDMEASUREFORMATSTRING` and `ISSELECTEDMEASURE` work.

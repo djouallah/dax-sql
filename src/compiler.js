@@ -759,14 +759,11 @@ const colOf = x => (typeof x.ref === 'number' ? x.row.cols[x.ref].lineage ?? x.r
 const colIndex = x => (typeof x.ref === 'number' ? x.ref : x.row.cols.findIndex(c => c.lineage === x.ref));
 // The filters on a calculation group's columns.
 const groupFilters = (g, ctx) => ctx.filters.filter(f => f.cols.some(c => c.table === g.table));
-// The filters that select a calculation group's item: those on its name column; with none,
-// those on its other columns (the ordinal stands for an item too). A filter on the name
-// does not meet one on the ordinal: name "PY" with the ordinal of another item still
-// applies PY, though no row of the group's table has both.
-const itemFilters = (g, ctx) => {
-  const all = groupFilters(g, ctx), named = all.filter(f => f.cols.includes(g.column));
-  return named.length ? named : all;
-};
+// The filters that select a calculation group's item: those on its name column (a table
+// filter of the group's rows filters it too). A filter on the ordinal alone selects none,
+// so the measure is left as it is; nor does it meet one on the name: name "PY" with the
+// ordinal of another item still applies PY, though no row of the group's table has both.
+const itemFilters = (g, ctx) => groupFilters(g, ctx).filter(f => f.cols.includes(g.column));
 // DAX's =: text without regard to case.
 const sameValue = (a, b) => (typeof a === 'string' && typeof b === 'string' ? a.toLowerCase() === b.toLowerCase() : a === b);
 

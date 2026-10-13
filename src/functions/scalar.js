@@ -24,12 +24,31 @@ const typeOf = (c, a, env) => {
   try { return s(c, a, env).t; } catch { return null; }
 };
 
+// A condition that is a constant (TRUE(), 1 = 2: literals, and operators and this module's
+// functions of values on them; nothing of the model, the query or its context) is settled
+// before DAX types anything: the IF is the branch it takes, of that branch's type, and a
+// SWITCH leaves out the branches it rules out, types and all.
+function constant(a) {
+  switch (a?.k) {
+    case 'num': case 'str': case 'bool': case 'date': case 'empty': return true;
+    case 'neg': case 'not': return constant(a.e);
+    case 'bin': return constant(a.l) && constant(a.r);
+    case 'call': return Object.hasOwn(scalar, a.fn) && a.args.every(constant);
+    default: return false;
+  }
+}
+// The value of a condition that is a constant, or undefined.
+const settled = (x, ...asts) => (asts.every(constant) ? ir.valueOf(x) : undefined);
+const holds = v => v === true || (typeof v === 'number' && v !== 0);
+
 function iff(c, args, env) {
   const cond = s(c, args[0], env);
-  // A condition known now (ISFILTERED, ISINSCOPE) keeps one side; the other is compiled for
-  // its type only.
+  const v = settled(cond, args[0]);
+  if (v !== undefined) return holds(v) ? s(c, args[1], env) : opt(c, args[2], env, ir.BLANK);
+  // A condition known now, in this context (ISFILTERED, ISINSCOPE), keeps one side; the other
+  // is compiled for its type only.
   if (cond.k === 'lit') {
-    const yes = cond.v === true || (typeof cond.v === 'number' && cond.v !== 0);
+    const yes = holds(cond.v);
     const kept = yes ? s(c, args[1], env) : opt(c, args[2], env, ir.BLANK);
     return ir.widen(kept, [typeOf(c, args[yes ? 2 : 1], env)]);
   }
@@ -39,10 +58,16 @@ function iff(c, args, env) {
 function switchFn(c, args, env) {
   const e = s(c, args[0], env), w = [], left = [];
   const isTrue = e.k === 'lit' && e.v === true;
-  let i = 1;
+  let i = 1, ruled = false;
   for (; i + 1 < args.length; i += 2) {
     const v = s(c, args[i], env);
     const cond = isTrue ? v : ir.op('eq', e, v);
+    const known = settled(cond, args[0], args[i]);
+    if (known !== undefined) {
+      ruled = holds(known);
+      if (ruled) { w.push([ir.TRUE, s(c, args[i + 1], env)]); break; }
+      continue;   // a constant rules this branch out
+    }
     if (cond.k === 'lit') {
       if (cond.v === true) { w.push([ir.TRUE, s(c, args[i + 1], env)]); break; }
       left.push(typeOf(c, args[i + 1], env));   // never this branch
@@ -51,7 +76,7 @@ function switchFn(c, args, env) {
     w.push([cond, s(c, args[i + 1], env)]);
   }
   const done = w.at(-1)?.[0] === ir.TRUE;
-  if (done) for (let j = i + 2; j < args.length; j += 2) left.push(typeOf(c, args[j + 1 < args.length ? j + 1 : j], env));
+  if (done && !ruled) for (let j = i + 2; j < args.length; j += 2) left.push(typeOf(c, args[j + 1 < args.length ? j + 1 : j], env));
   const els = i < args.length && !done ? s(c, args[i], env) : ir.BLANK;
   return ir.kase(w, els, undefined, left);
 }

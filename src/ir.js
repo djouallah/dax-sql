@@ -116,6 +116,35 @@ const fixed = (o, a, b) => {
   return o === 'div' && a === 'decimal' && n(b);
 };
 export const currency = x => fn('currency', [x], 'decimal', { strict: true });
+// The value of a constant: a literal, or numbers and logicals compared or combined by
+// operators. Undefined when it is not one, or not one worked out here (a blank or a text
+// inside, a division by zero), which then stays to SQL.
+export function valueOf(x) {
+  if (x.k === 'lit') return x.v;
+  if (x.k !== 'op') return undefined;
+  const [l, r] = x.a.map(valueOf);
+  const num = v => typeof v === 'number', logical = v => typeof v === 'boolean';
+  const one = x.a.length === 1;
+  const nums = num(l) && (one || num(r)), logicals = logical(l) && (one || logical(r));
+  switch (x.op) {
+    case 'not': return logicals ? !l : undefined;
+    case 'bool': return logicals ? l : nums ? l !== 0 : undefined;
+    case 'and': return logicals ? l && r : undefined;
+    case 'or': return logicals ? l || r : undefined;
+    case 'neg': return nums ? -l : undefined;
+    case 'add': return nums ? l + r : undefined;
+    case 'sub': return nums ? l - r : undefined;
+    case 'mul': return nums ? l * r : undefined;
+    case 'div': return nums && r !== 0 ? l / r : undefined;
+    case 'eq': case 'eqs': return nums || logicals ? l === r : undefined;
+    case 'ne': return nums || logicals ? l !== r : undefined;
+    case 'lt': return nums ? l < r : undefined;
+    case 'le': return nums ? l <= r : undefined;
+    case 'gt': return nums ? l > r : undefined;
+    case 'ge': return nums ? l >= r : undefined;
+  }
+  return undefined;
+}
 const boolOf = x => x.t === 'bool' && x.nn ? x : { k: 'op', op: 'bool', a: [x], t: 'bool', nn: true };
 
 // `strict`: the function gives a blank when its first argument is blank (and on a constant

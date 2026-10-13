@@ -430,7 +430,11 @@ and gives each aggregate the filters that reach its table.
   where the compiler knows the condition (`ISFILTERED`, `ISINSCOPE`) and keeps one branch. So
   a measure `IF([Detailed], SUMX(T, T[Price] * T[Factor]), [Daily] + 0.5)` is a decimal
   number, and `DIVIDE` of it by another number is not rounded to four places, though the
-  branch it takes is a fixed decimal. A branch left out is compiled for its type only.
+  branch it takes is a fixed decimal. A branch left out is compiled for its type only. A
+  condition that is a constant (`TRUE()`, `1 = 2`: literals, and operators and functions of
+  values on them, with no column, measure, variable or parameter) is settled first, as DAX
+  folds it before typing: the `IF` is the branch it takes, of that branch's type, and the
+  branches a constant rules out of a `SWITCH` do not type it.
 - **SUMMARIZECOLUMNS:**
   - Its groups are the key combinations that exist within each table, and every combination
     across tables.

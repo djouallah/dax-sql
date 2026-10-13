@@ -13,13 +13,6 @@ Written by [N.S. Devaraj](https://github.com/nsdevaraj).
   (DAX it does not translate). It never guesses.
 - **Not its job:** writing DAX, running the SQL, fetching data.
 
-```js
-import { createCompiler } from './src/index.js';
-
-const { sql, columns } = createCompiler(bim).compile(
-  'EVALUATE SUMMARIZECOLUMNS(Product[Color], "Sales", [Sales Amount])');
-```
-
 No runtime dependencies; ES modules, browser and Node 18+. `npm test` runs the tests on DuckDB.
 
 ## Known limitations

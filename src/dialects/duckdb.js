@@ -39,7 +39,8 @@ export class DuckDBDialect extends Dialect {
   fn(name, a, nodes = []) {
     // A text function given a number reads it as text, as DAX converts it.
     const TEXT = { left: [0], right: [0], mid: [0], len: [0], upper: [0], lower: [0], trim: [0], substitute: [0, 1, 2], replace: [0, 3],
-      search: [0, 1], find: [0, 1], rept: [0], exact: [0, 1], unicode: [0], containsstring: [0, 1], containsstringexact: [0, 1] };
+      search: [0, 1], find: [0, 1], rept: [0], exact: [0, 1], unicode: [0], containsstring: [0, 1], containsstringexact: [0, 1],
+      pathlength: [0], pathitem: [0], pathitemreverse: [0], pathcontains: [0, 1] };
     if (TEXT[name]) a = a.map((v, i) => (TEXT[name].includes(i) && nodes[i] && nodes[i].t !== 'string' && nodes[i].t !== 'blank' ? this.text(v, nodes[i].t) : v));
     const [x, y, z, w] = a;
     switch (name) {
@@ -106,6 +107,11 @@ export class DuckDBDialect extends Dialect {
       case 'unicode': return `unicode(${x})`;
       case 'containsstring': return `contains(lower(COALESCE(${x}, '')), lower(COALESCE(${y}, '')))`;
       case 'containsstringexact': return `contains(COALESCE(${x}, ''), COALESCE(${y}, ''))`;
+      // A path's items: blank or "" is a path of none; a position past either end is blank.
+      case 'pathlength': return `COALESCE(length(string_split(NULLIF(${x}, ''), '|')), 0)`;
+      case 'pathitem': return `CASE WHEN ${y} >= 1 THEN string_split(NULLIF(${x}, ''), '|')[CAST(${y} AS BIGINT)] END`;
+      case 'pathitemreverse': return `CASE WHEN ${y} >= 1 THEN string_split(NULLIF(${x}, ''), '|')[-CAST(${y} AS BIGINT)] END`;
+      case 'pathcontains': return `COALESCE(list_contains(string_split(NULLIF(${x}, ''), '|'), ${y}), FALSE)`;
       case 'combinevalues': return `concat_ws(${x}, ${a.slice(1).map((v, i) => `COALESCE(${nodes[i + 1] ? this.text(v, nodes[i + 1].t) : `CAST(${v} AS VARCHAR)`}, '')`).join(', ')})`;
       case 'format_date': return formatDate(x, JSON.parse(nodes[1].v));
       case 'format_number': return formatNumber(x, JSON.parse(nodes[1].v), nodes[0].t);

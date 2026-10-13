@@ -220,6 +220,10 @@ and gives each aggregate the filters that reach its table.
   - a year end (`"6/30"`) on the functions of a year that take one.
 - **Values:** logic (`IF`, `SWITCH`, `COALESCE`, `DIVIDE`, …), math, text, dates, `CONVERT`,
   `NAMEOF`.
+- **Parent-child hierarchies:** `PATH`, computed over all the table's rows as a calculated
+  column is (a recursive CTE, once per pair of columns, read on the row by its key);
+  `PATHLENGTH`, `PATHITEM`, `PATHITEMREVERSE` (`TEXT` or `INTEGER`) and `PATHCONTAINS`. A row
+  whose parents never reach a blank one (an error in DAX) has a blank path.
 - **FORMAT** writes numbers and dates as DAX does in en-US:
   - the named formats: `General Number`, `Currency`, `Fixed`, `Standard`, `Percent`,
     `Scientific`, `Yes/No`, `True/False`, `On/Off`, `General Date`, `Long Date`, `Medium

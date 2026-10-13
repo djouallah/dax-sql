@@ -11,6 +11,7 @@
 //             format_number
 //   dates     date time year month day hour minute second quarter weekday weeknum eomonth
 //             add_interval datediff start_of end_of today now utctoday utcnow
+//   paths     pathlength pathitem pathitemreverse pathcontains
 // agg(fn, arg, extra) the aggregates of ir.js: sum avg min max count countrows dcount dcountnb
 //   countblank product median pct_inc pct_exc stdev_s stdev_p var_s var_p concat hasone count0 dcount0
 export class Dialect {
@@ -60,6 +61,19 @@ export class Dialect {
     if (t === 'string') return sql;
     if (t === 'bool') return `CASE WHEN ${sql} THEN 'TRUE' ELSE 'FALSE' END`;
     return `CAST(${sql} AS VARCHAR)`;
+  }
+
+  // PATH over a parent-child table: from `edges` (a SELECT of columns k, the key, of type t,
+  // and p, its parent), a row (key, path) per key reached from a row with a blank parent, its
+  // path the keys from there down joined by "|". A walk stops at as many steps as there are
+  // rows, so that a cycle (duplicate keys) ends. `name` prefixes the names it declares.
+  paths(edges, t, name) {
+    const e = `${name}_e`, r = `${name}_r`, q = n => this.ident(n);
+    return `WITH RECURSIVE ${e} AS (SELECT k, p FROM (${edges}) AS ${name}_x WHERE k IS NOT NULL), `
+      + `${r}(${q('key')}, ${q('path')}, depth) AS (SELECT k, ${this.text('k', t)}, 1 FROM ${e} WHERE p IS NULL `
+      + `UNION ALL SELECT c.k, r.${q('path')} || '|' || ${this.text('c.k', t)}, r.depth + 1 FROM ${e} AS c JOIN ${r} AS r ON c.p = r.${q('key')} `
+      + `WHERE r.depth < (SELECT COUNT(*) FROM ${e})) `
+      + `SELECT ${q('key')}, ${q('path')} FROM ${r}`;
   }
 
   // Rows from start to end (inclusive) by step, as a FROM item with one column `name`.

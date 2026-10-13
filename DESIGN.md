@@ -121,6 +121,10 @@ table, `ALLSELECTED(column)` starts from no filter at all.
   filters themselves, are written without them (`unsecured`). A table filters another back
   over a relationship that filters both ways only for the query when the query filters it:
   that is decided on its scan without security, and the rows that filter are its secured ones.
+- **PATH** is a calculated column's value: the table's paths, over all its rows, are one
+  `MATERIALIZED` CTE per pair of key and parent columns (`paths`), a recursive walk down from
+  the rows with a blank parent, and PATH on a row is the path of the row's key in it. The
+  other path functions are functions of the text.
 - **Field parameters** are calculated tables with `NAMEOF` cells, which are constants.
   `expandFieldParameter` reads the table's expression to list the fields a selection stands
   for.

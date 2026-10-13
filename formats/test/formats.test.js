@@ -35,7 +35,7 @@ const CONTOSO = [
 
 for (const [name, bim] of [['contoso', contoso], ['aac', aac]]) {
   test(`${name}: TMSL -> Ossie -> TMSL is the model`, () => {
-    assert.deepEqual(ossieToTmsl(tmslToOssie(bim)), lines(bim));
+    assert.deepEqual(lines(ossieToTmsl(tmslToOssie(bim))), lines(bim));
   });
 }
 

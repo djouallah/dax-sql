@@ -198,11 +198,14 @@ export class Compiler {
       if (sel.items.length === 1) return item(sel.items[0]);
       return g.multipleOrEmpty ? special(g.multipleOrEmpty, `${g.table.name}:multiple`) : null;
     }
-    const src = this.scan(g.table, env.ctx), row = ir.rowOf(src), value = ir.col(row, g.column);
+    // The name selected: the group's column under the filters that select (itemFilters), not
+    // under an ordinal filter the name filter left in the context.
+    const own = itemFilters(g, env.ctx), others = groupFilters(g, env.ctx).filter(f => !own.includes(f));
+    const sctx = others.length ? new Ctx(env.ctx.filters.filter(f => !others.includes(f)), env.ctx.mods) : env.ctx;
+    const src = this.scan(g.table, sctx), row = ir.rowOf(src), value = ir.col(row, g.column);
     const name = ir.kase([[ir.agg('hasone', src, row, value, 'bool'), ir.agg('min', src, row, value, 'string')]], ir.BLANK, 'string');
     // In the branch of an item, the selection is that item while the filters on the group
     // stay the same ones.
-    const own = groupFilters(g, env.ctx);
     const w = sel.items.map(it => {
       const known = new Map(env.cgKnown ?? []).set(g, { item: it, filters: own });
       return [ir.op('eqs', name, ir.lit(it.name, 'string')), this.withKnown(env, known, () => item(it))];
@@ -228,15 +231,20 @@ export class Compiler {
 
   // What the filter context selects of a calculation group: { kind: 'none' } when nothing
   // filters it, else { items, dynamic }: the items the filters known at compile time allow,
-  // and whether some filter is only known at run time.
-  selection(g, env) {
-    const filters = groupFilters(g, env.ctx);
+  // and whether some filter is only known at run time. The item applied is the one the
+  // filters on the group's name select (itemFilters); with `rows`, the items are instead the
+  // rows the group's table holds under all its filters (VALUES of its column).
+  selection(g, env, rows = false) {
+    const own = itemFilters(g, env.ctx);
+    const filters = rows ? groupFilters(g, env.ctx) : own;
     if (!filters.length) return { kind: 'none' };
+    let items = g.items, dynamic = false, rest = filters;
     const known = this._known?.get(g);
-    if (known && known.filters.length === filters.length && known.filters.every((f, i) => f === filters[i]))
-      return { kind: 'items', items: [known.item], dynamic: false };
-    let items = g.items, dynamic = false;
-    for (const f of filters) {
+    if (known && known.filters.length === own.length && known.filters.every((f, i) => f === own[i])) {
+      items = [known.item];
+      rest = filters.filter(f => !own.includes(f));
+    }
+    for (const f of rest) {
       const r = this.filterItems(g, f, items);
       items = r.items;
       if (r.dynamic) dynamic = true;
@@ -293,7 +301,7 @@ export class Compiler {
     const value = itemValue(g);
     const sctx = valuesCtx(src);
     if (sctx && src.cols[i]?.lineage === col) {
-      const sel = this.selection(g, { ctx: sctx });
+      const sel = this.selection(g, { ctx: sctx }, true);
       return sel.kind === 'none' ? { items: g.items, exact: true } : { items: sel.items, exact: !sel.dynamic };
     }
     switch (src.k) {
@@ -568,11 +576,10 @@ export class Compiler {
       if (keep) continue;
       for (const c of f.cols) {
         replaced.add(c);
-        // A filter on a date table's date removes the filters on the rest of that table; one
-        // on a calculation group's column, those on its other column: the name and the
-        // ordinal are one item's, so a filter selecting an item by name replaces the ordinal
-        // the context had (a group by both, as a visual sorted by the ordinal writes it).
-        if (isDateKey(this.model, c) || c.table.calcGroup) for (const x of c.table.columns) replaced.add(x);
+        // A filter on a date table's date removes the filters on the rest of that table. One
+        // on a calculation group's name does not remove the one on its ordinal: grouped by
+        // both, the row's ordinal stays, and the item applied follows the name (selection).
+        if (isDateKey(this.model, c)) for (const x of c.table.columns) replaced.add(x);
       }
     }
     if (replaced.size) ctx = ctx.remove(c => replaced.has(c));
@@ -748,6 +755,14 @@ const colOf = x => (typeof x.ref === 'number' ? x.row.cols[x.ref].lineage ?? x.r
 const colIndex = x => (typeof x.ref === 'number' ? x.ref : x.row.cols.findIndex(c => c.lineage === x.ref));
 // The filters on a calculation group's columns.
 const groupFilters = (g, ctx) => ctx.filters.filter(f => f.cols.some(c => c.table === g.table));
+// The filters that select a calculation group's item: those on its name column; with none,
+// those on its other columns (the ordinal stands for an item too). A filter on the name
+// does not meet one on the ordinal: name "PY" with the ordinal of another item still
+// applies PY, though no row of the group's table has both.
+const itemFilters = (g, ctx) => {
+  const all = groupFilters(g, ctx), named = all.filter(f => f.cols.includes(g.column));
+  return named.length ? named : all;
+};
 // DAX's =: text without regard to case.
 const sameValue = (a, b) => (typeof a === 'string' && typeof b === 'string' ? a.toLowerCase() === b.toLowerCase() : a === b);
 

@@ -36,7 +36,7 @@ test('two ROLLUPADDISSUBTOTAL axes: every level of one with every level of the o
     row(null, null, true, true, 6130)]);
 });
 
-test("a calculation item selected by name replaces the group's ordinal in the context", async () => {
+test("a calculation item selected by name applies on a row of another item's ordinal", async () => {
   // Grouped by the name and the ordinal, YOY's 'Time Calc'[Time Calc] = "PY" selects PY
   // though the row's ordinal is YOY's: 2024's 4120 less 2023's 2010.
   const row = r('Time Calc', 'Ordinal', 's');

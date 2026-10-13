@@ -61,8 +61,9 @@ CALCULATE (`compiler.js`, `calculateCtx`) works in four steps:
 4. It removes what the context said about the filters' columns (unless `KEEPFILTERS`) and
    adds the filters.
 
-A filter on a date table's date column also clears the rest of that table, and one on a
-calculation group's column clears its other column (the name and the ordinal are one item's).
+A filter on a date table's date column also clears the rest of that table. One on a
+calculation group's name does not clear its ordinal: grouped by both, the row's ordinal stays
+in the context, while the item applied follows the name (see calculation groups below).
 
 SUMMARIZECOLUMNS' filter arguments on the columns of one table are one filter (auto-exist,
 `autoExist`): the combinations of those columns the table holds under all of them.
@@ -96,7 +97,10 @@ table, `ALLSELECTED(column)` starts from no filter at all.
   model's, so that a scan reads it as it reads any table's rows. It is written without the
   query's filters and without row-level security.
 - **Calculation groups** are applied where a measure is referenced (`applyGroups`), from the
-  highest precedence. What a group's filters select is read off the filter context:
+  highest precedence. What a group's filters select is read off the filter context, from the
+  filters on its name column (`itemFilters`; with none, those on its ordinal). They do not
+  meet a filter on the ordinal: name "PY" on a row of another item's ordinal applies PY,
+  though `VALUES` of the group there is empty.
   - Filters known at compile time (a constant, a predicate on the group's column, a table of
     constants) keep the items they allow. One item replaces the measure. Several, or none,
     take the group's selection expressions, or else leave the measure alone.

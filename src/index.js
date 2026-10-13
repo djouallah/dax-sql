@@ -30,13 +30,13 @@ import { Dialect } from './dialects/base.js';
 import { newRow } from './ir.js';
 import { DaxError, semantic } from './errors.js';
 import { Ctx } from './context.js';
-import { SqlTranslator, isSql, printDaxQuery } from './sql.js';
+import { SqlTranslator, isSql, printDaxQuery, modelRelations } from './sql.js';
 
 export { DaxError } from './errors.js';
 export { Dialect } from './dialects/base.js';
 export { DuckDBDialect } from './dialects/duckdb.js';
 export { parseQuery, parseExpression } from './parser.js';
-export { parseSql } from './sql.js';
+export { parseSql, modelRelations } from './sql.js';
 export { Model } from './model.js';
 
 const DIALECTS = { duckdb: () => new DuckDBDialect() };
@@ -124,10 +124,28 @@ export function createCompiler(bim, options = {}) {
   // A SELECT over the model: the DAX query's tree it builds, compiled as DAX's is (no DAX text
   // between them), with its LIMIT and OFFSET.
   const sqlTranslator = new SqlTranslator(model);
-  function compileSql(text) {
-    const { query, limit, offset } = sqlTranslator.translate(text);
-    const [out] = compileAll(query, `SQL ${text}`);
-    return limit == null && offset == null ? out : { ...out, sql: out.sql + dialect.limit(limit, offset) };
+  function translateSql(text) {
+    const t = sqlTranslator.translate(text);
+    const [out] = compileAll(t.query, `SQL ${text}`);
+    return { ...t, out: t.limit == null && t.offset == null ? out : { ...out, sql: out.sql + dialect.limit(t.limit, t.offset) } };
+  }
+  const compileSql = text => translateSql(text).out;
+  // Any SQL with SELECTs over the model in it: each one's SQL in its place, the rest as written.
+  function compileStatement(text, name = 'model') {
+    if (/^\s*(DEFINE|EVALUATE)\b/i.test(text)) throw new DaxError('SQL: a DAX query is not SQL', { code: 'UNSUPPORTED' });
+    const relation = t => {
+      const { query, out } = translateSql(t);
+      return { text: t, dax: printDaxQuery(query), sql: out.sql };
+    };
+    const { whole, relations } = modelRelations(text, name);
+    if (whole) {
+      const r = relation(text);
+      return { sql: r.sql, relations: [r] };
+    }
+    let sql = text;
+    const out = relations.map(r => ({ ...r, ...relation(r.text) }));
+    for (const r of [...out].reverse()) sql = `${sql.slice(0, r.start)}\n${r.sql}\n${sql.slice(r.end)}`;
+    return { sql, relations: out.map(({ text: t, dax, sql: s }) => ({ text: t, dax, sql: s })) };
   }
   return {
     model,
@@ -140,6 +158,10 @@ export function createCompiler(bim, options = {}) {
       return out[0];
     },
     compileAll,
+    // Any SQL in which a SELECT over the model (FROM `name`, 'model' by default) is a relation in
+    // parentheses -> { sql, relations: [{ text, dax, sql }] }: each SELECT's SQL in its place, the
+    // rest as written. A text that is one SELECT over the model is compiled whole.
+    compileStatement,
     // Whether a text is a DAX query (it starts with DEFINE or EVALUATE).
     isDax: text => /^\s*(DEFINE|EVALUATE)\b/i.test(text),
     // Whether a text is a SELECT over the model, and the DAX query it stands for, with its

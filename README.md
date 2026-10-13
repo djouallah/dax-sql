@@ -1,6 +1,6 @@
 - **In:** a Tabular model (`model.bim`), a DAX query or a SQL `SELECT` over the model, options
-  ([DESIGN.md](DESIGN.md#api)).
-- **Out:** one SQL `SELECT` and its columns.
+  ([DESIGN.md](DESIGN.md#api)); or any SQL with `SELECT`s over the model as relations in it.
+- **Out:** one SQL `SELECT` and its columns; for a statement, its SQL with each of them compiled in place.
 - **Errors:** `SYNTAX`, `SEMANTIC`, `UNSUPPORTED`.
 - **Tested:** against Power BI's own answers, in [conformance/](conformance/README.md).
 

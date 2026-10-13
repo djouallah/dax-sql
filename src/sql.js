@@ -708,3 +708,96 @@ export class SqlTranslator {
 }
 
 export const isSql = text => /^\s*(?:(?:--[^\n]*\n|\/\*[\s\S]*?\*\/)\s*)*SELECT\b/i.test(text);
+
+// --- a statement with the model in it ------------------------------------------------------
+// Any SQL of the engine in which a SELECT over the model is a relation: in parentheses,
+// wherever the engine takes a subquery (a WITH's query, FROM, an arm of a UNION, IN). The
+// model is not a table (a measure has no value until the groups are chosen), so it is named
+// only as the FROM of such a SELECT. The scanner reads what nesting depends on: strings,
+// quoted names, comments and parentheses. The rest is the engine's SQL, passed through as
+// written.
+
+const WORD = /[\p{L}_][\p{L}\p{N}_$]*/uy;
+const DOLLAR = /\$(?:[\p{L}_][\p{L}\p{N}_]*)?\$/uy;
+
+function scan(src) {
+  const toks = [];
+  let i = 0, depth = 0;
+  const n = src.length;
+  const skipTo = (close, from, kind, at) => {
+    const e = src.indexOf(close, from);
+    if (e < 0) throw sqlSyntax(`unterminated ${kind}`, at, src);
+    return e + close.length;
+  };
+  while (i < n) {
+    const c = src[i];
+    if (/\s/.test(c)) { i++; continue; }
+    if (c === '-' && src[i + 1] === '-') { const e = src.indexOf('\n', i); i = e < 0 ? n : e + 1; continue; }
+    if (c === '/' && src[i + 1] === '*') { i = skipTo('*/', i + 2, 'comment', i); continue; }
+    if (c === "'" || c === '"') {
+      let j = i + 1;
+      for (;;) {
+        const e = src.indexOf(c, j);
+        if (e < 0) throw sqlSyntax(c === '"' ? 'unterminated quoted name' : 'unterminated string', i, src);
+        if (src[e + 1] === c) { j = e + 2; continue; }
+        j = e + 1;
+        break;
+      }
+      if (c === '"') toks.push({ t: 'name', v: src.slice(i + 1, j - 1).replaceAll('""', '"'), at: i, depth });
+      i = j;
+      continue;
+    }
+    if (c === '$') {
+      DOLLAR.lastIndex = i;
+      const d = DOLLAR.exec(src);
+      if (d) { i = skipTo(d[0], i + d[0].length, 'dollar-quoted string', i); continue; }
+    }
+    if (c === '(') { toks.push({ t: '(', at: i, depth }); depth++; i++; continue; }
+    if (c === ')') {
+      if (!depth) throw sqlSyntax('a ")" with no "("', i, src);
+      depth--;
+      toks.push({ t: ')', at: i, depth });
+      i++;
+      continue;
+    }
+    WORD.lastIndex = i;
+    const w = WORD.exec(src);
+    if (w) { toks.push({ t: 'word', v: w[0], at: i, depth }); i += w[0].length; continue; }
+    toks.push({ t: 'op', v: c, at: i, depth });
+    i++;
+  }
+  if (depth) throw sqlSyntax('a "(" with no ")"', src.length, src);
+  return toks;
+}
+
+// The SELECTs over the model in a statement: `whole` when the statement is one, else
+// `relations`, each the text between its parentheses ({ start, end, text }). `name` is the
+// model's name in FROM.
+export function modelRelations(src, name = 'model') {
+  const toks = scan(src);
+  const kw = (t, w) => t?.t === 'word' && t.v.toUpperCase() === w;
+  const isModel = t => (t?.t === 'word' || t?.t === 'name') && lc(t.v) === lc(name);
+  // Whether the SELECT at toks[s] reads the model: its own FROM, at its own depth.
+  const readsModel = s => {
+    const d = toks[s].depth;
+    for (let k = s + 1; k < toks.length && toks[k].depth >= d; k++) if (toks[k].depth === d && kw(toks[k], 'FROM')) return isModel(toks[k + 1]);
+    return false;
+  };
+  const setOp = toks.some(t => t.depth === 0 && ['UNION', 'INTERSECT', 'EXCEPT'].some(w => kw(t, w)));
+  if (kw(toks[0], 'SELECT') && readsModel(0) && !setOp) return { whole: true, relations: [] };
+  const relations = [];
+  for (let k = 0; k < toks.length; k++) {
+    const t = toks[k];
+    if (t.t === '(' && kw(toks[k + 1], 'SELECT') && readsModel(k + 1)) {
+      let e = k + 1;
+      while (!(toks[e].t === ')' && toks[e].depth === t.depth)) e++;
+      relations.push({ start: t.at + 1, end: toks[e].at, text: src.slice(t.at + 1, toks[e].at) });
+      k = e;
+      continue;
+    }
+    if ((kw(t, 'FROM') || kw(t, 'JOIN')) && isModel(toks[k + 1]))
+      throw new DaxError(`SQL: the model is not a table: ask it in a SELECT ... FROM ${name} in parentheses (a subquery, or a WITH's query)`,
+        { code: 'SEMANTIC', pos: toks[k + 1].at, src });
+  }
+  return { whole: false, relations };
+}

@@ -322,6 +322,8 @@ What the README leaves out: the API, what the compiler does, and how.
 - `isDax(text)`: whether a text starts with `DEFINE` or `EVALUATE`.
 - `isSql(text)`: whether a text starts with `SELECT`.
 - `sqlToDax(sql)`: the DAX query a `SELECT` stands for, `{ dax, limit, offset }`.
+- `compileStatement(text, name = 'model')`: any SQL of the engine in which a `SELECT` over the
+  model is a relation in parentheses, `{ sql, relations: [{ text, dax, sql }] }` ([SQL](#sql)).
 - `fieldParameters()`: the model's field parameters, each with its fields in order.
 - `expandFieldParameter(table, labels)`: the fields a selection of a field parameter stands
   for (all of them without `labels`), each `{ label, ref, order, kind, name, tableName }`.
@@ -671,6 +673,22 @@ LIMIT 10
   to case, a blank equal to 0 or `""`.
 - A measure keeps its definition: nothing changes the filter context but `WHERE`. `SELECT *`,
   `DISTINCT`, joins, subqueries, `UNION`, window functions and `COUNT(*)` are not supported.
+
+**In a statement of the engine's SQL** (`compileStatement`), a `SELECT` over the model is a
+relation: in parentheses, wherever the engine takes a subquery (a `WITH`'s query, `FROM`, an
+arm of a `UNION`, `IN`). Each one is compiled as above and its SQL put in its place; the rest
+is the engine's SQL, passed through as written, so it can join, union, window or filter what
+the model answers with its own tables. The model is not a table: a measure has no value until
+the groups are chosen, so there is no view of it, and it is named only as the `FROM` of such a
+`SELECT` (`JOIN model`, or a `SELECT ... FROM model` that is an arm of a `UNION` without
+parentheses, is an error). The scanner reads only what nesting depends on (strings, quoted
+names, `$$` strings, comments, parentheses), so `FROM model` in a string or a comment is text.
+A `SELECT` over the model reads no column of the statement around it.
+
+```sql
+WITH m AS (SELECT Product.Color, AGG(Orders) AS orders FROM model GROUP BY ALL)
+SELECT m.*, p.n FROM m JOIN (SELECT "Color", COUNT(*) AS n FROM "Product" GROUP BY ALL) p USING ("Color")
+```
 
 ### How it works
 

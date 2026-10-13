@@ -127,3 +127,47 @@ test('isSql and sqlToDax', () => {
   assert.equal(dax, `EVALUATE SUMMARIZECOLUMNS('Product'[Color], "Orders", 'Sales'[Orders])`);
   assert.deepEqual([limit, offset], [5, null]);
 });
+
+test('a SELECT over the model is a relation of any SQL', async () => {
+  const st = text => h.dax.compileStatement(text);
+  const run = async text => h.sql(st(text).sql);
+  const byColor = await h.run(`SELECT Color, AGG(Orders) o FROM model GROUP BY ALL`);
+  // A WITH's query, joined to a table of the engine; '::' and a dollar string pass through.
+  const cte = await run(`WITH m AS (SELECT Color, AGG(Orders) o FROM model GROUP BY ALL)
+    SELECT m.Color, m.o::INTEGER AS o, $$it's$$ AS s, p.n FROM m
+    JOIN (SELECT "Color", COUNT(*) AS n FROM "Product" GROUP BY ALL) p ON p."Color" = m.Color`);
+  assert.equal(cte.length, byColor.filter(r => r.Color != null).length);
+  assert.ok(cte.every(r => r.s === "it's" && r.n > 0));
+  // Two arms of a UNION, a FROM subquery, IN.
+  const both = await run(`(SELECT Color AS k, AGG(Orders) v FROM model GROUP BY ALL)
+    UNION ALL (SELECT Category.Category, AGG(Orders) FROM model GROUP BY ALL)`);
+  assert.equal(both.length, byColor.length + (await h.run(`SELECT Category.Category, AGG(Orders) FROM model GROUP BY ALL`)).length);
+  assert.deepEqual(sorted(await run(`SELECT * FROM (SELECT Color, AGG(Orders) o FROM model GROUP BY ALL) WHERE o > 0`)),
+    sorted(byColor.filter(r => r.o > 0)));
+  const top = await run(`SELECT "Name" FROM "Product" WHERE "Color" IN
+    (SELECT Color FROM model GROUP BY ALL HAVING AGG(Orders) > 1) ORDER BY 1`);
+  assert.ok(top.length > 0);
+  // FETCH ... WITH TIES inside: the relation keeps its own rows.
+  assert.deepEqual(sorted(await run(`WITH t AS (SELECT Color, AGG(Orders) o FROM model GROUP BY ALL ORDER BY o DESC FETCH FIRST 2 ROWS WITH TIES) SELECT * FROM t`)),
+    sorted(await h.run(`SELECT Color, AGG(Orders) o FROM model GROUP BY ALL ORDER BY o DESC FETCH FIRST 2 ROWS WITH TIES`)));
+  // Each relation's DAX, for a log.
+  assert.deepEqual(st(`SELECT * FROM (SELECT Color, AGG(Orders) FROM model GROUP BY ALL)`).relations.map(r => r.dax),
+    [`EVALUATE SUMMARIZECOLUMNS('Product'[Color], "Orders", 'Sales'[Orders])`]);
+  // A whole SELECT over the model is compiled as compile does; SQL without the model is left as it is.
+  const whole = `SELECT Color, AGG(Orders) FROM model GROUP BY ALL LIMIT 2`;
+  assert.equal(st(whole).sql, h.dax.compile(whole).sql);
+  for (const plain of [`SELECT 'FROM model' AS x -- FROM model\n/* (SELECT a FROM model) */`, `SELECT "model" FROM (SELECT 1 AS "model")`])
+    assert.deepEqual(st(plain), { sql: plain, relations: [] });
+});
+
+test('the model is named only as a relation', () => {
+  const fails = (text, code) => assert.throws(() => h.dax.compileStatement(text), e => e.name === 'DaxError' && e.code === code, text);
+  fails('SELECT * FROM "Product" JOIN model ON 1 = 1', 'SEMANTIC');
+  fails('SELECT Color, AGG(Orders) FROM model GROUP BY ALL UNION ALL SELECT 1, 2', 'SEMANTIC');
+  fails('WITH x AS (SELECT 1) SELECT Color, AGG(Orders) FROM model GROUP BY ALL', 'SEMANTIC');
+  fails('SELECT * FROM (SELECT Nope, AGG(Orders) FROM model GROUP BY ALL)', 'SEMANTIC');
+  fails('SELECT * FROM (SELECT 1', 'SYNTAX');
+  fails("SELECT 'x", 'SYNTAX');
+  fails('EVALUATE ROW("x", 1)', 'UNSUPPORTED');
+  fails('DEFINE MEASURE Sales[x] = 1 EVALUATE ROW("x", [x])', 'UNSUPPORTED');
+});

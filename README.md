@@ -1,3 +1,7 @@
+DAX to SQL for Tabular semantic models: a model and a DAX query in, one SQL query out, with
+DAX's semantics (filter context, context transition, relationships, blanks). Tested on DuckDB.
+Written by [N.S. Devaraj](https://github.com/nsdevaraj).
+
 - **In:** a Tabular model (TMSL, the `model.bim` JSON), one DAX query (`EVALUATE ...`), and
   options: table names in SQL, dialect, roles, parameters ([DESIGN.md](DESIGN.md#api)).
 - **Out:** one SQL `SELECT`, and the result's columns (name, type, lineage).

@@ -1,5 +1,7 @@
 # Design
 
+Written by [N.S. Devaraj](https://github.com/nsdevaraj).
+
 ## The problem
 
 DAX has no direct SQL equivalent. A measure is evaluated in a filter context that the query

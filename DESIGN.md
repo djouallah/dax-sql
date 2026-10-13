@@ -556,6 +556,19 @@ and gives each aggregate the filters that reach its table.
   - For the other functions, ties in `ORDERBY` are broken by the relation's other columns,
     as DAX does. `ROWNUMBER` over rows that are entirely equal numbers them in an arbitrary
     order, where DAX raises an error.
+- **Visual calculations:** a `DEFINE TABLE … WITH VISUAL SHAPE` (axes of `GROUP … TOTAL`
+  levels, `ORDER BY`, `DENSIFY`) and the `DEFINE COLUMN`s on it (`functions/visual.js`).
+  - The table is its rows, with `DENSIFY`'s the cells its axes cross that it lacks; each
+    column is added in turn, and the columns come first.
+  - In a column, a window function with no relation is over the visual's rows on one axis
+    (`ROWS`, `COLUMNS`, the first by default): those in the row's place on the other axes and
+    at its level, in the axis's order. A reset narrows them to one parent's: `HIGHESTPARENT`
+    or N, the first N groups; `LOWESTPARENT` or -N, the groups down to N above the row's.
+    DAX rejects a reset with an `ORDERBY` or a `PARTITIONBY`.
+  - `RUNNINGSUM`, `MOVINGAVERAGE`, `PREVIOUS`, `NEXT`, `FIRST` and `LAST` are `WINDOW`,
+    `OFFSET` and `INDEX` over those rows; `COLLAPSE` and `COLLAPSEALL` are the value at the
+    parent and the grand total; `ISATLEVEL`, whether the row is not a total of a column's
+    group. `EXPAND` of a column is an error, as in DAX; other `EXPAND`s are not supported.
 - **Tables:**
   - building and shaping: `FILTER`, `VALUES`, `DISTINCT`, `ALL…`, `SUMMARIZE`,
     `SUMMARIZECOLUMNS`, `ADDCOLUMNS`, `SELECTCOLUMNS`, `GROUPBY`/`CURRENTGROUP` (the table of

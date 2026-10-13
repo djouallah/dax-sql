@@ -1,0 +1,2 @@
+// note: COUNTROWS(FILTER(Product, measure > 0)) by category; a category with none is blank and left out
+EVALUATE SUMMARIZECOLUMNS(Category[Category], "n", [Products Sold])

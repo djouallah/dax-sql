@@ -1,0 +1,2 @@
+// note: grouped by a column two relationships away (Category via Product); a category without sales is left out
+EVALUATE SUMMARIZECOLUMNS(Category[Category], "s", [Sales Amount])

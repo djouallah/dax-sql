@@ -1,0 +1,55 @@
+// note: the paper's "Store Revenue Time Analysis matrix" visual, round 3 (state CA, a manager, a carrier, a page type), as Power BI wrote it
+DEFINE
+	VAR __DS0FilterTable = 
+		TREATAS({"CA"}, 'customer_address'[ca_state])
+
+	VAR __DS0FilterTable2 = 
+		TREATAS({"College"}, 'customer_demographics'[cd_education_status])
+
+	VAR __DS0FilterTable3 = 
+		TREATAS({"Brett Yates"}, 'store'[s_manager])
+
+	VAR __DS0FilterTable4 = 
+		TREATAS({"FEDEX"}, 'ship_mode'[sm_carrier])
+
+	VAR __DS0FilterTable5 = 
+		TREATAS({"quarterly"}, 'catalog_page'[cp_type])
+
+	VAR __DS0FilterTable6 = 
+		TREATAS({2026}, 'date_dim'[d_year])
+
+	VAR __DS0FilterTable7 = 
+		FILTER(
+			KEEPFILTERS(VALUES('catalog_sales'[cache_buster])),
+			'catalog_sales'[cache_buster] < 2
+		)
+
+	VAR __DS0FilterTable8 = 
+		FILTER(KEEPFILTERS(VALUES('store_sales'[cache_buster])), 'store_sales'[cache_buster] < 2)
+
+	VAR __DS0Core = 
+		SUMMARIZECOLUMNS(
+			'item'[i_category],
+			'date_dim'[d_quarter_name],
+			'date_dim'[d_year],
+			__DS0FilterTable,
+			__DS0FilterTable2,
+			__DS0FilterTable3,
+			__DS0FilterTable4,
+			__DS0FilterTable5,
+			__DS0FilterTable6,
+			__DS0FilterTable7,
+			__DS0FilterTable8,
+			"Store_Revenue", 'store_sales'[Store Revenue],
+			"Store_Revenue_YoY", 'store_sales'[Store Revenue YoY],
+			"Store_Revenue_YTD", 'store_sales'[Store Revenue YTD]
+		)
+
+	VAR __DS0PrimaryWindowed = 
+		TOPN(501, __DS0Core, 'item'[i_category], 0, 'date_dim'[d_quarter_name], 1, 'date_dim'[d_year], 1)
+
+EVALUATE
+	__DS0PrimaryWindowed
+
+ORDER BY
+	'item'[i_category] DESC, 'date_dim'[d_quarter_name], 'date_dim'[d_year]

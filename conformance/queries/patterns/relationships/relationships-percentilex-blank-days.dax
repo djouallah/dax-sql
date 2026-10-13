@@ -1,0 +1,17 @@
+// note: PERCENTILEX.INC and .EXC over the days of each month of 2023 H1 of German bike sales, most days blank: the blanks count in N and sort first; MEDIANX alongside
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year Month],
+    TREATAS({ 2023 }, 'Date'[Year]),
+    TREATAS({ 1, 2 }, 'Date'[Quarter]),
+    TREATAS({ "Germany" }, Customer[Country]),
+    TREATAS({ "Bikes" }, Category[Category]),
+    "Sales", [Sales Amount],
+    "Days", COUNTROWS(VALUES('Date'[Date])),
+    "P50 Inc", PERCENTILEX.INC(VALUES('Date'[Date]), [Sales Amount], 0.5),
+    "P90 Inc", PERCENTILEX.INC(VALUES('Date'[Date]), [Sales Amount], 0.9),
+    "P50 Exc", PERCENTILEX.EXC(VALUES('Date'[Date]), [Sales Amount], 0.5),
+    "P90 Exc", PERCENTILEX.EXC(VALUES('Date'[Date]), [Sales Amount], 0.9),
+    "Median", MEDIANX(VALUES('Date'[Date]), [Sales Amount])
+)
+ORDER BY 'Date'[Year Month]

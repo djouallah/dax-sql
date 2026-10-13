@@ -1,0 +1,13 @@
+// note: fact rows with a missing product or customer add a blank row to the dimension: VALUES and ALL see it, DISTINCT and ALLNOBLANKROW do not
+EVALUATE
+ROW(
+    "Product Table", COUNTROWS(Product),
+    "VALUES Product", COUNTROWS(VALUES(Product)),
+    "ALL Product", COUNTROWS(ALL(Product)),
+    "ALLNOBLANKROW Product", COUNTROWS(ALLNOBLANKROW(Product)),
+    "VALUES ProductKey", COUNTROWS(VALUES(Product[ProductKey])),
+    "DISTINCT ProductKey", COUNTROWS(DISTINCT(Product[ProductKey])),
+    "VALUES CustomerKey", COUNTROWS(VALUES(Customer[CustomerKey])),
+    "VALUES Category", COUNTROWS(VALUES(Category[Category])),
+    "VALUES Account", COUNTROWS(VALUES(Account[Account]))
+)

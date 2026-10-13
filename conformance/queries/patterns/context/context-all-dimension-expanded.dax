@@ -1,0 +1,7 @@
+// note: FILTER(ALL(Product)) as a CALCULATE filter replaces the filter on Category, which Product's expanded table holds; a Product[Color] predicate does not
+EVALUATE
+SUMMARIZECOLUMNS(
+    Category[Category],
+    "Red Lines", CALCULATE([Order Lines], Product[Color] = "Red"),
+    "Red Lines All Product", CALCULATE([Order Lines], FILTER(ALL(Product), Product[Color] = "Red"))
+)

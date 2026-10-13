@@ -1,0 +1,3 @@
+// note: a calculation item (YTD) applies to each measure; an aggregation that is not a measure is left as it is
+EVALUATE CALCULATETABLE(ROW("s", [Sales Amount], "q", [Quantity], "implicit", SUM(Sales[Amount])),
+    'Time Calc'[Time Calc] = "YTD", 'Date'[Year] = 2024, 'Date'[Month] = 3)

@@ -1,0 +1,2 @@
+// note: the dashboard's historySolar query, History: the energy of solar, rooftop included, per day (page state: 3 days to 2026-08-11, all)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS(dim_calendar[date], "mwh", [Generation MWh]), dim_calendar[date] >= dt"2026-07-28", dim_calendar[date] <= dt"2026-08-11", dim_duid[FuelSourceDescriptor] IN {"Solar", "Rooftop solar"}) ORDER BY [date]

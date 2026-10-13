@@ -1,0 +1,8 @@
+// note: rolling 30 days with DATESINPERIOD, day by day through one December
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Date],
+    TREATAS({202412}, 'Date'[YearMonth]),
+    "Rolling 30D", [Sales Rolling 30D]
+)
+ORDER BY 'Date'[Date]

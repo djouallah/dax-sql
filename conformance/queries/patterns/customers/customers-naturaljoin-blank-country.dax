@@ -1,0 +1,9 @@
+// note: NATURALINNERJOIN of 2024 buyers by country with 2024 orders by country and gender, joined on the Customer[Country] lineage; both sides hold the blank country of sales whose customer is missing
+EVALUATE
+VAR Buyers =
+    SUMMARIZECOLUMNS(Customer[Country], TREATAS({ 2024 }, 'Date'[Year]), "Buyers", [Customers])
+VAR OrdersByGender =
+    SUMMARIZECOLUMNS(Customer[Country], Customer[Gender], TREATAS({ 2024 }, 'Date'[Year]), "Orders", [Orders])
+RETURN
+    NATURALINNERJOIN(Buyers, OrdersByGender)
+ORDER BY Customer[Country], Customer[Gender]

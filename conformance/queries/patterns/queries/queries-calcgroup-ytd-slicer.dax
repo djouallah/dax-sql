@@ -1,0 +1,10 @@
+// note: a calculation-group slicer set to YTD, by month: the item applies to a distinct count as well as a sum
+EVALUATE
+SUMMARIZECOLUMNS(
+	'Date'[Month],
+	TREATAS({2023}, 'Date'[Year]),
+	TREATAS({"YTD"}, 'Time Intelligence'[Time Intelligence]),
+	"Sales_Amount", 'Sales'[Sales Amount],
+	"Orders", 'Sales'[Orders]
+)
+ORDER BY 'Date'[Month]

@@ -1,0 +1,2 @@
+// note: START AT on two ORDER BY columns; a blank city sorts first
+EVALUATE SUMMARIZECOLUMNS(Product[Color], Customer[City], "s", [Sales Amount]) ORDER BY Product[Color], Customer[City] START AT "Black", "Paris"

@@ -1,0 +1,5 @@
+// note: budget at category x month against sales, by year
+// roles: France
+EVALUATE
+SUMMARIZECOLUMNS('Date'[Year], Category[Category], "Budget", [Budget Amount], "Sales", [Sales Amount])
+ORDER BY 'Date'[Year], Category[Category]

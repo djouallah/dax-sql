@@ -1,0 +1,15 @@
+// note: SAMEPERIODLASTYEAR inside SUMMARIZE of 2024 Sales by quarter and price band, where the group's 2024 Sales rows stay a filter while the dates move back a year: the prior-year sales, the PY calculation item, and the prior year's Low-band customer count
+EVALUATE
+CALCULATETABLE(
+    SUMMARIZE(
+        Sales,
+        'Date'[Quarter],
+        Product[Price Band],
+        "Sales", [Sales Amount],
+        "SPLY", CALCULATE([Sales Amount], SAMEPERIODLASTYEAR('Date'[Date])),
+        "PY Item", CALCULATE([Sales Amount], 'Time Intelligence'[Time Intelligence] = "PY"),
+        "SPLY Low Customers", CALCULATE([Segment Customer Count], SAMEPERIODLASTYEAR('Date'[Date]), Segments[Segment] = "Low")
+    ),
+    'Date'[Year] = 2024
+)
+ORDER BY 'Date'[Quarter], Product[Price Band]

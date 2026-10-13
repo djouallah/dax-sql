@@ -1,0 +1,12 @@
+// note: FIRSTNONBLANK and LASTNONBLANK over FILTER(ALL('Date'[Date])) by category and month: context transition on the date clears the month filter, so the nearest day with sales can lie in another month
+EVALUATE
+SUMMARIZECOLUMNS(
+	'Category'[Category],
+	'Date'[Year Month],
+	TREATAS({2022}, 'Date'[Year]),
+	TREATAS({"Bikes", "Clothing", "Accessories", "Components"}, 'Category'[Category]),
+	"Sales_Amount", 'Sales'[Sales Amount],
+	"Last_Sale_Up_To_Month_End", MAXX(LASTNONBLANK(FILTER(ALL('Date'[Date]), 'Date'[Date] <= MAX('Date'[Date])), [Sales Amount]), 'Date'[Date]),
+	"First_Sale_From_Month_Start", MINX(FIRSTNONBLANK(FILTER(ALL('Date'[Date]), 'Date'[Date] >= MIN('Date'[Date])), [Sales Amount]), 'Date'[Date])
+)
+ORDER BY 'Category'[Category], 'Date'[Year Month]

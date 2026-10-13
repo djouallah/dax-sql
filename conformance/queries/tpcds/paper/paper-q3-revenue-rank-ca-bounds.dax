@@ -1,0 +1,110 @@
+// note: the paper's "Catalog Revenue Ranked by Promotion bar" visual, round 3 (state CA, a manager, a carrier, a page type), as Power BI wrote it: its first result, the visual calculation's lowest and highest rank
+DEFINE
+	COLUMN '__SQDS0VisualCalcs'[Rank] = 
+		(/* USER DAX BEGIN */
+Rank(ORDERBY([Catalog Revenue],Desc))
+/* USER DAX END */)
+
+	VAR __SQDS0FilterTable = 
+		TREATAS({"CA"}, 'customer_address'[ca_state])
+
+	VAR __SQDS0FilterTable2 = 
+		TREATAS({"College"}, 'customer_demographics'[cd_education_status])
+
+	VAR __SQDS0FilterTable3 = 
+		TREATAS({"Brett Yates"}, 'store'[s_manager])
+
+	VAR __SQDS0FilterTable4 = 
+		TREATAS({"FEDEX"}, 'ship_mode'[sm_carrier])
+
+	VAR __SQDS0FilterTable5 = 
+		TREATAS({"quarterly"}, 'catalog_page'[cp_type])
+
+	VAR __SQDS0FilterTable6 = 
+		TREATAS({2026}, 'date_dim'[d_year])
+
+	VAR __SQDS0FilterTable7 = 
+		FILTER(
+			KEEPFILTERS(VALUES('catalog_sales'[cache_buster])),
+			'catalog_sales'[cache_buster] < 2
+		)
+
+	VAR __SQDS0FilterTable8 = 
+		FILTER(KEEPFILTERS(VALUES('store_sales'[cache_buster])), 'store_sales'[cache_buster] < 2)
+
+	VAR __SQDS0Core = 
+		SUMMARIZECOLUMNS(
+			ROLLUPADDISSUBTOTAL('promotion'[p_promo_name], "IsSQDS0GrandTotalRowTotal"),
+			__SQDS0FilterTable,
+			__SQDS0FilterTable2,
+			__SQDS0FilterTable3,
+			__SQDS0FilterTable4,
+			__SQDS0FilterTable5,
+			__SQDS0FilterTable6,
+			__SQDS0FilterTable7,
+			__SQDS0FilterTable8,
+			"Catalog_Revenue", 'catalog_sales'[Catalog Revenue]
+		)
+
+	VAR __SQDS0VisualCalcsInput = 
+		SELECTCOLUMNS(
+			KEEPFILTERS(
+				SELECTCOLUMNS(
+					__SQDS0Core,
+					"p_promo_name", 'promotion'[p_promo_name],
+					"IsSQDS0GrandTotalRowTotal", [IsSQDS0GrandTotalRowTotal],
+					"Catalog_Revenue", [Catalog_Revenue]
+				)
+			),
+			"p_promo_name", [p_promo_name],
+			"IsSQDS0GrandTotalRowTotal", [IsSQDS0GrandTotalRowTotal],
+			"Catalog Revenue", [Catalog_Revenue]
+		)
+
+	TABLE '__SQDS0VisualCalcs' = 
+		__SQDS0VisualCalcsInput
+		WITH VISUAL SHAPE
+			AXIS rows
+				GROUP [p_promo_name] TOTAL [IsSQDS0GrandTotalRowTotal]
+				ORDER BY
+					[p_promo_name] ASC
+			DENSIFY "IsDensifiedRow"
+
+	VAR __SQDS0RemoveEmptyDensified = 
+		FILTER(
+			KEEPFILTERS('__SQDS0VisualCalcs'),
+			OR(
+				NOT('__SQDS0VisualCalcs'[IsDensifiedRow]),
+				NOT(ISBLANK('__SQDS0VisualCalcs'[Rank]))
+			)
+		)
+
+	VAR __DS0Core = 
+		SELECTCOLUMNS(
+			KEEPFILTERS(
+				FILTER(
+					KEEPFILTERS(__SQDS0RemoveEmptyDensified),
+					'__SQDS0VisualCalcs'[IsSQDS0GrandTotalRowTotal] = FALSE
+				)
+			),
+			"'__SQDS0VisualCalcs'[p_promo_name]", '__SQDS0VisualCalcs'[p_promo_name],
+			"'__SQDS0VisualCalcs'[Rank]", '__SQDS0VisualCalcs'[Rank],
+			"'__SQDS0VisualCalcs'[Catalog Revenue]", '__SQDS0VisualCalcs'[Catalog Revenue]
+		)
+
+	VAR __DS0PrimaryWindowed = 
+		TOPN(
+			1001,
+			__DS0Core,
+			'__SQDS0VisualCalcs'[Catalog Revenue],
+			0,
+			'__SQDS0VisualCalcs'[p_promo_name],
+			1
+		)
+
+EVALUATE
+	GROUPBY(
+		__DS0Core,
+		"MinRank", MINX(CURRENTGROUP(), '__SQDS0VisualCalcs'[Rank]),
+		"MaxRank", MAXX(CURRENTGROUP(), '__SQDS0VisualCalcs'[Rank])
+	)

@@ -1,0 +1,2 @@
+// note: store_sales[Store Profit % by Item Category] per category and year: each category's share of the year's profit
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('item'[i_category], date_dim[d_year], "Store Profit % by Item Category", [Store Profit % by Item Category]), date_dim[d_year] IN {2025, 2026})

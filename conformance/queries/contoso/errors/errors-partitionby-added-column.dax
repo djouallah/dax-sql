@@ -1,0 +1,3 @@
+// note: PARTITIONBY on a column ADDCOLUMNS added is rejected
+// expect: error
+EVALUATE VAR t = ADDCOLUMNS(VALUES(Product[Name]), "Band", IF(CALCULATE(MAX(Product[Price])) >= 100, "High"), "s", [Sales Amount]) RETURN ADDCOLUMNS(t, "r", RANK(DENSE, t, ORDERBY([s], DESC), PARTITIONBY([Band])))

@@ -1,0 +1,9 @@
+// note: OFFSET over a table variable inside ADDCOLUMNS: the previous quarter's sales within the same year, found from the row context
+DEFINE
+	VAR t = SUMMARIZECOLUMNS('Date'[Year], 'Date'[Quarter], "Sales", [Sales Amount])
+EVALUATE
+ADDCOLUMNS(
+	t,
+	"Prev_Quarter", MAXX(OFFSET(-1, t, ORDERBY('Date'[Quarter], ASC), PARTITIONBY('Date'[Year])), [Sales])
+)
+ORDER BY 'Date'[Year], 'Date'[Quarter]

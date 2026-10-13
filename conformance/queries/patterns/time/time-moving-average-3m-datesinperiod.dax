@@ -1,0 +1,9 @@
+// note: three-month moving average with DATESINPERIOD, which reaches before the years on the filter
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year Month],
+    TREATAS({2023, 2024}, 'Date'[Year]),
+    "Sales", [Sales Amount],
+    "Moving Avg 3M", [Sales Moving Avg 3M]
+)
+ORDER BY 'Date'[Year Month]

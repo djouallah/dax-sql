@@ -1,0 +1,16 @@
+// note: PERCENTILEX over all fifteen employees by year, the two VPs selling nothing: their blanks count in N and sort first, so the INC percentiles near 0 interpolate from blank and EXC at k = 1/16 and 2/16 lands on a blank (with the blanks dropped, k = 1/16 would be out of range)
+EVALUATE
+SUMMARIZECOLUMNS(
+	'Date'[Year],
+	"Sales", [Sales Amount],
+	"Employees", COUNTROWS(Employee),
+	"Sellers", CALCULATE(DISTINCTCOUNT(Sales[EmployeeKey])),
+	"Min Sales", MINX(VALUES(Employee[Employee]), [Sales Amount]),
+	"P0 Inc", PERCENTILEX.INC(VALUES(Employee[Employee]), [Sales Amount], 0),
+	"P10 Inc", PERCENTILEX.INC(VALUES(Employee[Employee]), [Sales Amount], 0.1),
+	"P50 Inc", PERCENTILEX.INC(VALUES(Employee[Employee]), [Sales Amount], 0.5),
+	"P0625 Exc", PERCENTILEX.EXC(VALUES(Employee[Employee]), [Sales Amount], 0.0625),
+	"P125 Exc", PERCENTILEX.EXC(VALUES(Employee[Employee]), [Sales Amount], 0.125),
+	"P20 Exc", PERCENTILEX.EXC(VALUES(Employee[Employee]), [Sales Amount], 0.2)
+)
+ORDER BY 'Date'[Year]

@@ -1,0 +1,12 @@
+// note: Product filters Sales and the both-directions Sales -> Customer relationship carries it on to Customer: customer rows reached per brand (the blank brand from a NULL brand and from unknown products included), against the distinct counts that do and do not count the blank key
+EVALUATE
+SUMMARIZECOLUMNS(
+    Product[Brand],
+    "Lines", [Lines],
+    "Customer Rows", COUNTROWS(Customer),
+    "Customer Keys", COUNTROWS(VALUES(Customer[CustomerKey])),
+    "Customers", [Customers],
+    "Customers No Blank", [Customers No Blank],
+    "Avg Per Customer", [Avg Per Customer]
+)
+ORDER BY Product[Brand]

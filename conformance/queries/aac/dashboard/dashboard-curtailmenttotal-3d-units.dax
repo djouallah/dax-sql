@@ -1,0 +1,2 @@
+// note: the dashboard's curtailmentTotal query, the curtailment KPI over the range (page state: 3 days to 2026-08-11, units HPR1 BALDHWF1)
+EVALUATE CALCULATETABLE(ROW("cur", [Curtailed MWh], "rate", [Curtailment rate]), dim_calendar[date] >= dt"2026-08-09", dim_calendar[date] <= dt"2026-08-11", fct_curtailment[DUID] IN {"HPR1", "BALDHWF1"})

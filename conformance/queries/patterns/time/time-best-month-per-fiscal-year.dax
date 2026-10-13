@@ -1,0 +1,12 @@
+// note: the best month of each fiscal year: GENERATE over fiscal years, TOPN of months reached by context transition
+EVALUATE
+GENERATE(
+    VALUES('Date'[Fiscal Year]),
+    TOPN(
+        1,
+        ADDCOLUMNS(CALCULATETABLE(VALUES('Date'[Year Month])), "Sales", [Sales Amount]),
+        [Sales], DESC,
+        'Date'[Year Month], ASC
+    )
+)
+ORDER BY 'Date'[Fiscal Year], 'Date'[Year Month]

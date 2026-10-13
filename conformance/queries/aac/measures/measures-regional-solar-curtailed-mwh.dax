@@ -1,0 +1,2 @@
+// note: fct_region[Regional solar curtailed MWh] per region
+EVALUATE SUMMARIZECOLUMNS(dim_region[Region], "Regional solar curtailed MWh", [Regional solar curtailed MWh])

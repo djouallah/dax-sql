@@ -1,0 +1,12 @@
+// note: Product's blank row selected on the dimension side gathers both the missing key 999 and the NULL keys, told apart by grouping on Sales[ProductKey]; RELATED weight is blank for both
+EVALUATE
+SUMMARIZECOLUMNS(
+    Sales[ProductKey],
+    FILTER(ALL(Product[ProductKey]), ISBLANK(Product[ProductKey])),
+    "Lines", [Lines],
+    "Quantity", [Total Quantity],
+    "Sales", [Sales Amount],
+    "Margin", [Margin],
+    "Weight", [Total Weight]
+)
+ORDER BY Sales[ProductKey]

@@ -1,0 +1,7 @@
+// note: check_model.py: [Emissions t] per day, over the newest week fct_summary holds
+EVALUATE
+            VAR newest = MAX(fct_summary[date])
+            RETURN CALCULATETABLE(
+                SUMMARIZECOLUMNS(dim_calendar[date], "Emissions t", [Emissions t]),
+                dim_calendar[date] > newest - 7, dim_calendar[date] <= newest)
+            ORDER BY dim_calendar[date]

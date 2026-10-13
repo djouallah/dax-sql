@@ -1,0 +1,11 @@
+// note: semi-additive inventory by quarter: CLOSINGBALANCEMONTH and LASTDATE against a plain SUM that adds the snapshots up
+DEFINE
+    MEASURE Inventory[Snapshot Sum] = SUM(Inventory[On Hand])
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year], 'Date'[Quarter],
+    "Summed", [Snapshot Sum],
+    "Closing Month", [Inventory Closing Month],
+    "Last Date", [Inventory Last Date]
+)
+ORDER BY 'Date'[Year], 'Date'[Quarter]

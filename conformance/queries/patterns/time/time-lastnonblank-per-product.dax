@@ -1,0 +1,8 @@
+// note: last non-blank balance per product (SUMX over products of LASTNONBLANK) against LASTDATE, where products skip some month-end snapshots
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year], Product[Category],
+    "Last Per Product", [Inventory Last Per Product],
+    "Last Date", [Inventory Last Date]
+)
+ORDER BY 'Date'[Year], Product[Category]

@@ -1,0 +1,18 @@
+// note: basket analysis with a disconnected-style "And Category" table expression mapped back with TREATAS: orders holding both categories
+EVALUATE
+VAR AndCategory =
+    SELECTCOLUMNS(
+        FILTER(VALUES(Category[Category]), NOT ISBLANK(Category[Category])),
+        "And Category", Category[Category] & ""
+    )
+RETURN
+    FILTER(
+        ADDCOLUMNS(
+            CROSSJOIN(VALUES(Category[Category]), AndCategory),
+            "Orders Both",
+                VAR other = [And Category]
+                VAR OtherOrders = CALCULATETABLE(VALUES(Sales[Order Number]), TREATAS({ other }, Category[Category]))
+                RETURN CALCULATE([Orders], OtherOrders)
+        ),
+        NOT ISBLANK([Orders Both])
+    )

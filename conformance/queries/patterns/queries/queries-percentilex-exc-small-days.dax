@@ -1,0 +1,10 @@
+// note: PERCENTILE.EXC and PERCENTILEX.EXC by day in a thin month, where days with one or two lines put k at or outside the range 1/(n+1) to n/(n+1)
+EVALUATE
+SUMMARIZECOLUMNS(
+	'Date'[Date],
+	TREATAS({202201}, 'Date'[YearMonth]),
+	"Lines", 'Sales'[Order Lines],
+	"P25_Line_Amount", PERCENTILEX.EXC('Sales', 'Sales'[Line Amount], 0.25),
+	"P50_Quantity", PERCENTILE.EXC('Sales'[Quantity], 0.5)
+)
+ORDER BY 'Date'[Date]

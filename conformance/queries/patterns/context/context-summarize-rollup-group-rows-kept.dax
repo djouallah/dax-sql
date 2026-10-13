@@ -1,0 +1,17 @@
+// note: SUMMARIZE with ROLLUP over year and quarter of German sales: every row's extension columns, subtotals included, are filtered by that row's Sales rows, so CALCULATE removing the quarter, the year, all of Date or the Customer filter still keeps them
+EVALUATE
+CALCULATETABLE(
+    SUMMARIZE(
+        Sales,
+        ROLLUP('Date'[Year], 'Date'[Quarter]),
+        "Sales", [Sales Amount],
+        "Year Total", ISSUBTOTAL('Date'[Year]),
+        "Quarter Total", ISSUBTOTAL('Date'[Quarter]),
+        "Quarter Removed", CALCULATE([Sales Amount], REMOVEFILTERS('Date'[Quarter])),
+        "Year Removed", CALCULATE([Sales Amount], REMOVEFILTERS('Date'[Year])),
+        "Date Removed", CALCULATE([Sales Amount], ALL('Date')),
+        "Customer Removed", CALCULATE([Sales Amount], REMOVEFILTERS(Customer))
+    ),
+    Customer[Country] = "Germany"
+)
+ORDER BY [Year Total], 'Date'[Year], [Quarter Total], 'Date'[Quarter]

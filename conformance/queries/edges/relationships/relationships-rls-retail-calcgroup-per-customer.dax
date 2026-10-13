@@ -1,0 +1,13 @@
+// note: the Adjust items for 2024 under the Retail role: Per Customer divides by retail customers only, Shipped switches to the inactive Ship Date relationship while the role still filters through Customer
+// roles: Retail
+EVALUATE
+SUMMARIZECOLUMNS(
+    Adjust[Adjust],
+    TREATAS({ 2024 }, 'Date'[Year]),
+    "Sales", [Sales Amount],
+    "Margin", [Margin],
+    "Total Quantity", [Total Quantity],
+    "Customers No Blank", [Customers No Blank],
+    "Lines", [Lines]
+)
+ORDER BY Adjust[Adjust]

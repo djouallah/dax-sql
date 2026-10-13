@@ -1,0 +1,2 @@
+// note: the dashboard's flowGens query, Flows: each unit's MW per interval of a day, the units at 1 MW or more either way (page state: 3 days to 2026-08-11, all)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS(fct_summary[time], fct_summary[DUID], "mw", [Average MW]), fct_summary[date] = dt"2026-08-11", (fct_summary[mw] >= 1 || fct_summary[mw] <= -1))

@@ -1,0 +1,11 @@
+// note: CROSSFILTER BOTH from Sales back to Customer by year: the blank Customer row is reached only in the year with sales whose customer is missing; VALUES and CONCATENATEX see it, COUNTROWS of Customer and DISTINCTCOUNT do not
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year],
+    "Sales", [Sales Amount],
+    "Values Customer Keys", CALCULATE(COUNTROWS(VALUES(Customer[CustomerKey])), CROSSFILTER(Sales[CustomerKey], Customer[CustomerKey], BOTH)),
+    "Customer Rows", CALCULATE(COUNTROWS(Customer), CROSSFILTER(Sales[CustomerKey], Customer[CustomerKey], BOTH)),
+    "Distinct Customer Keys", CALCULATE(DISTINCTCOUNT(Customer[CustomerKey]), CROSSFILTER(Sales[CustomerKey], Customer[CustomerKey], BOTH)),
+    "Countries", CALCULATE(CONCATENATEX(VALUES(Customer[Country]), Customer[Country] & "|", ",", Customer[Country], ASC), CROSSFILTER(Sales[CustomerKey], Customer[CustomerKey], BOTH))
+)
+ORDER BY 'Date'[Year]

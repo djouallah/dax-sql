@@ -1,0 +1,2 @@
+// note: store_sales[Store Revenue] per item category
+EVALUATE SUMMARIZECOLUMNS('item'[i_category], "Store Revenue", [Store Revenue])

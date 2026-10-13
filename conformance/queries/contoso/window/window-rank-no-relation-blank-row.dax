@@ -1,0 +1,2 @@
+// note: RANK without a relation: ALLSELECTED of the ORDERBY column, the blank row included
+EVALUATE SUMMARIZECOLUMNS(Customer[Customer], "r", RANK(DENSE, ORDERBY(Customer[Customer])))

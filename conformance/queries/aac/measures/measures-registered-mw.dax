@@ -1,0 +1,2 @@
+// note: dim_duid[Registered MW] per region of dim_region, which filters dim_duid
+EVALUATE SUMMARIZECOLUMNS(dim_region[Region], "Registered MW", [Registered MW])

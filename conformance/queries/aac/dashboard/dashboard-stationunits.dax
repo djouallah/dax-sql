@@ -1,0 +1,2 @@
+// note: the dashboard's stationUnits query, a plant's units, which a click in the drill toggles
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS(dim_duid[DUID]), dim_duid[Plant] = "Hornsdale Power Reserve", NOT ISBLANK(dim_duid[DUID]))

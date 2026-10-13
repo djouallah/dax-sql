@@ -1,0 +1,9 @@
+// note: a TREATAS virtual relationship carries the product's category text to Category, so budget follows a Brand selection it otherwise ignores
+EVALUATE
+SUMMARIZECOLUMNS(
+    Product[Brand],
+    TREATAS({ 2024 }, 'Date'[Year]),
+    "Budget", [Budget Amount],
+    "Budget via Category", [Budget via Product Category],
+    "Sales", [Sales Amount]
+)

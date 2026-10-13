@@ -1,0 +1,9 @@
+// note: lost customers (the last purchase up to the period end turns 90 days old inside the period) by month of 2023
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year Month],
+    TREATAS({ 2023 }, 'Date'[Year]),
+    "Lost", [Customers Lost 90d],
+    "Customers", [Customers]
+)
+ORDER BY 'Date'[Year Month]

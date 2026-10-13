@@ -1,0 +1,23 @@
+// note: each accessory's last month-end snapshot on or before 2024-02-29, LASTNONBLANK over FILTER(ALL('Date'[Date])) with the product carried in by context transition
+EVALUATE
+VAR d = DATE(2024, 2, 29)
+RETURN
+    ADDCOLUMNS(
+        CALCULATETABLE(VALUES(Product[Product]), Category[Category] = "Accessories"),
+        "Last Snapshot",
+            MAXX(
+                LASTNONBLANK(FILTER(ALL('Date'[Date]), 'Date'[Date] <= d), CALCULATE(COUNTROWS(Inventory))),
+                'Date'[Date]
+            ),
+        "Stock at Last Snapshot",
+            CALCULATE(
+                SUM(Inventory[On Hand]),
+                LASTNONBLANK(FILTER(ALL('Date'[Date]), 'Date'[Date] <= d), CALCULATE(COUNTROWS(Inventory)))
+            ),
+        "First Snapshot After",
+            MAXX(
+                FIRSTNONBLANK(FILTER(ALL('Date'[Date]), 'Date'[Date] > d), CALCULATE(COUNTROWS(Inventory))),
+                'Date'[Date]
+            )
+    )
+ORDER BY Product[Product]

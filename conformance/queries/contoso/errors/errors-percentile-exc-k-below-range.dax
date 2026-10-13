@@ -1,0 +1,3 @@
+// note: PERCENTILE.EXC with k below 1/(n+1) is an error
+// expect: error
+EVALUATE ROW("p", PERCENTILE.EXC(Product[Price], 0.1))

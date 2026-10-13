@@ -1,0 +1,3 @@
+// note: ALLSELECTED of a grouped column: a filter on the column itself narrows it
+EVALUATE SUMMARIZECOLUMNS(Product[Name], TREATAS({"Red"}, Product[Color]), TREATAS({"Jersey", "Cap"}, Product[Name]),
+    "n", COUNTROWS(ALLSELECTED(Product[Name])))

@@ -1,0 +1,10 @@
+// note: USERELATIONSHIP activates the inactive Delivery Date relationship: 2024 sales by order month against sales by delivery month
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[YearMonth],
+    TREATAS({ 2024 }, 'Date'[Year]),
+    "Ordered", [Sales Amount],
+    "Delivered", [Sales Delivered via Relationship],
+    "Delivered Lines", CALCULATE([Order Lines], USERELATIONSHIP(Sales[Delivery Date], 'Date'[Date]))
+)
+ORDER BY 'Date'[YearMonth]

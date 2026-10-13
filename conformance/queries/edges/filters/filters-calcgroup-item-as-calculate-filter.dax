@@ -1,0 +1,14 @@
+// note: by month of 2024, Adjust items applied as CALCULATE filters on the calculation group's column (PY and YTD beside the Sales PY and Sales YTD measures), PY applied to the Sales YTD measure, and PY on Lines: August 2024's PY falls on 2023-08, which has no sales
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year Month],
+    TREATAS({2024}, 'Date'[Year]),
+    "Sales", [Sales Amount],
+    "PY Item", CALCULATE([Sales Amount], Adjust[Adjust] = "PY"),
+    "Sales PY", [Sales PY],
+    "YTD Item", CALCULATE([Sales Amount], Adjust[Adjust] = "YTD"),
+    "Sales YTD", [Sales YTD],
+    "PY Item On Sales YTD", CALCULATE([Sales YTD], Adjust[Adjust] = "PY"),
+    "Lines PY Item", CALCULATE([Lines], Adjust[Adjust] = "PY")
+)
+ORDER BY 'Date'[Year Month]

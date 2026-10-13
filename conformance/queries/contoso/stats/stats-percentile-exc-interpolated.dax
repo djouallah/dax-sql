@@ -1,0 +1,3 @@
+// note: PERCENTILE.EXC and PERCENTILEX.EXC: the value at rank k(n + 1), interpolated
+EVALUATE ROW("p50", PERCENTILE.EXC(Product[Price], 0.5), "p25", PERCENTILE.EXC(Product[Price], 0.25),
+    "p75", PERCENTILE.EXC(Product[Price], 0.75), "x25", PERCENTILEX.EXC(Product, Product[Price] * 2, 0.25))

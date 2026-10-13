@@ -1,0 +1,9 @@
+// note: ABC classification of products: cumulative share of sales over products sorted by sales, cut at 70% and 90%
+EVALUATE
+SUMMARIZECOLUMNS(
+    Product[Product],
+    "Sales", [Sales Amount],
+    "Cumulative %", [ABC Product Cumulative %],
+    "Class", [ABC Product Class]
+)
+ORDER BY [Sales] DESC, Product[Product]

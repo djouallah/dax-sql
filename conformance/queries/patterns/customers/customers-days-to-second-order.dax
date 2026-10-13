@@ -1,0 +1,20 @@
+// note: days from the first order (calculated column) to the second, per customer through context transition, averaged by cohort year
+EVALUATE
+VAR Firsts =
+    ADDCOLUMNS(
+        FILTER(Customer, NOT ISBLANK(Customer[First Order])),
+        "@Cohort", YEAR(Customer[First Order]),
+        "@Second",
+            VAR f = Customer[First Order]
+            RETURN CALCULATE(MIN(Sales[Order Date]), Sales[Order Date] > f)
+    )
+RETURN
+    GROUPBY(
+        Firsts,
+        [@Cohort],
+        "Customers", COUNTX(CURRENTGROUP(), Customer[CustomerKey]),
+        "With Second Order", COUNTX(CURRENTGROUP(), [@Second]),
+        "Avg Days To Second",
+            AVERAGEX(CURRENTGROUP(), IF(NOT ISBLANK([@Second]), DATEDIFF(Customer[First Order], [@Second], DAY)))
+    )
+ORDER BY [@Cohort]

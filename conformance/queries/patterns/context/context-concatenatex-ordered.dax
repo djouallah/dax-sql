@@ -1,0 +1,8 @@
+// note: CONCATENATEX over the colors a category's sales reach in 2024 (CALCULATETABLE over the expanded Sales table), ordered by color
+EVALUATE
+SUMMARIZECOLUMNS(
+    Category[Category],
+    TREATAS({2024}, 'Date'[Year]),
+    "Sales", [Sales Amount],
+    "Colors Sold", CONCATENATEX(CALCULATETABLE(VALUES(Product[Color]), Sales), Product[Color], ", ", Product[Color], ASC)
+)

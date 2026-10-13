@@ -1,0 +1,13 @@
+// note: Target by Product[Product] for a few products, the many-to-many on Brand turning each product's filter into its brand's whole target: the two products named "Gadget" in different brands, "Never Sold" with a target but no sales, the NULL-brand "Ångström Gauge"; against REMOVEFILTERS(Product[Product]) (which also drops the TREATAS) and ALLSELECTED(Product)
+EVALUATE
+SUMMARIZECOLUMNS(
+    Product[Product],
+    TREATAS({"Gadget", "Twin A", "Never Sold", "Ångström Gauge", "Container Ship", "Šunka Slicer"}, Product[Product]),
+    "Sales", [Sales Amount],
+    "Target", [Target Amount],
+    "Brands", CONCATENATEX(VALUES(Product[Brand]), Product[Brand], ", ", Product[Brand], ASC),
+    "Target No Product Filter", CALCULATE([Target Amount], REMOVEFILTERS(Product[Product])),
+    "Target ALLSELECTED", CALCULATE([Target Amount], ALLSELECTED(Product)),
+    "Sales vs Target", [Sales vs Target]
+)
+ORDER BY Product[Product]

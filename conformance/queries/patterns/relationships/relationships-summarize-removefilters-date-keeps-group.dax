@@ -1,0 +1,12 @@
+// note: SUMMARIZE of Sales by year and category: its extension columns are filtered by the group's Sales rows, so CALCULATE removing the Date filters still sees only that year's rows
+EVALUATE
+SUMMARIZE(
+    Sales,
+    'Date'[Year],
+    Category[Category],
+    "Sales", [Sales Amount],
+    "Sales All Dates", CALCULATE([Sales Amount], REMOVEFILTERS('Date')),
+    "Sales All Years", CALCULATE([Sales Amount], ALL('Date'[Year])),
+    "Lines All Dates", CALCULATE(COUNTROWS(Sales), REMOVEFILTERS('Date'[Date]))
+)
+ORDER BY 'Date'[Year], Category[Category]

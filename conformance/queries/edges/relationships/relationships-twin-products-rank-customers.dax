@@ -1,0 +1,13 @@
+// note: a filter on the twin products (Twin A and Twin B sell the same lines) reaches Customer through the both-directions relationship; customers ranked over ALLSELECTED(Customer), where Customer 20 and Customer 21 tie
+EVALUATE
+SUMMARIZECOLUMNS(
+    Customer[CustomerKey],
+    Customer[Customer],
+    TREATAS({ "Twin A", "Twin B" }, Product[Product]),
+    "Sales", [Sales Amount],
+    "Quantity", [Total Quantity],
+    "Customers Selected", COUNTROWS(ALLSELECTED(Customer)),
+    "Rank Dense", IF(NOT ISBLANK([Sales Amount]), RANKX(ALLSELECTED(Customer), [Sales Amount], , DESC, DENSE)),
+    "Rank Skip", IF(NOT ISBLANK([Sales Amount]), RANKX(ALLSELECTED(Customer), [Sales Amount], , DESC, SKIP))
+)
+ORDER BY Customer[CustomerKey], Customer[Customer]

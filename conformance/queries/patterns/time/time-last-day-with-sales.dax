@@ -1,0 +1,9 @@
+// note: LASTNONBLANK over dates with a measure: the last day of each month that has sales, and its sales
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year Month],
+    TREATAS({2024}, 'Date'[Year]),
+    "Last Sales Day", MAXX(LASTNONBLANK('Date'[Date], [Sales Amount]), 'Date'[Date]),
+    "Sales On That Day", [Sales Last Day With Sales]
+)
+ORDER BY 'Date'[Year Month]

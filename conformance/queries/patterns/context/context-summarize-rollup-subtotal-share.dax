@@ -1,0 +1,11 @@
+// note: SUMMARIZE with ROLLUP over category and year: on subtotal rows the measure loses the rolled-up column's filter; ISSUBTOTAL tells the grand total from the blank category of lines whose product is missing
+EVALUATE
+SUMMARIZE(
+    Sales,
+    ROLLUP(Category[Category], 'Date'[Year]),
+    "Sales", [Sales Amount],
+    "Category Total", ISSUBTOTAL(Category[Category]),
+    "Year Total", ISSUBTOTAL('Date'[Year]),
+    "Share Of Category", DIVIDE([Sales Amount], CALCULATE([Sales Amount], ALL('Date'[Year])))
+)
+ORDER BY [Category Total], Category[Category], [Year Total], 'Date'[Year]

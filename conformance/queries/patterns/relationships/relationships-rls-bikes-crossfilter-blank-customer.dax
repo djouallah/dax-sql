@@ -1,0 +1,12 @@
+// note: under Bikes, the sales whose customer is missing are hidden (their products are not bikes), so CROSSFILTER BOTH from Sales to Customer no longer reaches the blank Customer row; VALUES with and without the CROSSFILTER, by year
+// roles: Bikes
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year],
+    "Sales", [Sales Amount],
+    "Values Customer Keys", COUNTROWS(VALUES(Customer[CustomerKey])),
+    "Values Customer Keys Both", CALCULATE(COUNTROWS(VALUES(Customer[CustomerKey])), CROSSFILTER(Sales[CustomerKey], Customer[CustomerKey], BOTH)),
+    "Customer Rows Both", CALCULATE(COUNTROWS(Customer), CROSSFILTER(Sales[CustomerKey], Customer[CustomerKey], BOTH)),
+    "Countries Both", CALCULATE(CONCATENATEX(VALUES(Customer[Country]), Customer[Country] & "|", ",", Customer[Country], ASC), CROSSFILTER(Sales[CustomerKey], Customer[CustomerKey], BOTH))
+)
+ORDER BY 'Date'[Year]

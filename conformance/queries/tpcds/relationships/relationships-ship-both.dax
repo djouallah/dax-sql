@@ -1,0 +1,2 @@
+// note: catalog revenue per education status shipped to CA: two inactive relationships at once
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS(customer_demographics[cd_education_status], "shipped", [Catalog Revenue]), USERELATIONSHIP(catalog_sales[cs_ship_addr_sk], customer_address[ca_address_sk]), USERELATIONSHIP(catalog_sales[cs_ship_cdemo_sk], customer_demographics[cd_demo_sk]), customer_address[ca_state] = "CA")

@@ -1,0 +1,8 @@
+// note: distinct customers and distinct products at city, country and grand-total level (non-additive subtotals)
+EVALUATE
+SUMMARIZECOLUMNS(
+    ROLLUPADDISSUBTOTAL(Customer[Country], "Country Total", Customer[City], "City Total"),
+    "Customers", [Customers],
+    "Products", [Customer Distinct Products]
+)
+ORDER BY [Country Total], Customer[Country], [City Total], Customer[City]

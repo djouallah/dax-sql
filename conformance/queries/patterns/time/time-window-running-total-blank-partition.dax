@@ -1,0 +1,16 @@
+// note: running total with WINDOW partitioned by an added column that is blank outside summer: the blank months form one partition of their own (a DAX error: PARTITIONBY cannot use columns added by table functions)
+// expect: error
+DEFINE
+    VAR t =
+        ADDCOLUMNS(
+            SUMMARIZE('Date', 'Date'[Year], 'Date'[Month]),
+            "@Sales", [Sales Amount],
+            "@Season", IF('Date'[Month] IN {6, 7, 8}, "Summer")
+        )
+EVALUATE
+ADDCOLUMNS(
+    t,
+    "Running In Season", SUMX(WINDOW(1, ABS, 0, REL, t, ORDERBY('Date'[Year], ASC, 'Date'[Month], ASC), PARTITIONBY([@Season])), [@Sales]),
+    "Index In Season", ROWNUMBER(t, ORDERBY('Date'[Year], ASC, 'Date'[Month], ASC), PARTITIONBY([@Season]))
+)
+ORDER BY 'Date'[Year], 'Date'[Month]

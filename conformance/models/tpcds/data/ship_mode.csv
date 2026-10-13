@@ -1,0 +1,6 @@
+"sm_ship_mode_sk","sm_carrier","sm_code","sm_type"
+1,"FEDEX","SEA","EXPRESS"
+2,"UPS","SURFACE","REGULAR"
+3,"DHL","SEA","NEXT DAY"
+4,"USPS","SEA","OVERNIGHT"
+5,"ZOUROS","SEA","TWO DAY"

@@ -1,0 +1,2 @@
+// note: DATESINPERIOD -3 months from the last day of a 30-day month
+EVALUATE ROW("days", COUNTROWS(DATESINPERIOD('Date'[Date], dt"2024-04-30", -3, MONTH)))

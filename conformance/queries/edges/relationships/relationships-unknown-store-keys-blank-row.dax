@@ -1,0 +1,10 @@
+// note: sales whose StoreKey is missing from Store ("XXX-99"), an empty string or NULL all land on Store's blank row; the store with no sales (LYS-01) drops out
+EVALUATE
+SUMMARIZECOLUMNS(
+    Store[StoreKey],
+    "Lines", [Lines],
+    "Sales", [Sales Amount],
+    "Quantity", [Total Quantity],
+    "Raw Keys", CALCULATE(DISTINCTCOUNT(Sales[StoreKey]))
+)
+ORDER BY Store[StoreKey]

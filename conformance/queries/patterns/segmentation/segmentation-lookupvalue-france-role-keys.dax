@@ -1,0 +1,10 @@
+// note: under the France role, LOOKUPVALUE of the country for customer keys 1 to 12: it ignores the filter context (a CALCULATE filter on Germany changes nothing) but not row-level security, so the keys of non-French customers find no row; each key's all-time sales band beside
+// roles: France
+EVALUATE
+ADDCOLUMNS(
+    SELECTCOLUMNS(GENERATESERIES(1, 12), "Key", [Value]),
+    "Country", LOOKUPVALUE(Customer[Country], Customer[CustomerKey], [Key]),
+    "Country Under Germany", CALCULATE(LOOKUPVALUE(Customer[Country], Customer[CustomerKey], [Key]), Customer[Country] = "Germany"),
+    "Band", CALCULATE([Customer Sales Band], TREATAS({ [Key] }, Customer[CustomerKey]))
+)
+ORDER BY [Key]

@@ -1,0 +1,11 @@
+// note: TREATAS with BLANK, "" and an unknown key, onto the dimension key Store[StoreKey] (where only the blank row can match) and onto the fact key Sales[StoreKey] (where "" and NULL are separate values)
+EVALUATE
+ROW(
+    "Store Blank", CALCULATE([Lines], TREATAS({ BLANK() }, Store[StoreKey])),
+    "Store Empty", CALCULATE([Lines], TREATAS({ "" }, Store[StoreKey])),
+    "Store Unknown", CALCULATE([Lines], TREATAS({ "XXX-99" }, Store[StoreKey])),
+    "Fact Blank", CALCULATE([Lines], TREATAS({ BLANK() }, Sales[StoreKey])),
+    "Fact Empty", CALCULATE([Lines], TREATAS({ "" }, Sales[StoreKey])),
+    "Fact Unknown", CALCULATE([Lines], TREATAS({ "XXX-99" }, Sales[StoreKey])),
+    "Fact Blank And Empty", CALCULATE([Lines], TREATAS({ BLANK(), "" }, Sales[StoreKey]))
+)

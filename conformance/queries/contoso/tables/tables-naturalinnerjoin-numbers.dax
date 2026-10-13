@@ -1,0 +1,2 @@
+// note: NATURALINNERJOIN on a computed whole-number column of both sides
+EVALUATE NATURALINNERJOIN(SELECTCOLUMNS(Category, "k", Category[CategoryKey] * 1), SELECTCOLUMNS(Product, "k", Product[CategoryKey] + 0, "Name", Product[Name]))

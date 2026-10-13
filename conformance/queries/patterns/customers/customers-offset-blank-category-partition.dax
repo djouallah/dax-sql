@@ -1,0 +1,16 @@
+// note: buyers by category and year with the previous year's buyers (OFFSET) and the row number (ROWNUMBER) partitioned by category over a SUMMARIZECOLUMNS table; the blank category (sales whose product is missing from Product) is a partition of its own
+EVALUATE
+VAR T =
+    SUMMARIZECOLUMNS(
+        Product[Category],
+        'Date'[Year],
+        "@Customers", [Customers]
+    )
+RETURN
+    ADDCOLUMNS(
+        T,
+        "Previous Year Customers",
+            MAXX(OFFSET(-1, T, ORDERBY('Date'[Year], ASC), PARTITIONBY(Product[Category])), [@Customers]),
+        "Row In Category", ROWNUMBER(T, ORDERBY('Date'[Year], ASC), PARTITIONBY(Product[Category]))
+    )
+ORDER BY Product[Category], 'Date'[Year]

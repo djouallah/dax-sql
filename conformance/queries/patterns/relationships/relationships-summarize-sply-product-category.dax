@@ -1,0 +1,11 @@
+// note: SAMEPERIODLASTYEAR inside SUMMARIZE of Sales by the Product[Category] calculated column and year: the prior year's sales and customers, the blank category (lines with a missing product) included
+EVALUATE
+SUMMARIZE(
+    Sales,
+    Product[Category],
+    'Date'[Year],
+    "Sales", [Sales Amount],
+    "Sales SPLY", CALCULATE([Sales Amount], SAMEPERIODLASTYEAR('Date'[Date])),
+    "Customers SPLY", CALCULATE([Customers], SAMEPERIODLASTYEAR('Date'[Date]))
+)
+ORDER BY Product[Category], 'Date'[Year]

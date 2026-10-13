@@ -1,0 +1,2 @@
+// note: fct_summary[Emissions t] per fuel
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS(dim_duid[FuelSourceDescriptor], "Emissions t", [Emissions t]), dim_calendar[date] >= dt"2026-08-01", dim_calendar[date] <= dt"2026-08-13")

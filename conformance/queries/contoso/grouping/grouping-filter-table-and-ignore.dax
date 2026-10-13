@@ -1,0 +1,2 @@
+// note: SUMMARIZECOLUMNS with a TREATAS filter table, and an IGNORE expression that does not keep groups on its own
+EVALUATE SUMMARIZECOLUMNS(Product[Color], TREATAS({"Red", "Black"}, Product[Color]), "s", [Sales Amount], "i", IGNORE(1))

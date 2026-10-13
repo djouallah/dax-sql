@@ -1,0 +1,13 @@
+// note: by Product[Color], where "" (Spaced Lamp), NULL (Desk Fan) and the blank row (unknown and NULL product keys) meet: lines under Product[Color] = "", the same under KEEPFILTERS, == "" (strict), = BLANK() and LEN = 0, each a column filter that replaces or intersects the group's color
+EVALUATE
+ADDCOLUMNS(
+    VALUES(Product[Color]),
+    "Color Is Blank", ISBLANK(Product[Color]),
+    "Lines", [Lines],
+    "Color Eq Empty", CALCULATE([Lines], Product[Color] = ""),
+    "Keep Color Eq Empty", CALCULATE([Lines], KEEPFILTERS(Product[Color] = "")),
+    "Color Strict Empty", CALCULATE([Lines], Product[Color] == ""),
+    "Color Eq Blank", CALCULATE([Lines], Product[Color] = BLANK()),
+    "Color Len Zero", CALCULATE([Lines], LEN(Product[Color]) = 0)
+)
+ORDER BY [Color Is Blank], Product[Color]

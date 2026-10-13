@@ -1,0 +1,10 @@
+// note: under the France role, customers by sales band with CROSSFILTER BOTH on the Sales-Customer relationship, its columns given one-side first: the role's filter on Customer would reach Sales and come back to Customer itself (a DAX error: two join paths from Customer to Customer)
+// expect: error
+// roles: France
+EVALUATE
+ADDCOLUMNS(
+    VALUES(Segments[Segment]),
+    "Customers", [Segment Customer Count],
+    "Customers Via Sales", CALCULATE([Segment Customer Count], CROSSFILTER(Customer[CustomerKey], Sales[CustomerKey], BOTH))
+)
+ORDER BY Segments[Segment]

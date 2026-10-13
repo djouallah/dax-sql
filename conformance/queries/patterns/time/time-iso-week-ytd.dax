@@ -1,0 +1,9 @@
+// note: ISO-year-to-date from the ISO Year and ISO Week columns, week by week through one ISO year
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[ISO Week],
+    TREATAS({2023}, 'Date'[ISO Year]),
+    "Sales", [Sales Amount],
+    "ISO YTD", [Sales ISO YTD]
+)
+ORDER BY 'Date'[ISO Week]

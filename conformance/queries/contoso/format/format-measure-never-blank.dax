@@ -1,0 +1,2 @@
+// note: FORMAT of a measure is never blank, so SUMMARIZECOLUMNS keeps the city with no sales
+EVALUATE SUMMARIZECOLUMNS(Customer[City], "s", FORMAT([Sales Amount], "#,##0", "en-US"))

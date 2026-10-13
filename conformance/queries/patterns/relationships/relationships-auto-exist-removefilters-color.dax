@@ -1,0 +1,11 @@
+// note: SUMMARIZECOLUMNS auto-exist merges a color filter and a brand filter on Product (Fabrikam has neither color); REMOVEFILTERS of one column shows whether the other's values survive the merge
+EVALUATE
+SUMMARIZECOLUMNS(
+    Product[Category],
+    TREATAS({ "White", "Black" }, Product[Color]),
+    TREATAS({ "Fabrikam", "Litware" }, Product[Brand]),
+    "Sales", [Sales Amount],
+    "Sales All Colors", CALCULATE([Sales Amount], REMOVEFILTERS(Product[Color])),
+    "Sales All Brands", CALCULATE([Sales Amount], REMOVEFILTERS(Product[Brand]))
+)
+ORDER BY Product[Category]

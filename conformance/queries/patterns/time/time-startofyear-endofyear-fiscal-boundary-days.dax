@@ -1,0 +1,14 @@
+// note: STARTOFYEAR and ENDOFYEAR with a June 30 year end on single days at the table's ends, the fiscal boundary and the leap day
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Date],
+    TREATAS(
+        {DATE(2022, 1, 1), DATE(2022, 6, 30), DATE(2022, 7, 1), DATE(2024, 2, 29), DATE(2024, 6, 30), DATE(2024, 7, 1), DATE(2024, 12, 31)},
+        'Date'[Date]
+    ),
+    "Fiscal Year", MAX('Date'[Fiscal Year]),
+    "Start Of FY", STARTOFYEAR('Date'[Date], "6/30"),
+    "End Of FY", ENDOFYEAR('Date'[Date], "6/30"),
+    "End Of CY", ENDOFYEAR('Date'[Date])
+)
+ORDER BY 'Date'[Date]

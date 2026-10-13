@@ -1,0 +1,9 @@
+// note: running total by month within each category in 2024: ALLSELECTED on Date clears the month but keeps the category grouping
+EVALUATE
+SUMMARIZECOLUMNS(
+    Category[Category],
+    'Date'[Month],
+    TREATAS({ 2024 }, 'Date'[Year]),
+    "Cumulative Sales", [Cumulative Sales In Selection]
+)
+ORDER BY Category[Category], 'Date'[Month]

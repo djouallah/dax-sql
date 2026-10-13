@@ -1,0 +1,15 @@
+// note: GROUPBY over Customer by Segment, where "" and NULL segments are separate groups: COUNTX over CURRENTGROUP of names and cities that are "" or NULL, and CONCATENATEX of the names by key (a DAX error: GROUPBY allows only X aggregations over CURRENTGROUP)
+// expect: error
+EVALUATE
+ADDCOLUMNS(
+    GROUPBY(
+        Customer,
+        Customer[Segment],
+        "Customers", COUNTX(CURRENTGROUP(), Customer[CustomerKey]),
+        "Named", COUNTX(CURRENTGROUP(), Customer[Customer]),
+        "With City", COUNTX(CURRENTGROUP(), Customer[City]),
+        "Names", CONCATENATEX(CURRENTGROUP(), "<" & Customer[Customer] & ">", "|", Customer[CustomerKey], ASC)
+    ),
+    "Segment Is Blank", ISBLANK(Customer[Segment])
+)
+ORDER BY Customer[Segment], [Segment Is Blank]

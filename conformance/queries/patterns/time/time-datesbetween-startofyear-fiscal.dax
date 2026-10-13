@@ -1,0 +1,8 @@
+// note: DATESBETWEEN from STARTOFYEAR with a fiscal year end to the last visible date, by fiscal month of a partial fiscal year
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Fiscal Month],
+    TREATAS({2025}, 'Date'[Fiscal Year]),
+    "Fiscal YTD", CALCULATE([Sales Amount], DATESBETWEEN('Date'[Date], STARTOFYEAR('Date'[Date], "6/30"), MAX('Date'[Date])))
+)
+ORDER BY 'Date'[Fiscal Month]

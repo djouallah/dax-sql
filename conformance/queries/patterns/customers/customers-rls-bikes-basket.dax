@@ -1,0 +1,10 @@
+// note: bike attach by country under the Bikes role: rows of other categories are invisible, so every visible order holds a bike
+// roles: Bikes
+EVALUATE
+SUMMARIZECOLUMNS(
+    Customer[Country],
+    "Orders", [Orders],
+    "With Bikes", [Basket Orders With Bikes],
+    "Customers", [Customers]
+)
+ORDER BY Customer[Country]

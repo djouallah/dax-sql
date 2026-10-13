@@ -1,0 +1,9 @@
+// note: sales converted to USD day by day and currency by currency, by customer country and year, the unknown customer included
+EVALUATE
+SUMMARIZECOLUMNS(
+    Customer[Country],
+    'Date'[Year],
+    "Sales", [Sales Amount],
+    "Sales USD", [Sales USD]
+)
+ORDER BY Customer[Country], 'Date'[Year]

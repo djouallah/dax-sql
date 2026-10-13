@@ -1,0 +1,8 @@
+// note: nested CALCULATE on one column: the inner filter wins, an inner KEEPFILTERS intersects, and two filters in one CALCULATE intersect
+EVALUATE
+ROW(
+    "Inner Wins", CALCULATE(CALCULATE([Sales Amount], Category[Category] = "Bikes"), Category[Category] = "Clothing"),
+    "Inner Kept", CALCULATE(CALCULATE([Sales Amount], KEEPFILTERS(Category[Category] = "Bikes")), Category[Category] IN {"Bikes", "Clothing"}),
+    "Same Calculate", CALCULATE([Sales Amount], Category[Category] = "Bikes", Category[Category] IN {"Bikes", "Clothing"}),
+    "Disjoint", CALCULATE([Sales Amount], Category[Category] = "Bikes", Category[Category] = "Clothing")
+)

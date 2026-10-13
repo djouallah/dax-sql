@@ -1,0 +1,12 @@
+// note: text matched without regard to case in a segmentation: categories filtered by TREATAS with lower- and upper-case names, customer bands tested by IN and = against differently cased text, cities filtered by IN in capitals, and a band's order fetched by LOOKUPVALUE with a mixed-case key
+EVALUATE
+SUMMARIZECOLUMNS(
+    Customer[Country],
+    TREATAS({ "bikes", "CLOTHING" }, Category[Category]),
+    "Sales", [Sales Amount],
+    "High Or Top Customers", COUNTROWS(FILTER(VALUES(Customer[CustomerKey]), [Customer Sales Band] IN { "HIGH", "top" })),
+    "Medium Customers", COUNTROWS(FILTER(VALUES(Customer[CustomerKey]), [Customer Sales Band] = "medium")),
+    "Paris And Lyon Sales", CALCULATE([Sales Amount], Customer[City] IN { "PARIS", "lyon" }),
+    "Top Band Order", LOOKUPVALUE(Segments[Segment Order], Segments[Segment], "tOP")
+)
+ORDER BY Customer[Country]

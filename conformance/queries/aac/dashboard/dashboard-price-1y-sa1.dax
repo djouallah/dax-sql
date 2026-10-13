@@ -1,0 +1,2 @@
+// note: the dashboard's price query, the price chart: per region and interval, with all regions' total (page state: 1 year to 2026-08-11, region SA1)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS(dim_calendar[date], ROLLUPADDISSUBTOTAL(dim_region[Region], "total"), "avg_price", [Average price]), dim_calendar[date] >= dt"2026-07-28", dim_calendar[date] <= dt"2026-08-11", dim_region[Region] = "SA1") ORDER BY [date], [Region], [total]

@@ -1,0 +1,12 @@
+// note: grouped by the Time Intelligence ordinal alone, a CALCULATE filter on the item name replaces only the name filter: the ordinal's filter stays, so the forced item applies where the ordinals agree, for bike sales in 2023 and 2024
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Time Intelligence'[Ordinal],
+    'Date'[Year],
+    TREATAS({ 2023, 2024 }, 'Date'[Year]),
+    TREATAS({ "Bikes" }, Category[Category]),
+    "Sales", [Sales Amount],
+    "Forced PY", CALCULATE([Sales Amount], 'Time Intelligence'[Time Intelligence] = "PY"),
+    "Forced YTD", CALCULATE([Sales Amount], 'Time Intelligence'[Time Intelligence] = "YTD")
+)
+ORDER BY 'Time Intelligence'[Ordinal], 'Date'[Year]

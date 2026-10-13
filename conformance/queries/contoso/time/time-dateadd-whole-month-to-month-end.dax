@@ -1,0 +1,2 @@
+// note: DATEADD one month from all of February (ending on its last day) gives all of March
+EVALUATE CALCULATETABLE(ROW("n", COUNTROWS(DATEADD('Date'[Date], 1, MONTH))), 'Date'[Year] = 2024, 'Date'[Month] = 2)

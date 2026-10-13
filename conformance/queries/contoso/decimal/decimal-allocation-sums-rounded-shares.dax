@@ -1,0 +1,2 @@
+// note: SUMX of fixed decimal shares: each share rounded before the sum
+EVALUATE ROW("a", SUMX(VALUES(Product[Color]), DIVIDE(CALCULATE([Sales Amount]) * 2, 22)))

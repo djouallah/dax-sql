@@ -1,0 +1,14 @@
+// note: under the France role, CROSSFILTER BOTH from Sales back to Product by year: the product-less lines reach Product's blank row only where the role leaves them visible (the customer-less one is hidden by it), in VALUES and CONCATENATEX but not COUNTROWS of Product or DISTINCTCOUNT
+// roles: France
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year],
+    "Lines", [Order Lines],
+    "Missing Product Lines", CALCULATE([Order Lines], Sales[ProductKey] = 999),
+    "Product Rows", CALCULATE(COUNTROWS(Product), CROSSFILTER(Sales[ProductKey], Product[ProductKey], BOTH)),
+    "Product Key Count", CALCULATE(DISTINCTCOUNT(Product[ProductKey]), CROSSFILTER(Sales[ProductKey], Product[ProductKey], BOTH)),
+    "Product Values", CALCULATE(COUNTROWS(VALUES(Product[ProductKey])), CROSSFILTER(Sales[ProductKey], Product[ProductKey], BOTH)),
+    "Blank Product Values", CALCULATE(COUNTROWS(FILTER(VALUES(Product[ProductKey]), ISBLANK(Product[ProductKey]))), CROSSFILTER(Sales[ProductKey], Product[ProductKey], BOTH)),
+    "Categories", CALCULATE(CONCATENATEX(VALUES(Product[Category]), Product[Category], ", ", Product[Category], ASC), CROSSFILTER(Sales[ProductKey], Product[ProductKey], BOTH))
+)
+ORDER BY 'Date'[Year]

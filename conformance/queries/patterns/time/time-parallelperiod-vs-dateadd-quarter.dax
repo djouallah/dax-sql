@@ -1,0 +1,9 @@
+// note: PARALLELPERIOD by -1 QUARTER returns the whole previous quarter, DATEADD only the shifted month, by month
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year Month],
+    TREATAS({2024}, 'Date'[Year]),
+    "Parallel PQ", [Sales PQ Parallel],
+    "DateAdd PQ", CALCULATE([Sales Amount], DATEADD('Date'[Date], -1, QUARTER))
+)
+ORDER BY 'Date'[Year Month]

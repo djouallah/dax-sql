@@ -1,0 +1,2 @@
+// note: fct_interconnector[Flow MW] per link, the blank row holding the link dim_interconnector lacks
+EVALUATE SUMMARIZECOLUMNS(dim_interconnector[interconnector], "Flow MW", [Flow MW])

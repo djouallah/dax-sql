@@ -1,0 +1,3 @@
+// note: PERCENTILE.INC with k above 1 is an error
+// expect: error
+EVALUATE ROW("p", PERCENTILE.INC(Product[Price], 1.5))

@@ -1,0 +1,10 @@
+// note: the France role filters Customer, Sales and the bridge rows (one direction), but not Account, which only filters the bridge
+// roles: France
+EVALUATE
+SUMMARIZECOLUMNS(
+    ROLLUPADDISSUBTOTAL(Account[Account Type], "Is Total"),
+    "Accounts", COUNTROWS(Account),
+    "Holders", COUNTROWS(AccountCustomer),
+    "Customers", COUNTROWS(Customer),
+    "Sales", [Sales Amount]
+)

@@ -1,0 +1,2 @@
+// note: COUNTROWS of a filter that keeps no rows is blank, not 0
+EVALUATE CALCULATETABLE(ROW("n", [Orders]), Product[Color] = "Green")

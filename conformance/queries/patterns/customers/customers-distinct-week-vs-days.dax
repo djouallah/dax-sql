@@ -1,0 +1,9 @@
+// note: distinct customers per ISO week of December 2024 with a total, against the sum of the daily distinct counts
+EVALUATE
+SUMMARIZECOLUMNS(
+    ROLLUPADDISSUBTOTAL('Date'[ISO Week], "Is Total"),
+    TREATAS({ "2024-12" }, 'Date'[Year Month]),
+    "Customers", [Customers],
+    "Sum Of Daily", SUMX(VALUES('Date'[Date]), [Customers])
+)
+ORDER BY [Is Total], 'Date'[ISO Week]

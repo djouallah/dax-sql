@@ -1,0 +1,2 @@
+// note: a calculation item selected by a filter on its ordinal column
+EVALUATE CALCULATETABLE(ROW("s", [Sales Amount]), FILTER(ALL('Time Calc'), 'Time Calc'[Ordinal] = 2), 'Date'[Year] = 2024)

@@ -1,0 +1,9 @@
+// note: the query a matrix with country rows and year columns writes: ROLLUPADDISSUBTOTAL on each axis, so row totals, column totals and the grand total cross, for buyers and new buyers (the blank country included)
+EVALUATE
+SUMMARIZECOLUMNS(
+    ROLLUPADDISSUBTOTAL(Customer[Country], "IsRowTotal"),
+    ROLLUPADDISSUBTOTAL('Date'[Year], "IsColumnTotal"),
+    "Customers", [Customers],
+    "New", [Customers New]
+)
+ORDER BY [IsRowTotal] DESC, Customer[Country], [IsColumnTotal] DESC, 'Date'[Year]

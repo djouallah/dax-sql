@@ -1,0 +1,6 @@
+// note: PERCENTILEX.EXC / .INC over values with blanks: the blanks count and sort first; an empty table is blank
+EVALUATE ROW(
+    "e50", PERCENTILEX.EXC(Product, IF(Product[Price] >= 100, Product[Price]), 0.5), "e75", PERCENTILEX.EXC(Product, IF(Product[Price] >= 100, Product[Price]), 0.75),
+    "e80", PERCENTILEX.EXC(Product, IF(Product[Price] >= 100, Product[Price]), 0.8),
+    "i50", PERCENTILEX.INC(Product, IF(Product[Price] >= 100, Product[Price]), 0.5), "i875", PERCENTILEX.INC(Product, IF(Product[Price] >= 100, Product[Price]), 0.875),
+    "none", PERCENTILEX.EXC(FILTER(Product, FALSE()), Product[Price], 0.5))

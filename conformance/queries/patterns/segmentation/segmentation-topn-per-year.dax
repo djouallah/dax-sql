@@ -1,0 +1,10 @@
+// note: TOPN inside GENERATE: the three best customers of each year, context transition carrying the outer year row into the ranking measure
+EVALUATE
+GENERATE(
+    VALUES('Date'[Year]),
+    ADDCOLUMNS(
+        TOPN(3, VALUES(Customer[Customer]), [Sales Amount], DESC),
+        "Sales", [Sales Amount]
+    )
+)
+ORDER BY 'Date'[Year], [Sales] DESC, Customer[Customer]

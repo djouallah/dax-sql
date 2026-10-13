@@ -1,0 +1,4 @@
+// note: LOOKUPVALUE finds its row whatever filters the table has, from a group or from CALCULATE
+EVALUATE SUMMARIZECOLUMNS(Product[Color],
+    "cap", LOOKUPVALUE(Product[Price], Product[Name], "Cap"),
+    "red", CALCULATE(LOOKUPVALUE(Product[Price], Product[Name], "Cap"), Product[Color] = "Red"))

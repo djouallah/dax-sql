@@ -1,0 +1,2 @@
+// note: fct_region[Regional wind available MWh] per day, blank before August
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS(dim_calendar[date], "Regional wind available MWh", [Regional wind available MWh]), dim_calendar[date] >= dt"2026-07-30", dim_calendar[date] <= dt"2026-08-03")

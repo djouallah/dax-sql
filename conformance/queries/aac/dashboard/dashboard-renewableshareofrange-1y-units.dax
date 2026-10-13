@@ -1,0 +1,2 @@
+// note: the dashboard's renewableShareOfRange query, the renewable share KPI over the range (page state: 1 year to 2026-08-11, units HPR1 BALDHWF1)
+EVALUATE CALCULATETABLE(ROW("share", [Renewable share]), dim_calendar[date] >= dt"2026-07-28", dim_calendar[date] <= dt"2026-08-11", dim_duid[DUID] IN {"HPR1", "BALDHWF1"})

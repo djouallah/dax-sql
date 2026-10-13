@@ -1,0 +1,3 @@
+// note: SUBSTITUTEWITHINDEX replaces the common column by the matching row's position in the ordered index table
+EVALUATE SUBSTITUTEWITHINDEX(SUMMARIZECOLUMNS(Category[Category], "s", [Sales Amount]), "i",
+    VALUES(Category[Category]), Category[Category], ASC)

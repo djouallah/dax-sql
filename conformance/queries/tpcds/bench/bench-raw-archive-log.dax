@@ -1,0 +1,2 @@
+// note: xmla_compare.py: the landing log's measures by source type
+EVALUATE SUMMARIZECOLUMNS(stg_tpcds_archive_log[source_type], "Files", [Archive Files], "Rows", [Archive Source Rows])

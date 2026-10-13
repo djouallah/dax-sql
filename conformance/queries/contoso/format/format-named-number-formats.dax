@@ -1,0 +1,15 @@
+// note: FORMAT with the named number formats (General Number, Currency, Fixed, Standard, Percent, Scientific, Yes/No, True/False, On/Off)
+EVALUATE ROW("c0", FORMAT(12345.67, "General Number"),
+    "c1", FORMAT(12345.67, "Currency"),
+    "c2", FORMAT(12345.67, "Fixed"),
+    "c3", FORMAT(12345.67, "Standard"),
+    "c4", FORMAT(12345.67, "Percent"),
+    "c5", FORMAT(12345.67, "Scientific"),
+    "c6", FORMAT(-12345.67, "Currency"),
+    "c7", FORMAT(0, "Yes/No"),
+    "c8", FORMAT(3, "True/False"),
+    "c9", FORMAT(0, "On/Off"),
+    "c10", FORMAT(TRUE(), "Yes/No"),
+    "c11", FORMAT(1e20, "General Number"),
+    "c12", FORMAT(0.1 + 0.2, "General Number"),
+    "c13", FORMAT(12345, "General Number"))

@@ -1,0 +1,9 @@
+// note: a matrix with rows and columns: two ROLLUPADDISSUBTOTAL axes give row totals, column totals and the corner total
+EVALUATE
+SUMMARIZECOLUMNS(
+	ROLLUPADDISSUBTOTAL('Category'[Category], "IsGrandTotalRowTotal"),
+	ROLLUPADDISSUBTOTAL('Date'[Year], "IsGrandTotalColumnTotal"),
+	"Sales_Amount", 'Sales'[Sales Amount],
+	"Orders", 'Sales'[Orders]
+)
+ORDER BY [IsGrandTotalRowTotal] DESC, 'Category'[Category], [IsGrandTotalColumnTotal] DESC, 'Date'[Year]

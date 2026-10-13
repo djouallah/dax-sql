@@ -1,0 +1,14 @@
+// note: by Sales[Quantity], with zeros and negative return quantities: share of all lines with REMOVEFILTERS of the column, Quantity > 0 overriding against KEEPFILTERS intersecting, KEEPFILTERS of <> 0 and of = BLANK() (which a zero quantity equals), and returns over REMOVEFILTERS(Sales)
+EVALUATE
+SUMMARIZECOLUMNS(
+    Sales[Quantity],
+    "Lines", [Lines],
+    "Sales", [Sales Amount],
+    "Share Of Lines", DIVIDE([Lines], CALCULATE([Lines], REMOVEFILTERS(Sales[Quantity]))),
+    "Positive Override", CALCULATE([Lines], Sales[Quantity] > 0),
+    "Positive Keep", CALCULATE([Lines], KEEPFILTERS(Sales[Quantity] > 0)),
+    "Not Zero Keep", CALCULATE([Lines], KEEPFILTERS(Sales[Quantity] <> 0)),
+    "Blank Eq Keep", CALCULATE([Lines], KEEPFILTERS(Sales[Quantity] = BLANK())),
+    "Returns Of All Lines", CALCULATE([Lines], Sales[Quantity] < 0, REMOVEFILTERS(Sales))
+)
+ORDER BY Sales[Quantity]

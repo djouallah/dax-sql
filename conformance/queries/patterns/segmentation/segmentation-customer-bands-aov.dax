@@ -1,0 +1,8 @@
+// note: dynamic segmentation on a ratio measure: customers banded by their average order value per year
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year],
+    Segments[Segment],
+    "Customers", [Segment Customer Count AOV]
+)
+ORDER BY 'Date'[Year], Segments[Segment]

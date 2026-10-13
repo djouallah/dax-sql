@@ -1,0 +1,2 @@
+// note: a measure evaluated with no filter: the grand total
+EVALUATE ROW("s", [Sales Amount])

@@ -1,0 +1,3 @@
+// note: PATHITEMREVERSE: an employee's manager, the second item from the path's end
+EVALUATE
+SELECTCOLUMNS(Employee, "Employee", Employee[Employee], "Manager", PATHITEMREVERSE(PATH(Employee[EmployeeKey], Employee[ParentEmployeeKey]), 2, INTEGER))

@@ -1,0 +1,13 @@
+// note: text filters ignore case: a TREATAS filter, an IN list, an equality predicate, a FILTER over VALUES and LOOKUPVALUE given other casings match the model's values, which keep the model's casing
+EVALUATE
+SUMMARIZECOLUMNS(
+    Category[Category],
+    TREATAS({"bikes", "CLOTHING"}, Category[Category]),
+    "Sales", [Sales Amount],
+    "Red Or Black", CALCULATE([Sales Amount], Product[Color] IN {"red", "BLACK"}),
+    "Contoso", CALCULATE([Sales Amount], Product[Brand] = "contoso"),
+    "Silver Via Values", CALCULATE([Sales Amount], FILTER(VALUES(Product[Color]), Product[Color] = "sILVER")),
+    "Bikes Key", LOOKUPVALUE(Category[CategoryKey], Category[Category], "bIKES"),
+    "Is Bikes", SELECTEDVALUE(Category[Category]) = "BIKES"
+)
+ORDER BY Category[Category]

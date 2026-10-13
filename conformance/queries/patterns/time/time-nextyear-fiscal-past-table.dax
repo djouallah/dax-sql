@@ -1,0 +1,9 @@
+// note: NEXTYEAR with a June 30 year end, by fiscal year: the year after the partial last fiscal year lies past the Date table
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Fiscal Year],
+    "Sales", [Sales Amount],
+    "Next FY Sales", CALCULATE([Sales Amount], NEXTYEAR('Date'[Date], "6/30")),
+    "Next FY Days", CALCULATE(COUNTROWS('Date'), NEXTYEAR('Date'[Date], "6/30"))
+)
+ORDER BY 'Date'[Fiscal Year]

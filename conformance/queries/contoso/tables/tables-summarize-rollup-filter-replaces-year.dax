@@ -1,0 +1,2 @@
+// note: SUMMARIZE with ROLLUP: a filter replacing the grouping column still meets the group's rows; the total row has all of them
+EVALUATE SUMMARIZE(Sales, ROLLUP('Date'[Year]), "y2024", CALCULATE([Sales Amount], 'Date'[Year] = 2024))

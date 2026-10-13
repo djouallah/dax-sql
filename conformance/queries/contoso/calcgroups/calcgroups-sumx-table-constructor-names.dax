@@ -1,0 +1,3 @@
+// note: SUMX over a constant table of item names, each applied with CALCULATE (a DAX error: a CALCULATE filter cannot use the iterator's [Value])
+// expect: error
+EVALUATE CALCULATETABLE(ROW("s", SUMX({"PY", "YTD"}, CALCULATE([Sales Amount], 'Time Calc'[Time Calc] = [Value]))), 'Date'[Year] = 2024)

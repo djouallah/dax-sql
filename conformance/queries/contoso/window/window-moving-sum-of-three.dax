@@ -1,0 +1,2 @@
+// note: WINDOW(-1, 1): a moving sum of three prices
+EVALUATE ADDCOLUMNS(VALUES(Product[Price]), "n", CALCULATE(SUM(Product[Price]), WINDOW(-1, 1, ALL(Product[Price]), ORDERBY(Product[Price]))))

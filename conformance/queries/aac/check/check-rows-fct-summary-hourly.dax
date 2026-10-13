@@ -1,0 +1,2 @@
+// note: check_model.py: the row count of fct_summary_hourly
+EVALUATE ROW("table", "fct_summary_hourly", "rows", COUNTROWS('fct_summary_hourly'))

@@ -1,0 +1,2 @@
+// note: the row count of catalog_sales
+EVALUATE ROW("table", "catalog_sales", "rows", COUNTROWS('catalog_sales'))

@@ -1,0 +1,9 @@
+// note: ALLEXCEPT(Sales, 'Date'[Year]) removes every filter on the expanded Sales table but the year's, the Category filter included
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year],
+    Category[Category],
+    "Sales", [Sales Amount],
+    "Year Total", CALCULATE([Sales Amount], ALLEXCEPT(Sales, 'Date'[Year]))
+)
+ORDER BY 'Date'[Year], Category[Category]

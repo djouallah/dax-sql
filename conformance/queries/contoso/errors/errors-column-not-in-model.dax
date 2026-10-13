@@ -1,0 +1,3 @@
+// note: a column that only a query defines does not exist without the DEFINE
+// expect: error
+EVALUATE ROW("n", MAX(Customer[Orders]))

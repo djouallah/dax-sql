@@ -1,0 +1,9 @@
+// note: the MAT calculation item on the budget, whose dates reach Budget through the many-to-many YearMonth relationship
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year Month],
+    TREATAS({2024}, 'Date'[Year]),
+    "Budget", [Budget Amount],
+    "Budget MAT", CALCULATE([Budget Amount], 'Time Intelligence'[Time Intelligence] = "MAT")
+)
+ORDER BY 'Date'[Year Month]

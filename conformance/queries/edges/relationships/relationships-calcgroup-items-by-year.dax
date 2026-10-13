@@ -1,0 +1,11 @@
+// note: every Adjust item by year: Shipped swaps in the inactive Ship Date relationship, PY and YTD move the Date filter, Per Customer divides only the listed measures; Lines and the distinct count go through each item too
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year],
+    Adjust[Adjust],
+    "Sales", [Sales Amount],
+    "Total Quantity", [Total Quantity],
+    "Lines", [Lines],
+    "Customers No Blank", [Customers No Blank]
+)
+ORDER BY 'Date'[Year], Adjust[Adjust]

@@ -1,0 +1,13 @@
+// note: 20th, 50th and 80th percentiles of 2022 sales per customer by country with PERCENTILEX.EXC over all the country's customers (those without a 2022 sale give blanks), and PERCENTILE.EXC of birth year
+EVALUATE
+SUMMARIZECOLUMNS(
+    Customer[Country],
+    TREATAS({ "France", "Germany", "United States", "Australia" }, Customer[Country]),
+    TREATAS({ 2022 }, 'Date'[Year]),
+    "Buyers", [Customers],
+    "P20", PERCENTILEX.EXC(VALUES(Customer[CustomerKey]), [Sales Amount], 0.2),
+    "P50", PERCENTILEX.EXC(VALUES(Customer[CustomerKey]), [Sales Amount], 0.5),
+    "P80", PERCENTILEX.EXC(VALUES(Customer[CustomerKey]), [Sales Amount], 0.8),
+    "Birth Year P50", PERCENTILE.EXC(Customer[Birth Year], 0.5)
+)
+ORDER BY Customer[Country]

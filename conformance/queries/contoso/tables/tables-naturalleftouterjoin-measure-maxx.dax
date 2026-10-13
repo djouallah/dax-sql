@@ -1,0 +1,3 @@
+// note: NATURALLEFTOUTERJOIN of text with a measure that is a bare MAXX of text: whether a measure reference types differently from the expression inline
+DEFINE MEASURE Product[Max Name] = MAXX(Product, Product[Name])
+EVALUATE NATURALLEFTOUTERJOIN(SELECTCOLUMNS(Category, "Name", [Max Name]), SELECTCOLUMNS(Product, "Name", Product[Name] & ""))

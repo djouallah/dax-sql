@@ -1,0 +1,2 @@
+// note: START AT on a DESC numeric model column, at a value it holds (800): whether that row is included
+EVALUATE VALUES(Product[Price]) ORDER BY Product[Price] DESC START AT 800

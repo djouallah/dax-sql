@@ -1,0 +1,10 @@
+// note: the Current and PY items of the Time Intelligence calculation group applied to a running-total measure, by month of 2024
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Time Intelligence'[Time Intelligence],
+    'Date'[Year Month],
+    TREATAS({ "Current", "PY" }, 'Time Intelligence'[Time Intelligence]),
+    TREATAS({ 2024 }, 'Date'[Year]),
+    "Cumulative Sales", [Cumulative Sales All Dates]
+)
+ORDER BY 'Time Intelligence'[Time Intelligence], 'Date'[Year Month]

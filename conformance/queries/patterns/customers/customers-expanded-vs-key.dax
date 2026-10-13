@@ -1,0 +1,8 @@
+// note: customers counted on Customer with the expanded Sales table as a filter, against DISTINCTCOUNT of the fact key (rows without a customer)
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year],
+    "Distinct Keys", [Customers],
+    "Via Expanded Sales", [Customers Via Expanded Sales]
+)
+ORDER BY 'Date'[Year]

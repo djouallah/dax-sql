@@ -1,0 +1,12 @@
+// note: text matched without regard to case: TREATAS, IN, =, a FILTER over VALUES and LOOKUPVALUE given lower- and upper-case literals, while the group-by column shows the stored casing
+EVALUATE
+SUMMARIZECOLUMNS(
+    Customer[Country],
+    TREATAS({ "FRANCE", "germany" }, Customer[Country]),
+    "Customers", [Customers],
+    "Paris Or Berlin", CALCULATE([Customers], Customer[City] IN { "paris", "BERLIN" }),
+    "Female", CALCULATE([Customers], Customer[Gender] = "f"),
+    "Lyon Via Values", CALCULATE([Customers], FILTER(VALUES(Customer[City]), Customer[City] = "LYON")),
+    "Key Of Customer 007", LOOKUPVALUE(Customer[CustomerKey], Customer[Customer], "customer 007")
+)
+ORDER BY Customer[Country]

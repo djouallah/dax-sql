@@ -1,0 +1,9 @@
+// note: PERCENTILEX.EXC at 0.1 over the categories, the blank category among them, by year: k is below 1/(N+1) for N of four or five (a DAX error: PERCENTILE.EXC k out of range)
+// expect: error
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year],
+    "Sales", [Sales Amount],
+    "P10 Exc", PERCENTILEX.EXC(VALUES(Category[Category]), [Sales Amount], 0.1)
+)
+ORDER BY 'Date'[Year]

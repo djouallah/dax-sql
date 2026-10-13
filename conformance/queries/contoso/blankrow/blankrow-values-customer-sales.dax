@@ -1,0 +1,2 @@
+// note: ADDCOLUMNS over VALUES(Customer[Customer]): the blank row holds the unknown customer's sales
+EVALUATE ADDCOLUMNS(VALUES(Customer[Customer]), "s", [Sales Amount])

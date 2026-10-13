@@ -1,0 +1,3 @@
+// note: OFFSET(-1) by price with PARTITIONBY a related table's column: the next cheaper product of the same category (a DAX error: PARTITIONBY must name a column of the relation)
+// expect: error
+EVALUATE SELECTCOLUMNS(ALL(Product), "Name", Product[Name], "prev", CALCULATE(SELECTEDVALUE(Product[Name]), OFFSET(-1, ALL(Product), ORDERBY(Product[Price]), PARTITIONBY(Category[Category]))))

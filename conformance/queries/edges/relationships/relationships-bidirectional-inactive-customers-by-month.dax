@@ -1,0 +1,9 @@
+// note: Date filters Sales and Sales filters Customer back through the both-directions relationship: active and inactive customers per month, 2023-08 (no sales at all) leaving every customer key inactive
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year Month],
+    "Lines", [Lines],
+    "Active Customers", COUNTROWS(Customer),
+    "Inactive Customers", COUNTROWS(EXCEPT(ALL(Customer[CustomerKey]), VALUES(Customer[CustomerKey])))
+)
+ORDER BY 'Date'[Year Month]

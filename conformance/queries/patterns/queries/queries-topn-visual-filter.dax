@@ -1,0 +1,21 @@
+// note: a visual-level Top N filter: a TOPN over a filtered SUMMARIZECOLUMNS becomes a KEEPFILTERS filter table of the core
+DEFINE
+	VAR __DS0FilterTable = TREATAS({2024}, 'Date'[Year])
+	VAR __DS0FilterTable2 =
+		TOPN(
+			2,
+			SUMMARIZECOLUMNS('Product'[Brand], __DS0FilterTable, "Sales_Amount", 'Sales'[Sales Amount]),
+			[Sales_Amount], 0, 'Product'[Brand], 1
+		)
+	VAR __DS0Core =
+		SUMMARIZECOLUMNS(
+			'Product'[Brand],
+			'Customer'[Country],
+			__DS0FilterTable,
+			KEEPFILTERS(__DS0FilterTable2),
+			"Sales_Amount", 'Sales'[Sales Amount]
+		)
+EVALUATE
+	__DS0Core
+ORDER BY
+	'Product'[Brand], 'Customer'[Country]

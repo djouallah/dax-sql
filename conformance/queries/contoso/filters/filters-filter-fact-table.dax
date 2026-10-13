@@ -1,0 +1,2 @@
+// note: a measure filtering FILTER(Sales, ...) by amount, grouped by color: a color with no such sale is left out
+EVALUATE SUMMARIZECOLUMNS(Product[Color], "big", [Big Orders])

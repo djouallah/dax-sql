@@ -1,0 +1,10 @@
+// note: under the Bikes role (security on Category, behind Sales), customer rows by country counted plain and with the Sales-Customer relationship made bidirectional for the query only (CROSSFILTER BOTH)
+// roles: Bikes
+EVALUATE
+SUMMARIZECOLUMNS(
+    Customer[Country],
+    "Customer Rows", COUNTROWS(Customer),
+    "Customer Rows Both", CALCULATE(COUNTROWS(Customer), CROSSFILTER(Sales[CustomerKey], Customer[CustomerKey], BOTH)),
+    "Buyers", [Customers]
+)
+ORDER BY Customer[Country]

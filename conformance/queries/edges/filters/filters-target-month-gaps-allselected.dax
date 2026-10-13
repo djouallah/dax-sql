@@ -1,0 +1,14 @@
+// note: by month of 2024, where Target has no rows for July and August but Sales does: target, Sales vs Target, the year's target through ALLSELECTED('Date') and REMOVEFILTERS('Date'[Year Month]), a count of selected months with a target, and the target on each month's last day (targets sit on the first day)
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year Month],
+    TREATAS({2024}, 'Date'[Year]),
+    "Sales", [Sales Amount],
+    "Target", [Target Amount],
+    "Sales vs Target", [Sales vs Target],
+    "Target ALLSELECTED Date", CALCULATE([Target Amount], ALLSELECTED('Date')),
+    "Target No Month Filter", CALCULATE([Target Amount], REMOVEFILTERS('Date'[Year Month])),
+    "Months With Target", COUNTROWS(FILTER(ALLSELECTED('Date'[Year Month]), NOT ISBLANK([Target Amount]))),
+    "Target On Last Day", CALCULATE([Target Amount], LASTDATE('Date'[Date]))
+)
+ORDER BY 'Date'[Year Month]

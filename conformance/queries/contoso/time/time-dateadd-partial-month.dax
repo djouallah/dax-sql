@@ -1,0 +1,2 @@
+// note: DATEADD minus one month from the 10th to the 20th of a month: the same days of the month before
+EVALUATE CALCULATETABLE(ROW("n", COUNTROWS(DATEADD('Date'[Date], -1, MONTH))), DATESBETWEEN('Date'[Date], dt"2024-03-10", dt"2024-03-20"))

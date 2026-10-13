@@ -1,0 +1,3 @@
+// note: TREATAS({BLANK()}) selects the blank row; VALUES as a filter keeps it, DISTINCT does not; CONTAINSROW of BLANK
+EVALUATE ROW("t", CALCULATE([Sales Amount], TREATAS({BLANK()}, Customer[City])), "c", CONTAINSROW({BLANK()}, BLANK()),
+    "v", CALCULATE([Sales Amount], VALUES(Customer[City])), "d", CALCULATE([Sales Amount], DISTINCT(Customer[City])))

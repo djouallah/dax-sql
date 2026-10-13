@@ -1,0 +1,11 @@
+// note: context transition over every date of the marked date table: the transition's Date filter drops the query's Year and Month filters, unlike a plain iteration of the visible dates
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year],
+    TREATAS({2}, 'Date'[Month]),
+    "Days", COUNTROWS('Date'),
+    "Days Seen Over All Dates", SUMX(ALL('Date'[Date]), CALCULATE(COUNTROWS('Date'))),
+    "Sales Over All Dates", SUMX(ALL('Date'[Date]), CALCULATE([Sales Amount])),
+    "Sales Over Visible Dates", SUMX(VALUES('Date'[Date]), CALCULATE([Sales Amount]))
+)
+ORDER BY 'Date'[Year]

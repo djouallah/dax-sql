@@ -1,0 +1,8 @@
+// note: NATURALINNERJOIN of categories with their budgets on a Key column without lineage, a number on one side and text on the other (a DAX error: the join columns have different data types)
+// expect: error
+EVALUATE
+VAR Categories = SELECTCOLUMNS(Category, "Key", Category[CategoryKey] + 0, "Name", Category[Category] & "")
+VAR Budgets = SELECTCOLUMNS(SUMMARIZE(Budget, Budget[CategoryKey]), "Key", FORMAT(Budget[CategoryKey], "0"), "Budget", CALCULATE([Budget Amount]))
+RETURN
+    NATURALINNERJOIN(Categories, Budgets)
+ORDER BY [Name]

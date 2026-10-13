@@ -1,0 +1,1099 @@
+{
+ "gaps-addmissingitems": {
+  "hash": "18d8e1947aea1d41abacab691d57055a387c8c42",
+  "columns": [
+   "Product[Color]",
+   "[Sales]"
+  ],
+  "rows": [
+   [
+    "Yellow",
+    545766.9500000007
+   ],
+   [
+    "Black",
+    956008.5099999998
+   ],
+   [
+    "Red",
+    716918.9199999981
+   ],
+   [
+    "Blue",
+    null
+   ],
+   [
+    "Silver",
+    null
+   ],
+   [
+    "White",
+    null
+   ],
+   [
+    null,
+    null
+   ]
+  ]
+ },
+ "gaps-define-column": {
+  "hash": "d05c6061b91be6638d1372e0234a27eb655354e2",
+  "columns": [
+   "Customer[Generation]",
+   "[Customers]",
+   "[Sales]"
+  ],
+  "rows": [
+   [
+    "1980 or later",
+    46,
+    1149931.319999999
+   ],
+   [
+    "Before 1980",
+    74,
+    2213727.310000003
+   ],
+   [
+    null,
+    null,
+    189.0
+   ]
+  ]
+ },
+ "gaps-naturalinnerjoin": {
+  "hash": "5bbe5f2c4f74e9643276a78dcbae43c33393eb8a",
+  "columns": [
+   "[SubcategoryKey]",
+   "[Product]",
+   "[Subcategory]"
+  ],
+  "rows": [
+   [
+    1,
+    "Road Bike A",
+    "Road Bikes"
+   ],
+   [
+    1,
+    "Road Bike B",
+    "Road Bikes"
+   ],
+   [
+    1,
+    "Road Bike C",
+    "Road Bikes"
+   ],
+   [
+    1,
+    "Road Bike D",
+    "Road Bikes"
+   ],
+   [
+    2,
+    "Mountain Bike A",
+    "Mountain Bikes"
+   ],
+   [
+    2,
+    "Mountain Bike B",
+    "Mountain Bikes"
+   ],
+   [
+    2,
+    "Mountain Bike C",
+    "Mountain Bikes"
+   ],
+   [
+    2,
+    "Mountain Bike D",
+    "Mountain Bikes"
+   ],
+   [
+    3,
+    "Touring Bike A",
+    "Touring Bikes"
+   ],
+   [
+    3,
+    "Touring Bike B",
+    "Touring Bikes"
+   ],
+   [
+    3,
+    "Touring Bike C",
+    "Touring Bikes"
+   ],
+   [
+    4,
+    "Jersey A",
+    "Jerseys"
+   ],
+   [
+    4,
+    "Jersey B",
+    "Jerseys"
+   ],
+   [
+    4,
+    "Jersey C",
+    "Jerseys"
+   ],
+   [
+    4,
+    "Jersey D",
+    "Jerseys"
+   ],
+   [
+    5,
+    "Short A",
+    "Shorts"
+   ],
+   [
+    5,
+    "Short B",
+    "Shorts"
+   ],
+   [
+    5,
+    "Short C",
+    "Shorts"
+   ],
+   [
+    5,
+    "Short D",
+    "Shorts"
+   ],
+   [
+    6,
+    "Glove A",
+    "Gloves"
+   ],
+   [
+    6,
+    "Glove B",
+    "Gloves"
+   ],
+   [
+    6,
+    "Glove C",
+    "Gloves"
+   ],
+   [
+    7,
+    "Helmet A",
+    "Helmets"
+   ],
+   [
+    7,
+    "Helmet B",
+    "Helmets"
+   ],
+   [
+    7,
+    "Helmet C",
+    "Helmets"
+   ],
+   [
+    7,
+    "Helmet D",
+    "Helmets"
+   ],
+   [
+    8,
+    "Light A",
+    "Lights"
+   ],
+   [
+    8,
+    "Light B",
+    "Lights"
+   ],
+   [
+    8,
+    "Light C",
+    "Lights"
+   ],
+   [
+    8,
+    "Light D",
+    "Lights"
+   ],
+   [
+    9,
+    "Bottle A",
+    "Bottles"
+   ],
+   [
+    9,
+    "Bottle B",
+    "Bottles"
+   ],
+   [
+    9,
+    "Bottle C",
+    "Bottles"
+   ],
+   [
+    10,
+    "Wheel A",
+    "Wheels"
+   ],
+   [
+    10,
+    "Wheel B",
+    "Wheels"
+   ],
+   [
+    10,
+    "Wheel C",
+    "Wheels"
+   ],
+   [
+    10,
+    "Wheel D",
+    "Wheels"
+   ],
+   [
+    11,
+    "Brake A",
+    "Brakes"
+   ],
+   [
+    11,
+    "Brake B",
+    "Brakes"
+   ],
+   [
+    11,
+    "Brake C",
+    "Brakes"
+   ],
+   [
+    11,
+    "Brake D",
+    "Brakes"
+   ],
+   [
+    12,
+    "Chain A",
+    "Chains"
+   ],
+   [
+    12,
+    "Chain B",
+    "Chains"
+   ],
+   [
+    12,
+    "Chain C",
+    "Chains"
+   ],
+   [
+    12,
+    "Unsold Widget",
+    "Chains"
+   ]
+  ]
+ },
+ "gaps-naturalleftouterjoin": {
+  "hash": "ae2ef107719e355606f10547e04c38ef3c32fcb3",
+  "columns": [
+   "[CategoryKey]",
+   "[Category]",
+   "[Budget]"
+  ],
+  "rows": [
+   [
+    1,
+    "Bikes",
+    99854.0
+   ],
+   [
+    2,
+    "Clothing",
+    null
+   ],
+   [
+    3,
+    "Accessories",
+    4704.0
+   ],
+   [
+    4,
+    "Components",
+    12321.0
+   ]
+  ]
+ },
+ "gaps-path": {
+  "hash": "a9591f9bda2d5c2477ef16da4f79f95a3310d1db",
+  "columns": [
+   "Employee[EmployeeKey]",
+   "Employee[Employee]",
+   "Employee[ParentEmployeeKey]",
+   "Employee[Title]",
+   "[Path]"
+  ],
+  "rows": [
+   [
+    1,
+    "Ava Chen",
+    null,
+    "CEO",
+    "1"
+   ],
+   [
+    2,
+    "Ben Ortiz",
+    1,
+    "VP Sales",
+    "1|2"
+   ],
+   [
+    3,
+    "Cara Diaz",
+    1,
+    "VP Online",
+    "1|3"
+   ],
+   [
+    4,
+    "Dev Patel",
+    2,
+    "Director",
+    "1|2|4"
+   ],
+   [
+    5,
+    "Eli Novak",
+    2,
+    "Director",
+    "1|2|5"
+   ],
+   [
+    6,
+    "Fay Grant",
+    3,
+    "Director",
+    "1|3|6"
+   ],
+   [
+    7,
+    "Gus Reyes",
+    4,
+    "Rep",
+    "1|2|4|7"
+   ],
+   [
+    8,
+    "Hana Ito",
+    4,
+    "Rep",
+    "1|2|4|8"
+   ],
+   [
+    9,
+    "Ivan Kral",
+    5,
+    "Rep",
+    "1|2|5|9"
+   ],
+   [
+    10,
+    "Jade Moss",
+    5,
+    "Rep",
+    "1|2|5|10"
+   ],
+   [
+    11,
+    "Kai Lund",
+    6,
+    "Rep",
+    "1|3|6|11"
+   ],
+   [
+    12,
+    "Lea Roux",
+    6,
+    "Rep",
+    "1|3|6|12"
+   ],
+   [
+    13,
+    "Max Weber",
+    7,
+    "Associate",
+    "1|2|4|7|13"
+   ],
+   [
+    14,
+    "Nia Okafor",
+    9,
+    "Associate",
+    "1|2|5|9|14"
+   ],
+   [
+    15,
+    "Oto Sato",
+    11,
+    "Associate",
+    "1|3|6|11|15"
+   ]
+  ]
+ },
+ "gaps-pathcontains-team-sales": {
+  "hash": "2fb0aa6249f54c442615aae7746b8c8b075d4e48",
+  "columns": [
+   "[Key]",
+   "[Employee]",
+   "[Team Sales]"
+  ],
+  "rows": [
+   [
+    1,
+    "Ava Chen",
+    3363847.630000001
+   ],
+   [
+    2,
+    "Ben Ortiz",
+    2020187.6500000001
+   ],
+   [
+    3,
+    "Cara Diaz",
+    1078503.92
+   ],
+   [
+    4,
+    "Dev Patel",
+    963210.4000000001
+   ],
+   [
+    5,
+    "Eli Novak",
+    1056977.25
+   ],
+   [
+    6,
+    "Fay Grant",
+    1078503.92
+   ],
+   [
+    7,
+    "Gus Reyes",
+    481295.32000000007
+   ],
+   [
+    8,
+    "Hana Ito",
+    274435.62999999995
+   ],
+   [
+    9,
+    "Ivan Kral",
+    520864.3800000001
+   ],
+   [
+    10,
+    "Jade Moss",
+    240232.08999999985
+   ],
+   [
+    11,
+    "Kai Lund",
+    476289.77
+   ],
+   [
+    12,
+    "Lea Roux",
+    248836.09000000023
+   ],
+   [
+    13,
+    "Max Weber",
+    252502.01000000007
+   ],
+   [
+    14,
+    "Nia Okafor",
+    311646.23000000004
+   ],
+   [
+    15,
+    "Oto Sato",
+    242638.22999999995
+   ]
+  ]
+ },
+ "gaps-pathitem-levels": {
+  "hash": "501c7a651c48772b9a5fd2adb31e4d23dd0db0c5",
+  "columns": [
+   "[Employee]",
+   "[Path]",
+   "[Level 1]",
+   "[Level 2]",
+   "[Level 3]"
+  ],
+  "rows": [
+   [
+    "Ava Chen",
+    "1",
+    1,
+    null,
+    null
+   ],
+   [
+    "Ben Ortiz",
+    "1|2",
+    1,
+    2,
+    null
+   ],
+   [
+    "Cara Diaz",
+    "1|3",
+    1,
+    3,
+    null
+   ],
+   [
+    "Dev Patel",
+    "1|2|4",
+    1,
+    2,
+    4
+   ],
+   [
+    "Eli Novak",
+    "1|2|5",
+    1,
+    2,
+    5
+   ],
+   [
+    "Fay Grant",
+    "1|3|6",
+    1,
+    3,
+    6
+   ],
+   [
+    "Gus Reyes",
+    "1|2|4|7",
+    1,
+    2,
+    4
+   ],
+   [
+    "Hana Ito",
+    "1|2|4|8",
+    1,
+    2,
+    4
+   ],
+   [
+    "Ivan Kral",
+    "1|2|5|9",
+    1,
+    2,
+    5
+   ],
+   [
+    "Jade Moss",
+    "1|2|5|10",
+    1,
+    2,
+    5
+   ],
+   [
+    "Kai Lund",
+    "1|3|6|11",
+    1,
+    3,
+    6
+   ],
+   [
+    "Lea Roux",
+    "1|3|6|12",
+    1,
+    3,
+    6
+   ],
+   [
+    "Max Weber",
+    "1|2|4|7|13",
+    1,
+    2,
+    4
+   ],
+   [
+    "Nia Okafor",
+    "1|2|5|9|14",
+    1,
+    2,
+    5
+   ],
+   [
+    "Oto Sato",
+    "1|3|6|11|15",
+    1,
+    3,
+    6
+   ]
+  ]
+ },
+ "gaps-pathitemreverse": {
+  "hash": "b97f5d3dbd9ded9556a9df5f89957235fe2969f4",
+  "columns": [
+   "[Employee]",
+   "[Manager]"
+  ],
+  "rows": [
+   [
+    "Ava Chen",
+    null
+   ],
+   [
+    "Ben Ortiz",
+    1
+   ],
+   [
+    "Cara Diaz",
+    1
+   ],
+   [
+    "Dev Patel",
+    2
+   ],
+   [
+    "Eli Novak",
+    2
+   ],
+   [
+    "Fay Grant",
+    3
+   ],
+   [
+    "Gus Reyes",
+    4
+   ],
+   [
+    "Hana Ito",
+    4
+   ],
+   [
+    "Ivan Kral",
+    5
+   ],
+   [
+    "Jade Moss",
+    5
+   ],
+   [
+    "Kai Lund",
+    6
+   ],
+   [
+    "Lea Roux",
+    6
+   ],
+   [
+    "Max Weber",
+    7
+   ],
+   [
+    "Nia Okafor",
+    9
+   ],
+   [
+    "Oto Sato",
+    11
+   ]
+  ]
+ },
+ "gaps-pathlength": {
+  "hash": "7d8f0e211a5c84c99cd507eeb8a6a266b42c275c",
+  "columns": [
+   "[Employee]",
+   "[Level]"
+  ],
+  "rows": [
+   [
+    "Ava Chen",
+    1
+   ],
+   [
+    "Ben Ortiz",
+    2
+   ],
+   [
+    "Cara Diaz",
+    2
+   ],
+   [
+    "Dev Patel",
+    3
+   ],
+   [
+    "Eli Novak",
+    3
+   ],
+   [
+    "Fay Grant",
+    3
+   ],
+   [
+    "Gus Reyes",
+    4
+   ],
+   [
+    "Hana Ito",
+    4
+   ],
+   [
+    "Ivan Kral",
+    4
+   ],
+   [
+    "Jade Moss",
+    4
+   ],
+   [
+    "Kai Lund",
+    4
+   ],
+   [
+    "Lea Roux",
+    4
+   ],
+   [
+    "Max Weber",
+    5
+   ],
+   [
+    "Nia Okafor",
+    5
+   ],
+   [
+    "Oto Sato",
+    5
+   ]
+  ]
+ },
+ "gaps-percentile-exc": {
+  "hash": "2793f2cb0c7716d402f336e3565a8014d6adda11",
+  "columns": [
+   "Category[Category]",
+   "[P50]",
+   "[P50 Qty]"
+  ],
+  "rows": [
+   [
+    "Bikes",
+    2063.17,
+    1
+   ],
+   [
+    "Components",
+    784.86,
+    3
+   ],
+   [
+    "Accessories",
+    142.44,
+    3
+   ],
+   [
+    "Clothing",
+    251.415,
+    4
+   ],
+   [
+    null,
+    95.0,
+    1.5
+   ]
+  ]
+ },
+ "gaps-substitute-instance": {
+  "hash": "15d3bcecd53e11a20b863c4720d9cc3800fa8cbf",
+  "columns": [
+   "[Customer]",
+   "[Second Zero]",
+   "[Every Zero]"
+  ],
+  "rows": [
+   [
+    "Customer 001",
+    "Customer 0#1",
+    "Customer ##1"
+   ],
+   [
+    "Customer 002",
+    "Customer 0#2",
+    "Customer ##2"
+   ],
+   [
+    "Customer 003",
+    "Customer 0#3",
+    "Customer ##3"
+   ],
+   [
+    "Customer 004",
+    "Customer 0#4",
+    "Customer ##4"
+   ],
+   [
+    "Customer 005",
+    "Customer 0#5",
+    "Customer ##5"
+   ],
+   [
+    "Customer 006",
+    "Customer 0#6",
+    "Customer ##6"
+   ],
+   [
+    "Customer 007",
+    "Customer 0#7",
+    "Customer ##7"
+   ],
+   [
+    "Customer 008",
+    "Customer 0#8",
+    "Customer ##8"
+   ],
+   [
+    "Customer 009",
+    "Customer 0#9",
+    "Customer ##9"
+   ],
+   [
+    "Customer 010",
+    "Customer 01#",
+    "Customer #1#"
+   ],
+   [
+    "Customer 011",
+    "Customer 011",
+    "Customer #11"
+   ],
+   [
+    "Customer 012",
+    "Customer 012",
+    "Customer #12"
+   ]
+  ]
+ },
+ "gaps-summarize-rollup": {
+  "hash": "81a4c313fb8ddbc9c38df482ec9c78107bd8b9ad",
+  "columns": [
+   "Category[Category]",
+   "Subcategory[Subcategory]",
+   "[Sales]",
+   "[Category Total]",
+   "[Grand Total]"
+  ],
+  "rows": [
+   [
+    null,
+    null,
+    190.0,
+    false,
+    false
+   ],
+   [
+    "Bikes",
+    "Road Bikes",
+    426256.2300000004,
+    false,
+    false
+   ],
+   [
+    "Bikes",
+    "Mountain Bikes",
+    803929.33,
+    false,
+    false
+   ],
+   [
+    "Bikes",
+    "Touring Bikes",
+    683656.3199999998,
+    false,
+    false
+   ],
+   [
+    "Clothing",
+    "Jerseys",
+    80290.12999999996,
+    false,
+    false
+   ],
+   [
+    "Clothing",
+    "Shorts",
+    113524.61999999994,
+    false,
+    false
+   ],
+   [
+    "Clothing",
+    "Gloves",
+    72500.04000000001,
+    false,
+    false
+   ],
+   [
+    "Accessories",
+    "Helmets",
+    54041.39000000003,
+    false,
+    false
+   ],
+   [
+    "Accessories",
+    "Lights",
+    60692.85000000004,
+    false,
+    false
+   ],
+   [
+    "Accessories",
+    "Bottles",
+    76918.63999999998,
+    false,
+    false
+   ],
+   [
+    "Components",
+    "Wheels",
+    408583.1099999998,
+    false,
+    false
+   ],
+   [
+    "Components",
+    "Brakes",
+    316122.7200000003,
+    false,
+    false
+   ],
+   [
+    "Components",
+    "Chains",
+    267142.25,
+    false,
+    false
+   ],
+   [
+    null,
+    null,
+    190.0,
+    true,
+    false
+   ],
+   [
+    "Bikes",
+    null,
+    1913841.8799999978,
+    true,
+    false
+   ],
+   [
+    "Clothing",
+    null,
+    266314.7900000005,
+    true,
+    false
+   ],
+   [
+    "Accessories",
+    null,
+    191652.88000000003,
+    true,
+    false
+   ],
+   [
+    "Components",
+    null,
+    991848.0799999993,
+    true,
+    false
+   ],
+   [
+    null,
+    null,
+    3363847.629999997,
+    true,
+    true
+   ]
+  ]
+ },
+ "gaps-text-case-insensitive": {
+  "hash": "b0789f1486bd634a82bc755e834cf8055e22854b",
+  "columns": [
+   "Category[Category]",
+   "[Sales]"
+  ],
+  "rows": [
+   [
+    "Bikes",
+    1913841.8799999978
+   ],
+   [
+    "Clothing",
+    266314.7900000005
+   ]
+  ]
+ },
+ "gaps-text-case-treatas": {
+  "hash": "4efc03019327acc93e19daa53d76f1b8da246360",
+  "columns": [
+   "Customer[Country]",
+   "[Sales]"
+  ],
+  "rows": [
+   [
+    "Germany",
+    809458.8099999989
+   ],
+   [
+    "France",
+    680739.7600000006
+   ]
+  ]
+ },
+ "gaps-topnskip": {
+  "hash": "01c9fab9d01e4d467b1a0d175c54467d50acfec0",
+  "columns": [
+   "[Product]",
+   "[Unit Price]"
+  ],
+  "rows": [
+   [
+    "Mountain Bike C",
+    1672.2
+   ],
+   [
+    "Mountain Bike B",
+    1589.1
+   ],
+   [
+    "Touring Bike B",
+    1093.11
+   ],
+   [
+    "Road Bike A",
+    799.69
+   ],
+   [
+    "Road Bike B",
+    707.21
+   ]
+  ]
+ }
+}

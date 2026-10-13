@@ -1,0 +1,2 @@
+// note: check_model.py: [Generation MWh] by year and fuel over the whole history, from the daily table
+EVALUATE SUMMARIZECOLUMNS(dim_calendar[year], dim_duid[FuelSourceDescriptor], "MWh", [Generation MWh])

@@ -1,0 +1,2 @@
+// note: SAMEPERIODLASTYEAR by year: blank for the first year of the date table
+EVALUATE SUMMARIZECOLUMNS('Date'[Year], "s", [Sales Amount], "py", [Sales PY])

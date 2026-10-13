@@ -1,0 +1,2 @@
+// note: the dashboard's allDuids query, the unit picker: every unit with its region and fuel
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS(dim_duid[DUID], dim_duid[Region], dim_duid[FuelSourceDescriptor]), NOT ISBLANK(dim_duid[DUID])), "DUID", [DUID], "Region", [Region], "fuel", [FuelSourceDescriptor]) ORDER BY [DUID], [Region], [fuel]

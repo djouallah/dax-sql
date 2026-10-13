@@ -1,0 +1,2 @@
+// note: a filter on Category reaches Sales through Product
+EVALUATE CALCULATETABLE(ROW("s", [Sales Amount]), Category[Category] = "Clothing")

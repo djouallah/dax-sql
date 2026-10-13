@@ -1,0 +1,3 @@
+// note: PREVIOUSYEAR and NEXTYEAR from the last days of a year
+EVALUATE CALCULATETABLE(ROW("py", COUNTROWS(PREVIOUSYEAR('Date'[Date])), "ny", COUNTROWS(NEXTYEAR('Date'[Date]))),
+      DATESBETWEEN('Date'[Date], dt"2023-12-30", dt"2023-12-31"))

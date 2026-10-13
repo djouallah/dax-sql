@@ -1,0 +1,6 @@
+// note: grouped by item name and ordinal: a CALCULATE filter on the name replaces the name only, the ordinal of the row stays; the item applied follows the name
+EVALUATE SUMMARIZECOLUMNS('Time Calc'[Time Calc], 'Time Calc'[Ordinal], TREATAS({2024}, 'Date'[Year]),
+    KEEPFILTERS(TREATAS({"Current", "PY"}, 'Time Calc'[Time Calc])),
+    "n", CALCULATE(COUNTROWS('Time Calc'), 'Time Calc'[Time Calc] = "PY"),
+    "nAll", CALCULATE(COUNTROWS('Time Calc'), 'Time Calc'[Time Calc] = "PY", REMOVEFILTERS('Time Calc'[Ordinal])),
+    "s", CALCULATE([Sales Amount], 'Time Calc'[Time Calc] = "PY"))

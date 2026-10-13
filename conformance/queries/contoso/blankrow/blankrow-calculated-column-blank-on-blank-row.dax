@@ -1,0 +1,2 @@
+// note: a constant calculated column is blank on the blank row of the unknown customer
+EVALUATE SUMMARIZECOLUMNS(Customer[Flag], "s", [Sales Amount])

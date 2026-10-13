@@ -1,0 +1,12 @@
+// note: AVERAGEX, COUNTX and MINX over the months of each year, per store, on the store x brand x month targets: months with no target rows (2023-04, 2024-07, 2024-08) are skipped as blank but counted once + 0 fills them, while the 0 and -250.5 targets count; the + 0 column makes every year x store show, ZZZ-00 in the blank store
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year],
+    Store[Store],
+    "Target", [Target Amount],
+    "Avg Monthly Target", AVERAGEX(VALUES('Date'[YearMonth]), [Target Amount]),
+    "Avg Monthly Target Gaps As Zero", AVERAGEX(VALUES('Date'[YearMonth]), [Target Amount] + 0),
+    "Months With Target", COUNTX(VALUES('Date'[YearMonth]), [Target Amount]),
+    "Min Month Target", MINX(VALUES('Date'[YearMonth]), [Target Amount])
+)
+ORDER BY 'Date'[Year], Store[Store]

@@ -1,0 +1,13 @@
+// note: a filter on the calculation group's ordinal alone (1, the PY item), then a CALCULATE filter on its name column, which keeps the ordinal's filter: naming PY, naming YTD, and naming YTD with the ordinal filter removed
+EVALUATE
+SUMMARIZECOLUMNS(
+    Category[Category],
+    TREATAS({1}, 'Time Intelligence'[Ordinal]),
+    TREATAS({2024}, 'Date'[Year]),
+    "Sales", [Sales Amount],
+    "Name PY", CALCULATE([Sales Amount], 'Time Intelligence'[Time Intelligence] = "PY"),
+    "Name YTD", CALCULATE([Sales Amount], 'Time Intelligence'[Time Intelligence] = "YTD"),
+    "Name YTD Ordinal Removed", CALCULATE([Sales Amount], 'Time Intelligence'[Time Intelligence] = "YTD", REMOVEFILTERS('Time Intelligence'[Ordinal])),
+    "Items Named YTD", CALCULATE(COUNTROWS('Time Intelligence'), 'Time Intelligence'[Time Intelligence] = "YTD")
+)
+ORDER BY Category[Category]

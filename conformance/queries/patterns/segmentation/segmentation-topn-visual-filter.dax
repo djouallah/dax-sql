@@ -1,0 +1,19 @@
+// note: the query a table visual writes for a Top N visual-level filter: a TOPN over SUMMARIZECOLUMNS used as a filter table, with a grand total row
+DEFINE
+    VAR __DS0FilterTable =
+        TOPN(
+            5,
+            SUMMARIZECOLUMNS(Customer[Customer], "Sales_Amount", [Sales Amount]),
+            [Sales_Amount], 0,
+            Customer[Customer], 1
+        )
+    VAR __DS0Core =
+        SUMMARIZECOLUMNS(
+            ROLLUPADDISSUBTOTAL(Customer[Customer], "IsGrandTotalRowTotal"),
+            __DS0FilterTable,
+            "Sales_Amount", [Sales Amount],
+            "Orders", [Orders]
+        )
+EVALUATE
+__DS0Core
+ORDER BY [IsGrandTotalRowTotal] DESC, [Sales_Amount] DESC, Customer[Customer]

@@ -1,0 +1,2 @@
+// note: fct_region[Demand MW] per region and time of the newest day, one region without demand yet
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS(dim_region[Region], dim_time[time], "Demand MW", [Demand MW]), dim_calendar[date] = dt"2026-08-13")

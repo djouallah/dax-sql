@@ -1,0 +1,9 @@
+// note: CROSSFILTER NONE on the Order Date relationship ignores the year, giving each year its share of all sales
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year],
+    "Sales", [Sales Amount],
+    "Ignoring Date", [Sales Ignoring Date Relationship],
+    "Share", DIVIDE([Sales Amount], [Sales Ignoring Date Relationship])
+)
+ORDER BY 'Date'[Year]

@@ -1,0 +1,3 @@
+// note: ADDMISSINGITEMS adds the colors the filtered table lacks, with blank values
+EVALUATE ADDMISSINGITEMS(Product[Color],
+    FILTER(SUMMARIZECOLUMNS(Product[Color], "s", [Sales Amount]), [s] > 1000), Product[Color])

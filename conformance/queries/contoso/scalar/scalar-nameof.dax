@@ -1,0 +1,2 @@
+// note: NAMEOF of a measure and of a column
+EVALUATE ROW("m", NAMEOF([Quantity]), "c", NAMEOF(Product[Color]))

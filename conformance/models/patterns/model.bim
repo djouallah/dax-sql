@@ -1,0 +1,1286 @@
+{
+  "name": "dax-sql-patterns",
+  "compatibilityLevel": 1604,
+  "model": {
+    "culture": "en-US",
+    "discourageImplicitMeasures": true,
+    "defaultPowerBIDataSourceVersion": "powerBI_V3",
+    "tables": [
+      {
+        "name": "Date",
+        "dataCategory": "Time",
+        "columns": [
+          {
+            "name": "Date",
+            "dataType": "dateTime",
+            "sourceColumn": "Date",
+            "isKey": true
+          },
+          {
+            "name": "Year",
+            "dataType": "int64",
+            "sourceColumn": "Year"
+          },
+          {
+            "name": "Quarter",
+            "dataType": "int64",
+            "sourceColumn": "Quarter"
+          },
+          {
+            "name": "Month",
+            "dataType": "int64",
+            "sourceColumn": "Month"
+          },
+          {
+            "name": "Month Name",
+            "dataType": "string",
+            "sourceColumn": "Month Name",
+            "sortByColumn": "Month"
+          },
+          {
+            "name": "YearMonth",
+            "dataType": "int64",
+            "sourceColumn": "YearMonth"
+          },
+          {
+            "name": "Year Month",
+            "dataType": "string",
+            "sourceColumn": "Year Month"
+          },
+          {
+            "name": "Fiscal Year",
+            "dataType": "int64",
+            "sourceColumn": "Fiscal Year"
+          },
+          {
+            "name": "Fiscal Quarter",
+            "dataType": "int64",
+            "sourceColumn": "Fiscal Quarter"
+          },
+          {
+            "name": "Fiscal Month",
+            "dataType": "int64",
+            "sourceColumn": "Fiscal Month"
+          },
+          {
+            "name": "Weekday",
+            "dataType": "int64",
+            "sourceColumn": "Weekday"
+          },
+          {
+            "name": "Day Name",
+            "dataType": "string",
+            "sourceColumn": "Day Name",
+            "sortByColumn": "Weekday"
+          },
+          {
+            "name": "Working Day",
+            "dataType": "boolean",
+            "sourceColumn": "Working Day"
+          },
+          {
+            "name": "ISO Year",
+            "dataType": "int64",
+            "sourceColumn": "ISO Year"
+          },
+          {
+            "name": "ISO Week",
+            "dataType": "int64",
+            "sourceColumn": "ISO Week"
+          },
+          {
+            "name": "Day",
+            "dataType": "int64",
+            "sourceColumn": "Day"
+          }
+        ],
+        "measures": [],
+        "partitions": [
+          {
+            "name": "Date",
+            "source": {
+              "type": "entity",
+              "entityName": "Date"
+            }
+          }
+        ]
+      },
+      {
+        "name": "Category",
+        "columns": [
+          {
+            "name": "CategoryKey",
+            "dataType": "int64",
+            "sourceColumn": "CategoryKey",
+            "isKey": true
+          },
+          {
+            "name": "Category",
+            "dataType": "string",
+            "sourceColumn": "Category"
+          }
+        ],
+        "measures": [],
+        "partitions": [
+          {
+            "name": "Category",
+            "source": {
+              "type": "entity",
+              "entityName": "Category"
+            }
+          }
+        ]
+      },
+      {
+        "name": "Subcategory",
+        "columns": [
+          {
+            "name": "SubcategoryKey",
+            "dataType": "int64",
+            "sourceColumn": "SubcategoryKey",
+            "isKey": true
+          },
+          {
+            "name": "Subcategory",
+            "dataType": "string",
+            "sourceColumn": "Subcategory"
+          },
+          {
+            "name": "CategoryKey",
+            "dataType": "int64",
+            "sourceColumn": "CategoryKey"
+          }
+        ],
+        "measures": [],
+        "partitions": [
+          {
+            "name": "Subcategory",
+            "source": {
+              "type": "entity",
+              "entityName": "Subcategory"
+            }
+          }
+        ]
+      },
+      {
+        "name": "Product",
+        "columns": [
+          {
+            "name": "ProductKey",
+            "dataType": "int64",
+            "sourceColumn": "ProductKey",
+            "isKey": true
+          },
+          {
+            "name": "Product",
+            "dataType": "string",
+            "sourceColumn": "Product"
+          },
+          {
+            "name": "Color",
+            "dataType": "string",
+            "sourceColumn": "Color"
+          },
+          {
+            "name": "Brand",
+            "dataType": "string",
+            "sourceColumn": "Brand"
+          },
+          {
+            "name": "SubcategoryKey",
+            "dataType": "int64",
+            "sourceColumn": "SubcategoryKey"
+          },
+          {
+            "name": "Unit Price",
+            "dataType": "double",
+            "sourceColumn": "Unit Price"
+          },
+          {
+            "name": "Unit Cost",
+            "dataType": "double",
+            "sourceColumn": "Unit Cost"
+          },
+          {
+            "name": "Price Band",
+            "dataType": "string",
+            "type": "calculated",
+            "expression": "SWITCH(TRUE(), Product[Unit Price] >= 1000, \"Premium\", Product[Unit Price] >= 100, \"Mid\", \"Budget\")"
+          },
+          {
+            "name": "Category",
+            "dataType": "string",
+            "type": "calculated",
+            "expression": "RELATED(Category[Category])"
+          }
+        ],
+        "measures": [],
+        "partitions": [
+          {
+            "name": "Product",
+            "source": {
+              "type": "entity",
+              "entityName": "Product"
+            }
+          }
+        ]
+      },
+      {
+        "name": "Customer",
+        "columns": [
+          {
+            "name": "CustomerKey",
+            "dataType": "int64",
+            "sourceColumn": "CustomerKey",
+            "isKey": true
+          },
+          {
+            "name": "Customer",
+            "dataType": "string",
+            "sourceColumn": "Customer"
+          },
+          {
+            "name": "City",
+            "dataType": "string",
+            "sourceColumn": "City"
+          },
+          {
+            "name": "Country",
+            "dataType": "string",
+            "sourceColumn": "Country"
+          },
+          {
+            "name": "Gender",
+            "dataType": "string",
+            "sourceColumn": "Gender"
+          },
+          {
+            "name": "Birth Year",
+            "dataType": "int64",
+            "sourceColumn": "Birth Year"
+          },
+          {
+            "name": "First Order",
+            "dataType": "dateTime",
+            "type": "calculated",
+            "expression": "CALCULATE(MIN(Sales[Order Date]))"
+          }
+        ],
+        "measures": [
+          {
+            "name": "Customers New Static",
+            "expression": "\nCALCULATE(COUNTROWS(Customer), KEEPFILTERS(TREATAS(VALUES('Date'[Date]), Customer[First Order])))"
+          },
+          {
+            "name": "Customers Via Expanded Sales",
+            "expression": "CALCULATE(COUNTROWS(Customer), Sales)"
+          },
+          {
+            "name": "Customers with Sales Relationship",
+            "expression": "CALCULATE(COUNTROWS(Customer), CROSSFILTER(Sales[CustomerKey], Customer[CustomerKey], BOTH))"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Customer",
+            "source": {
+              "type": "entity",
+              "entityName": "Customer"
+            }
+          }
+        ]
+      },
+      {
+        "name": "Employee",
+        "columns": [
+          {
+            "name": "EmployeeKey",
+            "dataType": "int64",
+            "sourceColumn": "EmployeeKey",
+            "isKey": true
+          },
+          {
+            "name": "Employee",
+            "dataType": "string",
+            "sourceColumn": "Employee"
+          },
+          {
+            "name": "ParentEmployeeKey",
+            "dataType": "int64",
+            "sourceColumn": "ParentEmployeeKey"
+          },
+          {
+            "name": "Title",
+            "dataType": "string",
+            "sourceColumn": "Title"
+          }
+        ],
+        "measures": [],
+        "partitions": [
+          {
+            "name": "Employee",
+            "source": {
+              "type": "entity",
+              "entityName": "Employee"
+            }
+          }
+        ]
+      },
+      {
+        "name": "Account",
+        "columns": [
+          {
+            "name": "AccountKey",
+            "dataType": "int64",
+            "sourceColumn": "AccountKey",
+            "isKey": true
+          },
+          {
+            "name": "Account",
+            "dataType": "string",
+            "sourceColumn": "Account"
+          },
+          {
+            "name": "Account Type",
+            "dataType": "string",
+            "sourceColumn": "Account Type"
+          }
+        ],
+        "measures": [
+          {
+            "name": "Accounts Held Bridge",
+            "expression": "CALCULATE(COUNTROWS(Account), CROSSFILTER(AccountCustomer[AccountKey], Account[AccountKey], BOTH))"
+          },
+          {
+            "name": "Accounts with Sales Bridge",
+            "expression": "CALCULATE(COUNTROWS(Account), CROSSFILTER(Sales[CustomerKey], Customer[CustomerKey], BOTH), CROSSFILTER(AccountCustomer[AccountKey], Account[AccountKey], BOTH))"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Account",
+            "source": {
+              "type": "entity",
+              "entityName": "Account"
+            }
+          }
+        ]
+      },
+      {
+        "name": "AccountCustomer",
+        "columns": [
+          {
+            "name": "AccountKey",
+            "dataType": "int64",
+            "sourceColumn": "AccountKey"
+          },
+          {
+            "name": "CustomerKey",
+            "dataType": "int64",
+            "sourceColumn": "CustomerKey"
+          }
+        ],
+        "measures": [],
+        "partitions": [
+          {
+            "name": "AccountCustomer",
+            "source": {
+              "type": "entity",
+              "entityName": "AccountCustomer"
+            }
+          }
+        ]
+      },
+      {
+        "name": "Currency",
+        "columns": [
+          {
+            "name": "CurrencyCode",
+            "dataType": "string",
+            "sourceColumn": "CurrencyCode",
+            "isKey": true
+          },
+          {
+            "name": "Currency",
+            "dataType": "string",
+            "sourceColumn": "Currency"
+          }
+        ],
+        "measures": [],
+        "partitions": [
+          {
+            "name": "Currency",
+            "source": {
+              "type": "entity",
+              "entityName": "Currency"
+            }
+          }
+        ]
+      },
+      {
+        "name": "ExchangeRate",
+        "columns": [
+          {
+            "name": "Date",
+            "dataType": "dateTime",
+            "sourceColumn": "Date"
+          },
+          {
+            "name": "CurrencyCode",
+            "dataType": "string",
+            "sourceColumn": "CurrencyCode"
+          },
+          {
+            "name": "Rate",
+            "dataType": "double",
+            "sourceColumn": "Rate"
+          }
+        ],
+        "measures": [
+          {
+            "name": "Exchange Rate",
+            "expression": "VAR d = MAX('Date'[Date]) RETURN CALCULATE(AVERAGE(ExchangeRate[Rate]), LASTNONBLANK(FILTER(ALL('Date'[Date]), 'Date'[Date] <= d), CALCULATE(COUNTROWS(ExchangeRate))))"
+          },
+          {
+            "name": "Avg Daily Rate Relationship",
+            "expression": "AVERAGEX(VALUES('Date'[Date]), [Exchange Rate])"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "ExchangeRate",
+            "source": {
+              "type": "entity",
+              "entityName": "ExchangeRate"
+            }
+          }
+        ]
+      },
+      {
+        "name": "Sales",
+        "columns": [
+          {
+            "name": "Order Number",
+            "dataType": "int64",
+            "sourceColumn": "Order Number"
+          },
+          {
+            "name": "Line Number",
+            "dataType": "int64",
+            "sourceColumn": "Line Number"
+          },
+          {
+            "name": "Order Date",
+            "dataType": "dateTime",
+            "sourceColumn": "Order Date"
+          },
+          {
+            "name": "Delivery Date",
+            "dataType": "dateTime",
+            "sourceColumn": "Delivery Date"
+          },
+          {
+            "name": "ProductKey",
+            "dataType": "int64",
+            "sourceColumn": "ProductKey"
+          },
+          {
+            "name": "CustomerKey",
+            "dataType": "int64",
+            "sourceColumn": "CustomerKey"
+          },
+          {
+            "name": "EmployeeKey",
+            "dataType": "int64",
+            "sourceColumn": "EmployeeKey"
+          },
+          {
+            "name": "CurrencyCode",
+            "dataType": "string",
+            "sourceColumn": "CurrencyCode"
+          },
+          {
+            "name": "Quantity",
+            "dataType": "int64",
+            "sourceColumn": "Quantity"
+          },
+          {
+            "name": "Net Price",
+            "dataType": "double",
+            "sourceColumn": "Net Price"
+          },
+          {
+            "name": "Unit Cost",
+            "dataType": "double",
+            "sourceColumn": "Unit Cost"
+          },
+          {
+            "name": "Line Amount",
+            "dataType": "double",
+            "type": "calculated",
+            "expression": "Sales[Quantity] * Sales[Net Price]"
+          }
+        ],
+        "measures": [
+          {
+            "name": "Sales Amount",
+            "expression": "SUMX(Sales, Sales[Quantity] * Sales[Net Price])"
+          },
+          {
+            "name": "Total Cost",
+            "expression": "SUMX(Sales, Sales[Quantity] * Sales[Unit Cost])"
+          },
+          {
+            "name": "Margin",
+            "expression": "[Sales Amount] - [Total Cost]"
+          },
+          {
+            "name": "Margin %",
+            "expression": "DIVIDE([Margin], [Sales Amount])"
+          },
+          {
+            "name": "Total Quantity",
+            "expression": "SUM(Sales[Quantity])"
+          },
+          {
+            "name": "Order Lines",
+            "expression": "COUNTROWS(Sales)"
+          },
+          {
+            "name": "Orders",
+            "expression": "DISTINCTCOUNT(Sales[Order Number])"
+          },
+          {
+            "name": "Customers",
+            "expression": "DISTINCTCOUNT(Sales[CustomerKey])"
+          },
+          {
+            "name": "Avg Order Value",
+            "expression": "DIVIDE([Sales Amount], [Orders])"
+          },
+          {
+            "name": "Sales USD",
+            "expression": "SUMX(SUMMARIZE(Sales, 'Date'[Date], Currency[CurrencyCode]), [Sales Amount] * [Exchange Rate])"
+          },
+          {
+            "name": "Segment Customer Count",
+            "expression": "COUNTROWS(FILTER(VALUES(Customer[CustomerKey]), VAR s = [Sales Amount] RETURN NOT ISBLANK(s) && NOT ISEMPTY(FILTER(Segments, s >= Segments[Min Sales] && s < Segments[Max Sales]))))"
+          },
+          {
+            "name": "Segment Customer Sales",
+            "expression": "CALCULATE([Sales Amount], FILTER(VALUES(Customer[CustomerKey]), VAR s = [Sales Amount] RETURN NOT ISEMPTY(FILTER(Segments, s >= Segments[Min Sales] && s < Segments[Max Sales]))))"
+          },
+          {
+            "name": "Segment Customer Count Fixed",
+            "expression": "COUNTROWS(FILTER(VALUES(Customer[CustomerKey]), VAR s = CALCULATE([Sales Amount], REMOVEFILTERS('Date')) RETURN NOT ISBLANK([Sales Amount]) && NOT ISEMPTY(FILTER(Segments, s >= Segments[Min Sales] && s < Segments[Max Sales]))))"
+          },
+          {
+            "name": "Segment Customer Sales Fixed",
+            "expression": "CALCULATE([Sales Amount], FILTER(VALUES(Customer[CustomerKey]), VAR s = CALCULATE([Sales Amount], REMOVEFILTERS('Date')) RETURN NOT ISBLANK(s) && NOT ISEMPTY(FILTER(Segments, s >= Segments[Min Sales] && s < Segments[Max Sales]))))"
+          },
+          {
+            "name": "Segment Customer Count AOV",
+            "expression": "COUNTROWS(FILTER(VALUES(Customer[CustomerKey]), VAR v = [Avg Order Value] RETURN NOT ISBLANK(v) && NOT ISEMPTY(FILTER(Segments, v >= Segments[Min Sales] && v < Segments[Max Sales]))))"
+          },
+          {
+            "name": "Segment Product Count",
+            "expression": "COUNTROWS(FILTER(VALUES(Product[ProductKey]), VAR s = [Sales Amount] RETURN NOT ISBLANK(s) && NOT ISEMPTY(FILTER(Segments, s >= Segments[Min Sales] && s < Segments[Max Sales]))))"
+          },
+          {
+            "name": "Customer Sales Band",
+            "expression": "VAR s = [Sales Amount] RETURN IF(NOT ISBLANK(s), MAXX(FILTER(ALL(Segments), s >= Segments[Min Sales] && s < Segments[Max Sales]), Segments[Segment]))"
+          },
+          {
+            "name": "ABC Product Cumulative %",
+            "expression": "VAR cur = [Sales Amount] VAR items = ADDCOLUMNS(ALLSELECTED(Product[Product]), \"@s\", [Sales Amount]) VAR cum = SUMX(FILTER(items, [@s] >= cur), [@s]) RETURN IF(HASONEVALUE(Product[Product]) && NOT ISBLANK(cur), DIVIDE(cum, SUMX(items, [@s])))"
+          },
+          {
+            "name": "ABC Product Class",
+            "expression": "VAR p = [ABC Product Cumulative %] RETURN IF(NOT ISBLANK(p), SWITCH(TRUE(), p <= 0.7, \"A\", p <= 0.9, \"B\", \"C\"))"
+          },
+          {
+            "name": "Pareto Customer Cumulative Sales",
+            "expression": "VAR cur = [Sales Amount] VAR items = ADDCOLUMNS(ALLSELECTED(Customer[Customer]), \"@s\", [Sales Amount]) RETURN IF(HASONEVALUE(Customer[Customer]) && NOT ISBLANK(cur), SUMX(FILTER(items, [@s] >= cur), [@s]))"
+          },
+          {
+            "name": "Pareto 80 Customer Count",
+            "expression": "VAR items = ADDCOLUMNS(VALUES(Customer[Customer]), \"@s\", [Sales Amount]) VAR tot = SUMX(items, [@s]) VAR withCum = ADDCOLUMNS(FILTER(items, NOT ISBLANK([@s])), \"@cum\", VAR s = [@s] RETURN SUMX(FILTER(items, [@s] >= s), [@s])) RETURN COUNTROWS(FILTER(withCum, [@cum] <= 0.8 * tot))"
+          },
+          {
+            "name": "Product Sales Rank Skip",
+            "expression": "IF(HASONEVALUE(Product[Product]), RANKX(ALLSELECTED(Product[Product]), [Sales Amount], , DESC, SKIP))"
+          },
+          {
+            "name": "Customer Sales Rank Skip",
+            "expression": "IF(HASONEVALUE(Customer[Customer]) && NOT ISBLANK([Sales Amount]), RANKX(ALLSELECTED(Customer[Customer]), [Sales Amount], , DESC, SKIP))"
+          },
+          {
+            "name": "Subcategory Rank In Scope",
+            "expression": "SWITCH(TRUE(), ISINSCOPE(Subcategory[Subcategory]), RANKX(ALLSELECTED(Subcategory[Subcategory]), [Sales Amount], , DESC, SKIP), ISINSCOPE(Category[Category]), RANKX(ALLSELECTED(Category[Category]), [Sales Amount], , DESC, SKIP))"
+          },
+          {
+            "name": "Category Rank By Metric",
+            "expression": "VAR m = SELECTEDVALUE(Metric[Metric]) RETURN IF(HASONEVALUE(Category[Category]) && NOT ISBLANK(m), RANKX(ALLSELECTED(Category[Category]), SWITCH(m, \"Sales\", [Sales Amount], \"Margin\", [Margin], \"Quantity\", CALCULATE(SUM(Sales[Quantity]))), , DESC, DENSE))"
+          },
+          {
+            "name": "Cumulative Sales All Dates",
+            "expression": "CALCULATE([Sales Amount], FILTER(ALL('Date'), 'Date'[Date] <= MAX('Date'[Date])))"
+          },
+          {
+            "name": "Cumulative Sales In Selection",
+            "expression": "VAR d = MAX('Date'[Date]) RETURN CALCULATE([Sales Amount], 'Date'[Date] <= d, ALLSELECTED('Date'))"
+          },
+          {
+            "name": "Cumulative Sales Window",
+            "expression": "CALCULATE([Sales Amount], WINDOW(1, ABS, 0, REL, ALLSELECTED('Date'[Year Month]), ORDERBY('Date'[Year Month], ASC)))"
+          },
+          {
+            "name": "Cumulative Customers Distinct",
+            "expression": "VAR d = MAX('Date'[Date]) RETURN CALCULATE([Customers], 'Date'[Date] <= d, REMOVEFILTERS('Date'))"
+          },
+          {
+            "name": "Cumulative Sales Delivered",
+            "expression": "VAR d = MAX('Date'[Date]) RETURN CALCULATE([Sales Amount], USERELATIONSHIP(Sales[Delivery Date], 'Date'[Date]), 'Date'[Date] <= d, REMOVEFILTERS('Date'))"
+          },
+          {
+            "name": "Customers New",
+            "expression": "\nVAR MinD = MIN('Date'[Date])\nRETURN COUNTROWS(\n    FILTER(VALUES(Sales[CustomerKey]),\n        CALCULATE(MIN(Sales[Order Date]), REMOVEFILTERS('Date')) >= MinD))"
+          },
+          {
+            "name": "Customers Returning",
+            "expression": "\nVAR MinD = MIN('Date'[Date])\nRETURN COUNTROWS(\n    FILTER(VALUES(Sales[CustomerKey]),\n        CALCULATE(MIN(Sales[Order Date]), REMOVEFILTERS('Date')) < MinD))"
+          },
+          {
+            "name": "Customers New Lineage",
+            "expression": "\nVAR CustomersWithNewDate =\n    CALCULATETABLE(\n        ADDCOLUMNS(VALUES(Sales[CustomerKey]), \"@NewCustomerDate\", CALCULATE(MIN(Sales[Order Date]))),\n        REMOVEFILTERS('Date'))\nVAR CustomersWithLineage = TREATAS(CustomersWithNewDate, Sales[CustomerKey], 'Date'[Date])\nRETURN CALCULATE(DISTINCTCOUNT(Sales[CustomerKey]), KEEPFILTERS(CustomersWithLineage))"
+          },
+          {
+            "name": "Customers New Sales",
+            "expression": "\nVAR MinD = MIN('Date'[Date])\nVAR NewCustomers =\n    FILTER(VALUES(Sales[CustomerKey]),\n        CALCULATE(MIN(Sales[Order Date]), REMOVEFILTERS('Date')) >= MinD)\nRETURN CALCULATE([Sales Amount], NewCustomers)"
+          },
+          {
+            "name": "Customers Lost 90d",
+            "expression": "\nVAR MinD = MIN('Date'[Date])\nVAR MaxD = MAX('Date'[Date])\nVAR Candidates = CALCULATETABLE(VALUES(Sales[CustomerKey]), REMOVEFILTERS('Date'), 'Date'[Date] <= MaxD)\nRETURN COUNTROWS(\n    FILTER(Candidates,\n        VAR LastOrder = CALCULATE(MAX(Sales[Order Date]), REMOVEFILTERS('Date'), 'Date'[Date] <= MaxD)\n        RETURN LastOrder + 90 >= MinD && LastOrder + 90 <= MaxD))"
+          },
+          {
+            "name": "Customers Recovered 90d",
+            "expression": "\nVAR MinD = MIN('Date'[Date])\nRETURN COUNTROWS(\n    FILTER(VALUES(Sales[CustomerKey]),\n        VAR FirstInPeriod = CALCULATE(MIN(Sales[Order Date]))\n        VAR PrevOrder = CALCULATE(MAX(Sales[Order Date]), REMOVEFILTERS('Date'), 'Date'[Date] < MinD)\n        RETURN NOT ISBLANK(PrevOrder) && DATEDIFF(PrevOrder, FirstInPeriod, DAY) > 90))"
+          },
+          {
+            "name": "Customers Repeat",
+            "expression": "\nCOUNTROWS(FILTER(VALUES(Sales[CustomerKey]), CALCULATE(DISTINCTCOUNT(Sales[Order Number])) > 1))"
+          },
+          {
+            "name": "Customers To Date",
+            "expression": "\nVAR MaxD = MAX('Date'[Date])\nRETURN CALCULATE([Customers], REMOVEFILTERS('Date'), 'Date'[Date] <= MaxD)"
+          },
+          {
+            "name": "Customers Avg Days Between Orders",
+            "expression": "\nAVERAGEX(\n    FILTER(VALUES(Sales[CustomerKey]), CALCULATE(DISTINCTCOUNT(Sales[Order Date])) > 1),\n    VAR FirstD = CALCULATE(MIN(Sales[Order Date]))\n    VAR LastD = CALCULATE(MAX(Sales[Order Date]))\n    VAR N = CALCULATE(DISTINCTCOUNT(Sales[Order Date]))\n    RETURN DIVIDE(DATEDIFF(FirstD, LastD, DAY), N - 1))"
+          },
+          {
+            "name": "Customers Avg Active Months",
+            "expression": "\nAVERAGEX(VALUES(Sales[CustomerKey]), CALCULATE(COUNTROWS(SUMMARIZE(Sales, 'Date'[YearMonth]))))"
+          },
+          {
+            "name": "Customer First Purchase",
+            "expression": "CALCULATE(MIN(Sales[Order Date]), REMOVEFILTERS('Date'))"
+          },
+          {
+            "name": "Customer Distinct Products",
+            "expression": "DISTINCTCOUNT(Sales[ProductKey])"
+          },
+          {
+            "name": "Basket Orders With Bikes",
+            "expression": "\nVAR BikeOrders =\n    CALCULATETABLE(VALUES(Sales[Order Number]),\n        REMOVEFILTERS(Product), REMOVEFILTERS(Subcategory), REMOVEFILTERS(Category),\n        Category[Category] = \"Bikes\")\nRETURN CALCULATE([Orders], KEEPFILTERS(BikeOrders))"
+          },
+          {
+            "name": "Basket Bike Attach %",
+            "expression": "DIVIDE([Basket Orders With Bikes], [Orders])"
+          },
+          {
+            "name": "Sales Fiscal YTD",
+            "expression": "CALCULATE([Sales Amount], DATESYTD('Date'[Date], \"6/30\"))"
+          },
+          {
+            "name": "Sales Fiscal YTD Manual",
+            "expression": "VAR fy = MAX('Date'[Fiscal Year]) VAR lastDay = MAX('Date'[Date]) RETURN CALCULATE([Sales Amount], FILTER(ALL('Date'), 'Date'[Fiscal Year] = fy && 'Date'[Date] <= lastDay))"
+          },
+          {
+            "name": "Sales Fiscal PY Manual",
+            "expression": "VAR fy = MAX('Date'[Fiscal Year]) RETURN CALCULATE([Sales Amount], REMOVEFILTERS('Date'), 'Date'[Fiscal Year] = fy - 1, VALUES('Date'[Fiscal Month]))"
+          },
+          {
+            "name": "Sales ISO YTD",
+            "expression": "VAR y = MAX('Date'[ISO Year]) VAR d = MAX('Date'[Date]) RETURN CALCULATE([Sales Amount], REMOVEFILTERS('Date'), 'Date'[ISO Year] = y, 'Date'[Date] <= d)"
+          },
+          {
+            "name": "Sales ISO Week PY",
+            "expression": "VAR y = MAX('Date'[ISO Year]) RETURN CALCULATE([Sales Amount], REMOVEFILTERS('Date'), 'Date'[ISO Year] = y - 1, VALUES('Date'[ISO Week]))"
+          },
+          {
+            "name": "Sales PY SPLY",
+            "expression": "CALCULATE([Sales Amount], SAMEPERIODLASTYEAR('Date'[Date]))"
+          },
+          {
+            "name": "Sales PY DateAdd",
+            "expression": "CALCULATE([Sales Amount], DATEADD('Date'[Date], -1, YEAR))"
+          },
+          {
+            "name": "Sales PY Parallel",
+            "expression": "CALCULATE([Sales Amount], PARALLELPERIOD('Date'[Date], -1, YEAR))"
+          },
+          {
+            "name": "Sales PQ Parallel",
+            "expression": "CALCULATE([Sales Amount], PARALLELPERIOD('Date'[Date], -1, QUARTER))"
+          },
+          {
+            "name": "Sales PM DateAdd",
+            "expression": "CALCULATE([Sales Amount], DATEADD('Date'[Date], -1, MONTH))"
+          },
+          {
+            "name": "Sales YoY % DateAdd",
+            "expression": "VAR cur = [Sales Amount] VAR py = [Sales PY DateAdd] RETURN IF(NOT ISBLANK(cur) && NOT ISBLANK(py), DIVIDE(cur - py, py))"
+          },
+          {
+            "name": "Sales Month To Date",
+            "expression": "TOTALMTD([Sales Amount], 'Date'[Date])"
+          },
+          {
+            "name": "Sales Prior Month To Date",
+            "expression": "CALCULATE([Sales Amount], DATEADD(DATESMTD('Date'[Date]), -1, MONTH))"
+          },
+          {
+            "name": "Sales Moving Avg 3M",
+            "expression": "VAR period = DATESINPERIOD('Date'[Date], MAX('Date'[Date]), -3, MONTH) RETURN CALCULATE(AVERAGEX(VALUES('Date'[YearMonth]), [Sales Amount]), period)"
+          },
+          {
+            "name": "Sales Rolling 30D",
+            "expression": "CALCULATE([Sales Amount], DATESINPERIOD('Date'[Date], MAX('Date'[Date]), -30, DAY))"
+          },
+          {
+            "name": "Sales Rolling 12M Manual",
+            "expression": "VAR d = MAX('Date'[Date]) RETURN CALCULATE([Sales Amount], FILTER(ALL('Date'), 'Date'[Date] > EDATE(d, -12) && 'Date'[Date] <= d))"
+          },
+          {
+            "name": "Sales Last Day With Sales",
+            "expression": "CALCULATE([Sales Amount], LASTNONBLANK('Date'[Date], [Sales Amount]))"
+          },
+          {
+            "name": "Sales By Delivery Date",
+            "expression": "CALCULATE([Sales Amount], USERELATIONSHIP(Sales[Delivery Date], 'Date'[Date]))"
+          },
+          {
+            "name": "Orders In Transit EOP",
+            "expression": "VAR d = MAX('Date'[Date]) RETURN CALCULATE(DISTINCTCOUNT(Sales[Order Number]), REMOVEFILTERS('Date'), Sales[Order Date] <= d, Sales[Delivery Date] > d)"
+          },
+          {
+            "name": "Orders Active In Period",
+            "expression": "VAR lo = MIN('Date'[Date]) VAR hi = MAX('Date'[Date]) RETURN CALCULATE(DISTINCTCOUNT(Sales[Order Number]), REMOVEFILTERS('Date'), Sales[Order Date] <= hi, Sales[Delivery Date] >= lo)"
+          },
+          {
+            "name": "Sales Delivered via Relationship",
+            "expression": "CALCULATE([Sales Amount], USERELATIONSHIP(Sales[Delivery Date], 'Date'[Date]))"
+          },
+          {
+            "name": "Sales Delivered via Treatas",
+            "expression": "CALCULATE([Sales Amount], REMOVEFILTERS('Date'), TREATAS(VALUES('Date'[Date]), Sales[Delivery Date]))"
+          },
+          {
+            "name": "Sales Ordered and Delivered in Period",
+            "expression": "CALCULATE([Sales Amount], TREATAS(VALUES('Date'[Date]), Sales[Delivery Date]))"
+          },
+          {
+            "name": "Orders in Transit Relationship",
+            "expression": "VAR d = MAX('Date'[Date]) RETURN CALCULATE(DISTINCTCOUNT(Sales[Order Number]), REMOVEFILTERS('Date'), Sales[Order Date] <= d, Sales[Delivery Date] > d)"
+          },
+          {
+            "name": "Sales Ignoring Date Relationship",
+            "expression": "CALCULATE([Sales Amount], CROSSFILTER(Sales[Order Date], 'Date'[Date], NONE))"
+          },
+          {
+            "name": "Sales USD Delivered Relationship",
+            "expression": "CALCULATE([Sales USD], USERELATIONSHIP(Sales[Delivery Date], 'Date'[Date]))"
+          },
+          {
+            "name": "Sales via Account Iteration",
+            "expression": "SUMX(Account, [Sales Amount])"
+          },
+          {
+            "name": "Sales without Account Bridge",
+            "expression": "CALCULATE([Sales Amount], FILTER(Customer, ISEMPTY(RELATEDTABLE(AccountCustomer))))"
+          },
+          {
+            "name": "List Price Amount Related",
+            "expression": "SUMX(Sales, Sales[Quantity] * RELATED(Product[Unit Price]))"
+          },
+          {
+            "name": "Context Sum Of Largest Orders",
+            "expression": "SUMX(VALUES(Customer[CustomerKey]), MAXX(VALUES(Sales[Order Number]), [Sales Amount]))"
+          },
+          {
+            "name": "Context Pct Of Selected",
+            "expression": "DIVIDE([Sales Amount], CALCULATE([Sales Amount], ALLSELECTED()))"
+          },
+          {
+            "name": "Context Pct Of Parent",
+            "expression": "DIVIDE(\n    [Sales Amount],\n    SWITCH(TRUE(),\n      ISINSCOPE(Subcategory[Subcategory]), CALCULATE([Sales Amount], ALLSELECTED(Subcategory[Subcategory])),\n      ISINSCOPE(Category[Category]), CALCULATE([Sales Amount], ALLSELECTED(Category[Category])),\n      [Sales Amount]))"
+          },
+          {
+            "name": "Context Level",
+            "expression": "IF(NOT ISBLANK([Sales Amount]),\n    SWITCH(TRUE(), ISINSCOPE(Subcategory[Subcategory]), \"Subcategory\", ISINSCOPE(Category[Category]), \"Category\", \"Total\"))"
+          },
+          {
+            "name": "Context Selected Colors Sales",
+            "expression": "SUMX(VALUES(Product[Color]), CALCULATE([Sales Amount], ALLSELECTED(Product[Color])))"
+          },
+          {
+            "name": "Context Brand Rank",
+            "expression": "IF(NOT ISBLANK([Sales Amount]), RANKX(ALLSELECTED(Product[Brand]), [Sales Amount]))"
+          },
+          {
+            "name": "Context Big Customer Sales",
+            "expression": "CALCULATE([Sales Amount], FILTER(VALUES(Customer[CustomerKey]), [Sales Amount] > 10000))"
+          },
+          {
+            "name": "Visual Metric Value",
+            "expression": "SWITCH(SELECTEDVALUE(Metric[Metric Order]), 0, [Sales Amount], 1, [Margin], 2, SUM(Sales[Quantity]))"
+          },
+          {
+            "name": "Visual Share of Selected",
+            "expression": "DIVIDE([Sales Amount], CALCULATE([Sales Amount], ALLSELECTED()))"
+          },
+          {
+            "name": "Visual Level Label",
+            "expression": "SWITCH(TRUE(), ISINSCOPE(Subcategory[Subcategory]), \"Subcategory\", ISINSCOPE(Category[Category]), \"Category\", \"Total\")"
+          },
+          {
+            "name": "Visual Category Rank",
+            "expression": "IF(ISINSCOPE(Category[Category]), RANKX(ALLSELECTED(Category[Category]), [Sales Amount], , DESC, Dense))"
+          },
+          {
+            "name": "Visual Prev Month Sales",
+            "expression": "CALCULATE([Sales Amount], OFFSET(-1, ALLSELECTED('Date'[YearMonth]), ORDERBY('Date'[YearMonth], ASC)))"
+          },
+          {
+            "name": "Visual Running Sales",
+            "expression": "CALCULATE([Sales Amount], WINDOW(1, ABS, 0, REL, ALLSELECTED('Date'[YearMonth]), ORDERBY('Date'[YearMonth], ASC)))"
+          },
+          {
+            "name": "Visual Moving Avg 3M",
+            "expression": "AVERAGEX(WINDOW(-2, REL, 0, REL, ALLSELECTED('Date'[YearMonth]), ORDERBY('Date'[YearMonth], ASC)), [Sales Amount])"
+          },
+          {
+            "name": "Visual Best Subcategory",
+            "expression": "MAXX(INDEX(1, VALUES(Subcategory[Subcategory]), ORDERBY([Sales Amount], DESC, Subcategory[Subcategory], ASC)), Subcategory[Subcategory])"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Sales",
+            "source": {
+              "type": "entity",
+              "entityName": "Sales"
+            }
+          }
+        ]
+      },
+      {
+        "name": "Budget",
+        "columns": [
+          {
+            "name": "CategoryKey",
+            "dataType": "int64",
+            "sourceColumn": "CategoryKey"
+          },
+          {
+            "name": "YearMonth",
+            "dataType": "int64",
+            "sourceColumn": "YearMonth"
+          },
+          {
+            "name": "Budget",
+            "dataType": "decimal",
+            "sourceColumn": "Budget"
+          }
+        ],
+        "measures": [
+          {
+            "name": "Budget Amount",
+            "expression": "SUM(Budget[Budget])"
+          },
+          {
+            "name": "Budget Fiscal YTD",
+            "expression": "CALCULATE([Budget Amount], DATESYTD('Date'[Date], \"6/30\"))"
+          },
+          {
+            "name": "Budget Allocated by Day",
+            "expression": "SUMX(VALUES('Date'[YearMonth]), VAR ym = 'Date'[YearMonth] VAR daysSelected = CALCULATE(COUNTROWS('Date')) VAR daysInMonth = CALCULATE(COUNTROWS('Date'), REMOVEFILTERS('Date'), 'Date'[YearMonth] = ym) RETURN DIVIDE(CALCULATE([Budget Amount]) * daysSelected, daysInMonth))"
+          },
+          {
+            "name": "Budget at Valid Grain",
+            "expression": "VAR daysSelected = COUNTROWS('Date') VAR daysInMonths = CALCULATE(COUNTROWS('Date'), REMOVEFILTERS('Date'), VALUES('Date'[YearMonth])) RETURN IF(NOT ISFILTERED(Product) && NOT ISFILTERED(Subcategory) && daysSelected = daysInMonths, [Budget Amount])"
+          },
+          {
+            "name": "Budget via Product Category",
+            "expression": "CALCULATE([Budget Amount], TREATAS(VALUES(Product[Category]), Category[Category]))"
+          },
+          {
+            "name": "Budget Allocated to Product",
+            "expression": "SUMX(VALUES(Product[Category]), VAR c = Product[Category] VAR share = DIVIDE([Sales Amount], CALCULATE([Sales Amount], REMOVEFILTERS(Product), Product[Category] = c)) RETURN share * CALCULATE([Budget Amount], TREATAS({ c }, Category[Category])))"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Budget",
+            "source": {
+              "type": "entity",
+              "entityName": "Budget"
+            }
+          }
+        ]
+      },
+      {
+        "name": "Inventory",
+        "columns": [
+          {
+            "name": "Date",
+            "dataType": "dateTime",
+            "sourceColumn": "Date"
+          },
+          {
+            "name": "ProductKey",
+            "dataType": "int64",
+            "sourceColumn": "ProductKey"
+          },
+          {
+            "name": "On Hand",
+            "dataType": "int64",
+            "sourceColumn": "On Hand"
+          }
+        ],
+        "measures": [
+          {
+            "name": "Stock On Hand",
+            "expression": "CALCULATE(SUM(Inventory[On Hand]), LASTNONBLANK('Date'[Date], CALCULATE(COUNTROWS(Inventory))))"
+          },
+          {
+            "name": "Snapshots",
+            "expression": "COUNTROWS(Inventory)"
+          },
+          {
+            "name": "Inventory Closing Month",
+            "expression": "CLOSINGBALANCEMONTH(SUM(Inventory[On Hand]), 'Date'[Date])"
+          },
+          {
+            "name": "Inventory Closing Fiscal Year",
+            "expression": "CLOSINGBALANCEYEAR(SUM(Inventory[On Hand]), 'Date'[Date], \"6/30\")"
+          },
+          {
+            "name": "Inventory Opening Quarter",
+            "expression": "OPENINGBALANCEQUARTER(SUM(Inventory[On Hand]), 'Date'[Date])"
+          },
+          {
+            "name": "Inventory Last Date",
+            "expression": "CALCULATE(SUM(Inventory[On Hand]), LASTDATE('Date'[Date]))"
+          },
+          {
+            "name": "Inventory Last Per Product",
+            "expression": "SUMX(VALUES(Product[ProductKey]), CALCULATE(SUM(Inventory[On Hand]), LASTNONBLANK('Date'[Date], CALCULATE(COUNTROWS(Inventory)))))"
+          },
+          {
+            "name": "Inventory Avg Month End",
+            "expression": "AVERAGEX(VALUES('Date'[YearMonth]), CALCULATE(SUM(Inventory[On Hand]), LASTDATE('Date'[Date])))"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Inventory",
+            "source": {
+              "type": "entity",
+              "entityName": "Inventory"
+            }
+          }
+        ]
+      },
+      {
+        "name": "Segments",
+        "columns": [
+          {
+            "name": "Segment",
+            "dataType": "string",
+            "sourceColumn": "Segment",
+            "sortByColumn": "Segment Order"
+          },
+          {
+            "name": "Min Sales",
+            "dataType": "double",
+            "sourceColumn": "Min Sales"
+          },
+          {
+            "name": "Max Sales",
+            "dataType": "double",
+            "sourceColumn": "Max Sales"
+          },
+          {
+            "name": "Segment Order",
+            "dataType": "int64",
+            "sourceColumn": "Segment Order"
+          }
+        ],
+        "measures": [],
+        "partitions": [
+          {
+            "name": "Segments",
+            "source": {
+              "type": "entity",
+              "entityName": "Segments"
+            }
+          }
+        ]
+      },
+      {
+        "name": "Time Intelligence",
+        "calculationGroup": {
+          "precedence": 10,
+          "calculationItems": [
+            {
+              "name": "Current",
+              "expression": "SELECTEDMEASURE()",
+              "ordinal": 0
+            },
+            {
+              "name": "PY",
+              "expression": "CALCULATE(SELECTEDMEASURE(), SAMEPERIODLASTYEAR('Date'[Date]))",
+              "ordinal": 1
+            },
+            {
+              "name": "YoY",
+              "expression": "VAR cur = SELECTEDMEASURE() VAR py = CALCULATE(SELECTEDMEASURE(), SAMEPERIODLASTYEAR('Date'[Date])) RETURN IF(NOT ISBLANK(cur) && NOT ISBLANK(py), cur - py)",
+              "ordinal": 2
+            },
+            {
+              "name": "YoY %",
+              "expression": "DIVIDE(CALCULATE(SELECTEDMEASURE(), 'Time Intelligence'[Time Intelligence] = \"YoY\"), CALCULATE(SELECTEDMEASURE(), 'Time Intelligence'[Time Intelligence] = \"PY\"))",
+              "ordinal": 3
+            },
+            {
+              "name": "YTD",
+              "expression": "CALCULATE(SELECTEDMEASURE(), DATESYTD('Date'[Date]))",
+              "ordinal": 4
+            },
+            {
+              "name": "MAT",
+              "expression": "CALCULATE(SELECTEDMEASURE(), DATESINPERIOD('Date'[Date], MAX('Date'[Date]), -1, YEAR))",
+              "ordinal": 5
+            }
+          ]
+        },
+        "columns": [
+          {
+            "name": "Time Intelligence",
+            "dataType": "string",
+            "sourceColumn": "Name",
+            "sortByColumn": "Ordinal"
+          },
+          {
+            "name": "Ordinal",
+            "dataType": "int64",
+            "sourceColumn": "Ordinal"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Time Intelligence Partition",
+            "source": {
+              "type": "calculationGroup"
+            }
+          }
+        ]
+      },
+      {
+        "name": "Metric",
+        "columns": [
+          {
+            "name": "Metric",
+            "dataType": "string",
+            "type": "calculatedTableColumn",
+            "sourceColumn": "[Value1]",
+            "sortByColumn": "Metric Order"
+          },
+          {
+            "name": "Metric Fields",
+            "dataType": "string",
+            "type": "calculatedTableColumn",
+            "sourceColumn": "[Value2]",
+            "extendedProperties": [
+              {
+                "type": "json",
+                "name": "ParameterMetadata",
+                "value": {
+                  "version": 3,
+                  "kind": 2
+                }
+              }
+            ]
+          },
+          {
+            "name": "Metric Order",
+            "dataType": "int64",
+            "type": "calculatedTableColumn",
+            "sourceColumn": "[Value3]"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Metric",
+            "source": {
+              "type": "calculated",
+              "expression": "{ (\"Sales\", NAMEOF('Sales'[Sales Amount]), 0), (\"Margin\", NAMEOF('Sales'[Margin]), 1), (\"Quantity\", NAMEOF('Sales'[Total Quantity]), 2) }"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "name": "Sales_ProductKey_Product",
+        "fromTable": "Sales",
+        "fromColumn": "ProductKey",
+        "toTable": "Product",
+        "toColumn": "ProductKey"
+      },
+      {
+        "name": "Product_SubcategoryKey_Subcategory",
+        "fromTable": "Product",
+        "fromColumn": "SubcategoryKey",
+        "toTable": "Subcategory",
+        "toColumn": "SubcategoryKey"
+      },
+      {
+        "name": "Subcategory_CategoryKey_Category",
+        "fromTable": "Subcategory",
+        "fromColumn": "CategoryKey",
+        "toTable": "Category",
+        "toColumn": "CategoryKey"
+      },
+      {
+        "name": "Sales_CustomerKey_Customer",
+        "fromTable": "Sales",
+        "fromColumn": "CustomerKey",
+        "toTable": "Customer",
+        "toColumn": "CustomerKey"
+      },
+      {
+        "name": "Sales_Order_Date_Date",
+        "fromTable": "Sales",
+        "fromColumn": "Order Date",
+        "toTable": "Date",
+        "toColumn": "Date"
+      },
+      {
+        "name": "Sales_Delivery_Date_Date",
+        "fromTable": "Sales",
+        "fromColumn": "Delivery Date",
+        "toTable": "Date",
+        "toColumn": "Date",
+        "isActive": false
+      },
+      {
+        "name": "Sales_EmployeeKey_Employee",
+        "fromTable": "Sales",
+        "fromColumn": "EmployeeKey",
+        "toTable": "Employee",
+        "toColumn": "EmployeeKey"
+      },
+      {
+        "name": "Sales_CurrencyCode_Currency",
+        "fromTable": "Sales",
+        "fromColumn": "CurrencyCode",
+        "toTable": "Currency",
+        "toColumn": "CurrencyCode"
+      },
+      {
+        "name": "ExchangeRate_Date_Date",
+        "fromTable": "ExchangeRate",
+        "fromColumn": "Date",
+        "toTable": "Date",
+        "toColumn": "Date"
+      },
+      {
+        "name": "ExchangeRate_CurrencyCode_Currency",
+        "fromTable": "ExchangeRate",
+        "fromColumn": "CurrencyCode",
+        "toTable": "Currency",
+        "toColumn": "CurrencyCode"
+      },
+      {
+        "name": "Budget_CategoryKey_Category",
+        "fromTable": "Budget",
+        "fromColumn": "CategoryKey",
+        "toTable": "Category",
+        "toColumn": "CategoryKey"
+      },
+      {
+        "name": "Budget_YearMonth_Date",
+        "fromTable": "Budget",
+        "fromColumn": "YearMonth",
+        "toTable": "Date",
+        "toColumn": "YearMonth",
+        "fromCardinality": "many",
+        "toCardinality": "many"
+      },
+      {
+        "name": "Inventory_Date_Date",
+        "fromTable": "Inventory",
+        "fromColumn": "Date",
+        "toTable": "Date",
+        "toColumn": "Date"
+      },
+      {
+        "name": "Inventory_ProductKey_Product",
+        "fromTable": "Inventory",
+        "fromColumn": "ProductKey",
+        "toTable": "Product",
+        "toColumn": "ProductKey"
+      },
+      {
+        "name": "AccountCustomer_AccountKey_Account",
+        "fromTable": "AccountCustomer",
+        "fromColumn": "AccountKey",
+        "toTable": "Account",
+        "toColumn": "AccountKey"
+      },
+      {
+        "name": "AccountCustomer_CustomerKey_Customer",
+        "fromTable": "AccountCustomer",
+        "fromColumn": "CustomerKey",
+        "toTable": "Customer",
+        "toColumn": "CustomerKey",
+        "crossFilteringBehavior": "bothDirections"
+      }
+    ],
+    "roles": [
+      {
+        "name": "France",
+        "modelPermission": "read",
+        "tablePermissions": [
+          {
+            "name": "Customer",
+            "filterExpression": "Customer[Country] = \"France\""
+          }
+        ]
+      },
+      {
+        "name": "Bikes",
+        "modelPermission": "read",
+        "tablePermissions": [
+          {
+            "name": "Category",
+            "filterExpression": "Category[Category] = \"Bikes\""
+          }
+        ]
+      }
+    ]
+  }
+}

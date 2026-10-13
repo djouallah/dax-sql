@@ -1,0 +1,11 @@
+// note: targets by brand across the non-key many-to-many Product[Brand] to Target[Brand], with a total: SUMX over the brands against the plain sum, where the Ghost brand no product has counts only at the total, and the NULL product brand meets the NULL target brand
+EVALUATE
+SUMMARIZECOLUMNS(
+    ROLLUPADDISSUBTOTAL(Product[Brand], "Is Total"),
+    "Target", [Target Amount],
+    "Target Summed Over Brands", SUMX(VALUES(Product[Brand]), [Target Amount]),
+    "Target Rows", COUNTROWS(Target),
+    "Sales", [Sales Amount],
+    "Sales vs Target", [Sales vs Target]
+)
+ORDER BY [Is Total], Product[Brand]

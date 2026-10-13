@@ -1,0 +1,9 @@
+// note: segmentation fixed in time: customers banded by all-time sales (REMOVEFILTERS on Date inside the classifier), reported per year
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year],
+    Segments[Segment],
+    "Active Customers", [Segment Customer Count Fixed],
+    "Sales", [Segment Customer Sales Fixed]
+)
+ORDER BY 'Date'[Year], Segments[Segment]

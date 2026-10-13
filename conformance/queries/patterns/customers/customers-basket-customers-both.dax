@@ -1,0 +1,14 @@
+// note: customers who bought both a bike and a helmet in the year (INTERSECT of two CALCULATETABLE key lists), by year
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year],
+    "Bikes And Helmets",
+        COUNTROWS(
+            INTERSECT(
+                CALCULATETABLE(VALUES(Sales[CustomerKey]), Category[Category] = "Bikes"),
+                CALCULATETABLE(VALUES(Sales[CustomerKey]), Subcategory[Subcategory] = "Helmets")
+            )
+        ),
+    "Customers", [Customers]
+)
+ORDER BY 'Date'[Year]

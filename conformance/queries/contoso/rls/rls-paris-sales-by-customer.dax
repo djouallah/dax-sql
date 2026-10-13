@@ -1,0 +1,3 @@
+// note: a role filtering Customer: only its customers, and no blank row
+// roles: Paris
+EVALUATE SUMMARIZECOLUMNS(Customer[Customer], "s", [Sales Amount])

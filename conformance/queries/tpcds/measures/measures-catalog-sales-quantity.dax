@@ -1,0 +1,2 @@
+// note: catalog_sales[Catalog Sales Quantity] per catalog-page type
+EVALUATE SUMMARIZECOLUMNS(catalog_page[cp_type], "Catalog Sales Quantity", [Catalog Sales Quantity])

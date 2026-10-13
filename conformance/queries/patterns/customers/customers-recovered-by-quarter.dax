@@ -1,0 +1,9 @@
+// note: recovered customers (buy again after more than 90 days without a purchase) against returning ones, by quarter
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year],
+    'Date'[Quarter],
+    "Recovered", [Customers Recovered 90d],
+    "Returning", [Customers Returning]
+)
+ORDER BY 'Date'[Year], 'Date'[Quarter]

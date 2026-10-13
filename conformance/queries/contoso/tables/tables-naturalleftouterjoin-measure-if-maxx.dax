@@ -1,0 +1,3 @@
+// note: NATURALLEFTOUTERJOIN of text with a measure IF over MAXX of text that is never blank here
+DEFINE MEASURE Product[Max Name If] = IF(COUNTROWS(Product) > 0, MAXX(Product, Product[Name]))
+EVALUATE NATURALLEFTOUTERJOIN(SELECTCOLUMNS(Category, "Name", [Max Name If]), SELECTCOLUMNS(Product, "Name", Product[Name] & ""))

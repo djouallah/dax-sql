@@ -1,0 +1,2 @@
+// note: SUMMARIZECOLUMNS by a dimension column; a product with no sales adds no group
+EVALUATE SUMMARIZECOLUMNS(Product[Color], "s", [Sales Amount])

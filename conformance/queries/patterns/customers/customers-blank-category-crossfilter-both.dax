@@ -1,0 +1,17 @@
+// note: the customers each category reaches back through Sales with CROSSFILTER BOTH, including the blank category of sales whose product is missing, one of which also lacks its customer (whether Customer's blank row is reached)
+EVALUATE
+SUMMARIZECOLUMNS(
+    Product[Category],
+    "Customer Rows",
+        CALCULATE(COUNTROWS(Customer), CROSSFILTER(Sales[CustomerKey], Customer[CustomerKey], BOTH)),
+    "Customer Keys",
+        CALCULATE(COUNTROWS(VALUES(Customer[CustomerKey])), CROSSFILTER(Sales[CustomerKey], Customer[CustomerKey], BOTH)),
+    "Distinct Names",
+        CALCULATE(DISTINCTCOUNT(Customer[Customer]), CROSSFILTER(Sales[CustomerKey], Customer[CustomerKey], BOTH)),
+    "Countries",
+        CALCULATE(
+            CONCATENATEX(VALUES(Customer[Country]), Customer[Country], ", ", Customer[Country], ASC),
+            CROSSFILTER(Sales[CustomerKey], Customer[CustomerKey], BOTH)
+        )
+)
+ORDER BY Product[Category]

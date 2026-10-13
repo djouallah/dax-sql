@@ -1,0 +1,3 @@
+// note: PATHLENGTH of each employee's path: the depth in the hierarchy
+EVALUATE
+SELECTCOLUMNS(Employee, "Employee", Employee[Employee], "Level", PATHLENGTH(PATH(Employee[EmployeeKey], Employee[ParentEmployeeKey])))

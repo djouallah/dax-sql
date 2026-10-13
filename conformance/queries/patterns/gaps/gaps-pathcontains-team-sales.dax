@@ -1,0 +1,8 @@
+// note: PATHCONTAINS rolls sales up to a manager: each employee with the sales of everyone under them
+EVALUATE
+ADDCOLUMNS(
+    SELECTCOLUMNS(Employee, "Key", Employee[EmployeeKey], "Employee", Employee[Employee]),
+    "Team Sales",
+        VAR k = [Key]
+        RETURN CALCULATE([Sales Amount], FILTER(ALL(Employee), PATHCONTAINS(PATH(Employee[EmployeeKey], Employee[ParentEmployeeKey]), k)))
+)

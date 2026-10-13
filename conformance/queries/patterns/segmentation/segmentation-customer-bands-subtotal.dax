@@ -1,0 +1,8 @@
+// note: dynamic segmentation with a grand total row: at the total no band is selected, so every band matches and the total is not the sum of the bands' rows by construction
+EVALUATE
+SUMMARIZECOLUMNS(
+    ROLLUPADDISSUBTOTAL(Segments[Segment], "IsTotal"),
+    "Customers", [Segment Customer Count],
+    "Sales", [Segment Customer Sales]
+)
+ORDER BY [IsTotal], Segments[Segment]

@@ -1,0 +1,2 @@
+// note: two ROLLUPADDISSUBTOTAL axes (a matrix): every level of one with every level of the other
+EVALUATE SUMMARIZECOLUMNS(ROLLUPADDISSUBTOTAL(Category[Category], "ct"), ROLLUPADDISSUBTOTAL('Date'[Year], "yt"), "s", [Sales Amount])

@@ -1,0 +1,10 @@
+// note: RANKX over product names by sales, Skip vs Dense: Twin A and Twin B tie exactly, two zero-sales products tie with Never Sold's blank, the two products named Gadget merge into one name, and "" ranks apart from the blank name (the NULL product plus the blank row)
+EVALUATE
+ADDCOLUMNS(
+    ALL(Product[Product]),
+    "Name Is Blank", ISBLANK(Product[Product]),
+    "Sales", [Sales Amount],
+    "Rank Skip", RANKX(ALL(Product[Product]), [Sales Amount], , DESC, Skip),
+    "Rank Dense", RANKX(ALL(Product[Product]), [Sales Amount], , DESC, Dense)
+)
+ORDER BY [Rank Skip], Product[Product], [Name Is Blank]

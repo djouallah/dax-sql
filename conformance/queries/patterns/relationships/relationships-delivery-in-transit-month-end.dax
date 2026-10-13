@@ -1,0 +1,9 @@
+// note: both date roles at once: orders placed on or before each 2023 month end and delivered after it
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[YearMonth],
+    TREATAS({ 2023 }, 'Date'[Year]),
+    "In Transit", [Orders in Transit Relationship],
+    "Orders", [Orders]
+)
+ORDER BY 'Date'[YearMonth]

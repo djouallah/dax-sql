@@ -1,0 +1,2 @@
+// note: fct_region_daily[Negative price days share] per region
+EVALUATE SUMMARIZECOLUMNS(dim_region[Region], "Negative price days share", [Negative price days share])

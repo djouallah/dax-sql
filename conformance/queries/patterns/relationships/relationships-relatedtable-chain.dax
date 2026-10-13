@@ -1,0 +1,10 @@
+// note: RELATEDTABLE from each category follows one-to-many chains to Subcategory, Product, Sales and Budget
+EVALUATE
+ADDCOLUMNS(
+    VALUES(Category[Category]),
+    "Subcategories", COUNTROWS(RELATEDTABLE(Subcategory)),
+    "Products", COUNTROWS(RELATEDTABLE(Product)),
+    "Sales Lines", COUNTROWS(RELATEDTABLE(Sales)),
+    "Budget Rows", COUNTROWS(RELATEDTABLE(Budget))
+)
+ORDER BY Category[Category]

@@ -1,0 +1,10 @@
+// note: ADDCOLUMNS iterating ALL(Customer[Country]) under a France filter: the iteration is the shadow context, so ALLSELECTED gives every country
+EVALUATE
+CALCULATETABLE(
+    ADDCOLUMNS(
+        ALL(Customer[Country]),
+        "Sales", [Sales Amount],
+        "Selected", CALCULATE([Sales Amount], ALLSELECTED(Customer[Country]))
+    ),
+    Customer[Country] = "France"
+)

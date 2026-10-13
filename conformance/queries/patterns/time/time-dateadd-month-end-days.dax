@@ -1,0 +1,9 @@
+// note: DATEADD by -1 MONTH day by day through March, whose last days have no match in February
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Date],
+    TREATAS({202403}, 'Date'[YearMonth]),
+    "Days", COUNTROWS('Date'),
+    "Previous Month Day", [Sales PM DateAdd]
+)
+ORDER BY 'Date'[Date]

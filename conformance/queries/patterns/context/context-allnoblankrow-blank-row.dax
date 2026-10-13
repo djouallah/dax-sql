@@ -1,0 +1,10 @@
+// note: the blank row that unmatched Sales keys add to Product and Customer: ALL and VALUES count it, ALLNOBLANKROW and DISTINCT do not
+EVALUATE
+ROW(
+    "All Product", COUNTROWS(ALL(Product)),
+    "All No Blank Product", COUNTROWS(ALLNOBLANKROW(Product)),
+    "All Customer Keys", COUNTROWS(ALL(Customer[CustomerKey])),
+    "All No Blank Customer Keys", COUNTROWS(ALLNOBLANKROW(Customer[CustomerKey])),
+    "Values Product Keys", COUNTROWS(VALUES(Product[ProductKey])),
+    "Distinct Product Keys", COUNTROWS(DISTINCT(Product[ProductKey]))
+)

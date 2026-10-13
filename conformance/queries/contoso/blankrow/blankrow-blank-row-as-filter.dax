@@ -1,0 +1,2 @@
+// note: FILTER(VALUES(column), ISBLANK(column)) as a filter: the blank row's sales
+EVALUATE ROW("s", CALCULATE([Sales Amount], FILTER(VALUES(Customer[Customer]), ISBLANK(Customer[Customer]))))

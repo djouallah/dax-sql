@@ -1,0 +1,8 @@
+// note: PATHITEM with an integer type flattens the hierarchy into level columns, a blank past the path's end
+EVALUATE
+ADDCOLUMNS(
+    SELECTCOLUMNS(Employee, "Employee", Employee[Employee], "Path", PATH(Employee[EmployeeKey], Employee[ParentEmployeeKey])),
+    "Level 1", PATHITEM([Path], 1, INTEGER),
+    "Level 2", PATHITEM([Path], 2, INTEGER),
+    "Level 3", PATHITEM([Path], 3, INTEGER)
+)

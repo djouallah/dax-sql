@@ -1,0 +1,13 @@
+// note: French customers ranked by 2022 order count with RANKX ascending, DENSE and SKIP; customers without a 2022 order have a blank count, which ranks ahead in ascending order, and the counts tie
+EVALUATE
+CALCULATETABLE(
+    ADDCOLUMNS(
+        VALUES(Customer[Customer]),
+        "Orders 2022", [Orders],
+        "Rank Asc Dense", RANKX(VALUES(Customer[Customer]), [Orders], , ASC, DENSE),
+        "Rank Asc Skip", RANKX(VALUES(Customer[Customer]), [Orders], , ASC, SKIP)
+    ),
+    Customer[Country] = "France",
+    'Date'[Year] = 2022
+)
+ORDER BY [Rank Asc Dense], Customer[Customer]

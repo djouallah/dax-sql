@@ -1,0 +1,7 @@
+// note: the YoY % calculation item, which itself filters the group to YoY and PY, applied to a ratio measure by category
+EVALUATE
+CALCULATETABLE(
+    SUMMARIZECOLUMNS('Date'[Year], Category[Category], "Margin % YoY %", [Margin %]),
+    'Time Intelligence'[Time Intelligence] = "YoY %"
+)
+ORDER BY 'Date'[Year], Category[Category]

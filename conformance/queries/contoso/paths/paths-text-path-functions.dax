@@ -1,0 +1,2 @@
+// note: path functions on text paths: a blank path has length 0, PATHITEM past the end, PATHCONTAINS matches whole items
+EVALUATE ROW("n", PATHLENGTH(BLANK()), "m", PATHLENGTH("a|b|c"), "i", PATHITEM("a|b|c", 4), "j", PATHITEMREVERSE("a|b|c", 1), "c", PATHCONTAINS("a|b|c", "b"), "d", PATHCONTAINS("a|bc", "b"))

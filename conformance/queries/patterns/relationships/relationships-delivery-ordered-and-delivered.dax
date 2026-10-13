@@ -1,0 +1,9 @@
+// note: TREATAS onto Delivery Date while the Order Date relationship stays active keeps only the sales both ordered and delivered in the month
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[YearMonth],
+    TREATAS({ 2024 }, 'Date'[Year]),
+    "Ordered", [Sales Amount],
+    "Ordered and Delivered", [Sales Ordered and Delivered in Period]
+)
+ORDER BY 'Date'[YearMonth]

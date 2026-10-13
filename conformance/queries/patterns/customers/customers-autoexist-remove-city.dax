@@ -1,0 +1,11 @@
+// note: SUMMARIZECOLUMNS by gender with two filters on Customer (countries France and Germany; cities Paris, Berlin and Seattle) that auto-exist combines, and measures that remove the city filter only (REMOVEFILTERS(Customer[City]))
+EVALUATE
+SUMMARIZECOLUMNS(
+    Customer[Gender],
+    TREATAS({ "France", "Germany" }, Customer[Country]),
+    TREATAS({ "Paris", "Berlin", "Seattle" }, Customer[City]),
+    "Customers", [Customers],
+    "Customers Any City", CALCULATE([Customers], REMOVEFILTERS(Customer[City])),
+    "Customer Rows Any City", CALCULATE(COUNTROWS(Customer), REMOVEFILTERS(Customer[City]))
+)
+ORDER BY Customer[Gender]

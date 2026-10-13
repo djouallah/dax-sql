@@ -1,0 +1,11 @@
+// note: under the Bikes role, whose filter sits on Category, CROSSFILTER BOTH on the Subcategory-Category relationship would let the secured filter flow down to Subcategory and back up to Category itself (a DAX error: two join paths from Category to Category)
+// expect: error
+// roles: Bikes
+EVALUATE
+SUMMARIZECOLUMNS(
+    Subcategory[Subcategory],
+    "Lines", [Order Lines],
+    "Category Rows Both", CALCULATE(COUNTROWS(Category), CROSSFILTER(Subcategory[CategoryKey], Category[CategoryKey], BOTH)),
+    "Category Rows", COUNTROWS(Category)
+)
+ORDER BY Subcategory[Subcategory]

@@ -1,0 +1,16 @@
+// note: buyers by fiscal year (year end "6/30") with the previous and next fiscal year's buyers (PREVIOUSYEAR/NEXTYEAR) and the year's first and last date (STARTOFYEAR/ENDOFYEAR); FY2022 starts before the date table and FY2025 ends after it
+DEFINE
+    MEASURE Sales[Cust2 FY Customers PY] = CALCULATE([Customers], PREVIOUSYEAR('Date'[Date], "6/30"))
+    MEASURE Sales[Cust2 FY Customers NY] = CALCULATE([Customers], NEXTYEAR('Date'[Date], "6/30"))
+    MEASURE Sales[Cust2 FY Start] = STARTOFYEAR('Date'[Date], "6/30")
+    MEASURE Sales[Cust2 FY End] = ENDOFYEAR('Date'[Date], "6/30")
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Fiscal Year],
+    "Customers", [Customers],
+    "Customers PY", [Cust2 FY Customers PY],
+    "Customers NY", [Cust2 FY Customers NY],
+    "FY Start", [Cust2 FY Start],
+    "FY End", [Cust2 FY End]
+)
+ORDER BY 'Date'[Fiscal Year]

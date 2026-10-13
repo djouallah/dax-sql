@@ -1,0 +1,12 @@
+// note: the three-level snowflake Region -> Country -> Store -> Sales: a country with no store (Côte d'Ivoire) and a region with no country (Antarctica); sales of unknown stores reach the blank row of each level
+EVALUATE
+SUMMARIZECOLUMNS(
+    Region[Region],
+    Country[Country],
+    "Countries", COUNTROWS(Country),
+    "Stores", COUNTROWS(Store),
+    "Lines", [Lines],
+    "Sales", [Sales Amount],
+    "Total Cost", [Total Cost]
+)
+ORDER BY Region[Region], Country[Country]

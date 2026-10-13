@@ -1,0 +1,2 @@
+// note: ADDCOLUMNS over SUMMARIZE(Sales, related column): the blank city of the unknown customer is a group
+EVALUATE ADDCOLUMNS(SUMMARIZE(Sales, Customer[City]), "s", [Sales Amount])

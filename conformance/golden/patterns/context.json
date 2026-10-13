@@ -1,0 +1,4045 @@
+{
+ "context-addcolumns-summarize-fact": {
+  "hash": "fa8cb02dd42c7597d9f0183f9e9e67dc3871d2f3",
+  "columns": [
+   "Date[Year]",
+   "Customer[Country]",
+   "[Sales]",
+   "[Customers]"
+  ],
+  "rows": [
+   [
+    2022,
+    "Australia",
+    103825.63999999997,
+    10
+   ],
+   [
+    2022,
+    "France",
+    24708.290000000005,
+    7
+   ],
+   [
+    2022,
+    "Germany",
+    54876.77999999999,
+    12
+   ],
+   [
+    2022,
+    "United States",
+    34834.590000000004,
+    7
+   ],
+   [
+    2023,
+    "Australia",
+    358327.44,
+    29
+   ],
+   [
+    2023,
+    "France",
+    210445.20999999988,
+    25
+   ],
+   [
+    2023,
+    "Germany",
+    219319.74000000008,
+    29
+   ],
+   [
+    2023,
+    "United States",
+    184589.47000000015,
+    23
+   ],
+   [
+    2024,
+    null,
+    189.0,
+    1
+   ],
+   [
+    2024,
+    "Australia",
+    708335.8299999996,
+    29
+   ],
+   [
+    2024,
+    "France",
+    445586.26000000024,
+    28
+   ],
+   [
+    2024,
+    "Germany",
+    535262.2899999998,
+    35
+   ],
+   [
+    2024,
+    "United States",
+    483547.09000000055,
+    28
+   ]
+  ]
+ },
+ "context-all-dimension-expanded": {
+  "hash": "464669d2699d2175222575408a8009e84198515a",
+  "columns": [
+   "Category[Category]",
+   "[Red Lines]",
+   "[Red Lines All Product]"
+  ],
+  "rows": [
+   [
+    "Bikes",
+    200,
+    702
+   ],
+   [
+    "Clothing",
+    256,
+    702
+   ],
+   [
+    "Accessories",
+    181,
+    702
+   ],
+   [
+    "Components",
+    65,
+    702
+   ],
+   [
+    null,
+    null,
+    702
+   ]
+  ]
+ },
+ "context-all-one-side-vs-many-side": {
+  "hash": "fb4a75e2e774f05c68c1ac0cf25cf6274017ad27",
+  "columns": [
+   "Category[Category]",
+   "Subcategory[Subcategory]",
+   "[Sales]",
+   "[All Category]",
+   "[All Subcategory]"
+  ],
+  "rows": [
+   [
+    null,
+    null,
+    190.0,
+    190.0,
+    3363847.6299999966
+   ],
+   [
+    "Accessories",
+    "Bottles",
+    76918.63999999998,
+    76918.63999999998,
+    3363847.6299999966
+   ],
+   [
+    "Accessories",
+    "Helmets",
+    54041.39000000003,
+    54041.39000000003,
+    3363847.6299999966
+   ],
+   [
+    "Accessories",
+    "Lights",
+    60692.85000000004,
+    60692.85000000004,
+    3363847.6299999966
+   ],
+   [
+    "Bikes",
+    "Mountain Bikes",
+    803929.33,
+    803929.33,
+    3363847.6299999966
+   ],
+   [
+    "Bikes",
+    "Road Bikes",
+    426256.2300000004,
+    426256.2300000004,
+    3363847.6299999966
+   ],
+   [
+    "Bikes",
+    "Touring Bikes",
+    683656.3199999998,
+    683656.3199999998,
+    3363847.6299999966
+   ],
+   [
+    "Clothing",
+    "Gloves",
+    72500.04000000001,
+    72500.04000000001,
+    3363847.6299999966
+   ],
+   [
+    "Clothing",
+    "Jerseys",
+    80290.12999999996,
+    80290.12999999996,
+    3363847.6299999966
+   ],
+   [
+    "Clothing",
+    "Shorts",
+    113524.61999999994,
+    113524.61999999994,
+    3363847.6299999966
+   ],
+   [
+    "Components",
+    "Brakes",
+    316122.7200000003,
+    316122.7200000003,
+    3363847.6299999966
+   ],
+   [
+    "Components",
+    "Chains",
+    267142.25,
+    267142.25,
+    3363847.6299999966
+   ],
+   [
+    "Components",
+    "Wheels",
+    408583.1099999998,
+    408583.1099999998,
+    3363847.6299999966
+   ]
+  ]
+ },
+ "context-all-under-rls": {
+  "hash": "265fe03ff1861d2030e8aaf3cfbdbf1242aef129",
+  "columns": [
+   "Customer[Country]",
+   "[Sales]",
+   "[All Customers Sales]",
+   "[Everything]",
+   "[Customer Rows]"
+  ],
+  "rows": [
+   [
+    "France",
+    680739.7600000006,
+    680739.7600000006,
+    680739.7600000006,
+    28
+   ]
+  ]
+ },
+ "context-allexcept-expanded": {
+  "hash": "e857b63a4a3609c3ff0c5655a97f829fa95f5781",
+  "columns": [
+   "Date[Year]",
+   "Category[Category]",
+   "[Sales]",
+   "[Year Total]"
+  ],
+  "rows": [
+   [
+    2022,
+    null,
+    null,
+    218245.30000000005
+   ],
+   [
+    2022,
+    "Accessories",
+    11542.310000000001,
+    218245.30000000005
+   ],
+   [
+    2022,
+    "Bikes",
+    130102.53000000004,
+    218245.30000000005
+   ],
+   [
+    2022,
+    "Clothing",
+    13887.680000000004,
+    218245.30000000005
+   ],
+   [
+    2022,
+    "Components",
+    62712.78,
+    218245.30000000005
+   ],
+   [
+    2023,
+    null,
+    91.0,
+    972681.8599999999
+   ],
+   [
+    2023,
+    "Accessories",
+    61649.45000000004,
+    972681.8599999999
+   ],
+   [
+    2023,
+    "Bikes",
+    533349.6999999998,
+    972681.8599999999
+   ],
+   [
+    2023,
+    "Clothing",
+    83028.15999999999,
+    972681.8599999999
+   ],
+   [
+    2023,
+    "Components",
+    294563.5499999999,
+    972681.8599999999
+   ],
+   [
+    2024,
+    null,
+    99.0,
+    2172920.469999998
+   ],
+   [
+    2024,
+    "Accessories",
+    118461.11999999995,
+    2172920.469999998
+   ],
+   [
+    2024,
+    "Bikes",
+    1250389.6499999985,
+    2172920.469999998
+   ],
+   [
+    2024,
+    "Clothing",
+    169398.95,
+    2172920.469999998
+   ],
+   [
+    2024,
+    "Components",
+    634571.7499999995,
+    2172920.469999998
+   ]
+  ]
+ },
+ "context-allnoblankrow-blank-row": {
+  "hash": "0c3d19ca45ce8a2bc26e10b15bf83c85e4447872",
+  "columns": [
+   "[All Product]",
+   "[All No Blank Product]",
+   "[All Customer Keys]",
+   "[All No Blank Customer Keys]",
+   "[Values Product Keys]",
+   "[Distinct Product Keys]"
+  ],
+  "rows": [
+   [
+    46,
+    45,
+    121,
+    120,
+    46,
+    45
+   ]
+  ]
+ },
+ "context-allselected-grouped-color-brand-filter": {
+  "hash": "04d449cddc1c5558d9ac6de172e2bc5bc6a312ad",
+  "columns": [
+   "Product[Color]",
+   "[Sales]",
+   "[Selected Colors Sales]",
+   "[All Colors Sales]",
+   "[Selected Colors]",
+   "[Share Of Selected]"
+  ],
+  "rows": [
+   [
+    "Black",
+    99942.06000000001,
+    279049.81,
+    279049.81,
+    "Black, Blue, Red, Silver, White, Yellow",
+    0.3581513278937549
+   ],
+   [
+    "Blue",
+    46414.05000000003,
+    279049.81,
+    279049.81,
+    "Black, Blue, Red, Silver, White, Yellow",
+    0.1663289073732035
+   ],
+   [
+    "Red",
+    5318.54,
+    279049.81,
+    279049.81,
+    "Black, Blue, Red, Silver, White, Yellow",
+    0.01905946468840097
+   ],
+   [
+    "Silver",
+    15468.649999999994,
+    279049.81,
+    279049.81,
+    "Black, Blue, Red, Silver, White, Yellow",
+    0.055433293432452055
+   ],
+   [
+    "White",
+    55459.459999999985,
+    279049.81,
+    279049.81,
+    "Black, Blue, Red, Silver, White, Yellow",
+    0.19874394467425005
+   ],
+   [
+    "Yellow",
+    56447.04999999999,
+    279049.81,
+    279049.81,
+    "Black, Blue, Red, Silver, White, Yellow",
+    0.20228306193793857
+   ]
+  ]
+ },
+ "context-allselected-in-iterator": {
+  "hash": "5ed538f48c10dcdb30e6daf05902042bf5f5287d",
+  "columns": [
+   "Product[Color]",
+   "[Is Total]",
+   "[Sales]",
+   "[Iterated]"
+  ],
+  "rows": [
+   [
+    "Black",
+    false,
+    956008.5099999998,
+    956008.5099999998
+   ],
+   [
+    "Blue",
+    false,
+    399046.1799999999,
+    399046.1799999999
+   ],
+   [
+    "Red",
+    false,
+    716918.9199999981,
+    716918.9199999981
+   ],
+   [
+    null,
+    true,
+    2071973.6099999978,
+    6215920.829999984
+   ]
+  ]
+ },
+ "context-allselected-shadow-from-all": {
+  "hash": "bf999da8e440f7977e66cbe9a9630fe4161202df",
+  "columns": [
+   "Customer[Country]",
+   "[Sales]",
+   "[Selected]"
+  ],
+  "rows": [
+   [
+    "Germany",
+    809458.8099999989,
+    3363847.63
+   ],
+   [
+    "United States",
+    702971.1499999993,
+    3363847.63
+   ],
+   [
+    "Australia",
+    1170488.9100000013,
+    3363847.63
+   ],
+   [
+    "France",
+    680739.7600000006,
+    3363847.63
+   ],
+   [
+    null,
+    189.0,
+    3363847.63
+   ]
+  ]
+ },
+ "context-allselected-shadow-from-values": {
+  "hash": "a09c1ffa6e91fbf5d0b0ad4f86908885d28b4615",
+  "columns": [
+   "Customer[Country]",
+   "[Sales]",
+   "[Selected]"
+  ],
+  "rows": [
+   [
+    "Germany",
+    809458.8099999989,
+    2660687.480000001
+   ],
+   [
+    "Australia",
+    1170488.9100000013,
+    2660687.480000001
+   ],
+   [
+    "France",
+    680739.7600000006,
+    2660687.480000001
+   ]
+  ]
+ },
+ "context-allselected-share": {
+  "hash": "170bca4aa517f5e3aa9a4e2fa29a86fd42e6a235",
+  "columns": [
+   "Category[Category]",
+   "[Sales]",
+   "[Share]"
+  ],
+  "rows": [
+   [
+    "Bikes",
+    1913841.8799999978,
+    0.8069121232773514
+   ],
+   [
+    "Clothing",
+    266314.7900000005,
+    0.11228337873924182
+   ],
+   [
+    "Accessories",
+    191652.88000000003,
+    0.08080449798340689
+   ]
+  ]
+ },
+ "context-auto-exist-fiscal-year-month": {
+  "hash": "d9b59ff29646dc05b6922757feefbac2897eaa8a",
+  "columns": [
+   "Category[Category]",
+   "[Sales]",
+   "[Month Removed]",
+   "[Fiscal Years Left]"
+  ],
+  "rows": [
+   [
+    null,
+    null,
+    null,
+    "2024"
+   ],
+   [
+    "Accessories",
+    7951.460000000001,
+    94033.95000000001,
+    "2024"
+   ],
+   [
+    "Bikes",
+    82193.89000000003,
+    871044.7799999989,
+    "2024"
+   ],
+   [
+    "Clothing",
+    11193.670000000004,
+    131929.15999999997,
+    "2024"
+   ],
+   [
+    "Components",
+    41443.75,
+    480577.93000000017,
+    "2024"
+   ]
+  ]
+ },
+ "context-auto-exist-grouped-color-band-brand": {
+  "hash": "eff2a299aa9f04b039fe9deccae1d82e150fd986",
+  "columns": [
+   "Product[Color]",
+   "[Sales]",
+   "[Band Removed]",
+   "[Brand Removed]",
+   "[Color Removed]",
+   "[Brands With Band Removed]",
+   "[Bands With Brand Removed]"
+  ],
+  "rows": [
+   [
+    "Black",
+    287401.47,
+    287401.47,
+    449864.66000000003,
+    911620.9099999998,
+    "Contoso",
+    "Mid"
+   ],
+   [
+    "Blue",
+    231634.1999999999,
+    304815.44,
+    313328.2400000006,
+    911620.9099999998,
+    "Contoso, Litware",
+    "Mid"
+   ],
+   [
+    "Silver",
+    72008.23000000001,
+    205296.29000000007,
+    113539.33000000002,
+    911620.9099999998,
+    "Contoso, Litware",
+    "Mid"
+   ],
+   [
+    "White",
+    127930.25,
+    140177.24999999997,
+    163447.06999999998,
+    911620.9099999998,
+    "Contoso",
+    "Mid"
+   ],
+   [
+    "Yellow",
+    192646.75999999992,
+    217942.1299999999,
+    192646.75999999992,
+    911620.9099999998,
+    "Contoso",
+    "Mid"
+   ]
+  ]
+ },
+ "context-auto-exist-removefilters": {
+  "hash": "4096654cf0abc61f8952cdb7c2c877e745c9f7b0",
+  "columns": [
+   "Product[Brand]",
+   "[Sales]",
+   "[Color Removed]"
+  ],
+  "rows": [
+   [
+    "Litware",
+    34587.99999999999,
+    34588.0
+   ]
+  ]
+ },
+ "context-big-customers-filter-measure": {
+  "hash": "7db1b32b867c258cb5f698617813d2d20c1d3c96",
+  "columns": [
+   "Date[Year]",
+   "[Sales]",
+   "[Big In Year]",
+   "[Big Lifetime]"
+  ],
+  "rows": [
+   [
+    2022,
+    218245.30000000005,
+    79129.33999999997,
+    104191.09999999998
+   ],
+   [
+    2023,
+    972681.8599999993,
+    636870.3599999999,
+    426285.5800000002
+   ],
+   [
+    2024,
+    2172920.470000001,
+    1995827.9100000013,
+    920001.749999999
+   ]
+  ]
+ },
+ "context-calc-group-in-iterator": {
+  "hash": "f21ea3abfbc74e631184a9a41e271da1f0c1ad67",
+  "columns": [
+   "Date[Year]",
+   "[Sales]",
+   "[Avg Monthly]"
+  ],
+  "rows": [
+   [
+    2023,
+    218245.30000000002,
+    27280.6625
+   ],
+   [
+    2024,
+    972681.8600000003,
+    81056.82166666667
+   ]
+  ]
+ },
+ "context-calc-group-name-filter-vs-ordinal-group": {
+  "hash": "bf4536c1e0ada97cb0e6e55c11a026367a878f87",
+  "columns": [
+   "Time Intelligence[Time Intelligence]",
+   "Time Intelligence[Ordinal]",
+   "[Sales]",
+   "[Name Set To PY]",
+   "[Name Set To PY Ordinal Removed]",
+   "[Items Visible]"
+  ],
+  "rows": [
+   [
+    "Current",
+    0,
+    2172920.469999997,
+    972681.8600000002,
+    972681.8600000002,
+    null
+   ],
+   [
+    "PY",
+    1,
+    972681.8600000002,
+    972681.8600000002,
+    972681.8600000002,
+    1
+   ],
+   [
+    "YoY",
+    2,
+    1200238.6099999966,
+    972681.8600000002,
+    972681.8600000002,
+    null
+   ],
+   [
+    "YoY %",
+    3,
+    1.2339477678755069,
+    972681.8600000002,
+    972681.8600000002,
+    null
+   ],
+   [
+    "YTD",
+    4,
+    2172920.469999997,
+    972681.8600000002,
+    972681.8600000002,
+    null
+   ],
+   [
+    "MAT",
+    5,
+    2172920.469999997,
+    972681.8600000002,
+    972681.8600000002,
+    null
+   ]
+  ]
+ },
+ "context-calc-group-ordinal-filter-name-calculate": {
+  "hash": "c8db5a1c17e33b0590bb27d2315845f5d9dc1944",
+  "columns": [
+   "Category[Category]",
+   "[Sales]",
+   "[Name PY]",
+   "[Name YTD]",
+   "[Name YTD Ordinal Removed]",
+   "[Items Named YTD]"
+  ],
+  "rows": [
+   [
+    null,
+    99.0,
+    91.0,
+    99.0,
+    99.0,
+    null
+   ],
+   [
+    "Accessories",
+    118461.11999999995,
+    61649.45000000004,
+    118461.11999999995,
+    118461.11999999995,
+    null
+   ],
+   [
+    "Bikes",
+    1250389.6499999985,
+    533349.6999999998,
+    1250389.6499999985,
+    1250389.6499999985,
+    null
+   ],
+   [
+    "Clothing",
+    169398.95,
+    83028.15999999999,
+    169398.95,
+    169398.95,
+    null
+   ],
+   [
+    "Components",
+    634571.7499999995,
+    294563.5499999999,
+    634571.7499999995,
+    634571.7499999995,
+    null
+   ]
+  ]
+ },
+ "context-calculated-column-filter-intersects": {
+  "hash": "611a06151a03aca44da1c78630a66f786e2f1ac2",
+  "columns": [
+   "Category[Category]",
+   "[Sales]",
+   "[Bikes By Product Column]",
+   "[Bikes By Category Column]"
+  ],
+  "rows": [
+   [
+    null,
+    190.0,
+    null,
+    1913841.8799999978
+   ],
+   [
+    "Bikes",
+    1913841.8799999978,
+    1913841.8799999978,
+    1913841.8799999978
+   ],
+   [
+    "Clothing",
+    266314.7900000005,
+    null,
+    1913841.8799999978
+   ],
+   [
+    "Accessories",
+    191652.88000000003,
+    null,
+    1913841.8799999978
+   ],
+   [
+    "Components",
+    991848.0799999993,
+    null,
+    1913841.8799999978
+   ]
+  ]
+ },
+ "context-calculatetable-column-filter-no-crossfilter": {
+  "hash": "caf34af4710be8338ce0c38c2dbb330df9606a31",
+  "columns": [
+   "Product[Color]"
+  ],
+  "rows": [
+   [
+    "Blue"
+   ],
+   [
+    "Yellow"
+   ],
+   [
+    "Black"
+   ],
+   [
+    "Silver"
+   ],
+   [
+    "Red"
+   ],
+   [
+    "White"
+   ],
+   [
+    null
+   ]
+  ]
+ },
+ "context-calculatetable-table-filter-expanded": {
+  "hash": "e3505970ea5cfd37932165e41928dabbfabea823",
+  "columns": [
+   "Product[Color]"
+  ],
+  "rows": [
+   [
+    "Blue"
+   ],
+   [
+    "Yellow"
+   ],
+   [
+    "Black"
+   ],
+   [
+    "Silver"
+   ],
+   [
+    "Red"
+   ],
+   [
+    "White"
+   ]
+  ]
+ },
+ "context-case-insensitive-filter-arguments": {
+  "hash": "8f939a5e91398c9fb41c11ed6298c5043853b46d",
+  "columns": [
+   "Category[Category]",
+   "[Sales]",
+   "[Red Or Black]",
+   "[Contoso]",
+   "[Silver Via Values]",
+   "[Bikes Key]",
+   "[Is Bikes]"
+  ],
+  "rows": [
+   [
+    "Bikes",
+    1913841.8799999978,
+    1084407.01,
+    54378.70999999997,
+    258964.23000000024,
+    1,
+    true
+   ],
+   [
+    "Clothing",
+    266314.7900000005,
+    51538.85999999998,
+    118287.75000000001,
+    104860.03999999998,
+    1,
+    false
+   ]
+  ]
+ },
+ "context-concatenatex-ordered": {
+  "hash": "81b7a4ba622b0b9eaa7028a3e5e4c4cb87d1ac26",
+  "columns": [
+   "Category[Category]",
+   "[Sales]",
+   "[Colors Sold]"
+  ],
+  "rows": [
+   [
+    null,
+    99.0,
+    ""
+   ],
+   [
+    "Bikes",
+    1250389.6499999985,
+    "Black, Blue, Red, Silver, White, Yellow"
+   ],
+   [
+    "Clothing",
+    169398.95,
+    "Blue, Red, Silver, Yellow"
+   ],
+   [
+    "Accessories",
+    118461.11999999995,
+    "Blue, Red, Silver, Yellow"
+   ],
+   [
+    "Components",
+    634571.7499999995,
+    "Black, Blue, Red, White, Yellow"
+   ]
+  ]
+ },
+ "context-crossfilter-both-blank-category-customers": {
+  "hash": "ed1fc2a6f911e2beab8b91cabcb98c9770af8957",
+  "columns": [
+   "Category[Category]",
+   "[Lines]",
+   "[Sales Customer Keys]",
+   "[Customer Rows Both]",
+   "[Customer Keys Both]",
+   "[Countries Both]"
+  ],
+  "rows": [
+   [
+    null,
+    2,
+    2,
+    1,
+    2,
+    ", France"
+   ],
+   [
+    "Accessories",
+    934,
+    120,
+    120,
+    120,
+    "Australia, France, Germany, United States"
+   ],
+   [
+    "Bikes",
+    985,
+    120,
+    120,
+    120,
+    "Australia, France, Germany, United States"
+   ],
+   [
+    "Clothing",
+    922,
+    121,
+    120,
+    121,
+    ", Australia, France, Germany, United States"
+   ],
+   [
+    "Components",
+    925,
+    120,
+    120,
+    120,
+    "Australia, France, Germany, United States"
+   ]
+  ]
+ },
+ "context-crossfilter-both-blank-rows-by-date": {
+  "hash": "ad19806be9ab0a48c6a44a87acb7585e3873474b",
+  "columns": [
+   "Date[Date]",
+   "[Lines]",
+   "[Product Rows]",
+   "[Product Key Count]",
+   "[Product Values]",
+   "[Brands]",
+   "[Customer Rows]",
+   "[Customer Key Count]",
+   "[Customer Values]",
+   "[Countries]"
+  ],
+  "rows": [
+   [
+    "2023-05-17",
+    2,
+    1,
+    1,
+    2,
+    ", Litware",
+    1,
+    1,
+    1,
+    "France"
+   ],
+   [
+    "2024-08-09",
+    12,
+    9,
+    9,
+    10,
+    ", Contoso, Fabrikam, Litware, Northwind",
+    3,
+    3,
+    4,
+    ", France, United States"
+   ],
+   [
+    "2024-11-30",
+    16,
+    16,
+    16,
+    16,
+    "Contoso, Fabrikam, Litware, Northwind",
+    7,
+    7,
+    8,
+    ", France, Germany, United States"
+   ]
+  ]
+ },
+ "context-earlier-rank": {
+  "hash": "5b38c6b809aa36c6cea7110c475f437186f26455",
+  "columns": [
+   "Subcategory[Subcategory]",
+   "[Sales]",
+   "[Rank]"
+  ],
+  "rows": [
+   [
+    "Road Bikes",
+    426256.2300000004,
+    3
+   ],
+   [
+    "Mountain Bikes",
+    803929.33,
+    1
+   ],
+   [
+    "Touring Bikes",
+    683656.3199999998,
+    2
+   ],
+   [
+    "Jerseys",
+    80290.12999999996,
+    8
+   ],
+   [
+    "Shorts",
+    113524.61999999994,
+    7
+   ],
+   [
+    "Gloves",
+    72500.04000000001,
+    10
+   ],
+   [
+    "Helmets",
+    54041.39000000003,
+    12
+   ],
+   [
+    "Lights",
+    60692.85000000004,
+    11
+   ],
+   [
+    "Bottles",
+    76918.63999999998,
+    9
+   ],
+   [
+    "Wheels",
+    408583.1099999998,
+    4
+   ],
+   [
+    "Brakes",
+    316122.7200000003,
+    5
+   ],
+   [
+    "Chains",
+    267142.25,
+    6
+   ],
+   [
+    null,
+    190.0,
+    13
+   ]
+  ]
+ },
+ "context-fact-table-filter-vs-column-predicate": {
+  "hash": "bbed9571d94f9dcd8dce5354b7921c219defb2ab",
+  "columns": [
+   "Category[Category]",
+   "[Column Predicate]",
+   "[Filter Sales]",
+   "[Filter All Sales]"
+  ],
+  "rows": [
+   [
+    "Clothing",
+    234916.52000000028,
+    234916.51999999996,
+    1232167.9200000002
+   ],
+   [
+    "Accessories",
+    162629.16,
+    162629.16000000003,
+    1232167.9200000002
+   ],
+   [
+    "Components",
+    834622.2399999999,
+    834622.2399999998,
+    1232167.9200000002
+   ],
+   [
+    "Bikes",
+    null,
+    null,
+    1232167.9200000002
+   ],
+   [
+    null,
+    null,
+    null,
+    1232167.9200000002
+   ]
+  ]
+ },
+ "context-filters-vs-values": {
+  "hash": "2d364bead6567b761786974dbbf2d7a914f43e0f",
+  "columns": [
+   "Category[Category]",
+   "[Sales]",
+   "[Filters Colors]",
+   "[Values Colors]"
+  ],
+  "rows": [
+   [
+    "Bikes",
+    1043340.6399999995,
+    3,
+    3
+   ],
+   [
+    "Clothing",
+    161454.75,
+    3,
+    3
+   ],
+   [
+    "Accessories",
+    90647.30999999992,
+    3,
+    3
+   ],
+   [
+    "Components",
+    366289.3500000001,
+    3,
+    3
+   ],
+   [
+    null,
+    null,
+    3,
+    null
+   ]
+  ]
+ },
+ "context-firstnonblank-all-dates-in-year-cell": {
+  "hash": "cb0fefd8377abca112537792fc53ba47c204990a",
+  "columns": [
+   "Category[Category]",
+   "Date[Year]",
+   "[Sales]",
+   "[First Sale From Leap Day]",
+   "[Last Sale Up To Leap Day]"
+  ],
+  "rows": [
+   [
+    null,
+    2022,
+    null,
+    "2024-08-09",
+    "2023-05-17"
+   ],
+   [
+    null,
+    2023,
+    91.0,
+    "2024-08-09",
+    "2023-05-17"
+   ],
+   [
+    null,
+    2024,
+    99.0,
+    "2024-08-09",
+    "2023-05-17"
+   ],
+   [
+    "Accessories",
+    2022,
+    11542.310000000001,
+    "2024-03-03",
+    "2024-02-28"
+   ],
+   [
+    "Accessories",
+    2023,
+    61649.45000000004,
+    "2024-03-03",
+    "2024-02-28"
+   ],
+   [
+    "Accessories",
+    2024,
+    118461.11999999995,
+    "2024-03-03",
+    "2024-02-28"
+   ],
+   [
+    "Bikes",
+    2022,
+    130102.53000000004,
+    "2024-03-02",
+    "2024-02-28"
+   ],
+   [
+    "Bikes",
+    2023,
+    533349.6999999998,
+    "2024-03-02",
+    "2024-02-28"
+   ],
+   [
+    "Bikes",
+    2024,
+    1250389.6499999985,
+    "2024-03-02",
+    "2024-02-28"
+   ],
+   [
+    "Clothing",
+    2022,
+    13887.680000000004,
+    "2024-02-29",
+    "2024-02-29"
+   ],
+   [
+    "Clothing",
+    2023,
+    83028.15999999999,
+    "2024-02-29",
+    "2024-02-29"
+   ],
+   [
+    "Clothing",
+    2024,
+    169398.95,
+    "2024-02-29",
+    "2024-02-29"
+   ],
+   [
+    "Components",
+    2022,
+    62712.78,
+    "2024-02-29",
+    "2024-02-29"
+   ],
+   [
+    "Components",
+    2023,
+    294563.5499999999,
+    "2024-02-29",
+    "2024-02-29"
+   ],
+   [
+    "Components",
+    2024,
+    634571.7499999995,
+    "2024-02-29",
+    "2024-02-29"
+   ]
+  ]
+ },
+ "context-generate-topn-per-category": {
+  "hash": "a41f43dd4b387d8c6f91ede8ddb9076f8d8d84cd",
+  "columns": [
+   "Category[Category]",
+   "Product[Product]",
+   "[Sales]"
+  ],
+  "rows": [
+   [
+    null,
+    null,
+    190.0
+   ],
+   [
+    "Accessories",
+    "Bottle C",
+    37846.77999999999
+   ],
+   [
+    "Accessories",
+    "Light C",
+    29956.82000000001
+   ],
+   [
+    "Bikes",
+    "Touring Bike C",
+    329366.57999999943
+   ],
+   [
+    "Bikes",
+    "Mountain Bike D",
+    272862.9299999999
+   ],
+   [
+    "Clothing",
+    "Short D",
+    41531.1
+   ],
+   [
+    "Clothing",
+    "Short A",
+    34161.45
+   ],
+   [
+    "Components",
+    "Wheel C",
+    192607.14
+   ],
+   [
+    "Components",
+    "Brake B",
+    162463.19
+   ]
+  ]
+ },
+ "context-hasonevalue-selectedvalue-rollup": {
+  "hash": "bc096900db8b23b2497c15083f87ba860deb8111",
+  "columns": [
+   "Date[Year]",
+   "[Is Total]",
+   "[Sales]",
+   "[One Year]",
+   "[Selected Year]",
+   "[Selected Quarter]"
+  ],
+  "rows": [
+   [
+    2022,
+    false,
+    218245.30000000005,
+    true,
+    2022,
+    null
+   ],
+   [
+    2023,
+    false,
+    972681.8599999993,
+    true,
+    2023,
+    null
+   ],
+   [
+    2024,
+    false,
+    2172920.470000001,
+    true,
+    2024,
+    null
+   ],
+   [
+    null,
+    true,
+    3363847.6300000004,
+    false,
+    0,
+    null
+   ]
+  ]
+ },
+ "context-isfiltered-iscrossfiltered": {
+  "hash": "826b5922fa16f51358d28becddc1caaeb990881f",
+  "columns": [
+   "Category[Category]",
+   "[Sales]",
+   "[Category Filtered]",
+   "[Color Filtered]",
+   "[Product Crossfiltered]",
+   "[Subcategory Crossfiltered]",
+   "[Sales Crossfiltered]"
+  ],
+  "rows": [
+   [
+    "Bikes",
+    578263.1599999995,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   [
+    "Clothing",
+    51538.85999999998,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   [
+    "Accessories",
+    34587.99999999999,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   [
+    "Components",
+    52528.9,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   [
+    null,
+    null,
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  ]
+ },
+ "context-keepfilters-vs-overwrite": {
+  "hash": "f5f6bed5b95106f33abe6500f3ddc32dca14e32f",
+  "columns": [
+   "Product[Color]",
+   "[Sales]",
+   "[Overwrite]",
+   "[Keep]"
+  ],
+  "rows": [
+   [
+    null,
+    190.0,
+    1115965.099999998,
+    null
+   ],
+   [
+    "Blue",
+    399046.1799999999,
+    1115965.099999998,
+    399046.1799999999
+   ],
+   [
+    "Yellow",
+    545766.9500000007,
+    1115965.099999998,
+    null
+   ],
+   [
+    "Black",
+    956008.5099999998,
+    1115965.099999998,
+    null
+   ],
+   [
+    "Silver",
+    464829.83999999973,
+    1115965.099999998,
+    null
+   ],
+   [
+    "Red",
+    716918.9199999981,
+    1115965.099999998,
+    716918.9199999981
+   ],
+   [
+    "White",
+    281087.2299999998,
+    1115965.099999998,
+    null
+   ]
+  ]
+ },
+ "context-lookupvalue-ignores-filters": {
+  "hash": "2662d89b65f8f17f8b54eb0ee6321cfaf76b93a1",
+  "columns": [
+   "Category[Category]",
+   "[Sales]",
+   "[Product 1 Price]",
+   "[Product 1 Category]",
+   "[EUR Rate 2023-01-02]",
+   "[Order 5 Customer]",
+   "[Product 1 Price Filtered]"
+  ],
+  "rows": [
+   [
+    null,
+    99.0,
+    799.69,
+    "Bikes",
+    1.1121,
+    96,
+    null
+   ],
+   [
+    "Accessories",
+    118461.11999999995,
+    799.69,
+    "Bikes",
+    1.1121,
+    96,
+    null
+   ],
+   [
+    "Bikes",
+    1250389.6499999985,
+    799.69,
+    "Bikes",
+    1.1121,
+    96,
+    799.69
+   ],
+   [
+    "Clothing",
+    169398.95,
+    799.69,
+    "Bikes",
+    1.1121,
+    96,
+    null
+   ],
+   [
+    "Components",
+    634571.7499999995,
+    799.69,
+    "Bikes",
+    1.1121,
+    96,
+    null
+   ]
+  ]
+ },
+ "context-matrix-crossed-totals-shares": {
+  "hash": "c6fa759e94513fc539b1b46bcf53fc7dcee67bc8",
+  "columns": [
+   "Category[Category]",
+   "Date[Year]",
+   "[IsCategoryTotal]",
+   "[IsYearTotal]",
+   "[Sales_Amount]",
+   "[Pct_Of_Selected]",
+   "[Pct_Of_Column]"
+  ],
+  "rows": [
+   [
+    null,
+    null,
+    true,
+    true,
+    1979947.7200000002,
+    1.0,
+    1.0
+   ],
+   [
+    null,
+    2022,
+    true,
+    false,
+    158702.41999999998,
+    0.0801548537857353,
+    1.0
+   ],
+   [
+    null,
+    2023,
+    true,
+    false,
+    577647.1799999999,
+    0.2917487033445509,
+    1.0
+   ],
+   [
+    null,
+    2024,
+    true,
+    false,
+    1243598.12,
+    0.6280964428697138,
+    1.0
+   ],
+   [
+    "Accessories",
+    null,
+    false,
+    true,
+    106883.60000000003,
+    0.05398304153202592,
+    0.05398304153202592
+   ],
+   [
+    "Accessories",
+    2022,
+    false,
+    false,
+    6896.330000000003,
+    0.003483086917062639,
+    0.04345447284294722
+   ],
+   [
+    "Accessories",
+    2023,
+    false,
+    false,
+    35280.01999999999,
+    0.01781866240387397,
+    0.06107537822654997
+   ],
+   [
+    "Accessories",
+    2024,
+    false,
+    false,
+    64707.250000000044,
+    0.032681292211089306,
+    0.05203228354832189
+   ],
+   [
+    "Bikes",
+    null,
+    false,
+    true,
+    1137049.5300000003,
+    0.5742826027749864,
+    0.5742826027749864
+   ],
+   [
+    "Bikes",
+    2022,
+    false,
+    false,
+    98444.81999999999,
+    0.049720918893757446,
+    0.620310767787914
+   ],
+   [
+    "Bikes",
+    2023,
+    false,
+    false,
+    333139.74999999994,
+    0.16825684165034413,
+    0.5767183871649819
+   ],
+   [
+    "Bikes",
+    2024,
+    false,
+    false,
+    705464.9600000002,
+    0.3563048422308848,
+    0.5672772808630493
+   ],
+   [
+    "Clothing",
+    null,
+    false,
+    true,
+    154981.90999999997,
+    0.07827575871548768,
+    0.07827575871548768
+   ],
+   [
+    "Clothing",
+    2022,
+    false,
+    false,
+    8901.4,
+    0.004495775272288502,
+    0.05608862171099849
+   ],
+   [
+    "Clothing",
+    2023,
+    false,
+    false,
+    48296.65000000001,
+    0.02439289154564142,
+    0.0836092543548815
+   ],
+   [
+    "Clothing",
+    2024,
+    false,
+    false,
+    97783.85999999996,
+    0.04938709189755775,
+    0.07862979078804007
+   ],
+   [
+    "Components",
+    null,
+    false,
+    true,
+    581032.6799999999,
+    0.29345859697749993,
+    0.29345859697749993
+   ],
+   [
+    "Components",
+    2022,
+    false,
+    false,
+    44459.87,
+    0.022455072702626713,
+    0.28014613765814034
+   ],
+   [
+    "Components",
+    2023,
+    false,
+    false,
+    160930.75999999995,
+    0.08128030774469133,
+    0.2785969802535866
+   ],
+   [
+    "Components",
+    2024,
+    false,
+    false,
+    375642.04999999993,
+    0.18972321653018187,
+    0.3020606448005887
+   ]
+  ]
+ },
+ "context-naturalinnerjoin-date-vs-text": {
+  "hash": "e51cfb41bd526ec3d730ca021a7c78b1e0402c7b",
+  "error": "Query (17, 30) An incompatible join column, ('<oii></oii>'[<oii>Day</oii>]) was detected. 'NATURALINNERJOIN' doesn't support joins by using columns with different data types or lineage."
+ },
+ "context-nested-calculate-precedence": {
+  "hash": "8934aa8226f067caa386b77fccbe05876d6f63ae",
+  "columns": [
+   "[Inner Wins]",
+   "[Inner Kept]",
+   "[Same Calculate]",
+   "[Disjoint]"
+  ],
+  "rows": [
+   [
+    1913841.8799999978,
+    1913841.8799999978,
+    1913841.8799999978,
+    null
+   ]
+  ]
+ },
+ "context-nested-iterator-transition": {
+  "hash": "6043b2bb40d5e68752c8f1d0284bc2231f694061",
+  "columns": [
+   "Category[Category]",
+   "[Sales]",
+   "[Sum Of Largest Orders]"
+  ],
+  "rows": [
+   [
+    null,
+    190.0,
+    190.0
+   ],
+   [
+    "Bikes",
+    1913841.8799999978,
+    576658.2700000001
+   ],
+   [
+    "Clothing",
+    266314.7900000005,
+    84771.68
+   ],
+   [
+    "Accessories",
+    191652.88000000003,
+    70882.04999999997
+   ],
+   [
+    "Components",
+    991848.0799999993,
+    350416.8100000001
+   ]
+  ]
+ },
+ "context-or-predicate-two-columns": {
+  "hash": "cd70d3ee8d20a9d44ab5ea2b2fd01b08eba84d0c",
+  "columns": [
+   "Product[Color]",
+   "[Sales]",
+   "[Red Or Contoso]",
+   "[Red Or Contoso Kept]"
+  ],
+  "rows": [
+   [
+    null,
+    190.0,
+    1567246.1099999975,
+    null
+   ],
+   [
+    "Blue",
+    399046.1799999999,
+    1567246.1099999975,
+    144923.75000000003
+   ],
+   [
+    "Yellow",
+    545766.9500000007,
+    1567246.1099999975,
+    217942.1299999999
+   ],
+   [
+    "Black",
+    956008.5099999998,
+    1567246.1099999975,
+    287401.47
+   ],
+   [
+    "Silver",
+    464829.83999999973,
+    1567246.1099999975,
+    59882.59000000002
+   ],
+   [
+    "Red",
+    716918.9199999981,
+    1567246.1099999975,
+    716918.9199999981
+   ],
+   [
+    "White",
+    281087.2299999998,
+    1567246.1099999975,
+    140177.24999999997
+   ]
+  ]
+ },
+ "context-partitionby-summarizecolumns-band": {
+  "hash": "ff7e1a39381416a1978d595b846ed55ba91778e8",
+  "error": "Query (12, 138) Function PARTITIONBY cannot be used with columns added by DAX table functions."
+ },
+ "context-path-subtree-sales-transition": {
+  "hash": "d7628d01e956a3a7b1a77121caa588b17c770421",
+  "columns": [
+   "Employee[EmployeeKey]",
+   "Employee[Employee]",
+   "Employee[ParentEmployeeKey]",
+   "Employee[Title]",
+   "[Path]",
+   "[Depth]",
+   "[Level 2 Head]",
+   "[Manager Key]",
+   "[Own Sales]",
+   "[Team Sales]"
+  ],
+  "rows": [
+   [
+    1,
+    "Ava Chen",
+    null,
+    "CEO",
+    "1",
+    1,
+    null,
+    null,
+    183969.85000000012,
+    2172920.4699999997
+   ],
+   [
+    2,
+    "Ben Ortiz",
+    1,
+    "VP Sales",
+    "1|2",
+    2,
+    "Ben Ortiz",
+    1,
+    null,
+    1293889.77
+   ],
+   [
+    3,
+    "Cara Diaz",
+    1,
+    "VP Online",
+    "1|3",
+    2,
+    "Cara Diaz",
+    1,
+    null,
+    695060.8500000001
+   ],
+   [
+    4,
+    "Dev Patel",
+    2,
+    "Director",
+    "1|2|4",
+    3,
+    "Ben Ortiz",
+    2,
+    129646.76000000004,
+    586750.6900000002
+   ],
+   [
+    5,
+    "Eli Novak",
+    2,
+    "Director",
+    "1|2|5",
+    3,
+    "Ben Ortiz",
+    2,
+    192074.26999999987,
+    707139.0799999998
+   ],
+   [
+    6,
+    "Fay Grant",
+    3,
+    "Director",
+    "1|3|6",
+    3,
+    "Cara Diaz",
+    3,
+    189791.13999999987,
+    695060.8500000001
+   ],
+   [
+    7,
+    "Gus Reyes",
+    4,
+    "Rep",
+    "1|2|4|7",
+    4,
+    "Ben Ortiz",
+    4,
+    122059.23000000001,
+    260575.13000000003
+   ],
+   [
+    8,
+    "Hana Ito",
+    4,
+    "Rep",
+    "1|2|4|8",
+    4,
+    "Ben Ortiz",
+    4,
+    196528.80000000008,
+    196528.80000000008
+   ],
+   [
+    9,
+    "Ivan Kral",
+    5,
+    "Rep",
+    "1|2|5|9",
+    4,
+    "Ben Ortiz",
+    5,
+    138651.41999999998,
+    352181.17000000004
+   ],
+   [
+    10,
+    "Jade Moss",
+    5,
+    "Rep",
+    "1|2|5|10",
+    4,
+    "Ben Ortiz",
+    5,
+    162883.64,
+    162883.64
+   ],
+   [
+    11,
+    "Kai Lund",
+    6,
+    "Rep",
+    "1|3|6|11",
+    4,
+    "Cara Diaz",
+    6,
+    178206.38,
+    328328.1100000001
+   ],
+   [
+    12,
+    "Lea Roux",
+    6,
+    "Rep",
+    "1|3|6|12",
+    4,
+    "Cara Diaz",
+    6,
+    176941.60000000006,
+    176941.60000000006
+   ],
+   [
+    13,
+    "Max Weber",
+    7,
+    "Associate",
+    "1|2|4|7|13",
+    5,
+    "Ben Ortiz",
+    7,
+    138515.90000000002,
+    138515.90000000002
+   ],
+   [
+    14,
+    "Nia Okafor",
+    9,
+    "Associate",
+    "1|2|5|9|14",
+    5,
+    "Ben Ortiz",
+    9,
+    213529.75000000003,
+    213529.75000000003
+   ],
+   [
+    15,
+    "Oto Sato",
+    11,
+    "Associate",
+    "1|3|6|11|15",
+    5,
+    "Cara Diaz",
+    11,
+    150121.73000000013,
+    150121.73000000013
+   ]
+  ]
+ },
+ "context-percent-of-parent": {
+  "hash": "9e8c4a7c1cc63932562eccfba51814ac5933454f",
+  "columns": [
+   "Category[Category]",
+   "Subcategory[Subcategory]",
+   "[Category Total]",
+   "[Subcategory Total]",
+   "[Sales]",
+   "[Level]",
+   "[Pct Of Parent]"
+  ],
+  "rows": [
+   [
+    "Accessories",
+    "Bottles",
+    false,
+    false,
+    76918.63999999998,
+    "Subcategory",
+    0.401343512291597
+   ],
+   [
+    "Accessories",
+    "Helmets",
+    false,
+    false,
+    54041.39000000003,
+    "Subcategory",
+    0.2819753608711751
+   ],
+   [
+    "Accessories",
+    "Lights",
+    false,
+    false,
+    60692.85000000004,
+    "Subcategory",
+    0.31668112683722793
+   ],
+   [
+    "Accessories",
+    null,
+    false,
+    true,
+    191652.88000000006,
+    "Category",
+    0.09102510423725778
+   ],
+   [
+    "Bikes",
+    "Mountain Bikes",
+    false,
+    false,
+    803929.33,
+    "Subcategory",
+    0.42006047542443786
+   ],
+   [
+    "Bikes",
+    "Road Bikes",
+    false,
+    false,
+    426256.2300000004,
+    "Subcategory",
+    0.22272280403854489
+   ],
+   [
+    "Bikes",
+    "Touring Bikes",
+    false,
+    false,
+    683656.3199999998,
+    "Subcategory",
+    0.3572167205370173
+   ],
+   [
+    "Bikes",
+    null,
+    false,
+    true,
+    1913841.8800000001,
+    "Category",
+    0.9089748957627422
+   ],
+   [
+    null,
+    null,
+    true,
+    true,
+    2105494.7600000002,
+    "Total",
+    1.0
+   ]
+  ]
+ },
+ "context-percentile-inc-exc-blank-parent-key": {
+  "hash": "6087a22211e77ff1ccd9733b1f01361f0eaec85f",
+  "error": "Query (10, 19) The percentile value should be in the range 1/(N+1)..N/(N+1) inclusive, where N is the number of data values."
+ },
+ "context-percentilex-exc-customer-median": {
+  "hash": "60ad54d50dec293f10d69b4d985281f4634b83ba",
+  "columns": [
+   "Subcategory[Subcategory]",
+   "[Customers]",
+   "[Median Exc]",
+   "[Median Inc]"
+  ],
+  "rows": [
+   [
+    null,
+    1,
+    null,
+    null
+   ],
+   [
+    "Bottles",
+    48,
+    null,
+    null
+   ],
+   [
+    "Brakes",
+    55,
+    null,
+    null
+   ],
+   [
+    "Chains",
+    54,
+    null,
+    null
+   ],
+   [
+    "Gloves",
+    51,
+    null,
+    null
+   ],
+   [
+    "Helmets",
+    70,
+    69.6,
+    69.6
+   ],
+   [
+    "Jerseys",
+    58,
+    null,
+    null
+   ],
+   [
+    "Lights",
+    58,
+    null,
+    null
+   ],
+   [
+    "Mountain Bikes",
+    60,
+    null,
+    null
+   ],
+   [
+    "Road Bikes",
+    65,
+    552.87,
+    552.87
+   ],
+   [
+    "Shorts",
+    58,
+    null,
+    null
+   ],
+   [
+    "Touring Bikes",
+    48,
+    null,
+    null
+   ],
+   [
+    "Wheels",
+    63,
+    333.09000000000003,
+    333.09000000000003
+   ]
+  ]
+ },
+ "context-percentilex-exc-k-out-of-range-small-groups": {
+  "hash": "e00440e65d41a1699289ac2e25a4328c31012263",
+  "error": "Query (9, 16) The percentile value should be in the range 1/(N+1)..N/(N+1) inclusive, where N is the number of data values."
+ },
+ "context-percentilex-inc-unsold-products-first": {
+  "hash": "15a80607e8b9fb66c6d5d75f7fc34802061b789e",
+  "columns": [
+   "Category[Category]",
+   "[Products]",
+   "[Products Sold]",
+   "[P0 Inc]",
+   "[P10 Inc]",
+   "[P50 Inc]",
+   "[Min Sales]"
+  ],
+  "rows": [
+   [
+    null,
+    null,
+    1,
+    99.0,
+    99.0,
+    99.0,
+    99.0
+   ],
+   [
+    "Accessories",
+    11,
+    11,
+    2556.3399999999997,
+    3100.7300000000005,
+    9101.62,
+    2556.3399999999997
+   ],
+   [
+    "Bikes",
+    11,
+    11,
+    31891.08000000001,
+    40487.72999999999,
+    89506.45999999996,
+    31891.08000000001
+   ],
+   [
+    "Clothing",
+    11,
+    11,
+    7750.760000000002,
+    8887.099999999997,
+    14056.230000000005,
+    7750.760000000002
+   ],
+   [
+    "Components",
+    12,
+    11,
+    null,
+    9035.292,
+    42504.735,
+    7678.579999999998
+   ]
+  ]
+ },
+ "context-rankx-allselected-brand": {
+  "hash": "89a7d74ffcb83c409418f9bd60dc6e0032125828",
+  "columns": [
+   "Category[Category]",
+   "Product[Brand]",
+   "[Sales]",
+   "[Rank]"
+  ],
+  "rows": [
+   [
+    null,
+    null,
+    99.0,
+    1
+   ],
+   [
+    "Accessories",
+    "Contoso",
+    34530.009999999995,
+    3
+   ],
+   [
+    "Accessories",
+    "Fabrikam",
+    35522.23,
+    2
+   ],
+   [
+    "Accessories",
+    "Litware",
+    45308.149999999994,
+    1
+   ],
+   [
+    "Accessories",
+    "Northwind",
+    3100.7300000000005,
+    4
+   ],
+   [
+    "Bikes",
+    "Contoso",
+    40487.72999999999,
+    4
+   ],
+   [
+    "Bikes",
+    "Fabrikam",
+    449393.57999999967,
+    1
+   ],
+   [
+    "Bikes",
+    "Litware",
+    387673.91999999946,
+    2
+   ],
+   [
+    "Bikes",
+    "Northwind",
+    372834.4200000001,
+    3
+   ],
+   [
+    "Clothing",
+    "Contoso",
+    77581.07,
+    1
+   ],
+   [
+    "Clothing",
+    "Fabrikam",
+    36710.72999999998,
+    3
+   ],
+   [
+    "Clothing",
+    "Litware",
+    7750.760000000002,
+    4
+   ],
+   [
+    "Clothing",
+    "Northwind",
+    47356.38999999999,
+    2
+   ],
+   [
+    "Components",
+    "Contoso",
+    386116.04,
+    1
+   ],
+   [
+    "Components",
+    "Litware",
+    62009.98999999999,
+    3
+   ],
+   [
+    "Components",
+    "Northwind",
+    186445.72,
+    2
+   ]
+  ]
+ },
+ "context-rankx-blank-ties-zero": {
+  "hash": "4e6400bfd7ed1ae9586337f486b49425f468cb76",
+  "columns": [
+   "[Value1]",
+   "[Value2]",
+   "[Desc Skip]",
+   "[Desc Dense]",
+   "[Asc Skip]",
+   "[Asc Dense]"
+  ],
+  "rows": [
+   [
+    1,
+    5,
+    1,
+    1,
+    7,
+    4
+   ],
+   [
+    2,
+    0,
+    3,
+    3,
+    2,
+    2
+   ],
+   [
+    3,
+    null,
+    3,
+    3,
+    2,
+    2
+   ],
+   [
+    4,
+    -3,
+    7,
+    4,
+    1,
+    1
+   ],
+   [
+    5,
+    0,
+    3,
+    3,
+    2,
+    2
+   ],
+   [
+    6,
+    null,
+    3,
+    3,
+    2,
+    2
+   ],
+   [
+    7,
+    2,
+    2,
+    2,
+    6,
+    3
+   ]
+  ]
+ },
+ "context-rankx-dense-asc-blank-subcategories": {
+  "hash": "5ebd41a3842f2c25edef3750594b2d8e815cc916",
+  "columns": [
+   "Subcategory[Subcategory]",
+   "[Sales]",
+   "[Rank Asc Dense]",
+   "[Rank Asc Skip]"
+  ],
+  "rows": [
+   [
+    null,
+    null,
+    1,
+    1
+   ],
+   [
+    "Bottles",
+    998.36,
+    6,
+    7
+   ],
+   [
+    "Brakes",
+    4398.53,
+    11,
+    12
+   ],
+   [
+    "Chains",
+    360.86,
+    3,
+    4
+   ],
+   [
+    "Gloves",
+    297.01,
+    2,
+    3
+   ],
+   [
+    "Helmets",
+    693.0799999999999,
+    4,
+    5
+   ],
+   [
+    "Jerseys",
+    null,
+    1,
+    1
+   ],
+   [
+    "Lights",
+    877.21,
+    5,
+    6
+   ],
+   [
+    "Mountain Bikes",
+    4118.26,
+    10,
+    11
+   ],
+   [
+    "Road Bikes",
+    4103.7300000000005,
+    9,
+    10
+   ],
+   [
+    "Shorts",
+    1089.4299999999998,
+    7,
+    8
+   ],
+   [
+    "Touring Bikes",
+    5791.34,
+    12,
+    13
+   ],
+   [
+    "Wheels",
+    1980.48,
+    8,
+    9
+   ]
+  ]
+ },
+ "context-relatedtable-row-context": {
+  "hash": "ddd9a5d052d8db6bb81ee24ef333e6c52a9f7a5f",
+  "columns": [
+   "Customer[Country]",
+   "[Buying Customers]",
+   "[Lines]"
+  ],
+  "rows": [
+   [
+    "Germany",
+    29,
+    296
+   ],
+   [
+    "United States",
+    23,
+    239
+   ],
+   [
+    "Australia",
+    29,
+    296
+   ],
+   [
+    "France",
+    25,
+    292
+   ]
+  ]
+ },
+ "context-removefilters-vs-allselected": {
+  "hash": "3fd8260e51babd31753dbb0d8045b22bf5a6aff1",
+  "columns": [
+   "Category[Category]",
+   "[Sales]",
+   "[Remove All]",
+   "[All Selected]",
+   "[Remove Category]"
+  ],
+  "rows": [
+   [
+    null,
+    99.0,
+    3363847.6299999966,
+    2172920.469999998,
+    2172920.469999998
+   ],
+   [
+    "Bikes",
+    1250389.6499999985,
+    3363847.6299999966,
+    2172920.469999998,
+    2172920.469999998
+   ],
+   [
+    "Clothing",
+    169398.95,
+    3363847.6299999966,
+    2172920.469999998,
+    2172920.469999998
+   ],
+   [
+    "Accessories",
+    118461.11999999995,
+    3363847.6299999966,
+    2172920.469999998,
+    2172920.469999998
+   ],
+   [
+    "Components",
+    634571.7499999995,
+    3363847.6299999966,
+    2172920.469999998,
+    2172920.469999998
+   ]
+  ]
+ },
+ "context-rls-bikes-crossfilter-both-customers": {
+  "hash": "92f67cdc9fede0736e6efdb0f7e7e40878417ac1",
+  "columns": [
+   "Customer[Country]",
+   "[Customer Rows]",
+   "[Bike Customers]",
+   "[Bike Customer Keys]",
+   "[Bike Lines]"
+  ],
+  "rows": [
+   [
+    "Australia",
+    29,
+    29,
+    29,
+    258
+   ],
+   [
+    "France",
+    28,
+    28,
+    28,
+    234
+   ],
+   [
+    "Germany",
+    35,
+    35,
+    35,
+    278
+   ],
+   [
+    "United States",
+    28,
+    28,
+    28,
+    215
+   ]
+  ]
+ },
+ "context-rls-bikes-crossfilter-category-doubles-back": {
+  "hash": "72f864690159b68ceb574b2aea0b59acd8b21b47",
+  "error": "Join paths are expected to form a tree, but the table '<oii>Category</oii>' has two join paths to table '<oii>Category</oii>': <oii>'Category'</oii> and <oii>'Category'->'Subcategory'->'Category'</oii>."
+ },
+ "context-rls-bikes-unmatched-fact-rows": {
+  "hash": "698f98cafc055e17c91216f2533b53d526b620aa",
+  "columns": [
+   "[Category Values]",
+   "[Product Rows]",
+   "[Lines]",
+   "[Missing Product Lines]",
+   "[Missing Customer Lines]",
+   "[Blank Customer Bike Lines]"
+  ],
+  "rows": [
+   [
+    1,
+    11,
+    985,
+    null,
+    null,
+    null
+   ]
+  ]
+ },
+ "context-rls-france-crossfilter-both-blank-product": {
+  "hash": "185e261094388293b16957c4d931b40beaf89690",
+  "columns": [
+   "Date[Year]",
+   "[Lines]",
+   "[Missing Product Lines]",
+   "[Product Rows]",
+   "[Product Key Count]",
+   "[Product Values]",
+   "[Blank Product Values]",
+   "[Categories]"
+  ],
+  "rows": [
+   [
+    2022,
+    37,
+    null,
+    24,
+    24,
+    24,
+    null,
+    "Accessories, Bikes, Clothing, Components"
+   ],
+   [
+    2023,
+    292,
+    1,
+    44,
+    44,
+    45,
+    1,
+    ", Accessories, Bikes, Clothing, Components"
+   ],
+   [
+    2024,
+    551,
+    null,
+    44,
+    44,
+    44,
+    null,
+    "Accessories, Bikes, Clothing, Components"
+   ]
+  ]
+ },
+ "context-row-context-without-transition": {
+  "hash": "eb02eb494d5304baf8e03f93f2dea0c39f372303",
+  "columns": [
+   "Customer[Country]",
+   "[No Transition]",
+   "[Transition]"
+  ],
+  "rows": [
+   [
+    "Germany",
+    106435,
+    3041
+   ],
+   [
+    "United States",
+    73164,
+    2613
+   ],
+   [
+    "Australia",
+    79199,
+    2731
+   ],
+   [
+    "France",
+    69048,
+    2466
+   ]
+  ]
+ },
+ "context-selectcolumns-measure": {
+  "hash": "dc17e1404313661ab9da86dfd0b9c81c7112a37c",
+  "columns": [
+   "[Country]",
+   "[Sales]",
+   "[Customers]",
+   "[Lines Per Customer]"
+  ],
+  "rows": [
+   [
+    "Germany",
+    809458.8099999989,
+    35,
+    30.057142857142857
+   ],
+   [
+    "United States",
+    702971.1499999993,
+    28,
+    31.464285714285715
+   ],
+   [
+    "Australia",
+    1170488.9100000013,
+    29,
+    32.86206896551724
+   ],
+   [
+    "France",
+    680739.7600000006,
+    28,
+    31.428571428571427
+   ],
+   [
+    null,
+    189.0,
+    1,
+    2.0
+   ]
+  ]
+ },
+ "context-selectedvalue-filter-direction": {
+  "hash": "bfab5da604a874a9ef287029760ccb769d36be42",
+  "columns": [
+   "Subcategory[Subcategory]",
+   "[Sales]",
+   "[Category Upstream]",
+   "[Category Both Ways]",
+   "[Product Category Column]"
+  ],
+  "rows": [
+   [
+    null,
+    190.0,
+    "none",
+    null,
+    null
+   ],
+   [
+    "Road Bikes",
+    426256.2300000004,
+    "none",
+    "Bikes",
+    "Bikes"
+   ],
+   [
+    "Mountain Bikes",
+    803929.33,
+    "none",
+    "Bikes",
+    "Bikes"
+   ],
+   [
+    "Touring Bikes",
+    683656.3199999998,
+    "none",
+    "Bikes",
+    "Bikes"
+   ],
+   [
+    "Jerseys",
+    80290.12999999996,
+    "none",
+    "Clothing",
+    "Clothing"
+   ],
+   [
+    "Shorts",
+    113524.61999999994,
+    "none",
+    "Clothing",
+    "Clothing"
+   ],
+   [
+    "Gloves",
+    72500.04000000001,
+    "none",
+    "Clothing",
+    "Clothing"
+   ],
+   [
+    "Helmets",
+    54041.39000000003,
+    "none",
+    "Accessories",
+    "Accessories"
+   ],
+   [
+    "Lights",
+    60692.85000000004,
+    "none",
+    "Accessories",
+    "Accessories"
+   ],
+   [
+    "Bottles",
+    76918.63999999998,
+    "none",
+    "Accessories",
+    "Accessories"
+   ],
+   [
+    "Wheels",
+    408583.1099999998,
+    "none",
+    "Components",
+    "Components"
+   ],
+   [
+    "Brakes",
+    316122.7200000003,
+    "none",
+    "Components",
+    "Components"
+   ],
+   [
+    "Chains",
+    267142.25,
+    "none",
+    "Components",
+    "Components"
+   ]
+  ]
+ },
+ "context-shaped-filter-overwrite": {
+  "hash": "08a90b307973c0375408fde9665d883e8796b6f0",
+  "columns": [
+   "[Shaped]",
+   "[Year Overwritten]",
+   "[Year Kept]"
+  ],
+  "rows": [
+   [
+    702748.6499999998,
+    1419788.5999999985,
+    169398.9499999999
+   ]
+  ]
+ },
+ "context-summarize-extension-month-removed": {
+  "hash": "fea69bb450026a431bfa30d4fadc1771c961b340",
+  "columns": [
+   "Date[Year]",
+   "Date[Month]",
+   "[Sales]",
+   "[Month Removed In Summarize]",
+   "[Date Removed In Summarize]",
+   "[Month Removed In Addcolumns]"
+  ],
+  "rows": [
+   [
+    2023,
+    1,
+    63554.59000000001,
+    63554.59000000001,
+    63554.59000000001,
+    972681.8600000002
+   ],
+   [
+    2023,
+    2,
+    32977.22,
+    32977.22,
+    32977.22,
+    972681.8600000002
+   ],
+   [
+    2023,
+    3,
+    49341.35999999999,
+    49341.35999999999,
+    49341.35999999999,
+    972681.8600000002
+   ],
+   [
+    2023,
+    4,
+    59441.37999999999,
+    59441.37999999999,
+    59441.37999999999,
+    972681.8600000002
+   ],
+   [
+    2023,
+    5,
+    55489.700000000026,
+    55489.700000000026,
+    55489.700000000026,
+    972681.8600000002
+   ],
+   [
+    2023,
+    6,
+    61337.32000000004,
+    61337.32000000004,
+    61337.32000000004,
+    972681.8600000002
+   ],
+   [
+    2023,
+    7,
+    90989.31000000001,
+    90989.31000000001,
+    90989.31000000001,
+    972681.8600000002
+   ],
+   [
+    2023,
+    8,
+    64123.51000000001,
+    64123.51000000001,
+    64123.51000000001,
+    972681.8600000002
+   ],
+   [
+    2023,
+    9,
+    111387.48000000007,
+    111387.48000000007,
+    111387.48000000007,
+    972681.8600000002
+   ],
+   [
+    2023,
+    10,
+    92872.66000000002,
+    92872.66000000002,
+    92872.66000000002,
+    972681.8600000002
+   ],
+   [
+    2023,
+    11,
+    109211.26999999999,
+    109211.26999999999,
+    109211.26999999999,
+    972681.8600000002
+   ],
+   [
+    2023,
+    12,
+    181956.06000000008,
+    181956.06000000008,
+    181956.06000000008,
+    972681.8600000002
+   ]
+  ]
+ },
+ "context-summarize-rollup-group-rows-kept": {
+  "hash": "d100ffc752ed31f1ffa3726ee10a031d696275a2",
+  "columns": [
+   "Date[Year]",
+   "Date[Quarter]",
+   "[Sales]",
+   "[Year Total]",
+   "[Quarter Total]",
+   "[Quarter Removed]",
+   "[Year Removed]",
+   "[Date Removed]",
+   "[Customer Removed]"
+  ],
+  "rows": [
+   [
+    2022,
+    2,
+    7889.09,
+    false,
+    false,
+    7889.09,
+    7889.09,
+    7889.09,
+    7889.09
+   ],
+   [
+    2022,
+    3,
+    25128.32,
+    false,
+    false,
+    25128.32,
+    25128.32,
+    25128.32,
+    25128.32
+   ],
+   [
+    2022,
+    4,
+    21859.37,
+    false,
+    false,
+    21859.37,
+    21859.37,
+    21859.37,
+    21859.37
+   ],
+   [
+    2022,
+    null,
+    54876.77999999999,
+    false,
+    true,
+    54876.77999999999,
+    54876.78,
+    54876.78,
+    54876.77999999999
+   ],
+   [
+    2023,
+    1,
+    31697.510000000002,
+    false,
+    false,
+    31697.510000000002,
+    31697.510000000002,
+    31697.510000000002,
+    31697.510000000002
+   ],
+   [
+    2023,
+    2,
+    24679.13,
+    false,
+    false,
+    24679.13,
+    24679.13,
+    24679.13,
+    24679.13
+   ],
+   [
+    2023,
+    3,
+    60380.73000000002,
+    false,
+    false,
+    60380.73000000002,
+    60380.73000000002,
+    60380.73000000002,
+    60380.73000000002
+   ],
+   [
+    2023,
+    4,
+    102562.37,
+    false,
+    false,
+    102562.37,
+    102562.37,
+    102562.37,
+    102562.37
+   ],
+   [
+    2023,
+    null,
+    219319.74000000008,
+    false,
+    true,
+    219319.74000000008,
+    219319.74000000002,
+    219319.74000000002,
+    219319.74000000008
+   ],
+   [
+    2024,
+    1,
+    83848.53999999998,
+    false,
+    false,
+    83848.53999999998,
+    83848.53999999998,
+    83848.53999999998,
+    83848.53999999998
+   ],
+   [
+    2024,
+    2,
+    89918.86,
+    false,
+    false,
+    89918.86,
+    89918.86,
+    89918.86,
+    89918.86
+   ],
+   [
+    2024,
+    3,
+    160940.52999999988,
+    false,
+    false,
+    160940.52999999988,
+    160940.52999999988,
+    160940.52999999988,
+    160940.52999999988
+   ],
+   [
+    2024,
+    4,
+    200554.36000000002,
+    false,
+    false,
+    200554.36000000002,
+    200554.36000000002,
+    200554.36000000002,
+    200554.36000000002
+   ],
+   [
+    2024,
+    null,
+    535262.2899999998,
+    false,
+    true,
+    535262.2899999998,
+    535262.2899999999,
+    535262.2899999999,
+    535262.2899999998
+   ],
+   [
+    null,
+    null,
+    809458.8099999999,
+    true,
+    true,
+    809458.8099999999,
+    809458.8099999999,
+    809458.8099999999,
+    809458.8099999999
+   ]
+  ]
+ },
+ "context-summarize-rollup-subtotal-share": {
+  "hash": "618f7d656b372e373e2f770ceedf6e72eb3dd896",
+  "columns": [
+   "Category[Category]",
+   "Date[Year]",
+   "[Sales]",
+   "[Category Total]",
+   "[Year Total]",
+   "[Share Of Category]"
+  ],
+  "rows": [
+   [
+    null,
+    2023,
+    91.0,
+    false,
+    false,
+    1.0
+   ],
+   [
+    null,
+    2024,
+    99.0,
+    false,
+    false,
+    1.0
+   ],
+   [
+    null,
+    null,
+    190.0,
+    false,
+    true,
+    1.0
+   ],
+   [
+    "Accessories",
+    2022,
+    11542.310000000001,
+    false,
+    false,
+    1.0
+   ],
+   [
+    "Accessories",
+    2023,
+    61649.45000000004,
+    false,
+    false,
+    1.0
+   ],
+   [
+    "Accessories",
+    2024,
+    118461.11999999995,
+    false,
+    false,
+    1.0
+   ],
+   [
+    "Accessories",
+    null,
+    191652.88000000003,
+    false,
+    true,
+    1.0
+   ],
+   [
+    "Bikes",
+    2022,
+    130102.53000000004,
+    false,
+    false,
+    1.0
+   ],
+   [
+    "Bikes",
+    2023,
+    533349.6999999998,
+    false,
+    false,
+    1.0
+   ],
+   [
+    "Bikes",
+    2024,
+    1250389.6499999985,
+    false,
+    false,
+    1.0
+   ],
+   [
+    "Bikes",
+    null,
+    1913841.8799999978,
+    false,
+    true,
+    1.0
+   ],
+   [
+    "Clothing",
+    2022,
+    13887.680000000004,
+    false,
+    false,
+    1.0
+   ],
+   [
+    "Clothing",
+    2023,
+    83028.15999999999,
+    false,
+    false,
+    1.0
+   ],
+   [
+    "Clothing",
+    2024,
+    169398.95,
+    false,
+    false,
+    1.0
+   ],
+   [
+    "Clothing",
+    null,
+    266314.7900000005,
+    false,
+    true,
+    1.0
+   ],
+   [
+    "Components",
+    2022,
+    62712.78,
+    false,
+    false,
+    1.0
+   ],
+   [
+    "Components",
+    2023,
+    294563.5499999999,
+    false,
+    false,
+    1.0
+   ],
+   [
+    "Components",
+    2024,
+    634571.7499999995,
+    false,
+    false,
+    1.0
+   ],
+   [
+    "Components",
+    null,
+    991848.0799999993,
+    false,
+    true,
+    1.0
+   ],
+   [
+    null,
+    null,
+    3363847.629999997,
+    true,
+    true,
+    1.0
+   ]
+  ]
+ },
+ "context-summarize-sameperiodlastyear": {
+  "hash": "6af4592fe6e6b08b9c69f5fe21f5f14dd780e3f9",
+  "columns": [
+   "Date[Year]",
+   "Date[Month]",
+   "[Sales]",
+   "[PY In Summarize]",
+   "[PY Item In Summarize]",
+   "[PY In Addcolumns]"
+  ],
+  "rows": [
+   [
+    2024,
+    1,
+    79700.61999999998,
+    null,
+    null,
+    33019.18
+   ],
+   [
+    2024,
+    2,
+    116240.71000000004,
+    null,
+    null,
+    18945.539999999997
+   ],
+   [
+    2024,
+    3,
+    82193.89000000003,
+    null,
+    null,
+    30935.73
+   ],
+   [
+    2024,
+    4,
+    114364.88,
+    null,
+    null,
+    37534.84
+   ],
+   [
+    2024,
+    5,
+    63264.90999999999,
+    null,
+    null,
+    38060.259999999995
+   ],
+   [
+    2024,
+    6,
+    75306.69,
+    null,
+    null,
+    34881.07
+   ],
+   [
+    2024,
+    7,
+    92401.71000000004,
+    null,
+    null,
+    41884.61
+   ],
+   [
+    2024,
+    8,
+    99714.91,
+    null,
+    null,
+    31537.84
+   ],
+   [
+    2024,
+    9,
+    106465.79000000001,
+    null,
+    null,
+    70871.58
+   ],
+   [
+    2024,
+    10,
+    103071.59000000004,
+    null,
+    null,
+    48794.04000000001
+   ],
+   [
+    2024,
+    11,
+    154819.2199999999,
+    null,
+    null,
+    49673.630000000005
+   ],
+   [
+    2024,
+    12,
+    162844.73,
+    null,
+    null,
+    97211.38
+   ]
+  ]
+ },
+ "context-sumx-fact-transition": {
+  "hash": "3b3f5727d05433188bd0194ead0875399738e2c5",
+  "columns": [
+   "Date[Year]",
+   "[Sales]",
+   "[Per Row]",
+   "[Max Line]"
+  ],
+  "rows": [
+   [
+    2022,
+    218245.30000000005,
+    218245.30000000005,
+    4511.06
+   ],
+   [
+    2023,
+    972681.8599999993,
+    972681.8599999993,
+    4686.72
+   ],
+   [
+    2024,
+    2172920.470000001,
+    2172920.470000001,
+    4724.1
+   ]
+  ]
+ },
+ "context-transition-date-key-other-date-filters": {
+  "hash": "162763248e6f5b7105ec4b9648fe0a5d50ef4fbc",
+  "columns": [
+   "Date[Date]",
+   "[Week Filtered Outside]",
+   "[Week Filtered After Transition]",
+   "[Days Once Date Filter Removed]",
+   "[Sales]"
+  ],
+  "rows": [
+   [
+    "2024-02-26",
+    true,
+    false,
+    1096,
+    10428.25
+   ],
+   [
+    "2024-02-27",
+    true,
+    false,
+    1096,
+    6342.07
+   ],
+   [
+    "2024-02-28",
+    true,
+    false,
+    1096,
+    16329.650000000001
+   ],
+   [
+    "2024-02-29",
+    true,
+    false,
+    1096,
+    1302.06
+   ],
+   [
+    "2024-03-01",
+    true,
+    false,
+    1096,
+    352.72
+   ],
+   [
+    "2024-03-02",
+    true,
+    false,
+    1096,
+    4595.17
+   ],
+   [
+    "2024-03-03",
+    true,
+    false,
+    1096,
+    6073.89
+   ]
+  ]
+ },
+ "context-var-evaluated-before-calculate": {
+  "hash": "f045d35b9979fb4b62b5045fae7f82196ab4d9aa",
+  "columns": [
+   "Category[Category]",
+   "[Var Then Calculate]",
+   "[Calculate Measure]"
+  ],
+  "rows": [
+   [
+    null,
+    190.0,
+    3363847.629999997
+   ],
+   [
+    "Bikes",
+    1913841.8799999978,
+    3363847.629999997
+   ],
+   [
+    "Clothing",
+    266314.7900000005,
+    3363847.629999997
+   ],
+   [
+    "Accessories",
+    191652.88000000003,
+    3363847.629999997
+   ],
+   [
+    "Components",
+    991848.0799999993,
+    3363847.629999997
+   ]
+  ]
+ },
+ "context-var-row-value-in-calculate": {
+  "hash": "05a3f8a6682826af7e8afaf646e4bcf98d985ac7",
+  "columns": [
+   "Category[Category]",
+   "[Sales]",
+   "[Brands Everywhere]"
+  ],
+  "rows": [
+   [
+    null,
+    190.0,
+    190.0
+   ],
+   [
+    "Bikes",
+    1913841.8799999978,
+    3363657.629999999
+   ],
+   [
+    "Clothing",
+    266314.7900000005,
+    3363657.629999999
+   ],
+   [
+    "Accessories",
+    191652.88000000003,
+    3363657.629999999
+   ],
+   [
+    "Components",
+    991848.0799999993,
+    2574196.5599999977
+   ]
+  ]
+ },
+ "context-var-topn-table-filter": {
+  "hash": "40b2a5a887f03333ded5aa7107ef6ac3a9513480",
+  "columns": [
+   "Date[Year]",
+   "Category[Category]",
+   "[Sales]",
+   "[Top Colors Sales]"
+  ],
+  "rows": [
+   [
+    2022,
+    "Accessories",
+    11542.310000000001,
+    10570.76
+   ],
+   [
+    2022,
+    "Bikes",
+    130102.53000000004,
+    97411.19000000003
+   ],
+   [
+    2022,
+    "Clothing",
+    13887.680000000004,
+    12333.92
+   ],
+   [
+    2022,
+    "Components",
+    62712.78,
+    48530.13000000001
+   ],
+   [
+    2023,
+    null,
+    91.0,
+    91.0
+   ],
+   [
+    2023,
+    "Accessories",
+    61649.45000000004,
+    54691.67000000002
+   ],
+   [
+    2023,
+    "Bikes",
+    533349.6999999998,
+    380655.86999999976
+   ],
+   [
+    2023,
+    "Clothing",
+    83028.15999999999,
+    65412.49000000003
+   ],
+   [
+    2023,
+    "Components",
+    294563.5499999999,
+    246182.84999999998
+   ],
+   [
+    2024,
+    null,
+    99.0,
+    99.0
+   ],
+   [
+    2024,
+    "Accessories",
+    118461.11999999995,
+    101406.60999999997
+   ],
+   [
+    2024,
+    "Bikes",
+    1250389.6499999985,
+    933581.5900000005
+   ],
+   [
+    2024,
+    "Clothing",
+    169398.95,
+    137030.98999999987
+   ],
+   [
+    2024,
+    "Components",
+    634571.7499999995,
+    506338.1500000002
+   ]
+  ]
+ },
+ "context-visual-matrix-pct-selected": {
+  "hash": "c215a8411f9adab19843355d8bc4c8d812370539",
+  "columns": [
+   "Category[Category]",
+   "[IsGrandTotalRowTotal]",
+   "[Sales_Amount]",
+   "[Margin__]",
+   "[Pct_Of_Selected]"
+  ],
+  "rows": [
+   [
+    null,
+    true,
+    1410613.4999999998,
+    0.4354254230517431,
+    1.0
+   ],
+   [
+    null,
+    false,
+    91.0,
+    0.5604395604395604,
+    6.451093797131533e-05
+   ],
+   [
+    "Accessories",
+    false,
+    81878.07999999999,
+    0.4451722610007462,
+    0.05804430483615817
+   ],
+   [
+    "Bikes",
+    false,
+    805479.9199999997,
+    0.44115489558076126,
+    0.5710139028160441
+   ],
+   [
+    "Clothing",
+    false,
+    106597.93000000004,
+    0.41273062244266856,
+    0.07556848846264413
+   ],
+   [
+    "Components",
+    false,
+    416566.5700000001,
+    0.42821124604405986,
+    0.2953087929471823
+   ]
+  ]
+ },
+ "context-window-added-column-blank-partition": {
+  "hash": "cb5bb67c21988954a8e5a9b57eb3b1547f92a165",
+  "columns": [
+   "Category[Category]",
+   "Date[Year]",
+   "[@Sales]",
+   "[Rank In Category]",
+   "[Next Lower Sales]",
+   "[Previous Year Sales]"
+  ],
+  "rows": [
+   [
+    null,
+    2023,
+    91.0,
+    2,
+    null,
+    null
+   ],
+   [
+    null,
+    2024,
+    99.0,
+    1,
+    91.0,
+    91.0
+   ],
+   [
+    "Accessories",
+    2022,
+    11542.310000000001,
+    3,
+    null,
+    null
+   ],
+   [
+    "Accessories",
+    2023,
+    61649.45000000004,
+    2,
+    11542.310000000001,
+    11542.310000000001
+   ],
+   [
+    "Accessories",
+    2024,
+    118461.11999999995,
+    1,
+    61649.45000000004,
+    61649.45000000004
+   ],
+   [
+    "Bikes",
+    2022,
+    130102.53000000004,
+    3,
+    null,
+    null
+   ],
+   [
+    "Bikes",
+    2023,
+    533349.6999999998,
+    2,
+    130102.53000000004,
+    130102.53000000004
+   ],
+   [
+    "Bikes",
+    2024,
+    1250389.6499999985,
+    1,
+    533349.6999999998,
+    533349.6999999998
+   ],
+   [
+    "Clothing",
+    2022,
+    13887.680000000004,
+    3,
+    null,
+    null
+   ],
+   [
+    "Clothing",
+    2023,
+    83028.15999999999,
+    2,
+    13887.680000000004,
+    13887.680000000004
+   ],
+   [
+    "Clothing",
+    2024,
+    169398.95,
+    1,
+    83028.15999999999,
+    83028.15999999999
+   ],
+   [
+    "Components",
+    2022,
+    62712.78,
+    3,
+    null,
+    null
+   ],
+   [
+    "Components",
+    2023,
+    294563.5499999999,
+    2,
+    62712.78,
+    62712.78
+   ],
+   [
+    "Components",
+    2024,
+    634571.7499999995,
+    1,
+    294563.5499999999,
+    294563.5499999999
+   ]
+  ]
+ }
+}

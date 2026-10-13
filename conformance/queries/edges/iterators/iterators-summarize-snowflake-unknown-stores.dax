@@ -1,0 +1,10 @@
+// note: SUMMARIZE of Sales by store key, the RELATED-three-hops Store Region column and Region[Region] through the snowflake, then context transition per group: the unknown key XXX-99, the empty-string key and the NULL key are three groups with a blank region, and filtering on them must find their lines again
+EVALUATE
+ADDCOLUMNS(
+    SUMMARIZE(Sales, Sales[StoreKey], Sales[Store Region], Region[Region]),
+    "Key Is Blank", ISBLANK(Sales[StoreKey]),
+    "Lines", CALCULATE(COUNTROWS(Sales)),
+    "Quantity", CALCULATE(SUM(Sales[Quantity])),
+    "Max Unit Price", CALCULATE(MAXX(Sales, Sales[Unit Price]))
+)
+ORDER BY Sales[StoreKey], [Key Is Blank]

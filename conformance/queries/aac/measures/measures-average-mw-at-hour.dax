@@ -1,0 +1,2 @@
+// note: fct_summary_hourly[Average MW at hour] per hour of day, over both months
+EVALUATE SUMMARIZECOLUMNS(fct_summary_hourly[hour], "Average MW at hour", [Average MW at hour])

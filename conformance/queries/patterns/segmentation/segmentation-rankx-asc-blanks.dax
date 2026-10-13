@@ -1,0 +1,8 @@
+// note: RANKX ascending over every product, blanks included: the unsold product and the blank product row, with SKIP and DENSE
+EVALUATE
+ADDCOLUMNS(
+    ALL(Product[Product]),
+    "Sales", [Sales Amount],
+    "Rank Asc Skip", RANKX(ALL(Product[Product]), [Sales Amount], , ASC, SKIP),
+    "Rank Asc Dense", RANKX(ALL(Product[Product]), [Sales Amount], , ASC, DENSE)
+)

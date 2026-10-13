@@ -1,0 +1,3 @@
+// note: under a role securing Product, CROSSFILTER BOTH between Sales and Customer: Product reaches Customer through Sales only
+// roles: RedOnly
+EVALUATE ROW("n", CALCULATE(COUNTROWS(Customer), CROSSFILTER(Sales[CustomerKey], Customer[CustomerKey], BOTH)))

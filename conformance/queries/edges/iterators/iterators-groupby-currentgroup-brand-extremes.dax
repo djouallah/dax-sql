@@ -1,0 +1,13 @@
+// note: GROUPBY over Sales by the related Product[Brand] with X functions over CURRENTGROUP: counts, quantity sums with zeros and returns, the minimum quantity, the largest double price and the average Currency cost; the blank brand gathers the NULL-brand product, the unknown key 999 and the NULL product keys
+EVALUATE
+GROUPBY(
+    Sales,
+    Product[Brand],
+    "Lines", COUNTX(CURRENTGROUP(), Sales[Line Number]),
+    "Quantity", SUMX(CURRENTGROUP(), Sales[Quantity]),
+    "Min Quantity", MINX(CURRENTGROUP(), Sales[Quantity]),
+    "Max Unit Price", MAXX(CURRENTGROUP(), Sales[Unit Price]),
+    "Avg Unit Cost", AVERAGEX(CURRENTGROUP(), Sales[Unit Cost]),
+    "Return Lines", SUMX(CURRENTGROUP(), IF(Sales[Quantity] < 0, 1, 0))
+)
+ORDER BY Product[Brand]

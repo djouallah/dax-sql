@@ -1,0 +1,10 @@
+// note: RANKX over ALLSELECTED(Product[Brand]) ranks brands within each category cell of a year-filtered visual
+EVALUATE
+SUMMARIZECOLUMNS(
+    Category[Category],
+    Product[Brand],
+    TREATAS({2024}, 'Date'[Year]),
+    "Sales", [Sales Amount],
+    "Rank", [Context Brand Rank]
+)
+ORDER BY Category[Category], Product[Brand]

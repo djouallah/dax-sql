@@ -1,0 +1,3 @@
+// note: a plain filter of SUMMARIZECOLUMNS is what ALLSELECTED restores
+EVALUATE SUMMARIZECOLUMNS('Date'[Year], TREATAS({2024}, 'Date'[Year]), "Sales", [Sales Amount],
+    "Selected", CALCULATE([Sales Amount], ALLSELECTED('Date'[Year])))

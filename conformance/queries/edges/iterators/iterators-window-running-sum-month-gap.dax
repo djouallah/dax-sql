@@ -1,0 +1,11 @@
+// note: WINDOW running totals by month across 2023-08, which has no sales: from the first month, restarting each year with PARTITIONBY, and a moving three-month window; the empty month still shows because its running totals are not blank
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year],
+    'Date'[YearMonth],
+    "Sales", [Sales Amount],
+    "Running Sales", SUMX(WINDOW(1, ABS, 0, REL, ALLSELECTED('Date'[YearMonth]), ORDERBY('Date'[YearMonth], ASC)), [Sales Amount]),
+    "Running Sales In Year", SUMX(WINDOW(1, ABS, 0, REL, ALLSELECTED('Date'[Year], 'Date'[YearMonth]), ORDERBY('Date'[YearMonth], ASC), DEFAULT, PARTITIONBY('Date'[Year])), [Sales Amount]),
+    "Moving 3 Months", SUMX(WINDOW(-2, REL, 0, REL, ALLSELECTED('Date'[YearMonth]), ORDERBY('Date'[YearMonth], ASC)), [Sales Amount])
+)
+ORDER BY 'Date'[YearMonth]

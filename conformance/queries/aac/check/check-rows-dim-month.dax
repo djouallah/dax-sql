@@ -1,0 +1,2 @@
+// note: check_model.py: the row count of dim_month
+EVALUATE ROW("table", "dim_month", "rows", COUNTROWS('dim_month'))

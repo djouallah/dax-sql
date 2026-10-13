@@ -1,0 +1,13 @@
+// note: SUMMARIZECOLUMNS by brand under a filter on Product[Color]: auto-exist keeps only brands with yellow products, and ALLSELECTED(Product[Brand]) keeps the color filter for each brand's share of 2023 sales
+EVALUATE
+SUMMARIZECOLUMNS(
+    Product[Brand],
+    TREATAS({ "Yellow" }, Product[Color]),
+    TREATAS({ 2023 }, 'Date'[Year]),
+    "Sales", [Sales Amount],
+    "Selected Brands Sales", CALCULATE([Sales Amount], ALLSELECTED(Product[Brand])),
+    "Brand Share", DIVIDE([Sales Amount], CALCULATE([Sales Amount], ALLSELECTED(Product[Brand]))),
+    "Brands Selected", COUNTROWS(ALLSELECTED(Product[Brand])),
+    "Sales All Brands", CALCULATE([Sales Amount], ALL(Product[Brand]))
+)
+ORDER BY Product[Brand]

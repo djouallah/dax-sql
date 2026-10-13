@@ -1,0 +1,8 @@
+// note: a table VAR (the cell's top three colors) captured in the cell's context and then used as a CALCULATE filter
+DEFINE
+    MEASURE Sales[Top Colors Sales] =
+        VAR top3 = TOPN(3, ALL(Product[Color]), [Sales Amount], DESC, Product[Color], ASC)
+        RETURN CALCULATE([Sales Amount], top3)
+EVALUATE
+SUMMARIZECOLUMNS('Date'[Year], Category[Category], "Sales", [Sales Amount], "Top Colors Sales", [Top Colors Sales])
+ORDER BY 'Date'[Year], Category[Category]

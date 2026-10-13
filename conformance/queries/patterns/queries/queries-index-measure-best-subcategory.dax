@@ -1,0 +1,9 @@
+// note: a text measure from INDEX(1) over the current category's subcategories, ordered by sales with a name tie-breaker
+EVALUATE
+SUMMARIZECOLUMNS(
+	'Category'[Category],
+	TREATAS({2023}, 'Date'[Year]),
+	"Sales_Amount", 'Sales'[Sales Amount],
+	"Best_Subcategory", 'Sales'[Visual Best Subcategory]
+)
+ORDER BY 'Category'[Category]

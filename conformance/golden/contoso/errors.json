@@ -1,0 +1,70 @@
+{
+ "errors-boolean-filter-two-tables": {
+  "hash": "eaef8eedfc071d7f059e1136a51cf31c343a9e40",
+  "error": "Query (3, 65) The expression contains columns from multiple tables, but only columns from a single table can be used in a True/False expression that is used as a table filter expression."
+ },
+ "errors-column-not-in-model": {
+  "hash": "066432145299bc6059abb9405816ba8b5ee928d9",
+  "error": "Query (3, 23) Column '<oii>Orders</oii>' in table '<oii>Customer</oii>' cannot be found or may not be used in this expression."
+ },
+ "errors-column-without-row-context": {
+  "hash": "30611aab4336d3c3fb196310e619421b96182af7",
+  "error": "Query (3, 19) A single value for column '<oii>Qty</oii>' in table '<oii>Sales</oii>' cannot be determined. This can happen when a measure or function formula refers to a column that contains many values without specifying an aggregation such as min, max, count, or sum to get a single result."
+ },
+ "errors-naturalinnerjoin-text-vs-number": {
+  "hash": "b7d1a1ef790123862a4977673c435825d4ea56c6",
+  "error": "Query (3, 85) An incompatible join column, ('<oii></oii>'[<oii>k</oii>]) was detected. 'NATURALINNERJOIN' doesn't support joins by using columns with different data types or lineage."
+ },
+ "errors-naturalleftouterjoin-variant-vs-text": {
+  "hash": "28814eb3c05d01a63fcd17b52b92c0573cf5bd97",
+  "columns": [
+   "[Name]"
+  ],
+  "rows": [
+   [
+    "Road Bike"
+   ],
+   [
+    "Jersey"
+   ],
+   [
+    "Helmet"
+   ]
+  ]
+ },
+ "errors-nonvisual-in-calculate": {
+  "hash": "447ee3a909542d49d253acbd06cffde8876a21c6",
+  "error": "Query (3, 55) 'TREATAS' function can only be used as a value filter of SUMMARIZECOLUMNS."
+ },
+ "errors-partitionby-added-column": {
+  "hash": "3440d9cf43e648e78033e4fdc2f623f7d76d6f51",
+  "error": "Query (3, 205) Function PARTITIONBY cannot be used with columns added by DAX table functions."
+ },
+ "errors-percentile-exc-k-below-range": {
+  "hash": "2709cd21baccf7d427ab4b2b2c54e9cda4c7e18c",
+  "error": "Query (3, 19) The percentile value should be in the range 1/(N+1)..N/(N+1) inclusive, where N is the number of data values."
+ },
+ "errors-percentile-inc-k-above-one": {
+  "hash": "55e0d0cfa52be5f0728f96e24a037d2c367ee4f5",
+  "error": "Query (3, 19) The percentile value should be in the range 0..1, inclusive."
+ },
+ "errors-rls-crossfilter-secured-table-filters-itself": {
+  "hash": "6e21fd3a1314f9b90a96c25bfccf65279ac1d2bf",
+  "columns": [
+   "[n]"
+  ],
+  "rows": [
+   [
+    2
+   ]
+  ]
+ },
+ "errors-syntax-unclosed-parenthesis": {
+  "hash": "f587c003770b56824091fdc6d494ce4bddba5dbb",
+  "error": "The end of the input was reached."
+ },
+ "errors-unknown-measure": {
+  "hash": "acbaafd5e4fac918f0a1500deec21dae3049ce69",
+  "error": "Query (3, 19) The value for '<oii>No such measure</oii>' cannot be determined. Either the column doesn't exist, or there is no current row for this column."
+ }
+}

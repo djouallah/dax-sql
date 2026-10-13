@@ -1,0 +1,7 @@
+// note: the guarded budget disappears when the date filter covers only part of a month (a single week) and shows on whole months
+EVALUATE
+UNION(
+    ROW("Period", "February 2024", "Budget", CALCULATE([Budget at Valid Grain], 'Date'[YearMonth] = 202402), "Raw Budget", CALCULATE([Budget Amount], 'Date'[YearMonth] = 202402)),
+    ROW("Period", "First week of February 2024", "Budget", CALCULATE([Budget at Valid Grain], DATESBETWEEN('Date'[Date], DATE(2024, 2, 1), DATE(2024, 2, 7))), "Raw Budget", CALCULATE([Budget Amount], DATESBETWEEN('Date'[Date], DATE(2024, 2, 1), DATE(2024, 2, 7)))),
+    ROW("Period", "Q1 2024", "Budget", CALCULATE([Budget at Valid Grain], 'Date'[Year] = 2024, 'Date'[Quarter] = 1), "Raw Budget", CALCULATE([Budget Amount], 'Date'[Year] = 2024, 'Date'[Quarter] = 1))
+)

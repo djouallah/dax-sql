@@ -1,0 +1,2 @@
+// note: the dashboard's newestDate query, the newest day of the units
+EVALUATE ROW("d", MAX(fct_summary[date]))

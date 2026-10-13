@@ -1,0 +1,12 @@
+// note: an exclusion filter (values unticked in a basic filter) as FILTER(KEEPFILTERS(VALUES), NOT IN), with a total row
+DEFINE
+	VAR __DS0FilterTable =
+		FILTER(KEEPFILTERS(VALUES('Product'[Color])), NOT('Product'[Color] IN {"Red", "Black"}))
+EVALUATE
+SUMMARIZECOLUMNS(
+	ROLLUPADDISSUBTOTAL('Product'[Color], "IsGrandTotalRowTotal"),
+	__DS0FilterTable,
+	"Sales_Amount", 'Sales'[Sales Amount],
+	"Order_Lines", 'Sales'[Order Lines]
+)
+ORDER BY [IsGrandTotalRowTotal] DESC, 'Product'[Color]

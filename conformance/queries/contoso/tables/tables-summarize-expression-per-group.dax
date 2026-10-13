@@ -1,0 +1,2 @@
+// note: SUMMARIZE with an expression evaluated per group
+EVALUATE SUMMARIZE(Sales, Product[Color], "q", SUM(Sales[Qty]))

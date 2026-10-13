@@ -1,0 +1,17 @@
+// note: text functions per product on leading and trailing spaces, accented letters, "" and a NULL name: LEN before and after TRIM, LEFT, RIGHT, MID, the first code point, SUBSTITUTE of spaces and FIND of an accented letter
+EVALUATE
+SELECTCOLUMNS(
+    Product,
+    "Key", Product[ProductKey],
+    "Product", Product[Product],
+    "Len", LEN(Product[Product]),
+    "Trimmed", "[" & TRIM(Product[Product]) & "]",
+    "Len Trimmed", LEN(TRIM(Product[Product])),
+    "First Two", LEFT(Product[Product], 2),
+    "Last Two", RIGHT(Product[Product], 2),
+    "Middle", MID(Product[Product], 2, 3),
+    "First Code Point", IF(LEN(Product[Product]) > 0, UNICODE(Product[Product])),
+    "Underscored", SUBSTITUTE(Product[Product], " ", "_"),
+    "E Acute At", FIND("é", Product[Product], 1, 0)
+)
+ORDER BY [Key]

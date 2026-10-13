@@ -1,0 +1,9 @@
+// note: a slicer query: VALUES of city under a country slicer on the same table, windowed by TOPN(101)
+DEFINE
+	VAR __DS0FilterTable = TREATAS({"France", "Germany"}, 'Customer'[Country])
+	VAR __DS0Core = CALCULATETABLE(VALUES('Customer'[City]), KEEPFILTERS(__DS0FilterTable))
+	VAR __DS0PrimaryWindowed = TOPN(101, __DS0Core, 'Customer'[City], 1)
+EVALUATE
+	__DS0PrimaryWindowed
+ORDER BY
+	'Customer'[City]

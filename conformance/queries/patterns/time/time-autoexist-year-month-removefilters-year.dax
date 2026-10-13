@@ -1,0 +1,11 @@
+// note: SUMMARIZECOLUMNS filters on Year and Year Month of one table auto-exist into Dec 2022 only, so removing the Year filter in a measure does not bring Jan 2023 back
+EVALUATE
+SUMMARIZECOLUMNS(
+    Category[Category],
+    TREATAS({2022}, 'Date'[Year]),
+    TREATAS({"2022-12", "2023-01"}, 'Date'[Year Month]),
+    "Sales", [Sales Amount],
+    "Sales Without Year", CALCULATE([Sales Amount], REMOVEFILTERS('Date'[Year])),
+    "Months Without Year", CALCULATE(COUNTROWS(VALUES('Date'[Year Month])), REMOVEFILTERS('Date'[Year]))
+)
+ORDER BY Category[Category]

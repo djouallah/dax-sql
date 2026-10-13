@@ -1,0 +1,17 @@
+// note: RANK, ROWNUMBER and OFFSET over a SUMMARIZECOLUMNS table of 2024 sales by country and category, partitioned by country, the blank country partition and blank category included
+DEFINE
+    VAR t =
+        SUMMARIZECOLUMNS(
+            Customer[Country],
+            Category[Category],
+            TREATAS({ 2024 }, 'Date'[Year]),
+            "Sales", [Sales Amount]
+        )
+EVALUATE
+ADDCOLUMNS(
+    t,
+    "Rank", RANK(DENSE, t, ORDERBY([Sales], DESC), PARTITIONBY(Customer[Country])),
+    "Row", ROWNUMBER(t, ORDERBY([Sales], DESC, Category[Category], ASC), PARTITIONBY(Customer[Country])),
+    "Next Lower Sales", MAXX(OFFSET(1, t, ORDERBY([Sales], DESC, Category[Category], ASC), PARTITIONBY(Customer[Country])), [Sales])
+)
+ORDER BY Customer[Country], [Row]

@@ -1,0 +1,9 @@
+// note: ABC classification under row-level security on Category: the cumulative share is over the bike products the role can see
+// roles: Bikes
+EVALUATE
+SUMMARIZECOLUMNS(
+    Product[Product],
+    "Sales", [Sales Amount],
+    "Cumulative %", [ABC Product Cumulative %],
+    "Class", [ABC Product Class]
+)

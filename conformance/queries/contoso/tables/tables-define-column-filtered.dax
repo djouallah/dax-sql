@@ -1,0 +1,3 @@
+// note: a filter on a query column (DEFINE COLUMN)
+DEFINE COLUMN Customer[Region] = IF(Customer[City] = "Paris", "Paris", "Other")
+EVALUATE ROW("Other", CALCULATE([Sales Amount], Customer[Region] = "Other"))

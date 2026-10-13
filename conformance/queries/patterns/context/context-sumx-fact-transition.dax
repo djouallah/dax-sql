@@ -1,0 +1,9 @@
+// note: context transition over every row of the fact table: SUMX(Sales, [measure]) filters by all of a row's columns at once
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year],
+    "Sales", [Sales Amount],
+    "Per Row", SUMX(Sales, [Sales Amount]),
+    "Max Line", MAXX(Sales, [Sales Amount])
+)
+ORDER BY 'Date'[Year]

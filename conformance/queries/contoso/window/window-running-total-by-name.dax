@@ -1,0 +1,2 @@
+// note: WINDOW from the first row (ABS) to the current (REL): a running total by name
+EVALUATE ADDCOLUMNS(VALUES(Product[Name]), "running", CALCULATE([Sales Amount], WINDOW(1, ABS, 0, REL, ALL(Product[Name]), ORDERBY(Product[Name]))))

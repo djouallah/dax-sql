@@ -1,0 +1,17 @@
+// note: a visual-level measure filter (sales above a value) as Power BI writes it: a __ValueFilterDM0 table fed back into the core
+DEFINE
+	VAR __DS0FilterTable = TREATAS({2024}, 'Date'[Year])
+	VAR __ValueFilterDM0 =
+		FILTER(
+			KEEPFILTERS(SUMMARIZECOLUMNS('Customer'[Customer], __DS0FilterTable, "Sales_Amount", 'Sales'[Sales Amount])),
+			[Sales_Amount] > 15000
+		)
+EVALUATE
+SUMMARIZECOLUMNS(
+	'Customer'[Customer],
+	__DS0FilterTable,
+	__ValueFilterDM0,
+	"Sales_Amount", 'Sales'[Sales Amount],
+	"Orders", 'Sales'[Orders]
+)
+ORDER BY 'Customer'[Customer]

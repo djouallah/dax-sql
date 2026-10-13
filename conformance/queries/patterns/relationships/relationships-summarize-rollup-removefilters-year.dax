@@ -1,0 +1,11 @@
+// note: SUMMARIZE with ROLLUP of year by country: on the year rows CALCULATE removing the year filter still keeps the group's Sales rows, on the subtotal rows it is the country's total; the blank country included
+EVALUATE
+SUMMARIZE(
+    Sales,
+    Customer[Country],
+    ROLLUP('Date'[Year]),
+    "Sales", [Sales Amount],
+    "Sales All Years", CALCULATE([Sales Amount], REMOVEFILTERS('Date'[Year])),
+    "Is Year Total", ISSUBTOTAL('Date'[Year])
+)
+ORDER BY Customer[Country], 'Date'[Year]

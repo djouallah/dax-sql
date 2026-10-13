@@ -1,0 +1,2 @@
+// note: fct_region[Hours] per region, whole days and the 5-minute rows after them
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS(dim_region[Region], "Hours", [Hours]), dim_calendar[date] >= dt"2026-08-07", dim_calendar[date] <= dt"2026-08-13")

@@ -1,0 +1,10 @@
+// note: ALL and REMOVEFILTERS cannot lift row-level security: under the France role they see only French customers and their sales
+// roles: France
+EVALUATE
+SUMMARIZECOLUMNS(
+    Customer[Country],
+    "Sales", [Sales Amount],
+    "All Customers Sales", CALCULATE([Sales Amount], ALL(Customer)),
+    "Everything", CALCULATE([Sales Amount], REMOVEFILTERS()),
+    "Customer Rows", COUNTROWS(ALL(Customer))
+)

@@ -1,0 +1,10 @@
+// note: under Bikes (security on Category), CROSSFILTER BOTH between Subcategory and Category makes Category filter itself through Subcategory (a DAX error: two join paths from Category to Category)
+// expect: error
+// roles: Bikes
+EVALUATE
+SUMMARIZECOLUMNS(
+    Subcategory[Subcategory],
+    "Sales", [Sales Amount],
+    "Categories Both", CALCULATE(COUNTROWS(Category), CROSSFILTER(Subcategory[CategoryKey], Category[CategoryKey], BOTH))
+)
+ORDER BY Subcategory[Subcategory]

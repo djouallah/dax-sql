@@ -1,0 +1,16 @@
+// note: month by month and year to date, components sales against a budget reached through the many-to-many YearMonth relationship
+DEFINE
+    MEASURE Budget[Relationship Budget YTD] = CALCULATE([Budget Amount], DATESYTD('Date'[Date]))
+    MEASURE Budget[Relationship Sales YTD] = CALCULATE([Sales Amount], DATESYTD('Date'[Date]))
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[YearMonth],
+    TREATAS({ 2024 }, 'Date'[Year]),
+    TREATAS({ "Components" }, Category[Category]),
+    "Budget", [Budget Amount],
+    "Sales", [Sales Amount],
+    "Budget YTD", [Relationship Budget YTD],
+    "Sales YTD", [Relationship Sales YTD],
+    "Achieved YTD", DIVIDE([Relationship Sales YTD], [Relationship Budget YTD])
+)
+ORDER BY 'Date'[YearMonth]

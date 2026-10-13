@@ -1,0 +1,3 @@
+// note: a query column (DEFINE COLUMN) grouped by, and cleared by ALL of its table; the unknown customer's sales are its blank row's
+DEFINE COLUMN Customer[Region] = IF(Customer[City] = "Paris", "Paris", "Other")
+EVALUATE SUMMARIZECOLUMNS(Customer[Region], "Sales", [Sales Amount], "All", CALCULATE([Sales Amount], ALL(Customer)))

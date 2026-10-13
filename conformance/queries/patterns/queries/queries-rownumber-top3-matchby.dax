@@ -1,0 +1,12 @@
+// note: ROWNUMBER with PARTITIONBY and MATCHBY numbers products by sales within each category; the first three of each are kept
+DEFINE
+	VAR t =
+		SUMMARIZECOLUMNS('Category'[Category], 'Product'[ProductKey], 'Product'[Product], TREATAS({2022}, 'Date'[Year]), "Sales", [Sales Amount])
+	VAR numbered =
+		ADDCOLUMNS(
+			t,
+			"Row", ROWNUMBER(t, ORDERBY([Sales], DESC, 'Product'[ProductKey], ASC), PARTITIONBY('Category'[Category]), MATCHBY('Product'[ProductKey]))
+		)
+EVALUATE
+FILTER(numbered, [Row] <= 3)
+ORDER BY 'Category'[Category], [Row]

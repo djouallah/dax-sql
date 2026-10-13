@@ -1,0 +1,18 @@
+// note: NATURALINNERJOIN of December 2024 order days with 2024's inventory snapshot days, joined on a column both name Day and neither has lineage for: a date on one side, its text on the other (a DAX error: the join columns have different data types)
+// expect: error
+EVALUATE
+VAR orders =
+    SELECTCOLUMNS(
+        CALCULATETABLE(VALUES(Sales[Order Date]), 'Date'[Year] = 2024, 'Date'[Month] = 12),
+        "Day", DATE(YEAR(Sales[Order Date]), MONTH(Sales[Order Date]), DAY(Sales[Order Date])),
+        "Day Of Month", DAY(Sales[Order Date])
+    )
+VAR snapshots =
+    SELECTCOLUMNS(
+        CALCULATETABLE(VALUES(Inventory[Date]), 'Date'[Year] = 2024),
+        "Day", FORMAT(Inventory[Date], "yyyy-mm-dd"),
+        "Snapshot Month", MONTH(Inventory[Date])
+    )
+RETURN
+    NATURALINNERJOIN(orders, snapshots)
+ORDER BY [Day Of Month]

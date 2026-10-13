@@ -1,0 +1,10 @@
+// note: year and quarter as two separate ROLLUPADDISSUBTOTAL axes (matrix rows by columns), so a quarter total across all years exists; calendar and fiscal YTD at every total
+EVALUATE
+SUMMARIZECOLUMNS(
+    ROLLUPADDISSUBTOTAL('Date'[Year], "Year Total"),
+    ROLLUPADDISSUBTOTAL('Date'[Quarter], "Quarter Total"),
+    "Sales", [Sales Amount],
+    "YTD", CALCULATE([Sales Amount], DATESYTD('Date'[Date])),
+    "Fiscal YTD", [Sales Fiscal YTD]
+)
+ORDER BY [Year Total], 'Date'[Year], [Quarter Total], 'Date'[Quarter]

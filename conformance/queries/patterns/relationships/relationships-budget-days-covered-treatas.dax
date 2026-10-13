@@ -1,0 +1,7 @@
+// note: a virtual relationship from Budget back to Date (TREATAS of the budget's months) counts the days each category has a budget for
+EVALUATE
+SUMMARIZECOLUMNS(
+    Category[Category],
+    "Budget Months", COUNTROWS(VALUES(Budget[YearMonth])),
+    "Days with Budget", CALCULATE(COUNTROWS('Date'), TREATAS(VALUES(Budget[YearMonth]), 'Date'[YearMonth]))
+)

@@ -1,0 +1,2 @@
+// note: fct_summary[Average generation MW] per region
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS(dim_region[Region], "Average generation MW", [Average generation MW]), dim_calendar[date] >= dt"2026-08-04", dim_calendar[date] <= dt"2026-08-07")

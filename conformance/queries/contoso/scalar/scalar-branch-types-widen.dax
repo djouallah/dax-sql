@@ -1,0 +1,3 @@
+// note: IF / SWITCH branches of whole and decimal numbers, MOD of decimals, and branches of number and text
+EVALUATE ROW("a", IF([Orders] > 100, 1, 0.5), "b", SWITCH(TRUE(), [Orders] > 100, 1, [Orders] > 5, 0.25, 0.5),
+    "c", MOD(8, 2.5), "d", SELECTEDVALUE('Date'[Year], "multi"), "e", SWITCH(TRUE(), 1 = 2, 5, "none"))

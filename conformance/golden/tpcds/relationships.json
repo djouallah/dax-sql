@@ -1,0 +1,239 @@
+{
+ "relationships-crossfilter-store": {
+  "hash": "a131f284a3117ee6e4a31e343923392cb1ba750e",
+  "columns": [
+   "item[i_category]",
+   "[all]",
+   "[sold there]"
+  ],
+  "rows": [
+   [
+    "Books",
+    6,
+    6
+   ],
+   [
+    "Children",
+    6,
+    6
+   ],
+   [
+    "Electronics",
+    6,
+    6
+   ],
+   [
+    "Home",
+    6,
+    6
+   ],
+   [
+    "Jewelry",
+    6,
+    6
+   ],
+   [
+    "Men",
+    6,
+    6
+   ],
+   [
+    "Music",
+    6,
+    6
+   ],
+   [
+    "Shoes",
+    6,
+    6
+   ],
+   [
+    "Sports",
+    6,
+    6
+   ],
+   [
+    "Women",
+    6,
+    6
+   ]
+  ]
+ },
+ "relationships-promotion-item": {
+  "hash": "6314ce7dffd60acdd4b5c4b919cef5dbb4ebc13d",
+  "columns": [
+   "item[i_category]",
+   "[all]",
+   "[of the item]"
+  ],
+  "rows": [
+   [
+    "Books",
+    10,
+    2
+   ],
+   [
+    "Children",
+    10,
+    1
+   ],
+   [
+    "Electronics",
+    10,
+    null
+   ],
+   [
+    "Home",
+    10,
+    2
+   ],
+   [
+    "Jewelry",
+    10,
+    1
+   ],
+   [
+    "Men",
+    10,
+    1
+   ],
+   [
+    "Music",
+    10,
+    2
+   ],
+   [
+    "Shoes",
+    10,
+    null
+   ],
+   [
+    "Sports",
+    10,
+    null
+   ],
+   [
+    "Women",
+    10,
+    1
+   ]
+  ]
+ },
+ "relationships-ship-address": {
+  "hash": "066054109b46113160f6316e38cf643c27c2ced7",
+  "columns": [
+   "customer_address[ca_state]",
+   "[billed]",
+   "[shipped]"
+  ],
+  "rows": [
+   [
+    "AR",
+    140563.03,
+    157595.5
+   ],
+   [
+    "CO",
+    151108.0,
+    109324.42
+   ],
+   [
+    "CA",
+    141669.42,
+    136182.65
+   ],
+   [
+    "TX",
+    52105.3,
+    62654.28
+   ],
+   [
+    "GA",
+    69583.07,
+    89271.97
+   ]
+  ]
+ },
+ "relationships-ship-both": {
+  "hash": "8b1fc025d69abf0bdfb28c607fded1fc10b52162",
+  "columns": [
+   "customer_demographics[cd_education_status]",
+   "[shipped]"
+  ],
+  "rows": [
+   [
+    "2 yr Degree",
+    9334.26
+   ],
+   [
+    "Advanced Degree",
+    12005.66
+   ],
+   [
+    "College",
+    57912.85
+   ],
+   [
+    "4 yr Degree",
+    10759.09
+   ],
+   [
+    "Primary",
+    7126.56
+   ],
+   [
+    "Secondary",
+    14147.2
+   ],
+   [
+    "Unknown",
+    24897.03
+   ]
+  ]
+ },
+ "relationships-ship-demographics": {
+  "hash": "5a8f57bf8edd18e54b6225582a495d2fcd7cb0ce",
+  "columns": [
+   "customer_demographics[cd_education_status]",
+   "[billed]",
+   "[shipped]"
+  ],
+  "rows": [
+   [
+    "2 yr Degree",
+    1819,
+    1774
+   ],
+   [
+    "Advanced Degree",
+    1835,
+    1333
+   ],
+   [
+    "College",
+    1474,
+    1161
+   ],
+   [
+    "4 yr Degree",
+    360,
+    674
+   ],
+   [
+    "Primary",
+    710,
+    665
+   ],
+   [
+    "Secondary",
+    587,
+    796
+   ],
+   [
+    "Unknown",
+    511,
+    893
+   ]
+  ]
+ }
+}

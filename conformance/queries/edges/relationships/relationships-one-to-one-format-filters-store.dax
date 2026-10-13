@@ -1,0 +1,12 @@
+// note: the both-directions one-to-one lets a StoreProfile[Format] filter reach Store and so Sales and Target, while Country filters Store and through it StoreProfile; Format "" and NULL are separate members
+EVALUATE
+SUMMARIZECOLUMNS(
+    StoreProfile[Format],
+    Country[Country],
+    "Format Is Blank", ISBLANK(SELECTEDVALUE(StoreProfile[Format], "multiple")),
+    "Profiles", COUNTROWS(StoreProfile),
+    "Stores", COUNTROWS(Store),
+    "Sales", [Sales Amount],
+    "Target", [Target Amount]
+)
+ORDER BY StoreProfile[Format], [Format Is Blank], Country[Country]

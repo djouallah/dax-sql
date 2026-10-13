@@ -1,0 +1,3 @@
+// note: security on Customer reaches CityTarget over the many-to-many relationship
+// roles: Paris
+EVALUATE SUMMARIZECOLUMNS(CityTarget[City], "t", [Target Total])

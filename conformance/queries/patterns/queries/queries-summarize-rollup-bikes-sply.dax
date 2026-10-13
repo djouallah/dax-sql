@@ -1,0 +1,15 @@
+// note: SUMMARIZE of Bikes sales with ROLLUP of year and quarter: SAMEPERIODLASTYEAR and CALCULATE removing the quarter inside the extension columns, on the quarter rows and on the year and grand subtotals, each row's filter being its group's Sales rows
+EVALUATE
+CALCULATETABLE(
+	SUMMARIZE(
+		Sales,
+		ROLLUP('Date'[Year], 'Date'[Quarter]),
+		"Sales", [Sales Amount],
+		"PY", CALCULATE([Sales Amount], SAMEPERIODLASTYEAR('Date'[Date])),
+		"Quarter Removed", CALCULATE([Sales Amount], REMOVEFILTERS('Date'[Quarter])),
+		"Year Subtotal", ISSUBTOTAL('Date'[Year]),
+		"Quarter Subtotal", ISSUBTOTAL('Date'[Quarter])
+	),
+	Category[Category] = "Bikes"
+)
+ORDER BY [Year Subtotal], 'Date'[Year], [Quarter Subtotal], 'Date'[Quarter]

@@ -1,0 +1,9 @@
+// note: the RANK window function over a table variable, ascending, with blanks placed LAST for DENSE and FIRST for SKIP
+EVALUATE
+VAR t = ADDCOLUMNS(ALL(Product[Product]), "@Sales", [Sales Amount])
+RETURN
+    ADDCOLUMNS(
+        t,
+        "Dense Blanks Last", RANK(DENSE, t, ORDERBY([@Sales], ASC), LAST),
+        "Skip Blanks First", RANK(SKIP, t, ORDERBY([@Sales], ASC), FIRST)
+    )

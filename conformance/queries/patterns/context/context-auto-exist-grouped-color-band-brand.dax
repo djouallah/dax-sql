@@ -1,0 +1,14 @@
+// note: auto-exist with a grouping column of the filtered table: grouped by Product[Color] under filters on the Mid price band and two brands, what CALCULATE removing the band, the brand or the color keeps of the other filters
+EVALUATE
+SUMMARIZECOLUMNS(
+    Product[Color],
+    TREATAS({"Mid"}, Product[Price Band]),
+    TREATAS({"Contoso", "Litware"}, Product[Brand]),
+    "Sales", [Sales Amount],
+    "Band Removed", CALCULATE([Sales Amount], REMOVEFILTERS(Product[Price Band])),
+    "Brand Removed", CALCULATE([Sales Amount], REMOVEFILTERS(Product[Brand])),
+    "Color Removed", CALCULATE([Sales Amount], REMOVEFILTERS(Product[Color])),
+    "Brands With Band Removed", CALCULATE(CONCATENATEX(VALUES(Product[Brand]), Product[Brand], ", ", Product[Brand], ASC), REMOVEFILTERS(Product[Price Band])),
+    "Bands With Brand Removed", CALCULATE(CONCATENATEX(VALUES(Product[Price Band]), Product[Price Band], ", ", Product[Price Band], ASC), REMOVEFILTERS(Product[Brand]))
+)
+ORDER BY Product[Color]

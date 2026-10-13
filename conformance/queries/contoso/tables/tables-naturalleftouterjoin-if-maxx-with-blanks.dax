@@ -1,0 +1,2 @@
+// note: NATURALLEFTOUTERJOIN of text with an inline IF over MAXX of text that is blank for some rows: whether blanks change the column type
+EVALUATE NATURALLEFTOUTERJOIN(SELECTCOLUMNS(Category, "Name", CALCULATE(IF([Sales Amount] > 1000, MAXX(Product, Product[Name])))), SELECTCOLUMNS(Product, "Name", Product[Name] & ""))

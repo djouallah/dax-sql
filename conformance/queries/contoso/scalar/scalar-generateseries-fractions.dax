@@ -1,0 +1,2 @@
+// note: GENERATESERIES with a fractional step
+EVALUATE GENERATESERIES(0, 1, 0.25)

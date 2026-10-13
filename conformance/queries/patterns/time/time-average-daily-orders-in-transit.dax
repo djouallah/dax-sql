@@ -1,0 +1,8 @@
+// note: average daily open orders: AVERAGEX over days, context transition into a measure that removes the Date filter
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year Month],
+    TREATAS({2023}, 'Date'[Year]),
+    "Avg In Transit", AVERAGEX(VALUES('Date'[Date]), [Orders In Transit EOP])
+)
+ORDER BY 'Date'[Year Month]

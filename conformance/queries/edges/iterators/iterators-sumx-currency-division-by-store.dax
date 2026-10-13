@@ -1,0 +1,11 @@
+// note: fixed-decimal (Currency) arithmetic inside SUMX, by store: Unit Cost divided by 3, times the double Discount, quantity times cost over 3, and cost over 7 rounded to 4 places, next to Total Cost; the unknown, "" and NULL store keys sum in the blank store
+EVALUATE
+SUMMARIZECOLUMNS(
+    Store[Store],
+    "Total Cost", [Total Cost],
+    "Cost Thirds", SUMX(Sales, Sales[Unit Cost] / 3),
+    "Cost Times Discount", SUMX(Sales, Sales[Unit Cost] * Sales[Discount]),
+    "Line Cost Thirds", SUMX(Sales, Sales[Quantity] * Sales[Unit Cost] / 3),
+    "Cost Sevenths Rounded", SUMX(Sales, ROUND(Sales[Unit Cost] / 7, 4))
+)
+ORDER BY Store[Store]

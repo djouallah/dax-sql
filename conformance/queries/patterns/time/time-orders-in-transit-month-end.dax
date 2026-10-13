@@ -1,0 +1,9 @@
+// note: events in progress: orders placed but not yet delivered at each month's last day, ignoring the Date filter on the active relationship
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year Month],
+    TREATAS({2024}, 'Date'[Year]),
+    "Orders", [Orders],
+    "In Transit", [Orders In Transit EOP]
+)
+ORDER BY 'Date'[Year Month]

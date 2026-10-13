@@ -1,0 +1,2 @@
+// note: fct_summary[Charging MWh] per day, across the newest whole day
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS(dim_calendar[date], "Charging MWh", [Charging MWh]), dim_calendar[date] >= dt"2026-08-07", dim_calendar[date] <= dt"2026-08-13")

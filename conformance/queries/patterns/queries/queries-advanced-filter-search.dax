@@ -1,0 +1,12 @@
+// note: an advanced "contains" filter as Power BI writes it: FILTER over KEEPFILTERS(VALUES) with SEARCH
+DEFINE
+	VAR __DS0FilterTable =
+		FILTER(KEEPFILTERS(VALUES('Product'[Product])), SEARCH("Bike", 'Product'[Product], 1, 0) >= 1)
+EVALUATE
+SUMMARIZECOLUMNS(
+	'Subcategory'[Subcategory],
+	'Date'[Year],
+	__DS0FilterTable,
+	"Sales_Amount", 'Sales'[Sales Amount]
+)
+ORDER BY 'Subcategory'[Subcategory], 'Date'[Year]

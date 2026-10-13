@@ -1,0 +1,8 @@
+// note: OPENINGBALANCEYEAR with a June 30 year end by fiscal year and category: the first fiscal year opens before the Date table
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Fiscal Year], Category[Category],
+    "Opening FY", OPENINGBALANCEYEAR(SUM(Inventory[On Hand]), 'Date'[Date], "6/30"),
+    "Closing FY", CLOSINGBALANCEYEAR(SUM(Inventory[On Hand]), 'Date'[Date], "6/30")
+)
+ORDER BY 'Date'[Fiscal Year], Category[Category]

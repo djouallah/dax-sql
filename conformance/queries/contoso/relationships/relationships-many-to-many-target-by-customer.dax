@@ -1,0 +1,2 @@
+// note: a many-to-many relationship on the city: each customer sees its city's target
+EVALUATE SUMMARIZECOLUMNS(Customer[Customer], "t", [Target Total])

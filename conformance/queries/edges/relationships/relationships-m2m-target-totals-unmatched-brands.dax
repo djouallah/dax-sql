@@ -1,0 +1,11 @@
+// note: many-to-many totals: the target grand total (Ghost and blank brands in it) against the sum over product brands, the Ghost and NULL-brand targets alone, and Product filters (black products, the blank brand) crossing the many-to-many
+EVALUATE
+ROW(
+    "Target All", [Target Amount],
+    "Target Over Brands", SUMX(VALUES(Product[Brand]), [Target Amount]),
+    "Target Ghost", CALCULATE([Target Amount], Target[Brand] = "Ghost"),
+    "Target Blank Brand", CALCULATE([Target Amount], ISBLANK(Target[Brand])),
+    "Target Black Products", CALCULATE([Target Amount], Product[Color] = "Black"),
+    "Target Blank Product Brand", CALCULATE([Target Amount], ISBLANK(Product[Brand])),
+    "Target All Products", CALCULATE([Target Amount], ALL(Product))
+)

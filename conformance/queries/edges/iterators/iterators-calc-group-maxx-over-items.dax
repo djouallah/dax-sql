@@ -1,0 +1,10 @@
+// note: MAXX, MINX and CONCATENATEX iterate the Adjust calculation group's items, so context transition applies each item to [Sales Amount] in turn (Current, PY, YTD, Shipped, Per Customer); PY is blank in 2023, and FIXED prints each value
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year],
+    "Sales", [Sales Amount],
+    "Max Over Items", MAXX(VALUES(Adjust[Adjust]), [Sales Amount]),
+    "Min Over Items", MINX(VALUES(Adjust[Adjust]), [Sales Amount]),
+    "By Item", CONCATENATEX(Adjust, Adjust[Adjust] & "=" & FIXED([Sales Amount], 2, TRUE), "; ", Adjust[Ordinal], ASC)
+)
+ORDER BY 'Date'[Year]

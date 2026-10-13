@@ -1,0 +1,9 @@
+// note: OFFSET(-1) over ALLSELECTED months gives the previous month on the visual's axis, blank on its first month
+EVALUATE
+SUMMARIZECOLUMNS(
+	'Date'[YearMonth],
+	TREATAS({2024}, 'Date'[Year]),
+	"Sales_Amount", 'Sales'[Sales Amount],
+	"Prev_Month", 'Sales'[Visual Prev Month Sales]
+)
+ORDER BY 'Date'[YearMonth]

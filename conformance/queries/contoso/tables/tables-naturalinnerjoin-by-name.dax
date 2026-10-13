@@ -1,0 +1,2 @@
+// note: NATURALINNERJOIN on a same-named computed column without lineage
+EVALUATE NATURALINNERJOIN(SELECTCOLUMNS(Category, "k", Category[CategoryKey] + 0, "Category", Category[Category]), SELECTCOLUMNS(FILTER(Product, Product[Price] > 55), "k", Product[CategoryKey] + 0, "Name", Product[Name]))

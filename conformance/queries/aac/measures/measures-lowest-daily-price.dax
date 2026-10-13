@@ -1,0 +1,2 @@
+// note: fct_region_daily[Lowest daily price] per region
+EVALUATE SUMMARIZECOLUMNS(dim_region[Region], "Lowest daily price", [Lowest daily price])

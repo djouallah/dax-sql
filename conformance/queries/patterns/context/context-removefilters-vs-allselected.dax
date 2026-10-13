@@ -1,0 +1,10 @@
+// note: under a year filter, REMOVEFILTERS() drops it, ALLSELECTED() keeps it, REMOVEFILTERS(Category) drops only the grouping
+EVALUATE
+SUMMARIZECOLUMNS(
+    Category[Category],
+    TREATAS({2024}, 'Date'[Year]),
+    "Sales", [Sales Amount],
+    "Remove All", CALCULATE([Sales Amount], REMOVEFILTERS()),
+    "All Selected", CALCULATE([Sales Amount], ALLSELECTED()),
+    "Remove Category", CALCULATE([Sales Amount], REMOVEFILTERS(Category))
+)

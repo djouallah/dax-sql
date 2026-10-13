@@ -1,0 +1,17 @@
+// note: SUMMARIZE of Sales by year and month evaluates its extension columns with the group's Sales rows as a filter: CALCULATE removing the month, or the whole Date table, there; the same removal in ADDCOLUMNS over the SUMMARIZE, which has only the year and month to go on
+EVALUATE
+CALCULATETABLE(
+    ADDCOLUMNS(
+        SUMMARIZE(
+            Sales,
+            'Date'[Year],
+            'Date'[Month],
+            "Sales", [Sales Amount],
+            "Month Removed In Summarize", CALCULATE([Sales Amount], REMOVEFILTERS('Date'[Month])),
+            "Date Removed In Summarize", CALCULATE([Sales Amount], REMOVEFILTERS('Date'))
+        ),
+        "Month Removed In Addcolumns", CALCULATE([Sales Amount], REMOVEFILTERS('Date'[Month]))
+    ),
+    'Date'[Year] = 2023
+)
+ORDER BY 'Date'[Year], 'Date'[Month]

@@ -1,0 +1,8 @@
+// note: dynamic segmentation under a category filter: each customer is classified by their sales in that category only
+EVALUATE
+SUMMARIZECOLUMNS(
+    Category[Category],
+    Segments[Segment],
+    "Customers", [Segment Customer Count],
+    "Sales", [Segment Customer Sales]
+)

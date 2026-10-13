@@ -1,0 +1,2 @@
+// note: check_model.py: the row count of fct_region_daily
+EVALUATE ROW("table", "fct_region_daily", "rows", COUNTROWS('fct_region_daily'))

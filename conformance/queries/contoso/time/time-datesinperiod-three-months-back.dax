@@ -1,0 +1,2 @@
+// note: DATESINPERIOD three months back from a month end
+EVALUATE ROW("s", CALCULATE([Sales Amount], DATESINPERIOD('Date'[Date], dt"2024-03-31", -3, MONTH)))

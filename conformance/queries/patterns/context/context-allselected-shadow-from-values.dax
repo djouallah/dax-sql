@@ -1,0 +1,10 @@
+// note: ADDCOLUMNS iterating VALUES(Customer[Country]) under a three-country filter: ALLSELECTED gives the three countries' total on every row
+EVALUATE
+CALCULATETABLE(
+    ADDCOLUMNS(
+        VALUES(Customer[Country]),
+        "Sales", [Sales Amount],
+        "Selected", CALCULATE([Sales Amount], ALLSELECTED(Customer[Country]))
+    ),
+    Customer[Country] IN {"France", "Germany", "Australia"}
+)

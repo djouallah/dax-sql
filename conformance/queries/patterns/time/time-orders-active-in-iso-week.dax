@@ -1,0 +1,10 @@
+// note: events in progress over a period: orders whose order-to-delivery span overlaps each ISO week
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[ISO Week],
+    TREATAS({2024}, 'Date'[ISO Year]),
+    FILTER(ALL('Date'[ISO Week]), 'Date'[ISO Week] <= 13),
+    "Orders Placed", [Orders],
+    "Orders Active", [Orders Active In Period]
+)
+ORDER BY 'Date'[ISO Week]

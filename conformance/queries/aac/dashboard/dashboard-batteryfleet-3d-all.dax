@@ -1,0 +1,2 @@
+// note: the dashboard's batteryFleet query, batteries: the fleet's units, MW and MWh (page state: 3 days to 2026-08-11, all)
+EVALUATE CALCULATETABLE(ROW("units", [Registered units], "mw", [Registered MW], "mwh", [Storage MWh]), dim_duid[Storage] = TRUE())

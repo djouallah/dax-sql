@@ -1,0 +1,5460 @@
+{
+ "customers-autoexist-remove-city": {
+  "hash": "5ae3a26b202ae0fd4cc7157ccd7241d3dc1d530c",
+  "columns": [
+   "Customer[Gender]",
+   "[Customers]",
+   "[Customers Any City]",
+   "[Customer Rows Any City]"
+  ],
+  "rows": [
+   [
+    "F",
+    12,
+    29,
+    29
+   ],
+   [
+    "M",
+    20,
+    34,
+    34
+   ]
+  ]
+ },
+ "customers-avg-active-months": {
+  "hash": "0d258be7f591c404ae81ed581aa514aba3d5958e",
+  "columns": [
+   "Customer[Country]",
+   "Date[Year]",
+   "[Avg Active Months]"
+  ],
+  "rows": [
+   [
+    null,
+    2024,
+    2.0
+   ],
+   [
+    "Australia",
+    2022,
+    1.6
+   ],
+   [
+    "Australia",
+    2023,
+    2.896551724137931
+   ],
+   [
+    "Australia",
+    2024,
+    4.9655172413793105
+   ],
+   [
+    "France",
+    2022,
+    1.5714285714285714
+   ],
+   [
+    "France",
+    2023,
+    3.36
+   ],
+   [
+    "France",
+    2024,
+    4.964285714285714
+   ],
+   [
+    "Germany",
+    2022,
+    1.5833333333333333
+   ],
+   [
+    "Germany",
+    2023,
+    2.9310344827586206
+   ],
+   [
+    "Germany",
+    2024,
+    4.9714285714285715
+   ],
+   [
+    "United States",
+    2022,
+    2.0
+   ],
+   [
+    "United States",
+    2023,
+    3.130434782608696
+   ],
+   [
+    "United States",
+    2024,
+    5.428571428571429
+   ]
+  ]
+ },
+ "customers-avg-days-between-orders-by-country": {
+  "hash": "be3e97b8ae3f854616f78fd68408e88ba45df7a1",
+  "columns": [
+   "Customer[Country]",
+   "[Avg Days Between Orders]",
+   "[Customers]"
+  ],
+  "rows": [
+   [
+    null,
+    113.0,
+    1
+   ],
+   [
+    "Australia",
+    77.41867887859267,
+    29
+   ],
+   [
+    "France",
+    66.96688212581071,
+    28
+   ],
+   [
+    "Germany",
+    69.79866316223459,
+    35
+   ],
+   [
+    "United States",
+    60.722198634698636,
+    28
+   ]
+  ]
+ },
+ "customers-avg-days-between-orders-total": {
+  "hash": "7256b8c15ff69f40e2e1ebc99e00aec361837e2b",
+  "columns": [
+   "Customer[Gender]",
+   "[Is Total]",
+   "[Avg Days Between Orders]",
+   "[Repeat Customers]"
+  ],
+  "rows": [
+   [
+    null,
+    false,
+    113.0,
+    1
+   ],
+   [
+    "F",
+    false,
+    53.14179325724781,
+    55
+   ],
+   [
+    "M",
+    false,
+    53.67463466868229,
+    63
+   ],
+   [
+    null,
+    true,
+    53.926895909879114,
+    119
+   ]
+  ]
+ },
+ "customers-basket-and-category-treatas": {
+  "hash": "f2e12bc36eb8e27bd2428a079847703cc10918a9",
+  "columns": [
+   "Category[Category]",
+   "[And Category]",
+   "[Orders Both]"
+  ],
+  "rows": [
+   [
+    "Bikes",
+    "Bikes",
+    711
+   ],
+   [
+    "Clothing",
+    "Bikes",
+    364
+   ],
+   [
+    "Bikes",
+    "Clothing",
+    364
+   ],
+   [
+    "Accessories",
+    "Bikes",
+    366
+   ],
+   [
+    "Bikes",
+    "Accessories",
+    366
+   ],
+   [
+    "Components",
+    "Bikes",
+    384
+   ],
+   [
+    "Bikes",
+    "Components",
+    384
+   ],
+   [
+    null,
+    "Bikes",
+    1
+   ],
+   [
+    "Clothing",
+    "Clothing",
+    681
+   ],
+   [
+    "Accessories",
+    "Clothing",
+    340
+   ],
+   [
+    "Clothing",
+    "Accessories",
+    340
+   ],
+   [
+    "Components",
+    "Clothing",
+    369
+   ],
+   [
+    "Clothing",
+    "Components",
+    369
+   ],
+   [
+    "Accessories",
+    "Accessories",
+    689
+   ],
+   [
+    "Components",
+    "Accessories",
+    371
+   ],
+   [
+    "Accessories",
+    "Components",
+    371
+   ],
+   [
+    "Components",
+    "Components",
+    695
+   ]
+  ]
+ },
+ "customers-basket-bike-attach": {
+  "hash": "c7d925244d112cb1b8f557cb185f03c655b3c314",
+  "columns": [
+   "Subcategory[Subcategory]",
+   "[Orders]",
+   "[With Bikes]",
+   "[Attach %]"
+  ],
+  "rows": [
+   [
+    null,
+    2,
+    1,
+    0.5
+   ],
+   [
+    "Bottles",
+    232,
+    127,
+    0.5474137931034483
+   ],
+   [
+    "Brakes",
+    309,
+    173,
+    0.5598705501618123
+   ],
+   [
+    "Chains",
+    244,
+    138,
+    0.5655737704918032
+   ],
+   [
+    "Gloves",
+    242,
+    128,
+    0.5289256198347108
+   ],
+   [
+    "Helmets",
+    316,
+    172,
+    0.5443037974683544
+   ],
+   [
+    "Jerseys",
+    314,
+    164,
+    0.5222929936305732
+   ],
+   [
+    "Lights",
+    312,
+    164,
+    0.5256410256410257
+   ],
+   [
+    "Mountain Bikes",
+    299,
+    299,
+    1.0
+   ],
+   [
+    "Road Bikes",
+    319,
+    319,
+    1.0
+   ],
+   [
+    "Shorts",
+    289,
+    149,
+    0.5155709342560554
+   ],
+   [
+    "Touring Bikes",
+    277,
+    277,
+    1.0
+   ],
+   [
+    "Wheels",
+    303,
+    168,
+    0.5544554455445545
+   ]
+  ]
+ },
+ "customers-basket-customers-both": {
+  "hash": "788c8898f7aa1abb4aeca1ea63019ce058a3b775",
+  "columns": [
+   "Date[Year]",
+   "[Bikes And Helmets]",
+   "[Customers]"
+  ],
+  "rows": [
+   [
+    2022,
+    12,
+    36
+   ],
+   [
+    2023,
+    63,
+    106
+   ],
+   [
+    2024,
+    92,
+    121
+   ]
+  ]
+ },
+ "customers-basket-subcategory-pairs": {
+  "hash": "ec02fd8b52a834fb12fc5bc85d6e555e06f5a0de",
+  "columns": [
+   "Subcategory[Subcategory]",
+   "[Other]",
+   "[Orders Together]"
+  ],
+  "rows": [
+   [
+    "Road Bikes",
+    "Touring Bikes",
+    70
+   ],
+   [
+    "Road Bikes",
+    "Shorts",
+    69
+   ],
+   [
+    "Mountain Bikes",
+    "Road Bikes",
+    69
+   ],
+   [
+    "Brakes",
+    "Jerseys",
+    69
+   ],
+   [
+    "Road Bikes",
+    "Wheels",
+    84
+   ],
+   [
+    "Mountain Bikes",
+    "Touring Bikes",
+    62
+   ],
+   [
+    "Gloves",
+    "Road Bikes",
+    62
+   ],
+   [
+    "Chains",
+    "Helmets",
+    62
+   ],
+   [
+    "Mountain Bikes",
+    "Shorts",
+    56
+   ],
+   [
+    "Chains",
+    "Shorts",
+    56
+   ],
+   [
+    "Mountain Bikes",
+    "Wheels",
+    67
+   ],
+   [
+    "Jerseys",
+    "Wheels",
+    67
+   ],
+   [
+    "Touring Bikes",
+    "Wheels",
+    58
+   ],
+   [
+    "Helmets",
+    "Jerseys",
+    58
+   ],
+   [
+    "Brakes",
+    "Touring Bikes",
+    58
+   ],
+   [
+    "Chains",
+    "Mountain Bikes",
+    58
+   ],
+   [
+    "Chains",
+    "Touring Bikes",
+    58
+   ],
+   [
+    "Chains",
+    "Jerseys",
+    58
+   ],
+   [
+    "Jerseys",
+    "Road Bikes",
+    81
+   ],
+   [
+    "Brakes",
+    "Mountain Bikes",
+    81
+   ],
+   [
+    "Brakes",
+    "Helmets",
+    81
+   ],
+   [
+    "Jerseys",
+    "Mountain Bikes",
+    74
+   ],
+   [
+    "Helmets",
+    "Lights",
+    74
+   ],
+   [
+    "Jerseys",
+    "Touring Bikes",
+    57
+   ],
+   [
+    "Shorts",
+    "Touring Bikes",
+    57
+   ],
+   [
+    "Gloves",
+    "Wheels",
+    57
+   ],
+   [
+    "Lights",
+    "Touring Bikes",
+    57
+   ],
+   [
+    "Bottles",
+    "Lights",
+    57
+   ],
+   [
+    "Brakes",
+    "Chains",
+    57
+   ],
+   [
+    "Jerseys",
+    "Shorts",
+    73
+   ],
+   [
+    "Helmets",
+    "Road Bikes",
+    73
+   ],
+   [
+    "Brakes",
+    "Wheels",
+    73
+   ],
+   [
+    "Jerseys",
+    "Lights",
+    75
+   ],
+   [
+    "Shorts",
+    "Wheels",
+    59
+   ],
+   [
+    "Gloves",
+    "Mountain Bikes",
+    50
+   ],
+   [
+    "Gloves",
+    "Touring Bikes",
+    50
+   ],
+   [
+    "Gloves",
+    "Jerseys",
+    50
+   ],
+   [
+    "Bottles",
+    "Touring Bikes",
+    50
+   ],
+   [
+    "Chains",
+    "Gloves",
+    50
+   ],
+   [
+    "Gloves",
+    "Shorts",
+    52
+   ],
+   [
+    "Bottles",
+    "Mountain Bikes",
+    52
+   ],
+   [
+    "Gloves",
+    "Helmets",
+    54
+   ],
+   [
+    "Bottles",
+    "Wheels",
+    54
+   ],
+   [
+    "Bottles",
+    "Brakes",
+    54
+   ],
+   [
+    "Gloves",
+    "Lights",
+    60
+   ],
+   [
+    "Bottles",
+    "Road Bikes",
+    60
+   ],
+   [
+    "Helmets",
+    "Mountain Bikes",
+    76
+   ],
+   [
+    "Lights",
+    "Mountain Bikes",
+    76
+   ],
+   [
+    "Helmets",
+    "Touring Bikes",
+    66
+   ],
+   [
+    "Brakes",
+    "Road Bikes",
+    66
+   ],
+   [
+    "Brakes",
+    "Gloves",
+    66
+   ],
+   [
+    "Helmets",
+    "Shorts",
+    68
+   ],
+   [
+    "Helmets",
+    "Wheels",
+    71
+   ],
+   [
+    "Lights",
+    "Road Bikes",
+    72
+   ],
+   [
+    "Lights",
+    "Shorts",
+    61
+   ],
+   [
+    "Lights",
+    "Wheels",
+    64
+   ],
+   [
+    "Bottles",
+    "Jerseys",
+    53
+   ],
+   [
+    "Bottles",
+    "Shorts",
+    48
+   ],
+   [
+    "Bottles",
+    "Gloves",
+    32
+   ],
+   [
+    "Bottles",
+    "Helmets",
+    46
+   ],
+   [
+    "Chains",
+    "Wheels",
+    46
+   ],
+   [
+    "Bottles",
+    "Chains",
+    43
+   ],
+   [
+    "Brakes",
+    "Shorts",
+    63
+   ],
+   [
+    "Brakes",
+    "Lights",
+    79
+   ],
+   [
+    "Chains",
+    "Road Bikes",
+    49
+   ],
+   [
+    "Chains",
+    "Lights",
+    45
+   ]
+  ]
+ },
+ "customers-basket-with-product": {
+  "hash": "74682a6f9bb3c844756d606ecc57f80ebbb658bf",
+  "columns": [
+   "Product[Product]",
+   "[Orders Together]"
+  ],
+  "rows": [
+   [
+    "Road Bike B",
+    7
+   ],
+   [
+    "Road Bike C",
+    7
+   ],
+   [
+    "Touring Bike A",
+    7
+   ],
+   [
+    "Touring Bike B",
+    7
+   ],
+   [
+    "Short B",
+    7
+   ],
+   [
+    "Short D",
+    7
+   ],
+   [
+    "Helmet A",
+    7
+   ],
+   [
+    "Helmet B",
+    7
+   ],
+   [
+    "Helmet C",
+    7
+   ],
+   [
+    "Bottle B",
+    7
+   ],
+   [
+    "Brake A",
+    7
+   ],
+   [
+    "Chain B",
+    7
+   ],
+   [
+    "Road Bike D",
+    3
+   ],
+   [
+    "Short C",
+    3
+   ],
+   [
+    "Brake C",
+    3
+   ],
+   [
+    "Mountain Bike A",
+    8
+   ],
+   [
+    "Jersey A",
+    8
+   ],
+   [
+    "Light A",
+    8
+   ],
+   [
+    "Bottle C",
+    8
+   ],
+   [
+    "Wheel B",
+    8
+   ],
+   [
+    "Wheel D",
+    8
+   ],
+   [
+    "Mountain Bike B",
+    4
+   ],
+   [
+    "Light B",
+    4
+   ],
+   [
+    "Bottle A",
+    4
+   ],
+   [
+    "Chain C",
+    4
+   ],
+   [
+    "Mountain Bike C",
+    2
+   ],
+   [
+    "Mountain Bike D",
+    6
+   ],
+   [
+    "Touring Bike C",
+    6
+   ],
+   [
+    "Helmet D",
+    6
+   ],
+   [
+    "Chain A",
+    6
+   ],
+   [
+    "Jersey B",
+    11
+   ],
+   [
+    "Jersey D",
+    11
+   ],
+   [
+    "Glove B",
+    11
+   ],
+   [
+    "Jersey C",
+    10
+   ],
+   [
+    "Wheel A",
+    10
+   ],
+   [
+    "Short A",
+    5
+   ],
+   [
+    "Glove A",
+    5
+   ],
+   [
+    "Glove C",
+    5
+   ],
+   [
+    "Light D",
+    5
+   ],
+   [
+    "Brake D",
+    5
+   ],
+   [
+    "Light C",
+    9
+   ],
+   [
+    "Brake B",
+    9
+   ],
+   [
+    "Wheel C",
+    12
+   ]
+  ]
+ },
+ "customers-blank-category-crossfilter-both": {
+  "hash": "c0655043c7507ab9c48784efbf5f2e4322810151",
+  "columns": [
+   "Product[Category]",
+   "[Customer Rows]",
+   "[Customer Keys]",
+   "[Distinct Names]",
+   "[Countries]"
+  ],
+  "rows": [
+   [
+    null,
+    1,
+    2,
+    1,
+    ", France"
+   ],
+   [
+    "Accessories",
+    120,
+    120,
+    120,
+    "Australia, France, Germany, United States"
+   ],
+   [
+    "Bikes",
+    120,
+    120,
+    120,
+    "Australia, France, Germany, United States"
+   ],
+   [
+    "Clothing",
+    120,
+    121,
+    120,
+    ", Australia, France, Germany, United States"
+   ],
+   [
+    "Components",
+    120,
+    120,
+    120,
+    "Australia, France, Germany, United States"
+   ]
+  ]
+ },
+ "customers-calc-group-item-override": {
+  "hash": "09721bf51920e3f31d85431a57d63daa77f624a4",
+  "columns": [
+   "Time Intelligence[Time Intelligence]",
+   "Time Intelligence[Ordinal]",
+   "[Customers]",
+   "[Customers Set PY]",
+   "[Customers Keep PY]"
+  ],
+  "rows": [
+   [
+    "Current",
+    0,
+    121,
+    106,
+    121
+   ],
+   [
+    "PY",
+    1,
+    106,
+    106,
+    106
+   ],
+   [
+    "YoY",
+    2,
+    15,
+    106,
+    121
+   ],
+   [
+    "YoY %",
+    3,
+    0.14150943396226415,
+    106,
+    121
+   ],
+   [
+    "YTD",
+    4,
+    121,
+    106,
+    121
+   ],
+   [
+    "MAT",
+    5,
+    121,
+    106,
+    121
+   ]
+  ]
+ },
+ "customers-cohort-first-bike-year": {
+  "hash": "c4654fb8310a46d7ffef2aa9f26a60a6e51eadbd",
+  "columns": [
+   "[@First Year]",
+   "[Customers]"
+  ],
+  "rows": [
+   [
+    2022,
+    26
+   ],
+   [
+    2023,
+    67
+   ],
+   [
+    2024,
+    27
+   ]
+  ]
+ },
+ "customers-cohort-first-order-dates": {
+  "hash": "61da40d07876277350fcaf3d690682247fc6206a",
+  "columns": [
+   "Customer[First Order]",
+   "[Cohort Customers]",
+   "[Lifetime Sales]",
+   "[Lifetime Orders]"
+  ],
+  "rows": []
+ },
+ "customers-cohort-retention-pct": {
+  "hash": "caab67bc6d1ad6766e21ad7d0548ec34c62cf494",
+  "columns": [
+   "[Cohort Year]",
+   "[Cohort Size]",
+   "Date[Year]",
+   "[Retention %]"
+  ],
+  "rows": [
+   [
+    2022,
+    36,
+    2022,
+    1.0
+   ],
+   [
+    2022,
+    36,
+    2023,
+    1.0
+   ],
+   [
+    2022,
+    36,
+    2024,
+    1.0
+   ],
+   [
+    2023,
+    70,
+    2023,
+    1.0
+   ],
+   [
+    2023,
+    70,
+    2024,
+    1.0
+   ],
+   [
+    2024,
+    14,
+    2024,
+    1.0
+   ]
+  ]
+ },
+ "customers-cohort-year-matrix": {
+  "hash": "da45fbdccfdee0b82299120452049ed9165c7726",
+  "columns": [
+   "[Cohort Year]",
+   "Date[Year]",
+   "[Active Customers]"
+  ],
+  "rows": [
+   [
+    2022,
+    2022,
+    36
+   ],
+   [
+    2022,
+    2023,
+    36
+   ],
+   [
+    2022,
+    2024,
+    36
+   ],
+   [
+    2023,
+    2022,
+    null
+   ],
+   [
+    2023,
+    2023,
+    70
+   ],
+   [
+    2023,
+    2024,
+    70
+   ],
+   [
+    2024,
+    2022,
+    null
+   ],
+   [
+    2024,
+    2023,
+    null
+   ],
+   [
+    2024,
+    2024,
+    14
+   ]
+  ]
+ },
+ "customers-days-to-second-order": {
+  "hash": "5e130d26b675b8923c16224e22a682ce7ad702ce",
+  "columns": [
+   "[@Cohort]",
+   "[Customers]",
+   "[With Second Order]",
+   "[Avg Days To Second]"
+  ],
+  "rows": [
+   [
+    2022,
+    36,
+    36,
+    96.72222222222223
+   ],
+   [
+    2023,
+    70,
+    70,
+    114.9
+   ],
+   [
+    2024,
+    14,
+    14,
+    55.07142857142857
+   ]
+  ]
+ },
+ "customers-delivery-userelationship": {
+  "hash": "bab93239cb5e9f1f3d2c073c9733a36c10752792",
+  "columns": [
+   "Date[Year]",
+   "[By Order Date]",
+   "[By Delivery Date]"
+  ],
+  "rows": [
+   [
+    2022,
+    36,
+    36
+   ],
+   [
+    2023,
+    106,
+    106
+   ],
+   [
+    2024,
+    121,
+    121
+   ]
+  ]
+ },
+ "customers-distinct-bridge-account-type": {
+  "hash": "fcd4c80e704a5fb03c8b596d6532883cec577ac8",
+  "columns": [
+   "Account[Account Type]",
+   "[Is Total]",
+   "[Customers]",
+   "[Sales]"
+  ],
+  "rows": [
+   [
+    "Joint",
+    false,
+    24,
+    650218.4099999999
+   ],
+   [
+    "Single",
+    false,
+    16,
+    408524.61
+   ],
+   [
+    null,
+    true,
+    121,
+    3363847.6299999966
+   ]
+  ]
+ },
+ "customers-distinct-geo-subtotals": {
+  "hash": "f66c40b21fb27cc1280efef3d06ddded793d1588",
+  "columns": [
+   "Customer[Country]",
+   "Customer[City]",
+   "[Country Total]",
+   "[City Total]",
+   "[Customers]",
+   "[Products]"
+  ],
+  "rows": [
+   [
+    null,
+    null,
+    false,
+    false,
+    1,
+    2
+   ],
+   [
+    null,
+    null,
+    false,
+    true,
+    1,
+    2
+   ],
+   [
+    "Australia",
+    "Melbourne",
+    false,
+    false,
+    15,
+    44
+   ],
+   [
+    "Australia",
+    "Sydney",
+    false,
+    false,
+    14,
+    44
+   ],
+   [
+    "Australia",
+    null,
+    false,
+    true,
+    29,
+    44
+   ],
+   [
+    "France",
+    "Lyon",
+    false,
+    false,
+    7,
+    44
+   ],
+   [
+    "France",
+    "Marseille",
+    false,
+    false,
+    9,
+    44
+   ],
+   [
+    "France",
+    "Paris",
+    false,
+    false,
+    12,
+    45
+   ],
+   [
+    "France",
+    null,
+    false,
+    true,
+    28,
+    45
+   ],
+   [
+    "Germany",
+    "Berlin",
+    false,
+    false,
+    20,
+    44
+   ],
+   [
+    "Germany",
+    "Munich",
+    false,
+    false,
+    15,
+    44
+   ],
+   [
+    "Germany",
+    null,
+    false,
+    true,
+    35,
+    44
+   ],
+   [
+    "United States",
+    "Austin",
+    false,
+    false,
+    11,
+    44
+   ],
+   [
+    "United States",
+    "Boston",
+    false,
+    false,
+    9,
+    44
+   ],
+   [
+    "United States",
+    "Seattle",
+    false,
+    false,
+    8,
+    44
+   ],
+   [
+    "United States",
+    null,
+    false,
+    true,
+    28,
+    44
+   ],
+   [
+    null,
+    null,
+    true,
+    true,
+    121,
+    45
+   ]
+  ]
+ },
+ "customers-distinct-nonadditive": {
+  "hash": "f0c64c44297b8db22caec31742793fe6ad03ae06",
+  "columns": [
+   "Category[Category]",
+   "[Customers]",
+   "[Sum Over Subcategories]",
+   "[Sum Over Products]"
+  ],
+  "rows": [
+   [
+    null,
+    2,
+    2,
+    2
+   ],
+   [
+    "Accessories",
+    120,
+    324,
+    688
+   ],
+   [
+    "Bikes",
+    120,
+    334,
+    697
+   ],
+   [
+    "Clothing",
+    121,
+    327,
+    671
+   ],
+   [
+    "Components",
+    120,
+    327,
+    667
+   ]
+  ]
+ },
+ "customers-distinct-week-vs-days": {
+  "hash": "d9b2e186b469c92914841dba3d3fee5818ec49ef",
+  "columns": [
+   "Date[ISO Week]",
+   "[Is Total]",
+   "[Customers]",
+   "[Sum Of Daily]"
+  ],
+  "rows": [
+   [
+    1,
+    false,
+    6,
+    6
+   ],
+   [
+    48,
+    false,
+    5,
+    5
+   ],
+   [
+    49,
+    false,
+    18,
+    20
+   ],
+   [
+    50,
+    false,
+    20,
+    21
+   ],
+   [
+    51,
+    false,
+    23,
+    26
+   ],
+   [
+    52,
+    false,
+    22,
+    22
+   ],
+   [
+    null,
+    true,
+    66,
+    100
+   ]
+  ]
+ },
+ "customers-expanded-vs-key": {
+  "hash": "6ab6b435caedb1bac9c5f939ec6ce6fabc2006e8",
+  "columns": [
+   "Date[Year]",
+   "[Distinct Keys]",
+   "[Via Expanded Sales]"
+  ],
+  "rows": [
+   [
+    2022,
+    36,
+    36
+   ],
+   [
+    2023,
+    106,
+    106
+   ],
+   [
+    2024,
+    121,
+    120
+   ]
+  ]
+ },
+ "customers-first-last-order-filter-all-dates": {
+  "hash": "154a46784bd5895290219e06a274c8756f0bab4a",
+  "columns": [
+   "Customer[Customer]",
+   "[Orders 2023]",
+   "[First Up To End]",
+   "[Last Up To End]",
+   "[Last In 2023]"
+  ],
+  "rows": [
+   [
+    "Customer 016",
+    5,
+    "2023-03-30",
+    "2023-11-27",
+    "2023-11-27"
+   ],
+   [
+    "Customer 021",
+    5,
+    "2023-03-12",
+    "2023-12-18",
+    "2023-12-18"
+   ],
+   [
+    "Customer 027",
+    5,
+    "2023-04-07",
+    "2023-11-29",
+    "2023-11-29"
+   ],
+   [
+    "Customer 076",
+    5,
+    "2022-12-08",
+    "2023-12-01",
+    "2023-12-01"
+   ],
+   [
+    "Customer 082",
+    4,
+    "2023-01-11",
+    "2023-10-04",
+    "2023-10-04"
+   ],
+   [
+    "Customer 089",
+    2,
+    "2023-01-23",
+    "2023-12-22",
+    "2023-12-22"
+   ]
+  ]
+ },
+ "customers-first-purchase-dynamic": {
+  "hash": "236b1ab4bceafc2fa880caa04d774a755f85d196",
+  "columns": [
+   "Customer[Customer]",
+   "Customer[First Order]",
+   "[First Bike Purchase]",
+   "[Bike Orders]"
+  ],
+  "rows": [
+   [
+    "Customer 005",
+    "2022-10-25",
+    "2022-10-25",
+    5
+   ],
+   [
+    "Customer 009",
+    "2023-04-05",
+    "2023-04-05",
+    6
+   ],
+   [
+    "Customer 011",
+    "2023-11-23",
+    "2024-02-04",
+    5
+   ],
+   [
+    "Customer 023",
+    "2022-10-09",
+    "2022-10-09",
+    7
+   ],
+   [
+    "Customer 050",
+    "2023-02-09",
+    "2023-04-22",
+    5
+   ],
+   [
+    "Customer 061",
+    "2023-01-27",
+    "2023-04-05",
+    9
+   ],
+   [
+    "Customer 063",
+    "2022-10-13",
+    "2022-10-26",
+    11
+   ],
+   [
+    "Customer 068",
+    "2022-09-19",
+    "2022-09-19",
+    6
+   ],
+   [
+    "Customer 077",
+    "2023-05-11",
+    "2023-07-17",
+    6
+   ],
+   [
+    "Customer 080",
+    "2023-12-18",
+    "2024-02-12",
+    4
+   ],
+   [
+    "Customer 088",
+    "2023-10-17",
+    "2023-10-17",
+    3
+   ],
+   [
+    "Customer 117",
+    "2022-08-15",
+    "2023-01-31",
+    4
+   ]
+  ]
+ },
+ "customers-fiscal-opening-closing": {
+  "hash": "71c6e69a4f845edb2649e20f7131bddc3cb3416f",
+  "columns": [
+   "Date[Fiscal Year]",
+   "Date[Fiscal Quarter]",
+   "[To Date]",
+   "[Opening]",
+   "[Closing]"
+  ],
+  "rows": [
+   [
+    2022,
+    3,
+    null,
+    null,
+    6
+   ],
+   [
+    2022,
+    4,
+    6,
+    null,
+    6
+   ],
+   [
+    2023,
+    1,
+    19,
+    6,
+    81
+   ],
+   [
+    2023,
+    2,
+    36,
+    6,
+    81
+   ],
+   [
+    2023,
+    3,
+    58,
+    6,
+    81
+   ],
+   [
+    2023,
+    4,
+    81,
+    6,
+    81
+   ],
+   [
+    2024,
+    1,
+    101,
+    81,
+    120
+   ],
+   [
+    2024,
+    2,
+    106,
+    81,
+    120
+   ],
+   [
+    2024,
+    3,
+    113,
+    81,
+    120
+   ],
+   [
+    2024,
+    4,
+    120,
+    81,
+    120
+   ],
+   [
+    2025,
+    1,
+    121,
+    120,
+    121
+   ],
+   [
+    2025,
+    2,
+    121,
+    120,
+    121
+   ]
+  ]
+ },
+ "customers-fiscal-prev-next-year": {
+  "hash": "c2f40a0045f82f9461353f3e2b5284187fac1764",
+  "columns": [
+   "Date[Fiscal Year]",
+   "[Customers]",
+   "[Customers PY]",
+   "[Customers NY]",
+   "[FY Start]",
+   "[FY End]"
+  ],
+  "rows": [
+   [
+    2022,
+    6,
+    null,
+    81,
+    "2022-01-01",
+    "2022-06-30"
+   ],
+   [
+    2023,
+    81,
+    6,
+    119,
+    "2022-07-01",
+    "2023-06-30"
+   ],
+   [
+    2024,
+    119,
+    81,
+    118,
+    "2023-07-01",
+    "2024-06-30"
+   ],
+   [
+    2025,
+    118,
+    119,
+    null,
+    "2024-07-01",
+    "2024-12-31"
+   ]
+  ]
+ },
+ "customers-lost-by-month": {
+  "hash": "1c0b89e0721e29a2547b1ff380a8c4f109d20a80",
+  "columns": [
+   "Date[Year Month]",
+   "[Lost]",
+   "[Customers]"
+  ],
+  "rows": [
+   [
+    "2023-01",
+    6,
+    23
+   ],
+   [
+    "2023-02",
+    3,
+    13
+   ],
+   [
+    "2023-03",
+    8,
+    16
+   ],
+   [
+    "2023-04",
+    12,
+    21
+   ],
+   [
+    "2023-05",
+    8,
+    23
+   ],
+   [
+    "2023-06",
+    10,
+    24
+   ],
+   [
+    "2023-07",
+    9,
+    29
+   ],
+   [
+    "2023-08",
+    9,
+    31
+   ],
+   [
+    "2023-09",
+    8,
+    28
+   ],
+   [
+    "2023-10",
+    14,
+    30
+   ],
+   [
+    "2023-11",
+    11,
+    34
+   ],
+   [
+    "2023-12",
+    7,
+    53
+   ]
+  ]
+ },
+ "customers-lost-window-local": {
+  "hash": "4505111f99a161f6630575eb8674dfb399cfcfd7",
+  "columns": [
+   "Date[Year Month]",
+   "[Lost 30d]",
+   "[Lost 90d]"
+  ],
+  "rows": [
+   [
+    "2024-01",
+    32,
+    6
+   ],
+   [
+    "2024-02",
+    24,
+    6
+   ],
+   [
+    "2024-03",
+    37,
+    15
+   ],
+   [
+    "2024-04",
+    19,
+    11
+   ],
+   [
+    "2024-05",
+    31,
+    15
+   ],
+   [
+    "2024-06",
+    24,
+    9
+   ],
+   [
+    "2024-07",
+    22,
+    16
+   ],
+   [
+    "2024-08",
+    26,
+    10
+   ],
+   [
+    "2024-09",
+    32,
+    6
+   ],
+   [
+    "2024-10",
+    31,
+    9
+   ],
+   [
+    "2024-11",
+    27,
+    7
+   ],
+   [
+    "2024-12",
+    30,
+    7
+   ]
+  ]
+ },
+ "customers-matrix-rows-columns-totals": {
+  "hash": "e26dc5e286fbb759b657f02d1e9aa3c517cf5239",
+  "columns": [
+   "Customer[Country]",
+   "Date[Year]",
+   "[IsRowTotal]",
+   "[IsColumnTotal]",
+   "[Customers]",
+   "[New]"
+  ],
+  "rows": [
+   [
+    null,
+    null,
+    true,
+    true,
+    121,
+    121
+   ],
+   [
+    null,
+    2022,
+    true,
+    false,
+    36,
+    36
+   ],
+   [
+    null,
+    2023,
+    true,
+    false,
+    106,
+    70
+   ],
+   [
+    null,
+    2024,
+    true,
+    false,
+    121,
+    15
+   ],
+   [
+    null,
+    null,
+    false,
+    true,
+    1,
+    1
+   ],
+   [
+    null,
+    2024,
+    false,
+    false,
+    1,
+    1
+   ],
+   [
+    "Australia",
+    null,
+    false,
+    true,
+    29,
+    29
+   ],
+   [
+    "Australia",
+    2022,
+    false,
+    false,
+    10,
+    10
+   ],
+   [
+    "Australia",
+    2023,
+    false,
+    false,
+    29,
+    19
+   ],
+   [
+    "Australia",
+    2024,
+    false,
+    false,
+    29,
+    null
+   ],
+   [
+    "France",
+    null,
+    false,
+    true,
+    28,
+    28
+   ],
+   [
+    "France",
+    2022,
+    false,
+    false,
+    7,
+    7
+   ],
+   [
+    "France",
+    2023,
+    false,
+    false,
+    25,
+    18
+   ],
+   [
+    "France",
+    2024,
+    false,
+    false,
+    28,
+    3
+   ],
+   [
+    "Germany",
+    null,
+    false,
+    true,
+    35,
+    35
+   ],
+   [
+    "Germany",
+    2022,
+    false,
+    false,
+    12,
+    12
+   ],
+   [
+    "Germany",
+    2023,
+    false,
+    false,
+    29,
+    17
+   ],
+   [
+    "Germany",
+    2024,
+    false,
+    false,
+    35,
+    6
+   ],
+   [
+    "United States",
+    null,
+    false,
+    true,
+    28,
+    28
+   ],
+   [
+    "United States",
+    2022,
+    false,
+    false,
+    7,
+    7
+   ],
+   [
+    "United States",
+    2023,
+    false,
+    false,
+    23,
+    16
+   ],
+   [
+    "United States",
+    2024,
+    false,
+    false,
+    28,
+    5
+   ]
+  ]
+ },
+ "customers-matrix-visual": {
+  "hash": "1f1c2c5fd058384c24419a4d5cbc7d0f8d8035ca",
+  "columns": [
+   "Date[Quarter]",
+   "Customer[Country]",
+   "[IsGrandTotalRowTotal]",
+   "[IsDM1Total]",
+   "[Customers_New]",
+   "[Customers_Returning]"
+  ],
+  "rows": [
+   [
+    null,
+    null,
+    true,
+    true,
+    70,
+    36
+   ],
+   [
+    1,
+    null,
+    false,
+    true,
+    22,
+    20
+   ],
+   [
+    1,
+    "Australia",
+    false,
+    false,
+    6,
+    6
+   ],
+   [
+    1,
+    "France",
+    false,
+    false,
+    7,
+    5
+   ],
+   [
+    1,
+    "Germany",
+    false,
+    false,
+    5,
+    7
+   ],
+   [
+    1,
+    "United States",
+    false,
+    false,
+    4,
+    2
+   ],
+   [
+    2,
+    null,
+    false,
+    true,
+    23,
+    25
+   ],
+   [
+    2,
+    "Australia",
+    false,
+    false,
+    5,
+    10
+   ],
+   [
+    2,
+    "France",
+    false,
+    false,
+    5,
+    10
+   ],
+   [
+    2,
+    "Germany",
+    false,
+    false,
+    5,
+    2
+   ],
+   [
+    2,
+    "United States",
+    false,
+    false,
+    8,
+    3
+   ],
+   [
+    3,
+    null,
+    false,
+    true,
+    20,
+    50
+   ],
+   [
+    3,
+    "Australia",
+    false,
+    false,
+    8,
+    13
+   ],
+   [
+    3,
+    "France",
+    false,
+    false,
+    3,
+    11
+   ],
+   [
+    3,
+    "Germany",
+    false,
+    false,
+    5,
+    15
+   ],
+   [
+    3,
+    "United States",
+    false,
+    false,
+    4,
+    11
+   ],
+   [
+    4,
+    null,
+    false,
+    true,
+    5,
+    77
+   ],
+   [
+    4,
+    "Australia",
+    false,
+    false,
+    null,
+    20
+   ],
+   [
+    4,
+    "France",
+    false,
+    false,
+    3,
+    17
+   ],
+   [
+    4,
+    "Germany",
+    false,
+    false,
+    2,
+    22
+   ],
+   [
+    4,
+    "United States",
+    false,
+    false,
+    null,
+    18
+   ]
+  ]
+ },
+ "customers-naturaljoin-blank-country": {
+  "hash": "d2e10c31290d8babad7df2cd7d7c60fa3354443e",
+  "columns": [
+   "Customer[Country]",
+   "[Buyers]",
+   "Customer[Gender]",
+   "[Orders]"
+  ],
+  "rows": [
+   [
+    null,
+    1,
+    null,
+    2
+   ],
+   [
+    "Australia",
+    29,
+    "F",
+    98
+   ],
+   [
+    "Australia",
+    29,
+    "M",
+    90
+   ],
+   [
+    "France",
+    28,
+    "F",
+    60
+   ],
+   [
+    "France",
+    28,
+    "M",
+    120
+   ],
+   [
+    "Germany",
+    35,
+    "F",
+    123
+   ],
+   [
+    "Germany",
+    35,
+    "M",
+    108
+   ],
+   [
+    "United States",
+    28,
+    "F",
+    97
+   ],
+   [
+    "United States",
+    28,
+    "M",
+    105
+   ]
+  ]
+ },
+ "customers-new-by-category": {
+  "hash": "131092f216b5ddd7ed2416f2032fb77314bbdbb8",
+  "columns": [
+   "Date[Year]",
+   "Category[Category]",
+   "[New To Category]",
+   "[Customers]"
+  ],
+  "rows": [
+   [
+    2022,
+    "Accessories",
+    26,
+    26
+   ],
+   [
+    2022,
+    "Bikes",
+    26,
+    26
+   ],
+   [
+    2022,
+    "Clothing",
+    24,
+    24
+   ],
+   [
+    2022,
+    "Components",
+    26,
+    26
+   ],
+   [
+    2023,
+    null,
+    1,
+    1
+   ],
+   [
+    2023,
+    "Accessories",
+    66,
+    91
+   ],
+   [
+    2023,
+    "Bikes",
+    67,
+    90
+   ],
+   [
+    2023,
+    "Clothing",
+    69,
+    90
+   ],
+   [
+    2023,
+    "Components",
+    69,
+    90
+   ],
+   [
+    2024,
+    null,
+    1,
+    1
+   ],
+   [
+    2024,
+    "Accessories",
+    28,
+    117
+   ],
+   [
+    2024,
+    "Bikes",
+    27,
+    117
+   ],
+   [
+    2024,
+    "Clothing",
+    28,
+    117
+   ],
+   [
+    2024,
+    "Components",
+    25,
+    117
+   ]
+  ]
+ },
+ "customers-new-calc-group-ytd": {
+  "hash": "9a6e191a126754e6a8ab7cc850a8d48c57f90cd9",
+  "columns": [
+   "Date[Month]",
+   "Time Intelligence[Time Intelligence]",
+   "[New]"
+  ],
+  "rows": [
+   [
+    1,
+    "Current",
+    3
+   ],
+   [
+    1,
+    "MAT",
+    64
+   ],
+   [
+    1,
+    "YTD",
+    3
+   ],
+   [
+    2,
+    "Current",
+    2
+   ],
+   [
+    2,
+    "MAT",
+    58
+   ],
+   [
+    2,
+    "YTD",
+    5
+   ],
+   [
+    3,
+    "Current",
+    2
+   ],
+   [
+    3,
+    "MAT",
+    55
+   ],
+   [
+    3,
+    "YTD",
+    7
+   ],
+   [
+    4,
+    "Current",
+    3
+   ],
+   [
+    4,
+    "MAT",
+    48
+   ],
+   [
+    4,
+    "YTD",
+    10
+   ],
+   [
+    5,
+    "Current",
+    1
+   ],
+   [
+    5,
+    "MAT",
+    42
+   ],
+   [
+    5,
+    "YTD",
+    11
+   ],
+   [
+    6,
+    "Current",
+    3
+   ],
+   [
+    6,
+    "MAT",
+    39
+   ],
+   [
+    6,
+    "YTD",
+    14
+   ],
+   [
+    7,
+    "MAT",
+    32
+   ],
+   [
+    7,
+    "YTD",
+    14
+   ],
+   [
+    8,
+    "Current",
+    1
+   ],
+   [
+    8,
+    "MAT",
+    27
+   ],
+   [
+    8,
+    "YTD",
+    15
+   ],
+   [
+    9,
+    "MAT",
+    20
+   ],
+   [
+    9,
+    "YTD",
+    15
+   ],
+   [
+    10,
+    "MAT",
+    18
+   ],
+   [
+    10,
+    "YTD",
+    15
+   ],
+   [
+    11,
+    "MAT",
+    16
+   ],
+   [
+    11,
+    "YTD",
+    15
+   ],
+   [
+    12,
+    "MAT",
+    15
+   ],
+   [
+    12,
+    "YTD",
+    15
+   ]
+  ]
+ },
+ "customers-new-returning-by-month": {
+  "hash": "7b13992979620e5eb0cb6b698b781d6adfc3dd79",
+  "columns": [
+   "Date[Year Month]",
+   "[Customers]",
+   "[New]",
+   "[Returning]"
+  ],
+  "rows": [
+   [
+    "2024-01",
+    47,
+    3,
+    44
+   ],
+   [
+    "2024-02",
+    50,
+    2,
+    48
+   ],
+   [
+    "2024-03",
+    35,
+    2,
+    33
+   ],
+   [
+    "2024-04",
+    50,
+    3,
+    47
+   ],
+   [
+    "2024-05",
+    44,
+    1,
+    43
+   ],
+   [
+    "2024-06",
+    42,
+    3,
+    39
+   ],
+   [
+    "2024-07",
+    50,
+    null,
+    50
+   ],
+   [
+    "2024-08",
+    60,
+    1,
+    59
+   ],
+   [
+    "2024-09",
+    54,
+    null,
+    54
+   ],
+   [
+    "2024-10",
+    52,
+    null,
+    52
+   ],
+   [
+    "2024-11",
+    61,
+    null,
+    61
+   ],
+   [
+    "2024-12",
+    66,
+    null,
+    66
+   ]
+  ]
+ },
+ "customers-new-sales-share": {
+  "hash": "4c0167d43d9967052c9ab62d6aed092a836a2308",
+  "columns": [
+   "Date[Year]",
+   "Customer[Country]",
+   "[New Customer Sales]",
+   "[Sales]",
+   "[New Share]"
+  ],
+  "rows": [
+   [
+    2022,
+    "Australia",
+    103825.63999999997,
+    103825.63999999997,
+    1.0
+   ],
+   [
+    2022,
+    "France",
+    24708.290000000005,
+    24708.290000000005,
+    1.0
+   ],
+   [
+    2022,
+    "Germany",
+    54876.77999999999,
+    54876.77999999999,
+    1.0
+   ],
+   [
+    2022,
+    "United States",
+    34834.590000000004,
+    34834.590000000004,
+    1.0
+   ],
+   [
+    2023,
+    "Australia",
+    239161.08,
+    358327.44,
+    0.6674372467818819
+   ],
+   [
+    2023,
+    "France",
+    114787.66000000005,
+    210445.20999999988,
+    0.5454515215623112
+   ],
+   [
+    2023,
+    "Germany",
+    128316.17999999998,
+    219319.74000000008,
+    0.5850644360603379
+   ],
+   [
+    2023,
+    "United States",
+    122609.52000000005,
+    184589.47000000015,
+    0.6642281382572903
+   ],
+   [
+    2024,
+    null,
+    189.0,
+    189.0,
+    1.0
+   ],
+   [
+    2024,
+    "Australia",
+    null,
+    708335.8299999996,
+    null
+   ],
+   [
+    2024,
+    "France",
+    103158.47,
+    445586.26000000024,
+    0.2315117840482782
+   ],
+   [
+    2024,
+    "Germany",
+    112038.26,
+    535262.2899999998,
+    0.20931468943945228
+   ],
+   [
+    2024,
+    "United States",
+    107963.96000000005,
+    483547.09000000055,
+    0.22327496583631581
+   ]
+  ]
+ },
+ "customers-new-static-vs-dynamic": {
+  "hash": "507103332d0dc3d357ddaa30d6370839aa90c5c7",
+  "columns": [
+   "Date[Year]",
+   "Category[Category]",
+   "[New Static]",
+   "[New Dynamic]"
+  ],
+  "rows": [
+   [
+    2022,
+    null,
+    36,
+    null
+   ],
+   [
+    2022,
+    "Accessories",
+    36,
+    26
+   ],
+   [
+    2022,
+    "Bikes",
+    36,
+    26
+   ],
+   [
+    2022,
+    "Clothing",
+    36,
+    24
+   ],
+   [
+    2022,
+    "Components",
+    36,
+    26
+   ],
+   [
+    2023,
+    null,
+    70,
+    1
+   ],
+   [
+    2023,
+    "Accessories",
+    70,
+    66
+   ],
+   [
+    2023,
+    "Bikes",
+    70,
+    67
+   ],
+   [
+    2023,
+    "Clothing",
+    70,
+    69
+   ],
+   [
+    2023,
+    "Components",
+    70,
+    69
+   ],
+   [
+    2024,
+    null,
+    14,
+    1
+   ],
+   [
+    2024,
+    "Accessories",
+    14,
+    28
+   ],
+   [
+    2024,
+    "Bikes",
+    14,
+    27
+   ],
+   [
+    2024,
+    "Clothing",
+    14,
+    28
+   ],
+   [
+    2024,
+    "Components",
+    14,
+    25
+   ]
+  ]
+ },
+ "customers-new-treatas-lineage": {
+  "hash": "a0205b0b65523f7e0ae3f48ff949bb87582889a6",
+  "columns": [
+   "Date[Year]",
+   "Date[Quarter]",
+   "[New Lineage]",
+   "[New Filter]"
+  ],
+  "rows": [
+   [
+    2022,
+    2,
+    6,
+    6
+   ],
+   [
+    2022,
+    3,
+    13,
+    13
+   ],
+   [
+    2022,
+    4,
+    17,
+    17
+   ],
+   [
+    2023,
+    1,
+    22,
+    22
+   ],
+   [
+    2023,
+    2,
+    23,
+    23
+   ],
+   [
+    2023,
+    3,
+    20,
+    20
+   ],
+   [
+    2023,
+    4,
+    5,
+    5
+   ],
+   [
+    2024,
+    1,
+    7,
+    7
+   ],
+   [
+    2024,
+    2,
+    7,
+    7
+   ],
+   [
+    2024,
+    3,
+    1,
+    1
+   ]
+  ]
+ },
+ "customers-offset-blank-category-partition": {
+  "hash": "1223c9cea19a83e988442477c10bc0464bf508d0",
+  "columns": [
+   "Product[Category]",
+   "Date[Year]",
+   "[@Customers]",
+   "[Previous Year Customers]",
+   "[Row In Category]"
+  ],
+  "rows": [
+   [
+    null,
+    2023,
+    1,
+    null,
+    1
+   ],
+   [
+    null,
+    2024,
+    1,
+    1,
+    2
+   ],
+   [
+    "Accessories",
+    2022,
+    26,
+    null,
+    1
+   ],
+   [
+    "Accessories",
+    2023,
+    91,
+    26,
+    2
+   ],
+   [
+    "Accessories",
+    2024,
+    117,
+    91,
+    3
+   ],
+   [
+    "Bikes",
+    2022,
+    26,
+    null,
+    1
+   ],
+   [
+    "Bikes",
+    2023,
+    90,
+    26,
+    2
+   ],
+   [
+    "Bikes",
+    2024,
+    117,
+    90,
+    3
+   ],
+   [
+    "Clothing",
+    2022,
+    24,
+    null,
+    1
+   ],
+   [
+    "Clothing",
+    2023,
+    90,
+    24,
+    2
+   ],
+   [
+    "Clothing",
+    2024,
+    117,
+    90,
+    3
+   ],
+   [
+    "Components",
+    2022,
+    26,
+    null,
+    1
+   ],
+   [
+    "Components",
+    2023,
+    90,
+    26,
+    2
+   ],
+   [
+    "Components",
+    2024,
+    117,
+    90,
+    3
+   ]
+  ]
+ },
+ "customers-percentile-exc-blanks": {
+  "hash": "f2e3a2196579670c9572fe9e486b5b198b591fd4",
+  "columns": [
+   "Customer[Country]",
+   "[Buyers]",
+   "[P20]",
+   "[P50]",
+   "[P80]",
+   "[Birth Year P50]"
+  ],
+  "rows": [
+   [
+    "Australia",
+    10,
+    null,
+    null,
+    5931.12,
+    1970
+   ],
+   [
+    "France",
+    7,
+    null,
+    null,
+    2013.8380000000034,
+    1968.0
+   ],
+   [
+    "Germany",
+    12,
+    null,
+    null,
+    3513.386000000001,
+    1973
+   ],
+   [
+    "United States",
+    7,
+    null,
+    null,
+    3140.1580000000013,
+    1979.5
+   ]
+  ]
+ },
+ "customers-prev-order-classic": {
+  "hash": "60a6ea1e7d3ae01c7dd699f3fe2f56b060f564ce",
+  "columns": [
+   "Sales[CustomerKey]",
+   "Sales[Order Date]",
+   "[Previous Order]"
+  ],
+  "rows": [
+   [
+    16,
+    "2024-01-24",
+    null
+   ],
+   [
+    16,
+    "2024-08-09",
+    "2024-01-24"
+   ],
+   [
+    16,
+    "2024-09-11",
+    "2024-08-09"
+   ],
+   [
+    16,
+    "2024-11-22",
+    "2024-09-11"
+   ],
+   [
+    21,
+    "2024-02-26",
+    null
+   ],
+   [
+    21,
+    "2024-04-06",
+    "2024-02-26"
+   ],
+   [
+    21,
+    "2024-06-24",
+    "2024-04-06"
+   ],
+   [
+    21,
+    "2024-07-03",
+    "2024-06-24"
+   ],
+   [
+    21,
+    "2024-08-29",
+    "2024-07-03"
+   ],
+   [
+    21,
+    "2024-10-05",
+    "2024-08-29"
+   ],
+   [
+    21,
+    "2024-12-10",
+    "2024-10-05"
+   ],
+   [
+    27,
+    "2024-03-29",
+    null
+   ],
+   [
+    27,
+    "2024-07-09",
+    "2024-03-29"
+   ],
+   [
+    27,
+    "2024-09-19",
+    "2024-07-09"
+   ],
+   [
+    27,
+    "2024-11-30",
+    "2024-09-19"
+   ],
+   [
+    76,
+    "2024-04-20",
+    null
+   ],
+   [
+    76,
+    "2024-05-14",
+    "2024-04-20"
+   ],
+   [
+    76,
+    "2024-06-10",
+    "2024-05-14"
+   ],
+   [
+    76,
+    "2024-11-19",
+    "2024-06-10"
+   ],
+   [
+    82,
+    "2024-01-23",
+    null
+   ],
+   [
+    82,
+    "2024-03-12",
+    "2024-01-23"
+   ],
+   [
+    82,
+    "2024-05-04",
+    "2024-03-12"
+   ],
+   [
+    82,
+    "2024-08-09",
+    "2024-05-04"
+   ],
+   [
+    82,
+    "2024-09-17",
+    "2024-08-09"
+   ],
+   [
+    82,
+    "2024-10-08",
+    "2024-09-17"
+   ],
+   [
+    82,
+    "2024-10-30",
+    "2024-10-08"
+   ],
+   [
+    89,
+    "2024-01-07",
+    null
+   ],
+   [
+    89,
+    "2024-02-14",
+    "2024-01-07"
+   ],
+   [
+    89,
+    "2024-06-28",
+    "2024-02-14"
+   ],
+   [
+    89,
+    "2024-07-16",
+    "2024-06-28"
+   ],
+   [
+    89,
+    "2024-08-16",
+    "2024-07-16"
+   ],
+   [
+    89,
+    "2024-11-02",
+    "2024-08-16"
+   ],
+   [
+    89,
+    "2024-11-12",
+    "2024-11-02"
+   ],
+   [
+    89,
+    "2024-12-22",
+    "2024-11-12"
+   ],
+   [
+    111,
+    "2024-01-07",
+    null
+   ],
+   [
+    111,
+    "2024-01-28",
+    "2024-01-07"
+   ],
+   [
+    111,
+    "2024-02-28",
+    "2024-01-28"
+   ],
+   [
+    111,
+    "2024-03-27",
+    "2024-02-28"
+   ],
+   [
+    111,
+    "2024-07-29",
+    "2024-03-27"
+   ],
+   [
+    111,
+    "2024-09-01",
+    "2024-07-29"
+   ],
+   [
+    111,
+    "2024-11-17",
+    "2024-09-01"
+   ],
+   [
+    111,
+    "2024-11-28",
+    "2024-11-17"
+   ],
+   [
+    111,
+    "2024-12-04",
+    "2024-11-28"
+   ],
+   [
+    111,
+    "2024-12-13",
+    "2024-12-04"
+   ]
+  ]
+ },
+ "customers-prev-order-offset": {
+  "hash": "dc782473292487fbc4b630c4a919c5e14fb53cf4",
+  "columns": [
+   "Sales[CustomerKey]",
+   "Sales[Order Date]",
+   "[Previous Order]",
+   "[Days Since Previous]"
+  ],
+  "rows": [
+   [
+    16,
+    "2024-01-24",
+    null,
+    null
+   ],
+   [
+    16,
+    "2024-08-09",
+    "2024-01-24",
+    198
+   ],
+   [
+    16,
+    "2024-09-11",
+    "2024-08-09",
+    33
+   ],
+   [
+    16,
+    "2024-11-22",
+    "2024-09-11",
+    72
+   ],
+   [
+    21,
+    "2024-02-26",
+    null,
+    null
+   ],
+   [
+    21,
+    "2024-04-06",
+    "2024-02-26",
+    40
+   ],
+   [
+    21,
+    "2024-06-24",
+    "2024-04-06",
+    79
+   ],
+   [
+    21,
+    "2024-07-03",
+    "2024-06-24",
+    9
+   ],
+   [
+    21,
+    "2024-08-29",
+    "2024-07-03",
+    57
+   ],
+   [
+    21,
+    "2024-10-05",
+    "2024-08-29",
+    37
+   ],
+   [
+    21,
+    "2024-12-10",
+    "2024-10-05",
+    66
+   ],
+   [
+    27,
+    "2024-03-29",
+    null,
+    null
+   ],
+   [
+    27,
+    "2024-07-09",
+    "2024-03-29",
+    102
+   ],
+   [
+    27,
+    "2024-09-19",
+    "2024-07-09",
+    72
+   ],
+   [
+    27,
+    "2024-11-30",
+    "2024-09-19",
+    72
+   ],
+   [
+    76,
+    "2024-04-20",
+    null,
+    null
+   ],
+   [
+    76,
+    "2024-05-14",
+    "2024-04-20",
+    24
+   ],
+   [
+    76,
+    "2024-06-10",
+    "2024-05-14",
+    27
+   ],
+   [
+    76,
+    "2024-11-19",
+    "2024-06-10",
+    162
+   ],
+   [
+    82,
+    "2024-01-23",
+    null,
+    null
+   ],
+   [
+    82,
+    "2024-03-12",
+    "2024-01-23",
+    49
+   ],
+   [
+    82,
+    "2024-05-04",
+    "2024-03-12",
+    53
+   ],
+   [
+    82,
+    "2024-08-09",
+    "2024-05-04",
+    97
+   ],
+   [
+    82,
+    "2024-09-17",
+    "2024-08-09",
+    39
+   ],
+   [
+    82,
+    "2024-10-08",
+    "2024-09-17",
+    21
+   ],
+   [
+    82,
+    "2024-10-30",
+    "2024-10-08",
+    22
+   ],
+   [
+    89,
+    "2024-01-07",
+    null,
+    null
+   ],
+   [
+    89,
+    "2024-02-14",
+    "2024-01-07",
+    38
+   ],
+   [
+    89,
+    "2024-06-28",
+    "2024-02-14",
+    135
+   ],
+   [
+    89,
+    "2024-07-16",
+    "2024-06-28",
+    18
+   ],
+   [
+    89,
+    "2024-08-16",
+    "2024-07-16",
+    31
+   ],
+   [
+    89,
+    "2024-11-02",
+    "2024-08-16",
+    78
+   ],
+   [
+    89,
+    "2024-11-12",
+    "2024-11-02",
+    10
+   ],
+   [
+    89,
+    "2024-12-22",
+    "2024-11-12",
+    40
+   ],
+   [
+    111,
+    "2024-01-07",
+    null,
+    null
+   ],
+   [
+    111,
+    "2024-01-28",
+    "2024-01-07",
+    21
+   ],
+   [
+    111,
+    "2024-02-28",
+    "2024-01-28",
+    31
+   ],
+   [
+    111,
+    "2024-03-27",
+    "2024-02-28",
+    28
+   ],
+   [
+    111,
+    "2024-07-29",
+    "2024-03-27",
+    124
+   ],
+   [
+    111,
+    "2024-09-01",
+    "2024-07-29",
+    34
+   ],
+   [
+    111,
+    "2024-11-17",
+    "2024-09-01",
+    77
+   ],
+   [
+    111,
+    "2024-11-28",
+    "2024-11-17",
+    11
+   ],
+   [
+    111,
+    "2024-12-04",
+    "2024-11-28",
+    6
+   ],
+   [
+    111,
+    "2024-12-13",
+    "2024-12-04",
+    9
+   ]
+  ]
+ },
+ "customers-rank-added-column-ties": {
+  "hash": "f697d28196a9617238f6013d645d9caed78f1670",
+  "columns": [
+   "Customer[Country]",
+   "Customer[Customer]",
+   "[@Orders]",
+   "[Dense]",
+   "[Skip]"
+  ],
+  "rows": [
+   [
+    null,
+    null,
+    2,
+    1,
+    1
+   ],
+   [
+    "Australia",
+    "Customer 048",
+    12,
+    1,
+    1
+   ],
+   [
+    "Australia",
+    "Customer 040",
+    11,
+    2,
+    2
+   ],
+   [
+    "Australia",
+    "Customer 087",
+    10,
+    3,
+    3
+   ],
+   [
+    "Australia",
+    "Customer 120",
+    10,
+    3,
+    3
+   ],
+   [
+    "Australia",
+    "Customer 017",
+    9,
+    4,
+    5
+   ],
+   [
+    "Australia",
+    "Customer 042",
+    9,
+    4,
+    5
+   ],
+   [
+    "Australia",
+    "Customer 070",
+    9,
+    4,
+    5
+   ],
+   [
+    "Australia",
+    "Customer 053",
+    8,
+    5,
+    8
+   ],
+   [
+    "Australia",
+    "Customer 059",
+    8,
+    5,
+    8
+   ],
+   [
+    "Australia",
+    "Customer 049",
+    7,
+    6,
+    10
+   ],
+   [
+    "Australia",
+    "Customer 054",
+    7,
+    6,
+    10
+   ],
+   [
+    "Australia",
+    "Customer 060",
+    7,
+    6,
+    10
+   ],
+   [
+    "Australia",
+    "Customer 014",
+    6,
+    7,
+    13
+   ],
+   [
+    "Australia",
+    "Customer 028",
+    6,
+    7,
+    13
+   ],
+   [
+    "Australia",
+    "Customer 039",
+    6,
+    7,
+    13
+   ],
+   [
+    "Australia",
+    "Customer 064",
+    6,
+    7,
+    13
+   ],
+   [
+    "Australia",
+    "Customer 086",
+    6,
+    7,
+    13
+   ],
+   [
+    "Australia",
+    "Customer 107",
+    6,
+    7,
+    13
+   ],
+   [
+    "Australia",
+    "Customer 004",
+    5,
+    8,
+    19
+   ],
+   [
+    "Australia",
+    "Customer 018",
+    5,
+    8,
+    19
+   ],
+   [
+    "Australia",
+    "Customer 069",
+    5,
+    8,
+    19
+   ],
+   [
+    "Australia",
+    "Customer 075",
+    5,
+    8,
+    19
+   ],
+   [
+    "Australia",
+    "Customer 094",
+    5,
+    8,
+    19
+   ],
+   [
+    "Australia",
+    "Customer 095",
+    5,
+    8,
+    19
+   ],
+   [
+    "Australia",
+    "Customer 038",
+    4,
+    9,
+    25
+   ],
+   [
+    "Australia",
+    "Customer 084",
+    4,
+    9,
+    25
+   ],
+   [
+    "Australia",
+    "Customer 096",
+    3,
+    10,
+    27
+   ],
+   [
+    "Australia",
+    "Customer 103",
+    3,
+    10,
+    27
+   ],
+   [
+    "Australia",
+    "Customer 099",
+    1,
+    11,
+    29
+   ],
+   [
+    "France",
+    "Customer 106",
+    15,
+    1,
+    1
+   ],
+   [
+    "France",
+    "Customer 011",
+    11,
+    2,
+    2
+   ],
+   [
+    "France",
+    "Customer 085",
+    11,
+    2,
+    2
+   ],
+   [
+    "France",
+    "Customer 111",
+    10,
+    3,
+    4
+   ],
+   [
+    "France",
+    "Customer 046",
+    9,
+    4,
+    5
+   ],
+   [
+    "France",
+    "Customer 036",
+    8,
+    5,
+    6
+   ],
+   [
+    "France",
+    "Customer 063",
+    8,
+    5,
+    6
+   ],
+   [
+    "France",
+    "Customer 068",
+    8,
+    5,
+    6
+   ],
+   [
+    "France",
+    "Customer 089",
+    8,
+    5,
+    6
+   ],
+   [
+    "France",
+    "Customer 005",
+    7,
+    6,
+    10
+   ],
+   [
+    "France",
+    "Customer 021",
+    7,
+    6,
+    10
+   ],
+   [
+    "France",
+    "Customer 061",
+    7,
+    6,
+    10
+   ],
+   [
+    "France",
+    "Customer 080",
+    7,
+    6,
+    10
+   ],
+   [
+    "France",
+    "Customer 082",
+    7,
+    6,
+    10
+   ],
+   [
+    "France",
+    "Customer 050",
+    6,
+    7,
+    15
+   ],
+   [
+    "France",
+    "Customer 105",
+    6,
+    7,
+    15
+   ],
+   [
+    "France",
+    "Customer 009",
+    5,
+    8,
+    17
+   ],
+   [
+    "France",
+    "Customer 077",
+    5,
+    8,
+    17
+   ],
+   [
+    "France",
+    "Customer 016",
+    4,
+    9,
+    19
+   ],
+   [
+    "France",
+    "Customer 023",
+    4,
+    9,
+    19
+   ],
+   [
+    "France",
+    "Customer 027",
+    4,
+    9,
+    19
+   ],
+   [
+    "France",
+    "Customer 062",
+    4,
+    9,
+    19
+   ],
+   [
+    "France",
+    "Customer 076",
+    4,
+    9,
+    19
+   ],
+   [
+    "France",
+    "Customer 088",
+    4,
+    9,
+    19
+   ],
+   [
+    "France",
+    "Customer 114",
+    4,
+    9,
+    19
+   ],
+   [
+    "France",
+    "Customer 083",
+    3,
+    10,
+    26
+   ],
+   [
+    "France",
+    "Customer 090",
+    2,
+    11,
+    27
+   ],
+   [
+    "France",
+    "Customer 117",
+    2,
+    11,
+    27
+   ],
+   [
+    "Germany",
+    "Customer 112",
+    14,
+    1,
+    1
+   ],
+   [
+    "Germany",
+    "Customer 008",
+    11,
+    2,
+    2
+   ],
+   [
+    "Germany",
+    "Customer 001",
+    10,
+    3,
+    3
+   ],
+   [
+    "Germany",
+    "Customer 032",
+    10,
+    3,
+    3
+   ],
+   [
+    "Germany",
+    "Customer 071",
+    10,
+    3,
+    3
+   ],
+   [
+    "Germany",
+    "Customer 098",
+    10,
+    3,
+    3
+   ],
+   [
+    "Germany",
+    "Customer 003",
+    9,
+    4,
+    7
+   ],
+   [
+    "Germany",
+    "Customer 072",
+    9,
+    4,
+    7
+   ],
+   [
+    "Germany",
+    "Customer 101",
+    9,
+    4,
+    7
+   ],
+   [
+    "Germany",
+    "Customer 035",
+    8,
+    5,
+    10
+   ],
+   [
+    "Germany",
+    "Customer 073",
+    8,
+    5,
+    10
+   ],
+   [
+    "Germany",
+    "Customer 113",
+    8,
+    5,
+    10
+   ],
+   [
+    "Germany",
+    "Customer 007",
+    7,
+    6,
+    13
+   ],
+   [
+    "Germany",
+    "Customer 020",
+    7,
+    6,
+    13
+   ],
+   [
+    "Germany",
+    "Customer 029",
+    7,
+    6,
+    13
+   ],
+   [
+    "Germany",
+    "Customer 045",
+    7,
+    6,
+    13
+   ],
+   [
+    "Germany",
+    "Customer 052",
+    7,
+    6,
+    13
+   ],
+   [
+    "Germany",
+    "Customer 034",
+    6,
+    7,
+    18
+   ],
+   [
+    "Germany",
+    "Customer 057",
+    6,
+    7,
+    18
+   ],
+   [
+    "Germany",
+    "Customer 058",
+    6,
+    7,
+    18
+   ],
+   [
+    "Germany",
+    "Customer 065",
+    6,
+    7,
+    18
+   ],
+   [
+    "Germany",
+    "Customer 104",
+    6,
+    7,
+    18
+   ],
+   [
+    "Germany",
+    "Customer 093",
+    5,
+    8,
+    23
+   ],
+   [
+    "Germany",
+    "Customer 110",
+    5,
+    8,
+    23
+   ],
+   [
+    "Germany",
+    "Customer 115",
+    5,
+    8,
+    23
+   ],
+   [
+    "Germany",
+    "Customer 013",
+    4,
+    9,
+    26
+   ],
+   [
+    "Germany",
+    "Customer 031",
+    4,
+    9,
+    26
+   ],
+   [
+    "Germany",
+    "Customer 033",
+    4,
+    9,
+    26
+   ],
+   [
+    "Germany",
+    "Customer 044",
+    4,
+    9,
+    26
+   ],
+   [
+    "Germany",
+    "Customer 079",
+    4,
+    9,
+    26
+   ],
+   [
+    "Germany",
+    "Customer 015",
+    3,
+    10,
+    31
+   ],
+   [
+    "Germany",
+    "Customer 026",
+    3,
+    10,
+    31
+   ],
+   [
+    "Germany",
+    "Customer 067",
+    3,
+    10,
+    31
+   ],
+   [
+    "Germany",
+    "Customer 074",
+    3,
+    10,
+    31
+   ],
+   [
+    "Germany",
+    "Customer 118",
+    3,
+    10,
+    31
+   ],
+   [
+    "United States",
+    "Customer 019",
+    11,
+    1,
+    1
+   ],
+   [
+    "United States",
+    "Customer 091",
+    11,
+    1,
+    1
+   ],
+   [
+    "United States",
+    "Customer 010",
+    10,
+    2,
+    3
+   ],
+   [
+    "United States",
+    "Customer 022",
+    10,
+    2,
+    3
+   ],
+   [
+    "United States",
+    "Customer 024",
+    9,
+    3,
+    5
+   ],
+   [
+    "United States",
+    "Customer 047",
+    9,
+    3,
+    5
+   ],
+   [
+    "United States",
+    "Customer 066",
+    9,
+    3,
+    5
+   ],
+   [
+    "United States",
+    "Customer 092",
+    9,
+    3,
+    5
+   ],
+   [
+    "United States",
+    "Customer 030",
+    8,
+    4,
+    9
+   ],
+   [
+    "United States",
+    "Customer 037",
+    8,
+    4,
+    9
+   ],
+   [
+    "United States",
+    "Customer 041",
+    8,
+    4,
+    9
+   ],
+   [
+    "United States",
+    "Customer 043",
+    8,
+    4,
+    9
+   ],
+   [
+    "United States",
+    "Customer 078",
+    8,
+    4,
+    9
+   ],
+   [
+    "United States",
+    "Customer 097",
+    8,
+    4,
+    9
+   ],
+   [
+    "United States",
+    "Customer 012",
+    7,
+    5,
+    15
+   ],
+   [
+    "United States",
+    "Customer 025",
+    7,
+    5,
+    15
+   ],
+   [
+    "United States",
+    "Customer 056",
+    7,
+    5,
+    15
+   ],
+   [
+    "United States",
+    "Customer 081",
+    7,
+    5,
+    15
+   ],
+   [
+    "United States",
+    "Customer 100",
+    6,
+    6,
+    19
+   ],
+   [
+    "United States",
+    "Customer 109",
+    6,
+    6,
+    19
+   ],
+   [
+    "United States",
+    "Customer 116",
+    6,
+    6,
+    19
+   ],
+   [
+    "United States",
+    "Customer 119",
+    6,
+    6,
+    19
+   ],
+   [
+    "United States",
+    "Customer 006",
+    5,
+    7,
+    23
+   ],
+   [
+    "United States",
+    "Customer 051",
+    5,
+    7,
+    23
+   ],
+   [
+    "United States",
+    "Customer 102",
+    5,
+    7,
+    23
+   ],
+   [
+    "United States",
+    "Customer 055",
+    4,
+    8,
+    26
+   ],
+   [
+    "United States",
+    "Customer 108",
+    4,
+    8,
+    26
+   ],
+   [
+    "United States",
+    "Customer 002",
+    1,
+    9,
+    28
+   ]
+  ]
+ },
+ "customers-rankx-dense-asc-blanks": {
+  "hash": "f1a622325a4f99a83bb0ad476cfceb42eb9cf9e2",
+  "columns": [
+   "Customer[Customer]",
+   "[Orders 2022]",
+   "[Rank Asc Dense]",
+   "[Rank Asc Skip]"
+  ],
+  "rows": [
+   [
+    "Customer 009",
+    null,
+    1,
+    1
+   ],
+   [
+    "Customer 011",
+    null,
+    1,
+    1
+   ],
+   [
+    "Customer 016",
+    null,
+    1,
+    1
+   ],
+   [
+    "Customer 021",
+    null,
+    1,
+    1
+   ],
+   [
+    "Customer 027",
+    null,
+    1,
+    1
+   ],
+   [
+    "Customer 036",
+    null,
+    1,
+    1
+   ],
+   [
+    "Customer 046",
+    null,
+    1,
+    1
+   ],
+   [
+    "Customer 050",
+    null,
+    1,
+    1
+   ],
+   [
+    "Customer 061",
+    null,
+    1,
+    1
+   ],
+   [
+    "Customer 062",
+    null,
+    1,
+    1
+   ],
+   [
+    "Customer 077",
+    null,
+    1,
+    1
+   ],
+   [
+    "Customer 080",
+    null,
+    1,
+    1
+   ],
+   [
+    "Customer 082",
+    null,
+    1,
+    1
+   ],
+   [
+    "Customer 085",
+    null,
+    1,
+    1
+   ],
+   [
+    "Customer 088",
+    null,
+    1,
+    1
+   ],
+   [
+    "Customer 089",
+    null,
+    1,
+    1
+   ],
+   [
+    "Customer 090",
+    null,
+    1,
+    1
+   ],
+   [
+    "Customer 105",
+    null,
+    1,
+    1
+   ],
+   [
+    "Customer 106",
+    null,
+    1,
+    1
+   ],
+   [
+    "Customer 111",
+    null,
+    1,
+    1
+   ],
+   [
+    "Customer 114",
+    null,
+    1,
+    1
+   ],
+   [
+    "Customer 023",
+    1,
+    2,
+    22
+   ],
+   [
+    "Customer 076",
+    1,
+    2,
+    22
+   ],
+   [
+    "Customer 083",
+    1,
+    2,
+    22
+   ],
+   [
+    "Customer 117",
+    1,
+    2,
+    22
+   ],
+   [
+    "Customer 005",
+    2,
+    3,
+    26
+   ],
+   [
+    "Customer 063",
+    3,
+    4,
+    27
+   ],
+   [
+    "Customer 068",
+    3,
+    4,
+    27
+   ]
+  ]
+ },
+ "customers-recovered-by-quarter": {
+  "hash": "fa2676f42723d14d825573f80a0d2dac27ff8f51",
+  "columns": [
+   "Date[Year]",
+   "Date[Quarter]",
+   "[Recovered]",
+   "[Returning]"
+  ],
+  "rows": [
+   [
+    2022,
+    3,
+    null,
+    1
+   ],
+   [
+    2022,
+    4,
+    8,
+    12
+   ],
+   [
+    2023,
+    1,
+    13,
+    20
+   ],
+   [
+    2023,
+    2,
+    16,
+    25
+   ],
+   [
+    2023,
+    3,
+    28,
+    50
+   ],
+   [
+    2023,
+    4,
+    50,
+    77
+   ],
+   [
+    2024,
+    1,
+    29,
+    78
+   ],
+   [
+    2024,
+    2,
+    38,
+    80
+   ],
+   [
+    2024,
+    3,
+    55,
+    100
+   ],
+   [
+    2024,
+    4,
+    38,
+    107
+   ]
+  ]
+ },
+ "customers-repeat-by-year": {
+  "hash": "49515c023cd6b98cbea049a527a639886c357f6d",
+  "columns": [
+   "Date[Year]",
+   "[Customers]",
+   "[Repeat]",
+   "[Repeat %]"
+  ],
+  "rows": [
+   [
+    2022,
+    36,
+    20,
+    0.5555555555555556
+   ],
+   [
+    2023,
+    106,
+    95,
+    0.8962264150943396
+   ],
+   [
+    2024,
+    121,
+    119,
+    0.9834710743801653
+   ]
+  ]
+ },
+ "customers-returning-by-quarter-country": {
+  "hash": "6f51b18c8fe159cb7ef4a2c9c40a879c94fecd0c",
+  "columns": [
+   "Date[Quarter]",
+   "Customer[Country]",
+   "[Returning]",
+   "[Customers]"
+  ],
+  "rows": [
+   [
+    1,
+    "Australia",
+    6,
+    12
+   ],
+   [
+    1,
+    "France",
+    5,
+    12
+   ],
+   [
+    1,
+    "Germany",
+    7,
+    12
+   ],
+   [
+    1,
+    "United States",
+    2,
+    6
+   ],
+   [
+    2,
+    "Australia",
+    10,
+    15
+   ],
+   [
+    2,
+    "France",
+    10,
+    15
+   ],
+   [
+    2,
+    "Germany",
+    2,
+    7
+   ],
+   [
+    2,
+    "United States",
+    3,
+    11
+   ],
+   [
+    3,
+    "Australia",
+    13,
+    21
+   ],
+   [
+    3,
+    "France",
+    11,
+    14
+   ],
+   [
+    3,
+    "Germany",
+    15,
+    20
+   ],
+   [
+    3,
+    "United States",
+    11,
+    15
+   ],
+   [
+    4,
+    "Australia",
+    20,
+    20
+   ],
+   [
+    4,
+    "France",
+    17,
+    20
+   ],
+   [
+    4,
+    "Germany",
+    22,
+    24
+   ],
+   [
+    4,
+    "United States",
+    18,
+    18
+   ]
+  ]
+ },
+ "customers-returning-calc-group-all": {
+  "hash": "f945e055134c5d6f216f49a9c0fe2444ab7732e1",
+  "columns": [
+   "Date[Year]",
+   "Time Intelligence[Time Intelligence]",
+   "[Returning]"
+  ],
+  "rows": [
+   [
+    2024,
+    "Current",
+    106
+   ],
+   [
+    2023,
+    "Current",
+    36
+   ],
+   [
+    2024,
+    "PY",
+    36
+   ],
+   [
+    2024,
+    "YoY",
+    70
+   ],
+   [
+    2024,
+    "YoY %",
+    1.9444444444444444
+   ],
+   [
+    2024,
+    "YTD",
+    106
+   ],
+   [
+    2023,
+    "YTD",
+    36
+   ],
+   [
+    2024,
+    "MAT",
+    106
+   ],
+   [
+    2023,
+    "MAT",
+    36
+   ]
+  ]
+ },
+ "customers-rls-bikes-basket": {
+  "hash": "aeefef7f56b072b39eed27b135b7a408072ef100",
+  "columns": [
+   "Customer[Country]",
+   "[Orders]",
+   "[With Bikes]",
+   "[Customers]"
+  ],
+  "rows": [
+   [
+    "Australia",
+    187,
+    187,
+    29
+   ],
+   [
+    "France",
+    160,
+    160,
+    28
+   ],
+   [
+    "Germany",
+    199,
+    199,
+    35
+   ],
+   [
+    "United States",
+    165,
+    165,
+    28
+   ]
+  ]
+ },
+ "customers-rls-bikes-crossfilter-both": {
+  "hash": "fdaaabb54600a394abf85206e7eefdbeb9ad3a7c",
+  "columns": [
+   "Customer[Country]",
+   "[Customer Rows]",
+   "[Customer Rows Both]",
+   "[Buyers]"
+  ],
+  "rows": [
+   [
+    "Australia",
+    29,
+    29,
+    29
+   ],
+   [
+    "France",
+    28,
+    28,
+    28
+   ],
+   [
+    "Germany",
+    35,
+    35,
+    35
+   ],
+   [
+    "United States",
+    28,
+    28,
+    28
+   ]
+  ]
+ },
+ "customers-rls-france-new-lost": {
+  "hash": "8ba42979b76eda991a9c63245ec48909bf29ed50",
+  "columns": [
+   "Date[Year]",
+   "[Customers]",
+   "[New]",
+   "[New Static]",
+   "[Lost]"
+  ],
+  "rows": [
+   [
+    2022,
+    7,
+    7,
+    7,
+    1
+   ],
+   [
+    2023,
+    25,
+    18,
+    18,
+    5
+   ],
+   [
+    2024,
+    28,
+    3,
+    3,
+    6
+   ]
+  ]
+ },
+ "customers-rolling-from-month-end": {
+  "hash": "a03bcf4f2275b9f9b257c675327fd465cfaaaf31",
+  "columns": [
+   "Date[Year Month]",
+   "[Back 12M]",
+   "[Start 12M]",
+   "[Back 4Q]",
+   "[Start 4Q]",
+   "[Back 1Y]",
+   "[Start 1Y]",
+   "[Next 3M]",
+   "[End 3M]"
+  ],
+  "rows": [
+   [
+    "2023-01",
+    45,
+    "2022-02-01",
+    45,
+    "2022-02-01",
+    45,
+    "2022-02-01",
+    43,
+    "2023-04-29"
+   ],
+   [
+    "2023-02",
+    53,
+    "2022-03-01",
+    53,
+    "2022-03-01",
+    53,
+    "2022-03-01",
+    50,
+    "2023-05-30"
+   ],
+   [
+    "2023-03",
+    58,
+    "2022-04-01",
+    58,
+    "2022-04-01",
+    58,
+    "2022-04-01",
+    50,
+    "2023-06-29"
+   ],
+   [
+    "2023-04",
+    68,
+    "2022-05-01",
+    68,
+    "2022-05-01",
+    68,
+    "2022-05-01",
+    58,
+    "2023-07-30"
+   ],
+   [
+    "2023-05",
+    75,
+    "2022-06-01",
+    75,
+    "2022-06-01",
+    75,
+    "2022-06-01",
+    63,
+    "2023-08-30"
+   ],
+   [
+    "2023-06",
+    81,
+    "2022-07-01",
+    81,
+    "2022-07-01",
+    81,
+    "2022-07-01",
+    70,
+    "2023-09-29"
+   ],
+   [
+    "2023-07",
+    88,
+    "2022-08-01",
+    88,
+    "2022-08-01",
+    88,
+    "2022-08-01",
+    70,
+    "2023-10-30"
+   ],
+   [
+    "2023-08",
+    94,
+    "2022-09-01",
+    94,
+    "2022-09-01",
+    94,
+    "2022-09-01",
+    72,
+    "2023-11-29"
+   ],
+   [
+    "2023-09",
+    101,
+    "2022-10-01",
+    101,
+    "2022-10-01",
+    101,
+    "2022-10-01",
+    82,
+    "2023-12-30"
+   ],
+   [
+    "2023-10",
+    102,
+    "2022-11-01",
+    102,
+    "2022-11-01",
+    102,
+    "2022-11-01",
+    91,
+    "2024-01-30"
+   ],
+   [
+    "2023-11",
+    105,
+    "2022-12-01",
+    105,
+    "2022-12-01",
+    105,
+    "2022-12-01",
+    95,
+    "2024-02-28"
+   ],
+   [
+    "2023-12",
+    106,
+    "2023-01-01",
+    106,
+    "2023-01-01",
+    106,
+    "2023-01-01",
+    86,
+    "2024-03-30"
+   ],
+   [
+    "2024-01",
+    108,
+    "2023-02-01",
+    108,
+    "2023-02-01",
+    108,
+    "2023-02-01",
+    90,
+    "2024-04-29"
+   ],
+   [
+    "2024-02",
+    110,
+    "2023-03-01",
+    110,
+    "2023-03-01",
+    110,
+    "2023-03-01",
+    86,
+    "2024-05-30"
+   ],
+   [
+    "2024-03",
+    113,
+    "2023-04-01",
+    113,
+    "2023-04-01",
+    113,
+    "2023-04-01",
+    87,
+    "2024-06-29"
+   ],
+   [
+    "2024-04",
+    115,
+    "2023-05-01",
+    115,
+    "2023-05-01",
+    115,
+    "2023-05-01",
+    91,
+    "2024-07-30"
+   ],
+   [
+    "2024-05",
+    116,
+    "2023-06-01",
+    116,
+    "2023-06-01",
+    116,
+    "2023-06-01",
+    97,
+    "2024-08-30"
+   ],
+   [
+    "2024-06",
+    119,
+    "2023-07-01",
+    119,
+    "2023-07-01",
+    119,
+    "2023-07-01",
+    101,
+    "2024-09-29"
+   ],
+   [
+    "2024-07",
+    119,
+    "2023-08-01",
+    119,
+    "2023-08-01",
+    119,
+    "2023-08-01",
+    100,
+    "2024-10-30"
+   ],
+   [
+    "2024-08",
+    119,
+    "2023-09-01",
+    119,
+    "2023-09-01",
+    119,
+    "2023-09-01",
+    103,
+    "2024-11-29"
+   ],
+   [
+    "2024-09",
+    120,
+    "2023-10-01",
+    120,
+    "2023-10-01",
+    120,
+    "2023-10-01",
+    107,
+    "2024-12-30"
+   ],
+   [
+    "2024-10",
+    121,
+    "2023-11-01",
+    121,
+    "2023-11-01",
+    121,
+    "2023-11-01",
+    94,
+    "2024-12-31"
+   ],
+   [
+    "2024-11",
+    121,
+    "2023-12-01",
+    121,
+    "2023-12-01",
+    121,
+    "2023-12-01",
+    71,
+    "2024-12-31"
+   ],
+   [
+    "2024-12",
+    121,
+    "2024-01-01",
+    121,
+    "2024-01-01",
+    121,
+    "2024-01-01",
+    3,
+    "2024-12-31"
+   ]
+  ]
+ },
+ "customers-text-case-insensitive": {
+  "hash": "e0edddb7a573e603debb932c51f16c34f9eedace",
+  "columns": [
+   "Customer[Country]",
+   "[Customers]",
+   "[Paris Or Berlin]",
+   "[Female]",
+   "[Lyon Via Values]",
+   "[Key Of Customer 007]"
+  ],
+  "rows": [
+   [
+    "France",
+    28,
+    12,
+    9,
+    7,
+    7
+   ],
+   [
+    "Germany",
+    35,
+    20,
+    20,
+    null,
+    7
+   ]
+  ]
+ },
+ "customers-to-date-by-month": {
+  "hash": "48ed79253a72f4d9d59b5ea97faac3078a9935f6",
+  "columns": [
+   "Date[Year Month]",
+   "[Customers To Date]",
+   "[New]",
+   "[Customers]"
+  ],
+  "rows": [
+   [
+    "2023-01",
+    45,
+    9,
+    23
+   ],
+   [
+    "2023-02",
+    53,
+    8,
+    13
+   ],
+   [
+    "2023-03",
+    58,
+    5,
+    16
+   ],
+   [
+    "2023-04",
+    68,
+    10,
+    21
+   ],
+   [
+    "2023-05",
+    75,
+    7,
+    23
+   ],
+   [
+    "2023-06",
+    81,
+    6,
+    24
+   ],
+   [
+    "2023-07",
+    88,
+    7,
+    29
+   ],
+   [
+    "2023-08",
+    94,
+    6,
+    31
+   ],
+   [
+    "2023-09",
+    101,
+    7,
+    28
+   ],
+   [
+    "2023-10",
+    103,
+    2,
+    30
+   ],
+   [
+    "2023-11",
+    105,
+    2,
+    34
+   ],
+   [
+    "2023-12",
+    106,
+    1,
+    53
+   ]
+  ]
+ },
+ "customers-top-avg-gap": {
+  "hash": "4d03c0ea33550ddc8a6b8650525b55114df492d7",
+  "columns": [
+   "Customer[CustomerKey]",
+   "[Avg Gap]"
+  ],
+  "rows": [
+   [
+    99,
+    216.66666666666666
+   ],
+   [
+    90,
+    198.5
+   ],
+   [
+    96,
+    183.0
+   ],
+   [
+    67,
+    141.66666666666666
+   ],
+   [
+    33,
+    124.8
+   ],
+   [
+    118,
+    120.5
+   ],
+   [
+    95,
+    116.57142857142857
+   ],
+   [
+    108,
+    115.625
+   ],
+   [
+    26,
+    108.625
+   ],
+   [
+    117,
+    104.57142857142857
+   ]
+  ]
+ }
+}

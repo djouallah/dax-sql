@@ -1,0 +1,13 @@
+// note: under the France role, CROSSFILTER BOTH from Sales back to Product by month: the blank product row is reached only in a month whose French sales carry a product key Product lacks, not in a month whose only such row belongs to a customer the role hides; brands by VALUES, DISTINCTCOUNT, COUNTROWS(Product) and CONCATENATEX
+// roles: France
+EVALUATE
+SUMMARIZECOLUMNS(
+	'Date'[Year Month],
+	TREATAS({"2023-04", "2023-05", "2023-06", "2024-07", "2024-08", "2024-09"}, 'Date'[Year Month]),
+	"Sales", [Sales Amount],
+	"Brand Values", CALCULATE(COUNTROWS(VALUES(Product[Brand])), CROSSFILTER(Sales[ProductKey], Product[ProductKey], BOTH)),
+	"Brand Distinct", CALCULATE(DISTINCTCOUNT(Product[Brand]), CROSSFILTER(Sales[ProductKey], Product[ProductKey], BOTH)),
+	"Product Rows", CALCULATE(COUNTROWS(Product), CROSSFILTER(Sales[ProductKey], Product[ProductKey], BOTH)),
+	"Brands", CALCULATE(CONCATENATEX(VALUES(Product[Brand]), Product[Brand], ", ", Product[Brand], ASC), CROSSFILTER(Sales[ProductKey], Product[ProductKey], BOTH))
+)
+ORDER BY 'Date'[Year Month]

@@ -1,0 +1,3 @@
+// note: LASTNONBLANK over dates up to a day: each date filter replaces the outer month filter of the date table
+EVALUATE CALCULATETABLE(ROW("d", LASTNONBLANK(FILTER(ALL('Date'[Date]), 'Date'[Date] <= DATE(2024, 3, 10)),
+    CALCULATE(COUNTROWS(Sales)))), 'Date'[Year] = 2024, 'Date'[Month] = 3)

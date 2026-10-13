@@ -1,0 +1,13 @@
+// note: RELATED returns blank for fact rows whose product or customer is missing, which lists the orphan lines with what they do reach
+EVALUATE
+SELECTCOLUMNS(
+    FILTER(Sales, ISBLANK(RELATED(Product[Product])) || ISBLANK(RELATED(Customer[Customer]))),
+    "Order", Sales[Order Number],
+    "Line", Sales[Line Number],
+    "Product Key", Sales[ProductKey],
+    "Customer Key", Sales[CustomerKey],
+    "Category", RELATED(Category[Category]),
+    "Country", RELATED(Customer[Country]),
+    "Currency", RELATED(Currency[Currency])
+)
+ORDER BY [Order], [Line]

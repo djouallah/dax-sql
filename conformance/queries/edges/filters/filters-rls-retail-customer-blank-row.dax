@@ -1,0 +1,16 @@
+// note: under the Retail role on Customer: whether the lines with the unknown customer 500 and the NULL customer survive (the role filters the dimension, whose blank row holds them), with ALL(Customer) and CROSSFILTER NONE trying to lift it; Customers counting the blank key against Customers No Blank, Customer rows and keys, and Avg Per Customer over VALUES(Customer[CustomerKey])
+// roles: Retail
+EVALUATE
+ROW(
+    "Lines", [Lines],
+    "Lines ALL Customer", CALCULATE([Lines], ALL(Customer)),
+    "Lines Crossfilter None", CALCULATE([Lines], CROSSFILTER(Sales[CustomerKey], Customer[CustomerKey], NONE)),
+    "Unknown Customer Lines", CALCULATE([Lines], Sales[CustomerKey] = 500),
+    "Null Customer Lines", CALCULATE([Lines], ISBLANK(Sales[CustomerKey])),
+    "Customers", [Customers],
+    "Customers No Blank", [Customers No Blank],
+    "Customer Rows", COUNTROWS(Customer),
+    "Customer Keys", COUNTROWS(VALUES(Customer[CustomerKey])),
+    "Customer Keys ALL", COUNTROWS(ALL(Customer[CustomerKey])),
+    "Avg Per Customer", [Avg Per Customer]
+)

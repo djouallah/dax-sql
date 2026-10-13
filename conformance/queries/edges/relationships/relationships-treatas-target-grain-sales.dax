@@ -1,0 +1,23 @@
+// note: sales at the Target grain (store x brand x month) for PAR-01 in 2024, built with TREATAS on store and brand and a month window: the NULL-brand target row picks up the NULL-brand product and the unknown products
+EVALUATE
+CALCULATETABLE(
+    ADDCOLUMNS(
+        SUMMARIZE(Target, Target[Date], Target[StoreKey], Target[Brand]),
+        "Target", CALCULATE([Target Amount]),
+        "Sales", CALCULATE(
+            [Sales Amount],
+            TREATAS({ Target[StoreKey] }, Store[StoreKey]),
+            TREATAS({ Target[Brand] }, Product[Brand]),
+            DATESBETWEEN('Date'[Date], Target[Date], EOMONTH(Target[Date], 0))
+        ),
+        "Lines", CALCULATE(
+            [Lines],
+            TREATAS({ Target[StoreKey] }, Store[StoreKey]),
+            TREATAS({ Target[Brand] }, Product[Brand]),
+            DATESBETWEEN('Date'[Date], Target[Date], EOMONTH(Target[Date], 0))
+        )
+    ),
+    Target[StoreKey] = "PAR-01",
+    'Date'[Year] = 2024
+)
+ORDER BY Target[Date], Target[Brand]

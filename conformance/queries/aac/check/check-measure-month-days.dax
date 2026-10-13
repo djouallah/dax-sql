@@ -1,0 +1,7 @@
+// note: check_model.py: [Month days] per month, over the newest three
+EVALUATE
+            VAR newest = MAX(dim_month[month])
+            RETURN CALCULATETABLE(
+                SUMMARIZECOLUMNS(dim_month[month], "Month days", [Month days]),
+                dim_month[month] > EDATE(newest, -3))
+            ORDER BY dim_month[month]

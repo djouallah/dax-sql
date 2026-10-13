@@ -1,0 +1,9 @@
+// note: the category budget allocated to each bike by its share of the category's 2024 sales, iterating categories with context transition
+EVALUATE
+SUMMARIZECOLUMNS(
+    Product[Product],
+    TREATAS({ "Bikes" }, Product[Category]),
+    TREATAS({ 2024 }, 'Date'[Year]),
+    "Sales", [Sales Amount],
+    "Budget Share", [Budget Allocated to Product]
+)

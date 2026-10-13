@@ -1,0 +1,9 @@
+// note: average days between orders within 2024 by gender, with a grand total that is not an average of the groups (ROLLUPADDISSUBTOTAL)
+EVALUATE
+SUMMARIZECOLUMNS(
+    ROLLUPADDISSUBTOTAL(Customer[Gender], "Is Total"),
+    TREATAS({ 2024 }, 'Date'[Year]),
+    "Avg Days Between Orders", [Customers Avg Days Between Orders],
+    "Repeat Customers", [Customers Repeat]
+)
+ORDER BY [Is Total], Customer[Gender]

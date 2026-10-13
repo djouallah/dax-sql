@@ -1,0 +1,2 @@
+// note: DATATABLE with typed columns
+EVALUATE DATATABLE("a", INTEGER, "b", STRING, {{1, "x"}, {2, "y"}})

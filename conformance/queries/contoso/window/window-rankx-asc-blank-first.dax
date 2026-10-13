@@ -1,0 +1,3 @@
+// note: RANKX ascending, SKIP and DENSE: a blank ranks ahead of every positive value
+EVALUATE ADDCOLUMNS(VALUES(Product[Name]),
+    "skip", RANKX(ALL(Product[Name]), [Sales Amount], , ASC, SKIP), "dense", RANKX(ALL(Product[Name]), [Sales Amount], , ASC, DENSE))

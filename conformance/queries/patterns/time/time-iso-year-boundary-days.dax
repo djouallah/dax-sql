@@ -1,0 +1,12 @@
+// note: the days whose ISO year differs from their calendar year, through a FILTER that compares two Date columns
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Date], 'Date'[Year], 'Date'[ISO Year], 'Date'[ISO Week],
+    FILTER(
+        ALL('Date'[Date], 'Date'[Year], 'Date'[ISO Year], 'Date'[ISO Week]),
+        'Date'[ISO Year] <> 'Date'[Year]
+    ),
+    "Days", COUNTROWS('Date'),
+    "Sales", [Sales Amount]
+)
+ORDER BY 'Date'[Date]

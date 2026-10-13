@@ -1,0 +1,2 @@
+// note: xmla_compare.py probe: COUNTROWS of VALUES of the date key
+EVALUATE ROW("x", COUNTROWS(VALUES(store_sales[ss_sold_date_sk])))

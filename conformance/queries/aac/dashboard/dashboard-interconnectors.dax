@@ -1,0 +1,2 @@
+// note: the dashboard's interconnectors query, the links between regions (Flows)
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS(dim_interconnector[interconnector], dim_interconnector[from_region], dim_interconnector[to_region], dim_interconnector[description]), NOT ISBLANK(dim_interconnector[interconnector])), "id", [interconnector], "from_region", [from_region], "to_region", [to_region], "description", [description])

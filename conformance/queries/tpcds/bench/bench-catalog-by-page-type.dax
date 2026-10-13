@@ -1,0 +1,2 @@
+// note: xmla_compare.py: catalog measures by page type
+EVALUATE SUMMARIZECOLUMNS(catalog_page[cp_type], "Revenue", [Catalog Revenue], "Profit", [Catalog Net Profit])

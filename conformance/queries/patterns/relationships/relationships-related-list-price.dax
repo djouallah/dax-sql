@@ -1,0 +1,8 @@
+// note: RELATED to Product inside SUMX over Sales; a fact row whose product is missing gets a blank price
+EVALUATE
+SUMMARIZECOLUMNS(
+    Category[Category],
+    "Sales", [Sales Amount],
+    "List Price Amount", [List Price Amount Related],
+    "Lines without Product", COUNTROWS(FILTER(Sales, ISBLANK(RELATED(Product[ProductKey]))))
+)

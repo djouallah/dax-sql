@@ -1,0 +1,2 @@
+// note: CROSSFILTER BOTH between Sales and Customer with no filter: all the customers with a sale
+EVALUATE ROW("n", CALCULATE(COUNTROWS(Customer), CROSSFILTER(Sales[CustomerKey], Customer[CustomerKey], BOTH)))

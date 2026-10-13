@@ -1,0 +1,10 @@
+// note: the Time Intelligence calculation group (Current, YTD, MAT) applied to the new-customers measure, by month of 2024
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Month],
+    'Time Intelligence'[Time Intelligence],
+    TREATAS({ 2024 }, 'Date'[Year]),
+    TREATAS({ "Current", "YTD", "MAT" }, 'Time Intelligence'[Time Intelligence]),
+    "New", [Customers New]
+)
+ORDER BY 'Date'[Month], 'Time Intelligence'[Time Intelligence]

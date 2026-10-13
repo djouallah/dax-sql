@@ -1,0 +1,12 @@
+// note: text compared without regard to case in a slicer, a CALCULATE predicate, an IN filter, LOOKUPVALUE and a SELECTEDVALUE test: literals in other cases reach the model's values, which come back in the model's case
+EVALUATE
+SUMMARIZECOLUMNS(
+	'Customer'[Country],
+	TREATAS({"FRANCE", "united states"}, 'Customer'[Country]),
+	"Sales_Amount", 'Sales'[Sales Amount],
+	"Bikes_Sales", CALCULATE([Sales Amount], 'Category'[Category] = "BIKES"),
+	"Paris_Lyon_Customers", CALCULATE(COUNTROWS('Customer'), KEEPFILTERS('Customer'[City] IN {"PARIS", "lyon"})),
+	"Bikes_Key", LOOKUPVALUE('Category'[CategoryKey], 'Category'[Category], "bikes"),
+	"Is_France", IF(SELECTEDVALUE('Customer'[Country]) = "france", 1, 0)
+)
+ORDER BY 'Customer'[Country]

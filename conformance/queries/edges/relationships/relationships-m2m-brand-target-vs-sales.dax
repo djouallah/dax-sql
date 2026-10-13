@@ -1,0 +1,11 @@
+// note: the many-to-many Target[Brand] <-> Product[Brand] on a non-key column: targets per product brand next to sales; the "Ghost" target brand no product has, and the NULL target brand against the NULL product brand
+EVALUATE
+SUMMARIZECOLUMNS(
+    Product[Brand],
+    "Products", COUNTROWS(Product),
+    "Target", [Target Amount],
+    "Target Rows", COUNTROWS(Target),
+    "Sales", [Sales Amount],
+    "Sales vs Target", [Sales vs Target]
+)
+ORDER BY Product[Brand]

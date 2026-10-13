@@ -1,0 +1,10 @@
+// note: under France, a query-time CROSSFILTER BOTH from the bridge to Account: whether the RLS-restricted bridge rows then filter Account, by account type with a total
+// roles: France
+EVALUATE
+SUMMARIZECOLUMNS(
+    ROLLUPADDISSUBTOTAL(Account[Account Type], "Is Total"),
+    "Accounts", COUNTROWS(Account),
+    "Accounts Held Both Ways", [Accounts Held Bridge],
+    "Holders", COUNTROWS(AccountCustomer),
+    "Accounts Reached by Sales", [Accounts with Sales Bridge]
+)

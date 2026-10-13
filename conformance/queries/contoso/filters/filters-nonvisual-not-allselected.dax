@@ -1,0 +1,3 @@
+// note: a NONVISUAL filter of SUMMARIZECOLUMNS filters the groups and values, but ALLSELECTED does not restore it
+EVALUATE SUMMARIZECOLUMNS('Date'[Year], NONVISUAL(TREATAS({2024}, 'Date'[Year])), "Sales", [Sales Amount],
+    "Selected", CALCULATE([Sales Amount], ALLSELECTED('Date'[Year])))

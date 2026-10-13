@@ -1,0 +1,8 @@
+// note: text compared without regard to case: a CALCULATE predicate, TREATAS, LOOKUPVALUE, == and <
+EVALUATE ROW(
+    "pred", CALCULATE(COUNTROWS(Product), Product[Color] = "RED"),
+    "treatas", CALCULATE(COUNTROWS(Product), TREATAS({ "black", "BLUE" }, Product[Color])),
+    "one", CALCULATE(COUNTROWS(Product), TREATAS({ "bLaCk" }, Product[Color])),
+    "lookup", LOOKUPVALUE(Product[Name], Product[Color], "blue"),
+    "strict", COUNTROWS(FILTER(Product, Product[Color] == "red")),
+    "lt", "apple" < "BANANA")

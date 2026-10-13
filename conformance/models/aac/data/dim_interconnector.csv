@@ -1,0 +1,6 @@
+"interconnector","from_region","to_region","description"
+"NSW1-QLD1","NSW1","QLD1","Queensland to New South Wales Interconnector (QNI)"
+"VIC1-NSW1","VIC1","NSW1","Victoria to New South Wales Interconnector"
+"V-SA","VIC1","SA1","Heywood Interconnector"
+"T-V-MNSP1","TAS1","VIC1","Basslink"
+"V-S-MNSP1","VIC1","SA1","Murraylink"

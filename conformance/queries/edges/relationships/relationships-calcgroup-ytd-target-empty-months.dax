@@ -1,0 +1,12 @@
+// note: the YTD item on Target, which reaches Date through its own relationship, for each month of 2024: July and August have no Target rows yet keep a year-to-date target; COUNTROWS, not a measure, is left alone by the item
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year Month],
+    TREATAS({ 2024 }, 'Date'[Year]),
+    TREATAS({ "YTD" }, Adjust[Adjust]),
+    "Target", [Target Amount],
+    "Sales", [Sales Amount],
+    "Sales vs Target", [Sales vs Target],
+    "Target Rows", COUNTROWS(Target)
+)
+ORDER BY 'Date'[Year Month]

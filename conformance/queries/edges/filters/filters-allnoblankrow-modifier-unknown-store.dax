@@ -1,0 +1,16 @@
+// note: under a filter on store PAR-01, lines with ALL(Store), ALLNOBLANKROW(Store) and ALLNOBLANKROW(Store[StoreKey]) as CALCULATE modifiers, against FILTER over ALL(Store) and over ALLNOBLANKROW(Store) as table filters, which keep or drop the blank row holding the unknown, empty and NULL store keys; beside the row counts of ALL and ALLNOBLANKROW
+EVALUATE
+CALCULATETABLE(
+    ROW(
+        "Lines", [Lines],
+        "ALL Store", CALCULATE([Lines], ALL(Store)),
+        "ALLNOBLANKROW Store", CALCULATE([Lines], ALLNOBLANKROW(Store)),
+        "ALLNOBLANKROW Key", CALCULATE([Lines], ALLNOBLANKROW(Store[StoreKey])),
+        "FILTER ALL Store", CALCULATE([Lines], FILTER(ALL(Store), TRUE())),
+        "FILTER ALLNOBLANKROW Store", CALCULATE([Lines], FILTER(ALLNOBLANKROW(Store), TRUE())),
+        "Store Rows ALL", COUNTROWS(ALL(Store)),
+        "Store Rows ALLNOBLANKROW", COUNTROWS(ALLNOBLANKROW(Store)),
+        "Store Keys ALL", COUNTROWS(ALL(Store[StoreKey]))
+    ),
+    Store[StoreKey] = "PAR-01"
+)

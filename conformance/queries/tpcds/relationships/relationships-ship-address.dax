@@ -1,0 +1,2 @@
+// note: catalog revenue per state, billed to (active) and shipped to (inactive, USERELATIONSHIP)
+EVALUATE SUMMARIZECOLUMNS(customer_address[ca_state], "billed", [Catalog Revenue], "shipped", CALCULATE([Catalog Revenue], USERELATIONSHIP(catalog_sales[cs_ship_addr_sk], customer_address[ca_address_sk])))

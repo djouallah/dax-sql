@@ -1,0 +1,11 @@
+// note: RANKX ascending, DENSE and SKIP, of accessories by September 2022 sales when most accessories sold nothing: the blanks rank ahead
+EVALUATE
+SUMMARIZECOLUMNS(
+    Product[Product],
+    TREATAS({ "Accessories" }, Product[Category]),
+    TREATAS({ 202209 }, 'Date'[YearMonth]),
+    "Sales", [Sales Amount],
+    "Rank Asc Dense", RANKX(ALLSELECTED(Product[Product]), [Sales Amount], , ASC, DENSE),
+    "Rank Asc Skip", RANKX(ALLSELECTED(Product[Product]), [Sales Amount], , ASC, SKIP)
+)
+ORDER BY Product[Product]

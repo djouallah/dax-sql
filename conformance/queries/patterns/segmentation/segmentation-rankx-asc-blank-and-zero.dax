@@ -1,0 +1,16 @@
+// note: RANKX ascending, DENSE and SKIP, over Australian customers by 2022 sales floored to zero under 2,000: customers who had not started buying are blank, small sellers are zero, and blanks and zeros meet ahead of the positive values
+DEFINE
+    MEASURE Sales[Seg Floored Sales 2022] =
+        VAR s = CALCULATE([Sales Amount], 'Date'[Year] = 2022)
+        RETURN IF(NOT ISBLANK(s) && s < 2000, 0, s)
+EVALUATE
+VAR Aus = FILTER(ALL(Customer[Customer], Customer[Country]), Customer[Country] = "Australia")
+RETURN
+    ADDCOLUMNS(
+        Aus,
+        "Sales 2022", CALCULATE([Sales Amount], 'Date'[Year] = 2022),
+        "Floored", [Seg Floored Sales 2022],
+        "Rank Asc Dense", RANKX(Aus, [Seg Floored Sales 2022], , ASC, DENSE),
+        "Rank Asc Skip", RANKX(Aus, [Seg Floored Sales 2022], , ASC, SKIP)
+    )
+ORDER BY Customer[Customer]

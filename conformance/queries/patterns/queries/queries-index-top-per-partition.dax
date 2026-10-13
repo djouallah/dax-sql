@@ -1,0 +1,7 @@
+// note: INDEX(1) with PARTITIONBY and no current row returns the first row of every partition: the best product of each category
+DEFINE
+	VAR t =
+		SUMMARIZECOLUMNS('Category'[Category], 'Product'[Product], TREATAS({2023}, 'Date'[Year]), "Sales", [Sales Amount])
+EVALUATE
+INDEX(1, t, ORDERBY([Sales], DESC, 'Product'[Product], ASC), PARTITIONBY('Category'[Category]))
+ORDER BY 'Category'[Category]

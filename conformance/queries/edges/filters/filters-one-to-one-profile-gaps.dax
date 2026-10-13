@@ -1,0 +1,12 @@
+// note: by StoreProfile[Manager] across the one-to-one, both-directions relationship with gaps on both sides (SYD-01 has no profile, BER-01 has no store): lines, sales, target, the store keys and the Store and StoreProfile row counts each manager's filter reaches, including the blank manager that collects SYD-01 and the store keys Store lacks
+EVALUATE
+SUMMARIZECOLUMNS(
+    StoreProfile[Manager],
+    "Lines", [Lines],
+    "Sales", [Sales Amount],
+    "Target", [Target Amount],
+    "Store Keys", CONCATENATEX(VALUES(Store[StoreKey]), Store[StoreKey], ", ", Store[StoreKey], ASC),
+    "Store Rows", COUNTROWS(Store),
+    "Profile Rows", COUNTROWS(StoreProfile)
+)
+ORDER BY StoreProfile[Manager]

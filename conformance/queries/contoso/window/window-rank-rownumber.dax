@@ -1,0 +1,3 @@
+// note: RANK DENSE by a measure descending (blank last) and ROWNUMBER by name, over ALLSELECTED
+EVALUATE SUMMARIZECOLUMNS(Product[Name], "rank", RANK(DENSE, ALLSELECTED(Product[Name]), ORDERBY([Sales Amount], DESC)),
+    "rn", ROWNUMBER(ALLSELECTED(Product[Name]), ORDERBY(Product[Name])))

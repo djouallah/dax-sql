@@ -1,0 +1,8 @@
+// note: sales by order date (active relationship) against sales by delivery date (USERELATIONSHIP on the inactive one), by quarter
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year], 'Date'[Quarter],
+    "By Order Date", [Sales Amount],
+    "By Delivery Date", [Sales By Delivery Date]
+)
+ORDER BY 'Date'[Year], 'Date'[Quarter]

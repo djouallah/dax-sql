@@ -1,0 +1,12 @@
+// note: ISO weeks straddle months: the raw budget counts both months in full, the day-allocated budget takes each month's share of days
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[ISO Year],
+    'Date'[ISO Week],
+    TREATAS({ 2024 }, 'Date'[Year]),
+    TREATAS({ 1 }, 'Date'[Quarter]),
+    "Budget", [Budget Amount],
+    "Allocated", [Budget Allocated by Day],
+    "Sales", [Sales Amount]
+)
+ORDER BY 'Date'[ISO Year], 'Date'[ISO Week]

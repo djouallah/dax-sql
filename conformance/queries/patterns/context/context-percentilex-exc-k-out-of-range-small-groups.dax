@@ -1,0 +1,11 @@
+// note: PERCENTILEX.EXC at 0.75 over the one to four French customers a subcategory has in 2022: k is out of range where a subcategory has fewer than three customers (a DAX error: k must lie in 1/(N+1)..N/(N+1))
+// expect: error
+EVALUATE
+SUMMARIZECOLUMNS(
+    Subcategory[Subcategory],
+    TREATAS({2022}, 'Date'[Year]),
+    TREATAS({"France"}, Customer[Country]),
+    "Customers", [Customers],
+    "P75 Exc", PERCENTILEX.EXC(CALCULATETABLE(VALUES(Sales[CustomerKey])), [Sales Amount], 0.75)
+)
+ORDER BY Subcategory[Subcategory]

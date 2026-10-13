@@ -1,0 +1,8 @@
+// note: a CALCULATE filter on the grouped column overwrites the group's filter, KEEPFILTERS intersects with it
+EVALUATE
+SUMMARIZECOLUMNS(
+    Product[Color],
+    "Sales", [Sales Amount],
+    "Overwrite", CALCULATE([Sales Amount], Product[Color] IN {"Red", "Blue"}),
+    "Keep", CALCULATE([Sales Amount], KEEPFILTERS(Product[Color] IN {"Red", "Blue"}))
+)

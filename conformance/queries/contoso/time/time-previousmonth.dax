@@ -1,0 +1,2 @@
+// note: PREVIOUSMONTH of a month selected by year and month columns
+EVALUATE CALCULATETABLE(ROW("pm", CALCULATE([Sales Amount], PREVIOUSMONTH('Date'[Date]))), 'Date'[Year] = 2024, 'Date'[Month] = 3)

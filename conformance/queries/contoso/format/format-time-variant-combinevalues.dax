@@ -1,0 +1,3 @@
+// note: a TIME as text and formatted, a date plus a time, FORMAT of a number/text branch, a number with a date pattern, and COMBINEVALUES of mixed types
+EVALUATE ROW("a", TIME(13, 5, 0) & "", "b", FORMAT(TIME(13, 5, 0), "hh:nn"), "c", FORMAT(DATE(2024, 1, 5) + TIME(13, 5, 0), "General Date"),
+    "d", FORMAT(IF(1 = 1, 1.5, "x"), "0.00"), "e", FORMAT(45296, "dd/mm/yyyy"), "f", COMBINEVALUES(",", 1/3, dt"2024-01-05", TRUE()))

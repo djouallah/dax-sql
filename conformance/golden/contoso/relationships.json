@@ -1,0 +1,167 @@
+{
+ "relationships-crossfilter-both-count-customers": {
+  "hash": "74257252bfa353c287cbba87d23504f780904a20",
+  "columns": [
+   "[n]"
+  ],
+  "rows": [
+   [
+    4
+   ]
+  ]
+ },
+ "relationships-crossfilter-both-customers-by-color": {
+  "hash": "44abffb76477f2fd6aecc7d64cd9edcf0a8b51ef",
+  "columns": [
+   "Product[Color]",
+   "[c]",
+   "[n]"
+  ],
+  "rows": [
+   [
+    "Black",
+    2,
+    4
+   ],
+   [
+    "Blue",
+    2,
+    4
+   ],
+   [
+    "Red",
+    3,
+    4
+   ]
+  ]
+ },
+ "relationships-crossfilter-none-oneway-related": {
+  "hash": "c442cd4f84f01272849b51a394bf9ed6b88ea0cb",
+  "error": "Query (5, 55) The column '<oii>Product</oii>[<oii>Price</oii>]' either doesn't exist or doesn't have a relationship to any table available in the current context."
+ },
+ "relationships-many-to-many-target-by-customer": {
+  "hash": "ed10e11a641db1018f289fdadd6feaaa3e6f12ec",
+  "columns": [
+   "Customer[Customer]",
+   "[t]"
+  ],
+  "rows": [
+   [
+    "Alice",
+    5000
+   ],
+   [
+    "Chloe",
+    5000
+   ],
+   [
+    "Bob",
+    2000
+   ]
+  ]
+ },
+ "relationships-many-to-many-target-not-from-product": {
+  "hash": "3b964ea1776649bfdbe15d1897035ab40ab04679",
+  "columns": [
+   "[t]"
+  ],
+  "rows": [
+   [
+    8000
+   ]
+  ]
+ },
+ "relationships-many-to-many-target-paris": {
+  "hash": "17be074f85ce65898ae2d653bdb7d2a034b8d7fa",
+  "columns": [
+   "[t]"
+  ],
+  "rows": [
+   [
+    5000
+   ]
+  ]
+ },
+ "relationships-return-rate-by-product": {
+  "hash": "75afe8f2df3515e0323f9c2e896a3509ff961aa5",
+  "columns": [
+   "Product[Name]",
+   "[rr]"
+  ],
+  "rows": [
+   [
+    "Mountain Bike",
+    0.5
+   ],
+   [
+    "Jersey",
+    0.14285714285714285
+   ],
+   [
+    "Cap",
+    0.2222222222222222
+   ]
+  ]
+ },
+ "relationships-to-calculated-table": {
+  "hash": "2f204eacd3d3856dd993bc31f29cc16b77de46f3",
+  "columns": [
+   "Big Products[Name]",
+   "[s]"
+  ],
+  "rows": [
+   [
+    null,
+    530.0
+   ],
+   [
+    "Mountain Bike",
+    1600.0
+   ],
+   [
+    "Road Bike",
+    4000.0
+   ]
+  ]
+ },
+ "relationships-two-facts-by-year": {
+  "hash": "4875f9c4570292e99bf77f2d3bf28d263c856ee0",
+  "columns": [
+   "Date[Year]",
+   "[q]",
+   "[ret]"
+  ],
+  "rows": [
+   [
+    2023,
+    8,
+    1
+   ],
+   [
+    2024,
+    14,
+    3
+   ]
+  ]
+ },
+ "relationships-userelationship-ship-date": {
+  "hash": "dffc7726e68ccad0b6b91139a26f7ab125a9000e",
+  "columns": [
+   "Date[Year]",
+   "[order]",
+   "[ship]"
+  ],
+  "rows": [
+   [
+    2023,
+    2010.0,
+    1960.0
+   ],
+   [
+    2024,
+    4120.0,
+    4170.0
+   ]
+  ]
+ }
+}

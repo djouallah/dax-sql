@@ -1,0 +1,2 @@
+// note: SUMMARIZECOLUMNS auto-exist with no grouping column: two filters of one table become the combinations it holds, so removing one keeps the other narrowed
+EVALUATE SUMMARIZECOLUMNS(TREATAS({"Black"}, Product[Color]), TREATAS({1, 2}, Product[CategoryKey]), "s", [Sales Amount], "nocolor", CALCULATE([Sales Amount], REMOVEFILTERS(Product[Color])))

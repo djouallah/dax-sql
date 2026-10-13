@@ -1,0 +1,110 @@
+{
+ "decimal-allocation-sums-rounded-shares": {
+  "hash": "f5a2db5e12153fa3366da3a5e4f8e44194b32007",
+  "columns": [
+   "[a]"
+  ],
+  "rows": [
+   [
+    557.2726
+   ]
+  ]
+ },
+ "decimal-constant-if-branch-types": {
+  "hash": "5b7a72b14fbe6bd06106e20c57213cf2ff0b63f8",
+  "columns": [
+   "[a]",
+   "[b]"
+  ],
+  "rows": [
+   [
+    875.7143,
+    875.7143
+   ]
+  ]
+ },
+ "decimal-divide-multiply-by-number": {
+  "hash": "aaf739c696a669930efa0a6c979dfcdc72b24828",
+  "columns": [
+   "Product[Color]",
+   "[d]",
+   "[q]",
+   "[m]",
+   "[n]"
+  ],
+  "rows": [
+   [
+    "Red",
+    621.4286,
+    621.4286,
+    1450.0,
+    13050.0
+   ],
+   [
+    "Black",
+    228.5714,
+    228.5714,
+    533.3333,
+    4800.0
+   ],
+   [
+    "Blue",
+    25.7143,
+    25.7143,
+    60.0,
+    540.0
+   ]
+  ]
+ },
+ "decimal-if-branches-decimal-divide": {
+  "hash": "5a6847e1dc36ea5f477f082ba9b61b56817aab64",
+  "columns": [
+   "Product[Color]",
+   "[a]"
+  ],
+  "rows": [
+   [
+    "Red",
+    621.4286
+   ],
+   [
+    "Black",
+    228.5714
+   ],
+   [
+    "Blue",
+    25.7143
+   ]
+  ]
+ },
+ "decimal-tie-whole-vs-double-divisor": {
+  "hash": "ce906996985d6fd47df663117b87fb024fcfb5e9",
+  "columns": [
+   "[w]",
+   "[d]",
+   "[dw]",
+   "[dd]"
+  ],
+  "rows": [
+   [
+    0.5001,
+    0.5001,
+    0.5001,
+    0.5001
+   ]
+  ]
+ },
+ "decimal-two-decimals-divided": {
+  "hash": "665a2b1e056c9bc9cf87f93da62f7fe47e3e99f5",
+  "columns": [
+   "[s]",
+   "[p]"
+  ],
+  "rows": [
+   [
+    0.7096247960848288,
+    4350.333333333333
+   ]
+  ]
+ }
+}

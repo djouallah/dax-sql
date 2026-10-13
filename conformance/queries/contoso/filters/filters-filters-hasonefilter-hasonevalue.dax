@@ -1,0 +1,3 @@
+// note: FILTERS, HASONEFILTER and HASONEVALUE under a filter of two values
+EVALUATE CALCULATETABLE(ROW("n", COUNTROWS(FILTERS(Product[Color])), "one", HASONEFILTER(Product[Color]),
+    "v", HASONEVALUE(Product[Color])), Product[Color] IN {"Red", "Blue"})

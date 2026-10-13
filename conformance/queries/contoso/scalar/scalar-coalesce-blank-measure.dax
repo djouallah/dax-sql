@@ -1,0 +1,2 @@
+// note: COALESCE of a blank whole-number measure and a decimal
+EVALUATE CALCULATETABLE(ROW("a", COALESCE([Orders], 0.5)), Product[Name] = "Helmet")

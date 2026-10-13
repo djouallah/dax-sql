@@ -1,0 +1,184 @@
+{
+ "calcgroups-filter-by-ordinal": {
+  "hash": "3273d74b291227e43e05666efb4b63f1d55b351e",
+  "columns": [
+   "[s]"
+  ],
+  "rows": [
+   [
+    2010.0
+   ]
+  ]
+ },
+ "calcgroups-grouped-by-item-sideways-recursion": {
+  "hash": "ddcf8729fc301406941c678fd49e549ab6fd4851",
+  "columns": [
+   "Date[Year]",
+   "Time Calc[Time Calc]",
+   "[s]"
+  ],
+  "rows": [
+   [
+    2023,
+    "Current",
+    2010.0
+   ],
+   [
+    2024,
+    "Current",
+    4120.0
+   ],
+   [
+    2024,
+    "PY",
+    2010.0
+   ],
+   [
+    2023,
+    "YOY",
+    2010.0
+   ],
+   [
+    2024,
+    "YOY",
+    2110.0
+   ]
+  ]
+ },
+ "calcgroups-item-by-name-on-other-ordinal-row": {
+  "hash": "3d1a37c741938d7c9e878180eb01c1a212a27017",
+  "columns": [
+   "Time Calc[Time Calc]",
+   "Time Calc[Ordinal]",
+   "[s]"
+  ],
+  "rows": [
+   [
+    "Current",
+    0,
+    4120.0
+   ],
+   [
+    "PY",
+    2,
+    2010.0
+   ],
+   [
+    "YOY",
+    3,
+    2110.0
+   ]
+  ]
+ },
+ "calcgroups-item-naming-measure-applied-once": {
+  "hash": "bea985af345c9e095e69a8515e343cbf94efd0af",
+  "columns": [
+   "[q]"
+  ],
+  "rows": [
+   [
+    61300.0
+   ]
+  ]
+ },
+ "calcgroups-name-filter-keeps-row-ordinal": {
+  "hash": "f7579ac7bff272b0c86414c078a5846cc02ec209",
+  "columns": [
+   "Time Calc[Time Calc]",
+   "Time Calc[Ordinal]",
+   "[n]",
+   "[nAll]",
+   "[s]"
+  ],
+  "rows": [
+   [
+    "PY",
+    2,
+    1,
+    1,
+    2010.0
+   ],
+   [
+    "Current",
+    0,
+    null,
+    1,
+    2010.0
+   ]
+  ]
+ },
+ "calcgroups-precedence-plus1-around-ytd": {
+  "hash": "fb33b668b7c41fbc6b932ff64405219ced7c6c72",
+  "columns": [
+   "[s]"
+  ],
+  "rows": [
+   [
+    4121.0
+   ]
+  ]
+ },
+ "calcgroups-precedence-scale-around-py": {
+  "hash": "b3c6acd5715d1d76f5183065b6dfcb1fe0a49dc5",
+  "columns": [
+   "[s]"
+  ],
+  "rows": [
+   [
+    4020.0
+   ]
+  ]
+ },
+ "calcgroups-selectedmeasurename": {
+  "hash": "42f210954e5414b87529e8b1b2f145e74d97488d",
+  "columns": [
+   "[n]"
+  ],
+  "rows": [
+   [
+    "Quantity"
+   ]
+  ]
+ },
+ "calcgroups-several-items-selected": {
+  "hash": "e0a5650c72cab41c2043524abe8d2016533da029",
+  "columns": [
+   "[s]"
+  ],
+  "rows": [
+   [
+    4120.0
+   ]
+  ]
+ },
+ "calcgroups-sumx-over-items": {
+  "hash": "461ad56456ca6ac2b4af1ccda29cf593a6bf9c53",
+  "columns": [
+   "[s]"
+  ],
+  "rows": [
+   [
+    12360.0
+   ]
+  ]
+ },
+ "calcgroups-sumx-table-constructor-names": {
+  "hash": "0a95386bb8a229c296090588f97d862555ff56c5",
+  "error": "Query (3, 105) Column '<oii>Value</oii>' cannot be found or may not be used in this expression."
+ },
+ "calcgroups-ytd-item-replaces-measures": {
+  "hash": "74d090a10c3e668f5f940ccd9adebee2d24dd2d9",
+  "columns": [
+   "[s]",
+   "[q]",
+   "[implicit]"
+  ],
+  "rows": [
+   [
+    3100.0,
+    12,
+    800.0
+   ]
+  ]
+ }
+}

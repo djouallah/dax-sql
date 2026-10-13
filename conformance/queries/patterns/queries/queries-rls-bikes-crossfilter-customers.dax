@@ -1,0 +1,10 @@
+// note: under the Bikes role, a CROSSFILTER BOTH on Sales-Customer lets the role's Sales rows filter Customer: customers who bought bikes, against the Customer table the role does not filter
+// roles: Bikes
+EVALUATE
+SUMMARIZECOLUMNS(
+	'Customer'[Country],
+	"Sales_Amount", 'Sales'[Sales Amount],
+	"Customers_Dimension", COUNTROWS('Customer'),
+	"Customers_Via_Sales", CALCULATE(COUNTROWS('Customer'), CROSSFILTER('Sales'[CustomerKey], 'Customer'[CustomerKey], BOTH))
+)
+ORDER BY 'Customer'[Country]

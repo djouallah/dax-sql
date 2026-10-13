@@ -1,0 +1,11 @@
+// note: each Paris customer's first Bikes purchase (dynamic, keeps the category filter) beside the static First Order column
+EVALUATE
+SUMMARIZECOLUMNS(
+    Customer[Customer],
+    Customer[First Order],
+    TREATAS({ "Paris" }, Customer[City]),
+    TREATAS({ "Bikes" }, Category[Category]),
+    "First Bike Purchase", [Customer First Purchase],
+    "Bike Orders", [Orders]
+)
+ORDER BY Customer[Customer]

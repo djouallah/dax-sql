@@ -1,0 +1,2 @@
+// note: ALLSELECTED with no iterator: a table keeps the outer filters; a column no shadow covers has all its values
+EVALUATE CALCULATETABLE(ROW("t", COUNTROWS(ALLSELECTED(Product)), "c", COUNTROWS(ALLSELECTED(Product[Name]))), Product[Color] IN {"Red", "Blue"}, Product[CategoryKey] IN {1, 2})

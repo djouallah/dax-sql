@@ -1,0 +1,2 @@
+// note: check_model.py: [Generation MWh] by year and fuel over the whole history, from the 5-minute table, forced by a filter on fct_summary[date]
+EVALUATE SUMMARIZECOLUMNS(dim_calendar[year], dim_duid[FuelSourceDescriptor], TREATAS(VALUES(dim_calendar[date]), fct_summary[date]), "MWh", [Generation MWh])

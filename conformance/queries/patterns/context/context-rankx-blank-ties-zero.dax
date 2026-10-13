@@ -1,0 +1,12 @@
+// note: RANKX over a table of positive, zero, negative and blank values: a blank compares as 0, tying with the zeros, and DENSE counts blank and zero as one value; SKIP and DENSE, DESC and ASC
+EVALUATE
+VAR t = { (1, 5), (2, 0), (3, BLANK()), (4, -3), (5, 0), (6, BLANK()), (7, 2) }
+RETURN
+    ADDCOLUMNS(
+        t,
+        "Desc Skip", RANKX(t, [Value2], , DESC, SKIP),
+        "Desc Dense", RANKX(t, [Value2], , DESC, DENSE),
+        "Asc Skip", RANKX(t, [Value2], , ASC, SKIP),
+        "Asc Dense", RANKX(t, [Value2], , ASC, DENSE)
+    )
+ORDER BY [Value1]

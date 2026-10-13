@@ -1,0 +1,21 @@
+// note: basket analysis: orders holding both subcategories of each pair, the second subcategory a lineage-free copy of the column
+EVALUATE
+VAR Pairs =
+    FILTER(
+        CROSSJOIN(
+            VALUES(Subcategory[Subcategory]),
+            SELECTCOLUMNS(VALUES(Subcategory[Subcategory]), "Other", Subcategory[Subcategory] & "")
+        ),
+        NOT ISBLANK(Subcategory[Subcategory]) && Subcategory[Subcategory] < [Other]
+    )
+RETURN
+    FILTER(
+        ADDCOLUMNS(
+            Pairs,
+            "Orders Together",
+                VAR other = [Other]
+                VAR OrdersOther = CALCULATETABLE(VALUES(Sales[Order Number]), Subcategory[Subcategory] = other)
+                RETURN CALCULATE([Orders], OrdersOther)
+        ),
+        NOT ISBLANK([Orders Together])
+    )

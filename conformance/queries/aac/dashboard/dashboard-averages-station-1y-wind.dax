@@ -1,0 +1,2 @@
+// note: the dashboard's averages query, the generation KPIs: each series as an average MW with its share, largest first (page state: 1 year to 2026-08-11, fuel Wind)
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS(dim_duid[Plant], "avg", [Average generation MW], "share", [Generation share]), dim_calendar[date] >= dt"2026-07-28", dim_calendar[date] <= dt"2026-08-11", dim_duid[FuelSourceDescriptor] = "Wind"), "series", [Plant], "avg", [avg], "share", [share]) ORDER BY [avg] DESC, [series]

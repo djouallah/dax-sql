@@ -1,0 +1,14 @@
+// note: context transition on 'Date'[Date] of the marked date table, under an ISO year and week filter (the week of 2024-02-29): what the date's filter leaves of the table's other filters, seen through ISFILTERED and a count once the date filter is removed
+EVALUATE
+CALCULATETABLE(
+    ADDCOLUMNS(
+        VALUES('Date'[Date]),
+        "Week Filtered Outside", ISFILTERED('Date'[ISO Week]),
+        "Week Filtered After Transition", CALCULATE(ISFILTERED('Date'[ISO Week])),
+        "Days Once Date Filter Removed", CALCULATE(CALCULATE(COUNTROWS('Date'), REMOVEFILTERS('Date'[Date]))),
+        "Sales", [Sales Amount]
+    ),
+    'Date'[ISO Year] = 2024,
+    'Date'[ISO Week] = 9
+)
+ORDER BY 'Date'[Date]

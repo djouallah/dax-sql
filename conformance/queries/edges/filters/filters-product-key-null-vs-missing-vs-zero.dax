@@ -1,0 +1,12 @@
+// note: by Product[ProductKey]: lines with a NULL key, with the unknown key 999, with Sales[ProductKey] = 0 (no product has key 0, but = treats a blank as 0) and == 0 (strict), and with Product[ProductKey] = 0, a filter on the dimension's key that replaces the group's filter and can only select the blank row
+EVALUATE
+SUMMARIZECOLUMNS(
+    Product[ProductKey],
+    "Lines", [Lines],
+    "Key Is Blank", CALCULATE([Lines], ISBLANK(Sales[ProductKey])),
+    "Key 999", CALCULATE([Lines], Sales[ProductKey] = 999),
+    "Key Eq Zero", CALCULATE([Lines], Sales[ProductKey] = 0),
+    "Key Strict Zero", CALCULATE([Lines], Sales[ProductKey] == 0),
+    "Dimension Key Eq Zero", CALCULATE([Lines], Product[ProductKey] = 0)
+)
+ORDER BY Product[ProductKey]

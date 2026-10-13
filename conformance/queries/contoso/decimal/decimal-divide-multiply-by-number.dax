@@ -1,0 +1,3 @@
+// note: a fixed decimal measure divided or multiplied by a number: DIVIDE, /, times a decimal fraction, times a whole number
+EVALUATE SUMMARIZECOLUMNS(Product[Color], "d", DIVIDE([Sales Amount], 7), "q", [Sales Amount] / 7,
+    "m", [Sales Amount] * (1 / 3), "n", 3 * [Sales Amount])

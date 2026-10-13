@@ -1,0 +1,13 @@
+// note: RANK over a SUMMARIZECOLUMNS result by subcategory and year, partitioned by a band column that SUMMARIZECOLUMNS adds (a DAX error: PARTITIONBY cannot use columns added by DAX table functions)
+// expect: error
+EVALUATE
+VAR t =
+    SUMMARIZECOLUMNS(
+        Subcategory[Subcategory],
+        'Date'[Year],
+        "Sales", [Sales Amount],
+        "Band", IF([Sales Amount] >= 100000, "Big", "Small")
+    )
+RETURN
+    ADDCOLUMNS(t, "Rank In Band", RANK(DENSE, t, ORDERBY([Sales], DESC, Subcategory[Subcategory], ASC, 'Date'[Year], ASC), , PARTITIONBY([Band])))
+ORDER BY Subcategory[Subcategory], 'Date'[Year]

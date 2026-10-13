@@ -1,0 +1,9 @@
+// note: ABC classification inside each category: ALLSELECTED over products keeps the category grouping's filter
+EVALUATE
+SUMMARIZECOLUMNS(
+    Category[Category],
+    Product[Product],
+    "Sales", [Sales Amount],
+    "Cumulative %", [ABC Product Cumulative %],
+    "Class", [ABC Product Class]
+)

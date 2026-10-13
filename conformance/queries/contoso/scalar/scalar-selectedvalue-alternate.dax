@@ -1,0 +1,2 @@
+// note: SELECTEDVALUE returns the alternate result when a color has more than one product
+EVALUATE SUMMARIZECOLUMNS(Product[Color], "name", SELECTEDVALUE(Product[Name], "many"))

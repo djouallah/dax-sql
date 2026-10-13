@@ -1,0 +1,11 @@
+// note: CROSSFILTER BOTH from Sales back to Product, by customer country: products and their categories counted from the dimension, beside the distinct product keys of the fact, where sales of products missing from Product (and of a missing customer, the blank country) reach the blank product row
+EVALUATE
+SUMMARIZECOLUMNS(
+    Customer[Country],
+    "Sales", [Sales Amount],
+    "Product Keys In Sales", DISTINCTCOUNT(Sales[ProductKey]),
+    "Products", CALCULATE(COUNTROWS(Product), CROSSFILTER(Sales[ProductKey], Product[ProductKey], BOTH)),
+    "Product Values", CALCULATE(COUNTROWS(VALUES(Product[ProductKey])), CROSSFILTER(Sales[ProductKey], Product[ProductKey], BOTH)),
+    "Categories", CALCULATE(DISTINCTCOUNT(Product[Category]), CROSSFILTER(Sales[ProductKey], Product[ProductKey], BOTH))
+)
+ORDER BY Customer[Country]

@@ -1,0 +1,2 @@
+// note: catalog_sales[Catalog Net Profit] per education status of the bill-to demographic
+EVALUATE SUMMARIZECOLUMNS(customer_demographics[cd_education_status], "Catalog Net Profit", [Catalog Net Profit])

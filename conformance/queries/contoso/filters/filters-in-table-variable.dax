@@ -1,0 +1,2 @@
+// note: a filter with IN over a table variable
+EVALUATE VAR t = {"Red", "Blue"} RETURN CALCULATETABLE(ROW("s", [Sales Amount]), Product[Color] IN t)

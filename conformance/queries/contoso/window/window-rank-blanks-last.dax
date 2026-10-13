@@ -1,0 +1,2 @@
+// note: RANK ascending with BLANKS LAST: the product without sales ranks last
+EVALUATE ADDCOLUMNS(VALUES(Product[Name]), "r", RANK(DENSE, ALL(Product[Name]), ORDERBY([Sales Amount], ASC BLANKS LAST)))

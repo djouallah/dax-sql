@@ -1,0 +1,2 @@
+// note: fct_summary[Charging MW on an average day] per time of day
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS(dim_time[time], "Charging MW on an average day", [Charging MW on an average day]), dim_calendar[date] >= dt"2026-08-01", dim_calendar[date] <= dt"2026-08-13")

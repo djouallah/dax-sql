@@ -1,0 +1,12 @@
+// note: GENERATE over categories with a TOPN of products computed in each category's row context (CALCULATETABLE and the measure both transition it)
+EVALUATE
+GENERATE(
+    VALUES(Category[Category]),
+    TOPN(
+        2,
+        ADDCOLUMNS(CALCULATETABLE(VALUES(Product[Product])), "Sales", [Sales Amount]),
+        [Sales], DESC,
+        Product[Product], ASC
+    )
+)
+ORDER BY Category[Category], [Sales] DESC, Product[Product]

@@ -1,0 +1,17 @@
+// note: orders delivered in the month and also ordered in it: USERELATIONSHIP on Delivery Date plus TREATAS of the visible dates onto Order Date
+DEFINE
+    MEASURE Sales[Ordered And Delivered] =
+        CALCULATE(
+            [Orders],
+            USERELATIONSHIP(Sales[Delivery Date], 'Date'[Date]),
+            TREATAS(VALUES('Date'[Date]), Sales[Order Date])
+        )
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year Month],
+    TREATAS({2023}, 'Date'[Year]),
+    "Ordered", [Orders],
+    "Delivered", CALCULATE([Orders], USERELATIONSHIP(Sales[Delivery Date], 'Date'[Date])),
+    "Ordered And Delivered", [Ordered And Delivered]
+)
+ORDER BY 'Date'[Year Month]

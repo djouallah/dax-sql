@@ -1,0 +1,2 @@
+// note: values converted to text by &: decimal, float sum, date, datetime, boolean, large number
+EVALUATE ROW("a", 3.0 & "", "b", (0.1 + 0.2) & "", "c", dt"2024-01-05" & "", "d", dt"2024-01-05 15:04:09" & "", "e", TRUE() & "", "f", 1e20 & "")

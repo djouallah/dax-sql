@@ -1,0 +1,11 @@
+// note: grouped by the Time Intelligence item's name and ordinal for 2024, buyers with a CALCULATE filter on the item's name that sets it to PY (replacing the row's item) and the same filter inside KEEPFILTERS (intersecting it)
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Time Intelligence'[Time Intelligence],
+    'Time Intelligence'[Ordinal],
+    TREATAS({ 2024 }, 'Date'[Year]),
+    "Customers", [Customers],
+    "Customers Set PY", CALCULATE([Customers], 'Time Intelligence'[Time Intelligence] = "PY"),
+    "Customers Keep PY", CALCULATE([Customers], KEEPFILTERS('Time Intelligence'[Time Intelligence] = "PY"))
+)
+ORDER BY 'Time Intelligence'[Ordinal]

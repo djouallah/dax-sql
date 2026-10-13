@@ -1,0 +1,2 @@
+// note: a constant expression under a filter on the city: the blank row is left out
+EVALUATE SUMMARIZECOLUMNS(Customer[Customer], TREATAS({"Paris"}, Customer[City]), "one", 1)

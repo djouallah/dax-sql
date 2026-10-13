@@ -1,0 +1,12 @@
+// note: grouped by the calculation group's name and ordinal, a CALCULATE filter on the name column replaces the row's name but not its ordinal, unless the ordinal filter is removed too
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Time Intelligence'[Time Intelligence],
+    'Time Intelligence'[Ordinal],
+    TREATAS({2024}, 'Date'[Year]),
+    "Sales", [Sales Amount],
+    "Name Set To PY", CALCULATE([Sales Amount], 'Time Intelligence'[Time Intelligence] = "PY"),
+    "Name Set To PY Ordinal Removed", CALCULATE([Sales Amount], 'Time Intelligence'[Time Intelligence] = "PY", REMOVEFILTERS('Time Intelligence'[Ordinal])),
+    "Items Visible", CALCULATE(COUNTROWS('Time Intelligence'), 'Time Intelligence'[Time Intelligence] = "PY")
+)
+ORDER BY 'Time Intelligence'[Ordinal]

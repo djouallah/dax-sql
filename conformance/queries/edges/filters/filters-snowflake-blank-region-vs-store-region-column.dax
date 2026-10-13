@@ -1,0 +1,11 @@
+// note: by Region[Region], three hops from Sales over Store and Country, where only Store has unmatched keys (and so a blank row): lines, lines through the calculated RELATED column Sales[Store Region] (blank for unknown stores) with Region's filter removed, lines whose Store Region is blank, and Country and Store rows, with Africa (a country, no store) and Antarctica (no country)
+EVALUATE
+SUMMARIZECOLUMNS(
+    Region[Region],
+    "Lines", [Lines],
+    "Lines By Store Region Column", CALCULATE([Lines], TREATAS(VALUES(Region[Region]), Sales[Store Region]), REMOVEFILTERS(Region)),
+    "Lines Blank Store Region", CALCULATE([Lines], Sales[Store Region] = BLANK()),
+    "Countries", COUNTROWS(Country),
+    "Stores", COUNTROWS(Store)
+)
+ORDER BY Region[Region]

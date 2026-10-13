@@ -1,0 +1,9 @@
+// note: auto-exist: two SUMMARIZECOLUMNS filters on Product columns merge into the combinations that exist, so removing the color filter leaves the subcategory filter narrowed
+EVALUATE
+SUMMARIZECOLUMNS(
+    Product[Brand],
+    TREATAS({"Red"}, Product[Color]),
+    TREATAS({1, 7}, Product[SubcategoryKey]),
+    "Sales", [Sales Amount],
+    "Color Removed", CALCULATE([Sales Amount], REMOVEFILTERS(Product[Color]))
+)

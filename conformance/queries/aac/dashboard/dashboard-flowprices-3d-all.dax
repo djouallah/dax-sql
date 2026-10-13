@@ -1,0 +1,2 @@
+// note: the dashboard's flowPrices query, Flows: each region's price and net interchange per interval (page state: 3 days to 2026-08-11, all)
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS(fct_region[REGIONID], fct_region[date], fct_region[time], "price", [Average price], "net", [Net interchange MW]), fct_region[date] >= dt"2026-08-09", fct_region[date] <= dt"2026-08-11"), "region", [REGIONID], "date", [date], "time", [time], "price", [price], "net", [net])

@@ -1,0 +1,2 @@
+// note: the dashboard's nowShare query, "Right now": the renewable share at one interval (page state: 3 days to 2026-08-11, region SA1)
+EVALUATE CALCULATETABLE(ROW("share", [Renewable share]), fct_summary[date] = dt"2026-08-11", fct_summary[time] = 1200, dim_duid[Region] = "SA1")

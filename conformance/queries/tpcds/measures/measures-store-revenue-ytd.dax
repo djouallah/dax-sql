@@ -1,0 +1,2 @@
+// note: store_sales[Store Revenue YTD] per month of a year, running from January
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS(date_dim[d_year], date_dim[d_moy], "Store Revenue YTD", [Store Revenue YTD]), date_dim[d_year] IN {2025})

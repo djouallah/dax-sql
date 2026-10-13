@@ -1,0 +1,4 @@
+// note: ALLSELECTED(Product) in SUMMARIZECOLUMNS: share, MAX and COUNTROWS over everything selected
+EVALUATE SUMMARIZECOLUMNS(Product[Color], "s", [Sales Amount],
+    "share", DIVIDE([Sales Amount], CALCULATE([Sales Amount], ALLSELECTED(Product))),
+    "max", CALCULATE(MAX(Sales[Amount]), ALLSELECTED(Product)), "n", CALCULATE(COUNTROWS(Sales), ALLSELECTED(Product)))

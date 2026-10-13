@@ -1,0 +1,10 @@
+// note: returning customers by quarter of 2023 and customer country
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Quarter],
+    Customer[Country],
+    TREATAS({ 2023 }, 'Date'[Year]),
+    "Returning", [Customers Returning],
+    "Customers", [Customers]
+)
+ORDER BY 'Date'[Quarter], Customer[Country]

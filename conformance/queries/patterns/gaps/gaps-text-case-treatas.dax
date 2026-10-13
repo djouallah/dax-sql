@@ -1,0 +1,3 @@
+// note: TREATAS with values in another case matches the column's values
+EVALUATE
+SUMMARIZECOLUMNS(Customer[Country], TREATAS({ "france", "GERMANY" }, Customer[Country]), "Sales", [Sales Amount])

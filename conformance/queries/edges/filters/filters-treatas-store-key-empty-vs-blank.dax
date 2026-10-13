@@ -1,0 +1,14 @@
+// note: TREATAS and IN with the empty string, BLANK() and the unknown key "XXX-99", applied to the dimension Store[StoreKey] (no "" and no "XXX-99" there, only the blank row) and to the fact Sales[StoreKey] (which holds "", NULL and "XXX-99"); and Target's unknown store "ZZZ-00" and the blank row on Store
+EVALUATE
+ROW(
+    "TREATAS Empty On Store", CALCULATE([Lines], TREATAS({""}, Store[StoreKey])),
+    "TREATAS Blank On Store", CALCULATE([Lines], TREATAS({BLANK()}, Store[StoreKey])),
+    "TREATAS Missing On Store", CALCULATE([Lines], TREATAS({"XXX-99"}, Store[StoreKey])),
+    "TREATAS Empty On Sales", CALCULATE([Lines], TREATAS({""}, Sales[StoreKey])),
+    "TREATAS Blank On Sales", CALCULATE([Lines], TREATAS({BLANK()}, Sales[StoreKey])),
+    "TREATAS Missing On Sales", CALCULATE([Lines], TREATAS({"XXX-99"}, Sales[StoreKey])),
+    "IN Empty On Store", CALCULATE([Lines], Store[StoreKey] IN {""}),
+    "IN Empty On Sales", CALCULATE([Lines], Sales[StoreKey] IN {""}),
+    "Target TREATAS Missing On Store", CALCULATE([Target Amount], TREATAS({"ZZZ-00"}, Store[StoreKey])),
+    "Target TREATAS Blank On Store", CALCULATE([Target Amount], TREATAS({BLANK()}, Store[StoreKey]))
+)

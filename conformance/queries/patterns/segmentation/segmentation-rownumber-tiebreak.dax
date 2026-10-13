@@ -1,0 +1,7 @@
+// note: ROWNUMBER with a tie-breaker to number customers by order count, keeping the first fifteen
+EVALUATE
+VAR t = ADDCOLUMNS(VALUES(Customer[Customer]), "@Orders", [Orders])
+VAR numbered = ADDCOLUMNS(t, "Row", ROWNUMBER(t, ORDERBY([@Orders], DESC, Customer[Customer], ASC)))
+RETURN
+    FILTER(numbered, [Row] <= 15)
+ORDER BY [Row]

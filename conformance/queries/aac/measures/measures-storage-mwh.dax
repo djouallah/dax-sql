@@ -1,0 +1,2 @@
+// note: dim_duid[Storage MWh] per region of the unit
+EVALUATE SUMMARIZECOLUMNS(dim_duid[Region], "Storage MWh", [Storage MWh])

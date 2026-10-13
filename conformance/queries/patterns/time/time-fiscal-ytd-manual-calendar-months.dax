@@ -1,0 +1,8 @@
+// note: fiscal YTD written with FILTER(ALL('Date')) over the Fiscal Year column, grouped by calendar month across a fiscal year boundary
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year Month],
+    TREATAS({2023}, 'Date'[Year]),
+    "Fiscal YTD Manual", [Sales Fiscal YTD Manual]
+)
+ORDER BY 'Date'[Year Month]

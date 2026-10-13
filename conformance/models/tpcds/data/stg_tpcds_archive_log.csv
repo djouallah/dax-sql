@@ -1,0 +1,6 @@
+"source_type","source_filename","archive_path","archived_at","row_count","etag","file_stem"
+"fact","store_sales/part-00000.parquet","Files/archive/tpcds/sf10/store_sales/part-00000.parquet",2026-09-01 00:15:00,380,"sf10-1f3a","store_sales"
+"fact","catalog_sales/part-00000.parquet","Files/archive/tpcds/sf10/catalog_sales/part-00000.parquet",2026-09-02 01:15:00,285,"sf10-230b","catalog_sales"
+"dimension","date_dim/part-00000.parquet","Files/archive/tpcds/sf10/date_dim/part-00000.parquet",2026-09-03 02:15:00,1096,"sf10-26dc","date_dim"
+"dimension","item/part-00000.parquet","Files/archive/tpcds/sf10/item/part-00000.parquet",2026-09-04 03:15:00,16,"sf10-2aad","item"
+"dimension","store/part-00000.parquet","Files/archive/tpcds/sf10/store/part-00000.parquet",2026-09-05 04:15:00,6,"sf10-2e7e","store"

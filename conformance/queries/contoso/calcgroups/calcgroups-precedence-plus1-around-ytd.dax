@@ -1,0 +1,2 @@
+// note: two calculation groups: plus1 (higher precedence) around YTD
+EVALUATE CALCULATETABLE(ROW("s", [Sales Amount]), 'Time Calc'[Time Calc] = "YTD", Scale[Scale] = "plus1", 'Date'[Year] = 2024)

@@ -1,0 +1,2282 @@
+{
+ "measures-available-mwh": {
+  "hash": "703b5e3cf0b29d1f54b7b4797a08af079565418c",
+  "columns": [
+   "dim_duid[FuelSourceDescriptor]",
+   "[Available MWh]"
+  ],
+  "rows": [
+   [
+    null,
+    2531.99
+   ],
+   [
+    "Solar",
+    2998.63
+   ],
+   [
+    "Wind",
+    44434.13
+   ]
+  ]
+ },
+ "measures-average-demand-mw": {
+  "hash": "d041c144cea28c45381f0b6043b81d14c23b62fe",
+  "columns": [
+   "dim_calendar[date]",
+   "[Average demand MW]"
+  ],
+  "rows": [
+   [
+    "2026-08-07",
+    21295.5033
+   ],
+   [
+    "2026-08-08",
+    21199.0499
+   ],
+   [
+    "2026-08-09",
+    21046.5634
+   ],
+   [
+    "2026-08-10",
+    21578.5133
+   ],
+   [
+    "2026-08-11",
+    21407.7234
+   ],
+   [
+    "2026-08-12",
+    21648.41
+   ],
+   [
+    "2026-08-13",
+    20616.3332
+   ]
+  ]
+ },
+ "measures-average-generation-mw": {
+  "hash": "10e4117d07e7da1be671ef8790c0cfc98d18b345",
+  "columns": [
+   "dim_region[Region]",
+   "[Average generation MW]"
+  ],
+  "rows": [
+   [
+    "NSW1",
+    13.519476562500001
+   ],
+   [
+    "QLD1",
+    9.372371552083333
+   ],
+   [
+    "SA1",
+    4.6979435625
+   ],
+   [
+    "TAS1",
+    1.522295125
+   ],
+   [
+    "VIC1",
+    10.380828989583334
+   ]
+  ]
+ },
+ "measures-average-generation-mw-change": {
+  "hash": "8084448577f3b077aca9c5a69d5560f0e8526a17",
+  "columns": [
+   "dim_region[Region]",
+   "[Average generation MW change]"
+  ],
+  "rows": [
+   [
+    "NSW1",
+    -18.828375195121726
+   ],
+   [
+    "QLD1",
+    3.2067887386535148
+   ],
+   [
+    "SA1",
+    4.402210198340733
+   ],
+   [
+    "TAS1",
+    9.358644436605617
+   ],
+   [
+    "VIC1",
+    3.738491720958396
+   ]
+  ]
+ },
+ "measures-average-mw": {
+  "hash": "cf118730371ec6085d4a22905008c38b90ef380b",
+  "columns": [
+   "dim_duid[DUID]",
+   "[Average MW]"
+  ],
+  "rows": [
+   [
+    "BW01",
+    513.3487
+   ],
+   [
+    "BW02",
+    529.5467
+   ],
+   [
+    "BROKENH1",
+    35.4849
+   ],
+   [
+    "STAN-1",
+    321.7731
+   ],
+   [
+    "QLDLOAD1",
+    1.6488
+   ],
+   [
+    "LYA1",
+    504.4307
+   ],
+   [
+    "BALDHWF1",
+    46.741
+   ],
+   [
+    "HDWF1",
+    43.4993
+   ],
+   [
+    "HPR1",
+    2.9628
+   ],
+   [
+    "TORRB1",
+    117.5146
+   ],
+   [
+    "PTSTAN1",
+    45.997
+   ],
+   [
+    "GORDON",
+    231.7227
+   ],
+   [
+    "ROOFTOP_NSW1",
+    2096.1374
+   ],
+   [
+    "ROOFTOP_QLD1",
+    2067.2269
+   ],
+   [
+    "ROOFTOP_SA1",
+    816.1151
+   ],
+   [
+    "ROOFTOP_TAS1",
+    104.2969
+   ],
+   [
+    "ROOFTOP_VIC1",
+    1206.0789
+   ]
+  ]
+ },
+ "measures-average-mw-at-hour": {
+  "hash": "9193f6c0c67338f0a192aec265c6bce1554cb1e1",
+  "columns": [
+   "fct_summary_hourly[hour]",
+   "[Average MW at hour]"
+  ],
+  "rows": [
+   [
+    4,
+    2003.6202
+   ],
+   [
+    12,
+    7967.0887
+   ],
+   [
+    19,
+    2776.3439
+   ]
+  ]
+ },
+ "measures-average-mwh-a-day": {
+  "hash": "5a08b62122c9a5115063ff4a2ffa63cbc0c032c9",
+  "columns": [
+   "dim_duid[DUID]",
+   "[Average MWh a day]"
+  ],
+  "rows": [
+   [
+    "BW01",
+    127.0823278
+   ],
+   [
+    "BW02",
+    131.88051518181817
+   ],
+   [
+    "BROKENH1",
+    3.2331443333333336
+   ],
+   [
+    "STAN-1",
+    79.91595000000001
+   ],
+   [
+    "QLDLOAD1",
+    0.2519524285714286
+   ],
+   [
+    "LYA1",
+    125.69046666666667
+   ],
+   [
+    "BALDHWF1",
+    14.690172200000001
+   ],
+   [
+    "HDWF1",
+    11.8427054
+   ],
+   [
+    "HPR1",
+    8.265716666666666
+   ],
+   [
+    "TORRB1",
+    19.1257
+   ],
+   [
+    "PTSTAN1",
+    3.7595415
+   ],
+   [
+    "GORDON",
+    28.159905533333333
+   ],
+   [
+    "ROOFTOP_NSW1",
+    165.0388222
+   ],
+   [
+    "ROOFTOP_QLD1",
+    161.38749446666668
+   ],
+   [
+    "ROOFTOP_SA1",
+    68.1285166
+   ],
+   [
+    "ROOFTOP_TAS1",
+    9.0790776
+   ],
+   [
+    "ROOFTOP_VIC1",
+    108.65464440000001
+   ]
+  ]
+ },
+ "measures-average-price": {
+  "hash": "9538fa27c1be3d4b62fe1b547c6180cdfddeeb81",
+  "columns": [
+   "dim_region[Region]",
+   "[Average price]"
+  ],
+  "rows": [
+   [
+    "NSW1",
+    115.7737
+   ],
+   [
+    "QLD1",
+    115.7159
+   ],
+   [
+    "SA1",
+    248.9949
+   ],
+   [
+    "TAS1",
+    135.4049
+   ],
+   [
+    "VIC1",
+    109.7238
+   ]
+  ]
+ },
+ "measures-average-price-change": {
+  "hash": "e1b5f3379cc296982595ed482d5941eec6ebdd43",
+  "columns": [
+   "dim_region[Region]",
+   "[Average price change]"
+  ],
+  "rows": [
+   [
+    "NSW1",
+    -17.2441
+   ],
+   [
+    "QLD1",
+    2.16
+   ],
+   [
+    "SA1",
+    177.0325
+   ],
+   [
+    "TAS1",
+    3.3941
+   ],
+   [
+    "VIC1",
+    3.8667
+   ]
+  ]
+ },
+ "measures-battery-spread": {
+  "hash": "6602758e0fdeaea597e68493dd76cded64e8b606",
+  "columns": [
+   "dim_duid[DUID]",
+   "[Battery spread]"
+  ],
+  "rows": [
+   [
+    "HPR1",
+    715.513209380385
+   ]
+  ]
+ },
+ "measures-capacity-factor": {
+  "hash": "ca6c3564de1dd58c1cf6284fe5299a6a191d6339",
+  "columns": [
+   "dim_duid[FuelSourceDescriptor]",
+   "[Capacity factor]"
+  ],
+  "rows": [
+   [
+    "Black coal",
+    0.9542230922473225
+   ],
+   [
+    "Solar",
+    0.27074979889473855
+   ],
+   [
+    "Brown coal",
+    1.0927875105224065
+   ],
+   [
+    "Wind",
+    0.5238131555452362
+   ],
+   [
+    "Grid",
+    0.30928134180627764
+   ],
+   [
+    "Natural Gas (Pipeline)",
+    0.4073295794338533
+   ],
+   [
+    "Diesel",
+    0.04613281099557095
+   ],
+   [
+    "Hydro",
+    0.34086350108051433
+   ]
+  ]
+ },
+ "measures-capacity-mw": {
+  "hash": "4e40c9737022d9a5fbe955bb5e797eab9bd8f49d",
+  "columns": [
+   "dim_duid[FuelSourceDescriptor]",
+   "[Capacity MW]"
+  ],
+  "rows": [
+   [
+    "Black coal",
+    1735.0
+   ],
+   [
+    "Solar",
+    53.0
+   ],
+   [
+    "Brown coal",
+    560.0
+   ],
+   [
+    "Wind",
+    209.0
+   ],
+   [
+    "Grid",
+    150.0
+   ],
+   [
+    "Natural Gas (Pipeline)",
+    200.0
+   ],
+   [
+    "Diesel",
+    57.6
+   ],
+   [
+    "Hydro",
+    432.0
+   ]
+  ]
+ },
+ "measures-capture-price": {
+  "hash": "4f2bba1865cd4374334ad64866200cf8de139fe8",
+  "columns": [
+   "dim_duid[FuelSourceDescriptor]",
+   "[Capture price]"
+  ],
+  "rows": [
+   [
+    null,
+    144.2291748690612
+   ],
+   [
+    "Black coal",
+    126.81265042206093
+   ],
+   [
+    "Solar",
+    45.27787844402603
+   ],
+   [
+    "Brown coal",
+    112.56211449416588
+   ],
+   [
+    "Wind",
+    174.54994487867646
+   ],
+   [
+    "Grid",
+    737.9733468967429
+   ],
+   [
+    "Natural Gas (Pipeline)",
+    505.93087999504445
+   ],
+   [
+    "Diesel",
+    2736.4920314086166
+   ],
+   [
+    "Hydro",
+    228.59681313788883
+   ],
+   [
+    "Rooftop solar",
+    33.84319211570102
+   ]
+  ]
+ },
+ "measures-charging-mw": {
+  "hash": "208310b725c4e715d536cbb0c3628d1e296b8eb0",
+  "columns": [
+   "dim_time[time]",
+   "[Charging MW]"
+  ],
+  "rows": [
+   [
+    400,
+    0.0
+   ],
+   [
+    1200,
+    -75.592
+   ],
+   [
+    1900,
+    0.0
+   ]
+  ]
+ },
+ "measures-charging-mw-on-an-average-day": {
+  "hash": "51f468f8ec0c51e786237d0df43220b8fd43a1bf",
+  "columns": [
+   "dim_time[time]",
+   "[Charging MW on an average day]"
+  ],
+  "rows": [
+   [
+    400,
+    -6.9262
+   ],
+   [
+    1200,
+    -97.9396
+   ],
+   [
+    1900,
+    0.0
+   ]
+  ]
+ },
+ "measures-charging-mwh": {
+  "hash": "457d0b376ecc1ce859432fb07ccc4ce277371b18",
+  "columns": [
+   "dim_calendar[date]",
+   "[Charging MWh]"
+  ],
+  "rows": [
+   [
+    "2026-08-07",
+    -5.66425
+   ],
+   [
+    "2026-08-08",
+    -8.927667
+   ],
+   [
+    "2026-08-09",
+    -11.439667
+   ],
+   [
+    "2026-08-10",
+    -11.232083
+   ],
+   [
+    "2026-08-11",
+    -5.852
+   ],
+   [
+    "2026-08-12",
+    -6.299333333333333
+   ],
+   [
+    "2026-08-13",
+    -12.814666666666668
+   ]
+  ]
+ },
+ "measures-charging-price": {
+  "hash": "d8881f4efc7b554209ad444e96b6dfd40a971fd0",
+  "columns": [
+   "dim_duid[DUID]",
+   "[Charging price]"
+  ],
+  "rows": [
+   [
+    "HPR1",
+    22.460137516357893
+   ]
+  ]
+ },
+ "measures-curtailed-mwh": {
+  "hash": "1f51562e83ce3e564c57179154e9dc87a966518a",
+  "columns": [
+   "dim_duid[DUID]",
+   "[Curtailed MWh]"
+  ],
+  "rows": [
+   [
+    null,
+    185.6
+   ],
+   [
+    "BROKENH1",
+    276.94
+   ],
+   [
+    "BALDHWF1",
+    850.9
+   ],
+   [
+    "HDWF1",
+    637.5
+   ]
+  ]
+ },
+ "measures-curtailment-rate": {
+  "hash": "165afa3d6adca356e6a3534233e2f4b9783e6d29",
+  "columns": [
+   "dim_calendar[date]",
+   "[Curtailment rate]"
+  ],
+  "rows": [
+   [
+    "2026-08-07",
+    4.782797234905492
+   ],
+   [
+    "2026-08-08",
+    5.400188661833916
+   ],
+   [
+    "2026-08-09",
+    4.660542373296286
+   ],
+   [
+    "2026-08-10",
+    4.139469335864998
+   ],
+   [
+    "2026-08-11",
+    6.165891852214338
+   ]
+  ]
+ },
+ "measures-days-with-output": {
+  "hash": "7ee5a1581e17a304d3c9560092f9651866599637",
+  "columns": [
+   "dim_duid[DUID]",
+   "[Days with output]"
+  ],
+  "rows": [
+   [
+    "ROOFTOP_VIC1",
+    13
+   ],
+   [
+    "HPR1",
+    13
+   ],
+   [
+    "BW01",
+    13
+   ],
+   [
+    "ROOFTOP_NSW1",
+    13
+   ],
+   [
+    "QLDLOAD1",
+    13
+   ],
+   [
+    "TORRB1",
+    13
+   ],
+   [
+    "BW02",
+    9
+   ],
+   [
+    "ROOFTOP_QLD1",
+    13
+   ],
+   [
+    "LYA1",
+    13
+   ],
+   [
+    "ROOFTOP_SA1",
+    13
+   ],
+   [
+    "BALDHWF1",
+    13
+   ],
+   [
+    "GORDON",
+    13
+   ],
+   [
+    "BROKENH1",
+    13
+   ],
+   [
+    "ROOFTOP_TAS1",
+    13
+   ],
+   [
+    "HDWF1",
+    13
+   ],
+   [
+    "STAN-1",
+    13
+   ],
+   [
+    "PTSTAN1",
+    2
+   ]
+  ]
+ },
+ "measures-demand-mw": {
+  "hash": "8b534702fecc663aaaa54824b09cbb2d2cb7f52c",
+  "columns": [
+   "dim_region[Region]",
+   "dim_time[time]",
+   "[Demand MW]"
+  ],
+  "rows": [
+   [
+    "NSW1",
+    400,
+    6169.77
+   ],
+   [
+    "QLD1",
+    400,
+    5268.64
+   ],
+   [
+    "SA1",
+    400,
+    1127.84
+   ],
+   [
+    "TAS1",
+    400,
+    967.88
+   ],
+   [
+    "VIC1",
+    400,
+    4689.66
+   ],
+   [
+    "NSW1",
+    1900,
+    10186.87
+   ],
+   [
+    "QLD1",
+    1900,
+    7097.87
+   ],
+   [
+    "SA1",
+    1900,
+    1679.1
+   ],
+   [
+    "VIC1",
+    1900,
+    6373.55
+   ],
+   [
+    "TAS1",
+    1200,
+    1085.51
+   ],
+   [
+    "NSW1",
+    1200,
+    7326.14
+   ],
+   [
+    "QLD1",
+    1200,
+    4849.89
+   ],
+   [
+    "SA1",
+    1200,
+    794.36
+   ],
+   [
+    "VIC1",
+    1200,
+    4231.92
+   ]
+  ]
+ },
+ "measures-demand-mwh": {
+  "hash": "e69528053eec4aadd8cf8cf0f43915bc52dc97e1",
+  "columns": [
+   "dim_calendar[date]",
+   "[Demand MWh]"
+  ],
+  "rows": [
+   [
+    "2026-08-07",
+    511092.0792
+   ],
+   [
+    "2026-08-08",
+    508777.1976
+   ],
+   [
+    "2026-08-09",
+    505117.5216
+   ],
+   [
+    "2026-08-10",
+    517884.3192
+   ],
+   [
+    "2026-08-11",
+    513785.3616
+   ],
+   [
+    "2026-08-12",
+    519561.84
+   ],
+   [
+    "2026-08-13",
+    5154.0833
+   ]
+  ]
+ },
+ "measures-demand-with-rooftop-mw": {
+  "hash": "01304fb662a320f68500bd267ba6eb4c7b1bf90e",
+  "columns": [
+   "dim_time[time]",
+   "[Demand with rooftop MW]"
+  ],
+  "rows": [
+   [
+    400,
+    19389.55
+   ],
+   [
+    1200,
+    25182.501
+   ],
+   [
+    1900,
+    27177.61
+   ]
+  ]
+ },
+ "measures-demand-with-rooftop-mwh": {
+  "hash": "df86d562b22f1019dc39d2f36d539ac145e78b3d",
+  "columns": [
+   "dim_region[Region]",
+   "[Demand with rooftop MWh]"
+  ],
+  "rows": [
+   [
+    "NSW1",
+    1123647.9926333332
+   ],
+   [
+    "QLD1",
+    868298.1807323333
+   ],
+   [
+    "SA1",
+    173029.618666
+   ],
+   [
+    "TAS1",
+    159883.47643166667
+   ],
+   [
+    "VIC1",
+    760182.2162006667
+   ]
+  ]
+ },
+ "measures-emissions-intensity": {
+  "hash": "53cc7aa96113ab20cd23ee89095d75057584a5c8",
+  "columns": [
+   "dim_calendar[date]",
+   "[Emissions intensity]"
+  ],
+  "rows": [
+   [
+    "2026-08-07",
+    0.869381083332336
+   ],
+   [
+    "2026-08-08",
+    0.8416276297523915
+   ],
+   [
+    "2026-08-09",
+    0.8232603107823692
+   ],
+   [
+    "2026-08-10",
+    0.8256313486964424
+   ],
+   [
+    "2026-08-11",
+    0.832654310178692
+   ],
+   [
+    "2026-08-12",
+    0.8461519689807575
+   ],
+   [
+    "2026-08-13",
+    0.8707109306508213
+   ]
+  ]
+ },
+ "measures-emissions-intensity-change": {
+  "hash": "7b2ea9c85703059a88b364b47bf5da04d6bafa55",
+  "columns": [
+   "dim_region[Region]",
+   "[Emissions intensity change]"
+  ],
+  "rows": [
+   [
+    "NSW1",
+    -0.2567966015983582
+   ],
+   [
+    "QLD1",
+    0.0
+   ],
+   [
+    "SA1",
+    22.147519513640514
+   ],
+   [
+    "VIC1",
+    1.5309364210273675
+   ]
+  ]
+ },
+ "measures-emissions-t": {
+  "hash": "cb94d1f66acef8aea30737920956b024ca32eee7",
+  "columns": [
+   "dim_duid[FuelSourceDescriptor]",
+   "[Emissions t]"
+  ],
+  "rows": [
+   [
+    "Black coal",
+    3413.7286553820004
+   ],
+   [
+    "Solar",
+    0.0
+   ],
+   [
+    "Brown coal",
+    1899.5242444419998
+   ],
+   [
+    "Wind",
+    0.0
+   ],
+   [
+    "Natural Gas (Pipeline)",
+    158.64008549999997
+   ],
+   [
+    "Diesel",
+    5.827289325000001
+   ],
+   [
+    "Hydro",
+    0.0
+   ]
+  ]
+ },
+ "measures-flow-mw": {
+  "hash": "d61115c5f53804ad60538b53e9d0443d989c8c2c",
+  "columns": [
+   "dim_interconnector[interconnector]",
+   "[Flow MW]"
+  ],
+  "rows": [
+   [
+    null,
+    -10.8124
+   ],
+   [
+    "NSW1-QLD1",
+    -213.8498
+   ],
+   [
+    "VIC1-NSW1",
+    107.1355
+   ],
+   [
+    "V-SA",
+    -9.2594
+   ],
+   [
+    "T-V-MNSP1",
+    5.7647
+   ],
+   [
+    "V-S-MNSP1",
+    13.1312
+   ]
+  ]
+ },
+ "measures-flow-utilisation": {
+  "hash": "0a84486eece071e8d8c8f9f0c627091be885dfff",
+  "columns": [
+   "fct_interconnector[interconnector]",
+   "fct_interconnector[time]",
+   "[Flow utilisation]"
+  ],
+  "rows": [
+   [
+    "NSW1-QLD1",
+    400,
+    18.616211704634722
+   ],
+   [
+    "VIC1-NSW1",
+    400,
+    65.1348569075561
+   ],
+   [
+    "V-SA",
+    400,
+    62.21913687377068
+   ],
+   [
+    "T-V-MNSP1",
+    400,
+    0.0
+   ],
+   [
+    "V-S-MNSP1",
+    400,
+    51.96460955102489
+   ],
+   [
+    "N-Q-MNSP1",
+    400,
+    90.04238669709814
+   ],
+   [
+    "NSW1-QLD1",
+    1200,
+    52.074168270552654
+   ],
+   [
+    "VIC1-NSW1",
+    1200,
+    0.5050833294647417
+   ],
+   [
+    "V-SA",
+    1200,
+    47.472251786528815
+   ],
+   [
+    "T-V-MNSP1",
+    1200,
+    0.0
+   ],
+   [
+    "V-S-MNSP1",
+    1200,
+    26.86033000232396
+   ],
+   [
+    "N-Q-MNSP1",
+    1200,
+    67.74106903035187
+   ],
+   [
+    "NSW1-QLD1",
+    1900,
+    34.39976983384881
+   ],
+   [
+    "VIC1-NSW1",
+    1900,
+    51.12689469089755
+   ],
+   [
+    "V-SA",
+    1900,
+    24.188643176782378
+   ],
+   [
+    "T-V-MNSP1",
+    1900,
+    0.0
+   ],
+   [
+    "V-S-MNSP1",
+    1900,
+    25.536019401422035
+   ],
+   [
+    "N-Q-MNSP1",
+    1900,
+    36.92878338278932
+   ]
+  ]
+ },
+ "measures-generation-mw": {
+  "hash": "7656e030fbd7befa8805a63c41fb0518ae449fe0",
+  "columns": [
+   "dim_time[time]",
+   "[Generation MW]"
+  ],
+  "rows": [
+   [
+    400,
+    2076.218
+   ],
+   [
+    1200,
+    8685.092
+   ],
+   [
+    1900,
+    2827.407
+   ]
+  ]
+ },
+ "measures-generation-mw-on-an-average-day": {
+  "hash": "79986d15f966e5ef3acc41795a0839cecc0136aa",
+  "columns": [
+   "dim_time[time]",
+   "[Generation MW on an average day]"
+  ],
+  "rows": [
+   [
+    400,
+    1863.7126
+   ],
+   [
+    1200,
+    7654.097
+   ],
+   [
+    1900,
+    2605.5156
+   ]
+  ]
+ },
+ "measures-generation-mwh": {
+  "hash": "d402e5883215315085eb3f18b360838b44288db3",
+  "columns": [
+   "dim_duid[FuelSourceDescriptor]",
+   "[Generation MWh]"
+  ],
+  "rows": [
+   [
+    null,
+    3.8689173333333335
+   ],
+   [
+    "Black coal",
+    5253.8034173333335
+   ],
+   [
+    "Solar",
+    52.015665000000006
+   ],
+   [
+    "Brown coal",
+    2137.6415
+   ],
+   [
+    "Wind",
+    441.9913306666666
+   ],
+   [
+    "Grid",
+    146.70083333333332
+   ],
+   [
+    "Natural Gas (Pipeline)",
+    321.49066666666664
+   ],
+   [
+    "Diesel",
+    7.519083
+   ],
+   [
+    "Hydro",
+    469.1774163333333
+   ],
+   [
+    "Rooftop solar",
+    8655.414579
+   ]
+  ]
+ },
+ "measures-generation-share": {
+  "hash": "78126cff39bfb6f980fcdfc77d55001686972ac1",
+  "columns": [
+   "dim_duid[FuelSourceDescriptor]",
+   "[Generation share]"
+  ],
+  "rows": [
+   [
+    null,
+    0.021923189358956572
+   ],
+   [
+    "Black coal",
+    31.753543695828856
+   ],
+   [
+    "Solar",
+    0.2752243219726265
+   ],
+   [
+    "Brown coal",
+    11.737255215102921
+   ],
+   [
+    "Wind",
+    2.099739826859419
+   ],
+   [
+    "Grid",
+    0.8897905276060585
+   ],
+   [
+    "Natural Gas (Pipeline)",
+    1.56249538269278
+   ],
+   [
+    "Diesel",
+    0.050965372144504605
+   ],
+   [
+    "Hydro",
+    2.8242754139859922
+   ],
+   [
+    "Rooftop solar",
+    48.78478705444788
+   ]
+  ]
+ },
+ "measures-hours": {
+  "hash": "927402b345f798467dd52a0b27c2b8cc85147bd1",
+  "columns": [
+   "dim_region[Region]",
+   "[Hours]"
+  ],
+  "rows": [
+   [
+    "QLD1",
+    144.25
+   ],
+   [
+    "VIC1",
+    144.25
+   ],
+   [
+    "SA1",
+    144.25
+   ],
+   [
+    "NSW1",
+    144.25
+   ],
+   [
+    "TAS1",
+    144.25
+   ]
+  ]
+ },
+ "measures-latest-update": {
+  "hash": "6863c196a3698c2d5696ed1f249ec84d8c56d699",
+  "columns": [
+   "dim_region[Region]",
+   "[Latest update]"
+  ],
+  "rows": [
+   [
+    "NSW1",
+    "2026-08-13 19:00:00"
+   ],
+   [
+    "QLD1",
+    "2026-08-13 19:00:00"
+   ],
+   [
+    "SA1",
+    "2026-08-13 19:00:00"
+   ],
+   [
+    "TAS1",
+    "2026-08-13 19:00:00"
+   ],
+   [
+    "VIC1",
+    "2026-08-13 19:00:00"
+   ],
+   [
+    "WA1",
+    "2026-08-13 19:00:00"
+   ],
+   [
+    null,
+    "2026-08-13 19:00:00"
+   ]
+  ]
+ },
+ "measures-lowest-daily-price": {
+  "hash": "d818401a1d372c4dcdacc819743bc272109d3c76",
+  "columns": [
+   "dim_region[Region]",
+   "[Lowest daily price]"
+  ],
+  "rows": [
+   [
+    "NSW1",
+    82.54
+   ],
+   [
+    "QLD1",
+    75.5667
+   ],
+   [
+    "SA1",
+    79.58
+   ],
+   [
+    "TAS1",
+    97.8667
+   ],
+   [
+    "VIC1",
+    59.9367
+   ]
+  ]
+ },
+ "measures-lowest-price": {
+  "hash": "2d9485668cbd977a2260b73188f8a8da3fa6d06d",
+  "columns": [
+   "dim_region[Region]",
+   "[Lowest price]"
+  ],
+  "rows": [
+   [
+    "NSW1",
+    -4.59
+   ],
+   [
+    "QLD1",
+    -8.39
+   ],
+   [
+    "SA1",
+    -31.23
+   ],
+   [
+    "TAS1",
+    42.94
+   ],
+   [
+    "VIC1",
+    -38.76
+   ]
+  ]
+ },
+ "measures-month-days": {
+  "hash": "d0d8a2640fcb2a1b0a628083781f13e6ea105dfd",
+  "columns": [
+   "dim_month[month]",
+   "[Month days]"
+  ],
+  "rows": [
+   [
+    "2026-06-01",
+    30
+   ],
+   [
+    "2026-07-01",
+    31
+   ]
+  ]
+ },
+ "measures-negative-price-days-share": {
+  "hash": "083d86bf488aa33e9e70adae2a7a7dc79f177904",
+  "columns": [
+   "dim_region[Region]",
+   "[Negative price days share]"
+  ],
+  "rows": [
+   [
+    "NSW1",
+    0.0
+   ],
+   [
+    "QLD1",
+    0.0
+   ],
+   [
+    "SA1",
+    0.0
+   ],
+   [
+    "TAS1",
+    0.0
+   ],
+   [
+    "VIC1",
+    0.0
+   ]
+  ]
+ },
+ "measures-negative-price-share": {
+  "hash": "e4bc3a8fc7aeaf7176c9628cf40a7c14d81ef118",
+  "columns": [
+   "dim_region[Region]",
+   "[Negative price share]"
+  ],
+  "rows": [
+   [
+    "NSW1",
+    2.564102564102564
+   ],
+   [
+    "QLD1",
+    5.128205128205128
+   ],
+   [
+    "SA1",
+    10.256410256410255
+   ],
+   [
+    "TAS1",
+    0.0
+   ],
+   [
+    "VIC1",
+    17.94871794871795
+   ]
+  ]
+ },
+ "measures-net-interchange-mw": {
+  "hash": "6acde8a584f57d2314f3c426f9ef12e7294530b0",
+  "columns": [
+   "dim_region[Region]",
+   "[Net interchange MW]"
+  ],
+  "rows": [
+   [
+    "NSW1",
+    -486.6924
+   ],
+   [
+    "QLD1",
+    855.705
+   ],
+   [
+    "SA1",
+    -111.0169
+   ],
+   [
+    "TAS1",
+    5.5805
+   ],
+   [
+    "VIC1",
+    204.5933
+   ]
+  ]
+ },
+ "measures-newest-whole-day": {
+  "hash": "f2459d62997f58f3af9ae60038340af246fc0ce1",
+  "columns": [
+   "dim_region[Region]",
+   "[Newest whole day]"
+  ],
+  "rows": [
+   [
+    "NSW1",
+    "2026-08-11"
+   ],
+   [
+    "QLD1",
+    "2026-08-11"
+   ],
+   [
+    "SA1",
+    "2026-08-11"
+   ],
+   [
+    "TAS1",
+    "2026-08-11"
+   ],
+   [
+    "VIC1",
+    "2026-08-11"
+   ],
+   [
+    "WA1",
+    "2026-08-11"
+   ],
+   [
+    null,
+    "2026-08-11"
+   ]
+  ]
+ },
+ "measures-newest-whole-day-regional": {
+  "hash": "d4f4ac70a770efd355de82997acc5697d8939ed4",
+  "columns": [
+   "dim_region[Region]",
+   "[Newest whole day regional]"
+  ],
+  "rows": [
+   [
+    "NSW1",
+    "2026-08-12"
+   ],
+   [
+    "QLD1",
+    "2026-08-12"
+   ],
+   [
+    "SA1",
+    "2026-08-12"
+   ],
+   [
+    "TAS1",
+    "2026-08-12"
+   ],
+   [
+    "VIC1",
+    "2026-08-12"
+   ],
+   [
+    "WA1",
+    "2026-08-12"
+   ],
+   [
+    null,
+    "2026-08-12"
+   ]
+  ]
+ },
+ "measures-no-flow": {
+  "hash": "3682b2ba34146126156c76c4870a795c2168bd33",
+  "columns": [
+   "fct_interconnector[interconnector]",
+   "fct_interconnector[time]",
+   "[No flow]"
+  ],
+  "rows": [
+   [
+    "NSW1-QLD1",
+    400,
+    0
+   ],
+   [
+    "VIC1-NSW1",
+    400,
+    0
+   ],
+   [
+    "V-SA",
+    400,
+    0
+   ],
+   [
+    "T-V-MNSP1",
+    400,
+    1
+   ],
+   [
+    "V-S-MNSP1",
+    400,
+    0
+   ],
+   [
+    "N-Q-MNSP1",
+    400,
+    0
+   ],
+   [
+    "NSW1-QLD1",
+    1200,
+    0
+   ],
+   [
+    "VIC1-NSW1",
+    1200,
+    0
+   ],
+   [
+    "V-SA",
+    1200,
+    0
+   ],
+   [
+    "T-V-MNSP1",
+    1200,
+    1
+   ],
+   [
+    "V-S-MNSP1",
+    1200,
+    0
+   ],
+   [
+    "N-Q-MNSP1",
+    1200,
+    0
+   ],
+   [
+    "NSW1-QLD1",
+    1900,
+    0
+   ],
+   [
+    "VIC1-NSW1",
+    1900,
+    0
+   ],
+   [
+    "V-SA",
+    1900,
+    0
+   ],
+   [
+    "T-V-MNSP1",
+    1900,
+    1
+   ],
+   [
+    "V-S-MNSP1",
+    1900,
+    0
+   ],
+   [
+    "N-Q-MNSP1",
+    1900,
+    0
+   ]
+  ]
+ },
+ "measures-output-mwh-hourly": {
+  "hash": "f8d3f6caf608565ef0ea40fa903b16be22efa170",
+  "columns": [
+   "dim_month[month]",
+   "fct_summary_hourly[hour]",
+   "[Output MWh hourly]"
+  ],
+  "rows": [
+   [
+    "2026-06-01",
+    4,
+    60494.7
+   ],
+   [
+    "2026-07-01",
+    4,
+    61726.13
+   ],
+   [
+    "2026-06-01",
+    12,
+    239669.88
+   ],
+   [
+    "2026-07-01",
+    12,
+    246322.53
+   ],
+   [
+    "2026-06-01",
+    19,
+    83238.32
+   ],
+   [
+    "2026-07-01",
+    19,
+    86118.66
+   ]
+  ]
+ },
+ "measures-price-at-hour": {
+  "hash": "283858fe9fbe398e5c0abee6afa7e16f5ae5baf3",
+  "columns": [
+   "dim_region[Region]",
+   "fct_region_hourly[hour]",
+   "[Price at hour]"
+  ],
+  "rows": [
+   [
+    "NSW1",
+    4,
+    84.8572
+   ],
+   [
+    "QLD1",
+    4,
+    100.4237
+   ],
+   [
+    "SA1",
+    4,
+    109.1868
+   ],
+   [
+    "TAS1",
+    4,
+    68.7064
+   ],
+   [
+    "VIC1",
+    4,
+    75.3512
+   ],
+   [
+    "NSW1",
+    12,
+    53.2533
+   ],
+   [
+    "QLD1",
+    12,
+    56.1466
+   ],
+   [
+    "SA1",
+    12,
+    36.3592
+   ],
+   [
+    "TAS1",
+    12,
+    46.5468
+   ],
+   [
+    "VIC1",
+    12,
+    16.4842
+   ],
+   [
+    "NSW1",
+    19,
+    271.6343
+   ],
+   [
+    "QLD1",
+    19,
+    193.6274
+   ],
+   [
+    "SA1",
+    19,
+    177.8258
+   ],
+   [
+    "TAS1",
+    19,
+    232.4264
+   ],
+   [
+    "VIC1",
+    19,
+    215.193
+   ]
+  ]
+ },
+ "measures-price-seen": {
+  "hash": "3d441d1529ed288db94638c4c514fdf1c0a8e9c5",
+  "columns": [
+   "dim_duid[Region]",
+   "[Price seen]"
+  ],
+  "rows": [
+   [
+    "NSW1",
+    95.6927
+   ],
+   [
+    "QLD1",
+    106.2128
+   ],
+   [
+    "VIC1",
+    94.0512
+   ],
+   [
+    "SA1",
+    281.7379
+   ],
+   [
+    "TAS1",
+    145.2181
+   ]
+  ]
+ },
+ "measures-reads-5-minutes": {
+  "hash": "e1dad1cd0e83eedf7cda339535d6e3e4f3b2e919",
+  "columns": [
+   "dim_time[hour]",
+   "[Reads 5 minutes]"
+  ],
+  "rows": [
+   [
+    4,
+    true
+   ],
+   [
+    12,
+    true
+   ],
+   [
+    19,
+    true
+   ]
+  ]
+ },
+ "measures-reads-5-minutes-regional": {
+  "hash": "043dbd30b6fd08b15801694f66a43dfee51d030c",
+  "columns": [
+   "dim_region[Region]",
+   "[Reads 5 minutes regional]"
+  ],
+  "rows": [
+   [
+    "NSW1",
+    false
+   ],
+   [
+    "QLD1",
+    false
+   ],
+   [
+    "SA1",
+    false
+   ],
+   [
+    "TAS1",
+    false
+   ],
+   [
+    "VIC1",
+    false
+   ],
+   [
+    "WA1",
+    false
+   ],
+   [
+    null,
+    false
+   ]
+  ]
+ },
+ "measures-regional-solar-available-mwh": {
+  "hash": "cf1fc39ea985253fc5eacf10d285dfb191dc1994",
+  "columns": [
+   "dim_time[time]",
+   "[Regional solar available MWh]"
+  ],
+  "rows": [
+   [
+    400,
+    0.0
+   ],
+   [
+    1200,
+    9147.5325
+   ],
+   [
+    1900,
+    0.0
+   ]
+  ]
+ },
+ "measures-regional-solar-curtailed-mwh": {
+  "hash": "7f1fbfefc00d6f4f31a7318a64413175d876e589",
+  "columns": [
+   "dim_region[Region]",
+   "[Regional solar curtailed MWh]"
+  ],
+  "rows": [
+   [
+    "NSW1",
+    478.185
+   ],
+   [
+    "QLD1",
+    389.2833
+   ],
+   [
+    "SA1",
+    54.995
+   ],
+   [
+    "TAS1",
+    0.0
+   ],
+   [
+    "VIC1",
+    122.7875
+   ]
+  ]
+ },
+ "measures-regional-wind-available-mwh": {
+  "hash": "8793f513ed156514a02d4c4372d61cfb894e2bdb",
+  "columns": [
+   "dim_calendar[date]",
+   "[Regional wind available MWh]"
+  ],
+  "rows": [
+   [
+    "2026-08-01",
+    1455.0675
+   ],
+   [
+    "2026-08-02",
+    1459.02
+   ],
+   [
+    "2026-08-03",
+    1165.9633
+   ]
+  ]
+ },
+ "measures-regional-wind-curtailed-mwh": {
+  "hash": "37447d1f306b8cc0e26dcbfc4760be50fab0ecac",
+  "columns": [
+   "dim_region[Region]",
+   "[Regional wind curtailed MWh]"
+  ],
+  "rows": [
+   [
+    "NSW1",
+    170.9792
+   ],
+   [
+    "QLD1",
+    38.6267
+   ],
+   [
+    "SA1",
+    100.7075
+   ],
+   [
+    "TAS1",
+    26.9975
+   ],
+   [
+    "VIC1",
+    298.5725
+   ]
+  ]
+ },
+ "measures-registered-mw": {
+  "hash": "d364f2ab71413f37eab2b7c2e2b90d96d0d0144b",
+  "columns": [
+   "dim_region[Region]",
+   "[Registered MW]"
+  ],
+  "rows": [
+   [
+    "NSW1",
+    1923.0
+   ],
+   [
+    "QLD1",
+    365.0
+   ],
+   [
+    "SA1",
+    510.0
+   ],
+   [
+    "TAS1",
+    432.0
+   ],
+   [
+    "VIC1",
+    666.6
+   ],
+   [
+    "WA1",
+    211.0
+   ]
+  ]
+ },
+ "measures-registered-units": {
+  "hash": "18021c6e6451c90595ffcf6fa62b235a60319d69",
+  "columns": [
+   "dim_duid[FuelSourceDescriptor]",
+   "[Registered units]"
+  ],
+  "rows": [
+   [
+    null,
+    1
+   ],
+   [
+    "Black coal",
+    4
+   ],
+   [
+    "Solar",
+    1
+   ],
+   [
+    "Brown coal",
+    1
+   ],
+   [
+    "Wind",
+    2
+   ],
+   [
+    "Grid",
+    1
+   ],
+   [
+    "Natural Gas (Pipeline)",
+    1
+   ],
+   [
+    "Diesel",
+    1
+   ],
+   [
+    "Hydro",
+    1
+   ],
+   [
+    "Coal",
+    1
+   ],
+   [
+    "Rooftop solar",
+    5
+   ]
+  ]
+ },
+ "measures-renewable-share": {
+  "hash": "43d530361dffa249761a441b86b7a1d1fee66590",
+  "columns": [
+   "dim_region[Region]",
+   "[Renewable share]"
+  ],
+  "rows": [
+   [
+    "NSW1",
+    43.55845627760449
+   ],
+   [
+    "QLD1",
+    65.75853177755114
+   ],
+   [
+    "SA1",
+    80.71078612791842
+   ],
+   [
+    "TAS1",
+    100.0
+   ],
+   [
+    "VIC1",
+    47.00715258314599
+   ]
+  ]
+ },
+ "measures-renewable-share-change": {
+  "hash": "59ee24f8194b0627a225d795650fc4f44af1e270",
+  "columns": [
+   "dim_region[Region]",
+   "[Renewable share change]"
+  ],
+  "rows": [
+   [
+    "NSW1",
+    5.833381472456864
+   ],
+   [
+    "QLD1",
+    0.3286316147348032
+   ],
+   [
+    "SA1",
+    -0.7270812149920118
+   ],
+   [
+    "TAS1",
+    0.0
+   ],
+   [
+    "VIC1",
+    1.5605203186572325
+   ]
+  ]
+ },
+ "measures-revenue": {
+  "hash": "27f0c09a630471260cbfa468ee38918507c3fe66",
+  "columns": [
+   "dim_duid[Region]",
+   "[Revenue]"
+  ],
+  "rows": [
+   [
+    "NSW1",
+    475284.6869695
+   ],
+   [
+    "QLD1",
+    220202.6195195
+   ],
+   [
+    "VIC1",
+    203966.430238
+   ],
+   [
+    "SA1",
+    284906.6639175
+   ],
+   [
+    "TAS1",
+    88141.38558216667
+   ]
+  ]
+ },
+ "measures-storage-mwh": {
+  "hash": "c60668cc5a411c593521912a5a44ea522127abb7",
+  "columns": [
+   "dim_duid[Region]",
+   "[Storage MWh]"
+  ],
+  "rows": [
+   [
+    "SA1",
+    193.5
+   ]
+  ]
+ },
+ "measures-units": {
+  "hash": "aa8ed84a6735d4dc299f66cf5517603ff7a66a67",
+  "columns": [
+   "dim_region[Region]",
+   "[Units]"
+  ],
+  "rows": [
+   [
+    "NSW1",
+    3
+   ],
+   [
+    "QLD1",
+    2
+   ],
+   [
+    "VIC1",
+    2
+   ],
+   [
+    "SA1",
+    4
+   ],
+   [
+    "TAS1",
+    1
+   ]
+  ]
+ },
+ "measures-wind-and-solar-available-mwh": {
+  "hash": "6198d41947855f8f66b4d4fb69aed878f65e7489",
+  "columns": [
+   "fct_curtailment_region[fuel]",
+   "fct_curtailment_region[source]",
+   "[Wind and solar available MWh]"
+  ],
+  "rows": [
+   [
+    "Wind",
+    "farms",
+    44434.13
+   ],
+   [
+    "Solar",
+    "farms",
+    5530.62
+   ],
+   [
+    "Wind",
+    "aemo",
+    2281.24
+   ],
+   [
+    "Solar",
+    "aemo",
+    1464.29
+   ]
+  ]
+ },
+ "measures-wind-and-solar-curtailed-mwh": {
+  "hash": "583f14501f01821b8557b8890d7d48361cc65f55",
+  "columns": [
+   "dim_region[Region]",
+   "[Wind and solar curtailed MWh]"
+  ],
+  "rows": [
+   [
+    "NSW1",
+    541.76
+   ],
+   [
+    "QLD1",
+    101.6
+   ],
+   [
+    "SA1",
+    656.93
+   ],
+   [
+    "TAS1",
+    1.86
+   ],
+   [
+    "VIC1",
+    904.73
+   ]
+  ]
+ },
+ "measures-wind-and-solar-curtailment-rate": {
+  "hash": "9654e8b1728d4ceabc166ff3d25d1d265bcf61fd",
+  "columns": [
+   "dim_calendar[date]",
+   "[Wind and solar curtailment rate]"
+  ],
+  "rows": [
+   [
+    "2026-08-07",
+    4.782797234905492
+   ],
+   [
+    "2026-08-08",
+    5.400188661833916
+   ],
+   [
+    "2026-08-09",
+    4.660542373296286
+   ],
+   [
+    "2026-08-10",
+    4.139469335864998
+   ],
+   [
+    "2026-08-11",
+    6.165891852214338
+   ],
+   [
+    "2026-08-12",
+    6.122040775506122
+   ],
+   [
+    "2026-08-13",
+    7.740590858823387
+   ]
+  ]
+ }
+}

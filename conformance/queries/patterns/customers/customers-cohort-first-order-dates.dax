@@ -1,0 +1,13 @@
+// note: grouping by the Customer[First Order] calculated column: cohort size and lifetime sales per first-order date in Q1 2022
+EVALUATE
+SUMMARIZECOLUMNS(
+    Customer[First Order],
+    FILTER(
+        ALL(Customer[First Order]),
+        NOT ISBLANK(Customer[First Order]) && Customer[First Order] < DATE(2022, 4, 1)
+    ),
+    "Cohort Customers", COUNTROWS(Customer),
+    "Lifetime Sales", [Sales Amount],
+    "Lifetime Orders", [Orders]
+)
+ORDER BY Customer[First Order]

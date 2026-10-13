@@ -1,0 +1,4 @@
+// note: a query column is computed without the role's filter, as a calculated column is
+// roles: RedOnly
+DEFINE COLUMN Customer[Orders] = COUNTROWS(RELATEDTABLE(Sales))
+EVALUATE ROW("max", MAXX(Customer, Customer[Orders]))

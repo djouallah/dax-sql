@@ -1,0 +1,13 @@
+// note: OFFSET and INDEX over a SUMMARIZECOLUMNS table, ordered by its added sales column and partitioned by category: each colour's gap to the next better-selling colour and to the best colour of its category, the sales of products missing from Product forming a blank-category partition
+EVALUATE
+VAR t = SUMMARIZECOLUMNS(Category[Category], Product[Color], "@Sales", [Sales Amount])
+RETURN
+    ADDCOLUMNS(
+        t,
+        "Gap To Previous",
+            VAR prev = MAXX(OFFSET(-1, t, ORDERBY([@Sales], DESC, Product[Color], ASC), PARTITIONBY(Category[Category])), [@Sales])
+            RETURN IF(NOT ISBLANK(prev), prev - [@Sales]),
+        "Gap To Best",
+            MAXX(INDEX(1, t, ORDERBY([@Sales], DESC, Product[Color], ASC), PARTITIONBY(Category[Category])), [@Sales]) - [@Sales]
+    )
+ORDER BY Category[Category], [@Sales] DESC, Product[Color]

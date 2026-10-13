@@ -1,0 +1,15 @@
+// note: a running total by half-year over 2023's months with WINDOW, ordered by the model's Year Month column but partitioned by a Half column added by ADDCOLUMNS (a DAX error: PARTITIONBY cannot use columns added by DAX table functions)
+// expect: error
+DEFINE
+	VAR t =
+		ADDCOLUMNS(
+			SUMMARIZECOLUMNS('Date'[Year Month], 'Date'[Month], TREATAS({2023}, 'Date'[Year])),
+			"Sales", [Sales Amount],
+			"Half", IF('Date'[Month] <= 6, "H1", "H2")
+		)
+EVALUATE
+ADDCOLUMNS(
+	t,
+	"Running In Half", SUMX(WINDOW(1, ABS, 0, REL, t, ORDERBY('Date'[Year Month], ASC), PARTITIONBY([Half])), [Sales])
+)
+ORDER BY 'Date'[Year Month]

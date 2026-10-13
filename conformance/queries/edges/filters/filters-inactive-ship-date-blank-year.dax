@@ -1,0 +1,12 @@
+// note: by 'Date'[Year] through the inactive Ship Date relationship turned on with USERELATIONSHIP: NULL ship dates and the 2025-01-03 ship date past the Date table fall in the Date blank row, which only the inactive relationship feeds; beside order-date lines, Unshipped Lines under USERELATIONSHIP, and all lines with ALL('Date') under it
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year],
+    "Lines", [Lines],
+    "Sales", [Sales Amount],
+    "Shipped Amount", [Shipped Amount],
+    "Shipped Lines", CALCULATE([Lines], USERELATIONSHIP(Sales[Ship Date], 'Date'[Date])),
+    "Unshipped By Ship Date", CALCULATE([Unshipped Lines], USERELATIONSHIP(Sales[Ship Date], 'Date'[Date])),
+    "Ship Lines ALL Date", CALCULATE([Lines], USERELATIONSHIP(Sales[Ship Date], 'Date'[Date]), ALL('Date'))
+)
+ORDER BY 'Date'[Year]

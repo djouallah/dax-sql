@@ -1,0 +1,12 @@
+// note: sales by Customer[Segment] with the both-directions relationship as it is, made one-way, and switched off with CROSSFILTER NONE; Segment "" and NULL are separate members, and the blank row (unknown customer keys) joins the NULL segment
+EVALUATE
+SUMMARIZECOLUMNS(
+    Customer[Segment],
+    "Segment Is Blank", ISBLANK(SELECTEDVALUE(Customer[Segment], "multiple")),
+    "Customers", COUNTROWS(Customer),
+    "Sales", [Sales Amount],
+    "Sales One Way", CALCULATE([Sales Amount], CROSSFILTER(Sales[CustomerKey], Customer[CustomerKey], ONEWAY)),
+    "Sales No Relationship", CALCULATE([Sales Amount], CROSSFILTER(Sales[CustomerKey], Customer[CustomerKey], NONE)),
+    "Lines", [Lines]
+)
+ORDER BY Customer[Segment], [Segment Is Blank]

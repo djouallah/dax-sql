@@ -1,0 +1,2 @@
+// note: START AT a text value with ORDER BY descending
+EVALUATE VALUES(Product[Name]) ORDER BY Product[Name] DESC START AT "Cap"

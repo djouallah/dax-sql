@@ -1,0 +1,10 @@
+// note: order days by product category with the Sales-Date relationship made bidirectional: the blank category (sales of unknown products) filters back to its own days
+EVALUATE
+SUMMARIZECOLUMNS(
+    Product[Category],
+    "Sales", [Sales Amount],
+    "Order Days", CALCULATE(COUNTROWS('Date'), CROSSFILTER(Sales[Order Date], 'Date'[Date], BOTH)),
+    "First Order Day", CALCULATE(MIN('Date'[Date]), CROSSFILTER(Sales[Order Date], 'Date'[Date], BOTH)),
+    "Last Order Day", CALCULATE(MAX('Date'[Date]), CROSSFILTER(Sales[Order Date], 'Date'[Date], BOTH))
+)
+ORDER BY Product[Category]

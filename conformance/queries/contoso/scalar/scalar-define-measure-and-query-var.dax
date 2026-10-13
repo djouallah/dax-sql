@@ -1,0 +1,3 @@
+// note: a query measure (DEFINE MEASURE) and a query variable (DEFINE VAR) used in a filter
+DEFINE MEASURE Sales[Double] = [Sales Amount] * 2 VAR minAmount = 500
+EVALUATE CALCULATETABLE(ROW("d", [Double]), Sales[Amount] > minAmount)

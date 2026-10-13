@@ -1,0 +1,2 @@
+// note: fct_summary[Average MW] per unit
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS(dim_duid[DUID], "Average MW", [Average MW]), dim_calendar[date] >= dt"2026-08-07", dim_calendar[date] <= dt"2026-08-13")

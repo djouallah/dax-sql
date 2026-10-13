@@ -1,0 +1,10 @@
+// note: ISINSCOPE labels and a RANKX over ALLSELECTED evaluated on detail, subtotal and grand-total rows of a two-level rollup
+EVALUATE
+SUMMARIZECOLUMNS(
+	ROLLUPADDISSUBTOTAL('Category'[Category], "IsGrandTotalRowTotal", 'Subcategory'[Subcategory], "IsDM1Total"),
+	TREATAS({2024}, 'Date'[Year]),
+	"Sales_Amount", 'Sales'[Sales Amount],
+	"Level", 'Sales'[Visual Level Label],
+	"Category_Rank", 'Sales'[Visual Category Rank]
+)
+ORDER BY [IsGrandTotalRowTotal] DESC, 'Category'[Category], [IsDM1Total] DESC, 'Subcategory'[Subcategory]

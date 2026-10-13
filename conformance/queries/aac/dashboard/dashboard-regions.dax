@@ -1,0 +1,2 @@
+// note: the dashboard's regions query, the region filter list: the regions that have a price
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS(fct_region[REGIONID]), "Region", [REGIONID]) ORDER BY [Region]

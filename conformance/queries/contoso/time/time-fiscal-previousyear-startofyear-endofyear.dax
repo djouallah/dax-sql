@@ -1,0 +1,3 @@
+// note: PREVIOUSYEAR, STARTOFYEAR and ENDOFYEAR with a "6/30" year end; the previous fiscal year is cut by the date table's start
+EVALUATE CALCULATETABLE(ROW("days", COUNTROWS(PREVIOUSYEAR('Date'[Date], "6/30")), "py", CALCULATE([Sales Amount], PREVIOUSYEAR('Date'[Date], "6/30")),
+    "soy", STARTOFYEAR('Date'[Date], "6/30"), "eoy", ENDOFYEAR('Date'[Date], "6/30")), 'Date'[Year] = 2024, 'Date'[Month] = 3)

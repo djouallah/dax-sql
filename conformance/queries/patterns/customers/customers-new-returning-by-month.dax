@@ -1,0 +1,10 @@
+// note: new and returning customers (first purchase ever, date filter removed) by month of 2024
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year Month],
+    TREATAS({ 2024 }, 'Date'[Year]),
+    "Customers", [Customers],
+    "New", [Customers New],
+    "Returning", [Customers Returning]
+)
+ORDER BY 'Date'[Year Month]

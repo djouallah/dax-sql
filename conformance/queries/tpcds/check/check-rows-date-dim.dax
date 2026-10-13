@@ -1,0 +1,2 @@
+// note: the row count of date_dim
+EVALUATE ROW("table", "date_dim", "rows", COUNTROWS('date_dim'))

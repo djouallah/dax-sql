@@ -1,0 +1,10 @@
+// note: the PY item of the Time Intelligence calculation group applied to a segmentation measure whose classifier calls another measure
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year],
+    Segments[Segment],
+    TREATAS({ "PY" }, 'Time Intelligence'[Time Intelligence]),
+    "Customers PY", [Segment Customer Count],
+    "Sales PY", [Segment Customer Sales]
+)
+ORDER BY 'Date'[Year], Segments[Segment]

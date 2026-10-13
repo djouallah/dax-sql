@@ -1,0 +1,11 @@
+// note: under the Bikes role, fact rows whose product or customer is missing: the product-less lines belong to the blank Category row, which the role's filter does not keep
+// roles: Bikes
+EVALUATE
+ROW(
+    "Category Values", COUNTROWS(ALL(Category[Category])),
+    "Product Rows", COUNTROWS(ALL(Product)),
+    "Lines", [Order Lines],
+    "Missing Product Lines", CALCULATE([Order Lines], Sales[ProductKey] = 999),
+    "Missing Customer Lines", CALCULATE([Order Lines], Sales[CustomerKey] = 0),
+    "Blank Customer Bike Lines", CALCULATE([Order Lines], ISBLANK(Customer[Customer]))
+)

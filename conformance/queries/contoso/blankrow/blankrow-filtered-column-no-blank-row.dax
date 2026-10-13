@@ -1,0 +1,2 @@
+// note: a filter on the table's column leaves the blank row out of VALUES
+EVALUATE CALCULATETABLE(ROW("n", COUNTROWS(VALUES(Customer[City]))), Customer[City] <> "Berlin")

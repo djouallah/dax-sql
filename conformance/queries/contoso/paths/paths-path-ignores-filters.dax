@@ -1,0 +1,2 @@
+// note: PATH is computed over every row of the table, whatever the filter
+EVALUATE CALCULATETABLE(SELECTCOLUMNS(Staff, "Path", PATH(Staff[StaffKey], Staff[ManagerKey])), Staff[Name] = "Ed")

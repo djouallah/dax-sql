@@ -1,0 +1,2 @@
+// note: fct_summary_hourly[Output MWh hourly] per month and hour of day
+EVALUATE SUMMARIZECOLUMNS(dim_month[month], fct_summary_hourly[hour], "Output MWh hourly", [Output MWh hourly])

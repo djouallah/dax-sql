@@ -1,0 +1,2 @@
+// note: fct_summary[Generation MWh] per fuel over the whole sample: the daily table and the days after it
+EVALUATE SUMMARIZECOLUMNS(dim_duid[FuelSourceDescriptor], "Generation MWh", [Generation MWh])

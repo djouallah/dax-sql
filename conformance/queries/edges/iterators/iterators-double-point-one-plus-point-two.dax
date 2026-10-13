@@ -1,0 +1,14 @@
+// note: SUMX of the double prices 0.1 and 0.2 on order 9011 against the Currency costs 0.0001 + 0.0001: whether the double sum equals 0.3 (= and ==, before and after ROUND), what is left after subtracting 0.3, and whether the fixed-decimal sum equals 0.0002
+EVALUATE
+CALCULATETABLE(
+    ROW(
+        "Price Sum", SUMX(Sales, Sales[Unit Price]),
+        "Price Sum Is 0.3", SUMX(Sales, Sales[Unit Price]) = 0.3,
+        "Price Sum Strictly 0.3", SUMX(Sales, Sales[Unit Price]) == 0.3,
+        "Rounded Is 0.3", ROUND(SUMX(Sales, Sales[Unit Price]), 10) = 0.3,
+        "Price Sum Minus 0.3", SUMX(Sales, Sales[Unit Price]) - 0.3,
+        "Cost Sum", SUMX(Sales, Sales[Unit Cost]),
+        "Cost Sum Is 0.0002", SUMX(Sales, Sales[Unit Cost]) = 0.0002
+    ),
+    Sales[Order Number] = 9011
+)

@@ -1,0 +1,15 @@
+// note: a table visual sorted on a measure, cut to its first window by TOPN(n+1) with a group tie-breaker
+DEFINE
+	VAR __DS0FilterTable = TREATAS({2024}, 'Date'[Year])
+	VAR __DS0Core =
+		SUMMARIZECOLUMNS(
+			'Product'[Product],
+			__DS0FilterTable,
+			"Sales_Amount", 'Sales'[Sales Amount],
+			"Margin__", 'Sales'[Margin %]
+		)
+	VAR __DS0PrimaryWindowed = TOPN(11, __DS0Core, [Sales_Amount], 0, 'Product'[Product], 1)
+EVALUATE
+	__DS0PrimaryWindowed
+ORDER BY
+	[Sales_Amount] DESC, 'Product'[Product]

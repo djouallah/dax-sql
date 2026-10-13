@@ -1,0 +1,10 @@
+// note: FIRSTNONBLANK and LASTNONBLANK over a one-column FILTER(ALL('Date'[Date])) table around the leap day 2024-02-29, in category x year cells: each candidate date's filter meets the cell's year filter
+EVALUATE
+SUMMARIZECOLUMNS(
+    Category[Category],
+    'Date'[Year],
+    "Sales", [Sales Amount],
+    "First Sale From Leap Day", FIRSTNONBLANK(FILTER(ALL('Date'[Date]), 'Date'[Date] >= DATE(2024, 2, 29)), [Sales Amount]),
+    "Last Sale Up To Leap Day", LASTNONBLANK(FILTER(ALL('Date'[Date]), 'Date'[Date] <= DATE(2024, 2, 29)), [Sales Amount])
+)
+ORDER BY Category[Category], 'Date'[Year]

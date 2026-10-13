@@ -1,0 +1,11 @@
+// note: a negative filter on a product column (<> or NOT IN) keeps the blank row, so it keeps the sales of products missing from Product
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year],
+    "Sales", [Sales Amount],
+    "Black", CALCULATE([Sales Amount], Product[Color] = "Black"),
+    "Not Black", CALCULATE([Sales Amount], Product[Color] <> "Black"),
+    "Not In Black", CALCULATE([Sales Amount], NOT Product[Color] IN { "Black" }),
+    "Not Black Nonblank", CALCULATE([Sales Amount], Product[Color] <> "Black", NOT ISBLANK(Product[Color]))
+)
+ORDER BY 'Date'[Year]

@@ -1,0 +1,5 @@
+// note: LEFT, UPPER, LEN, YEAR, EOMONTH, FORMAT, SWITCH, DATEDIFF, DIVIDE with alternate, ROUND half away from zero, CONTAINSSTRING case-insensitive, DATE with month overflow
+EVALUATE ROW("l", LEFT("Hello", 2), "u", UPPER("ab"), "len", LEN("abc"), "y", YEAR(dt"2024-03-05"),
+    "eom", EOMONTH(dt"2024-02-10", 0), "f", FORMAT(1234.5, "#,##0.00"), "fd", FORMAT(dt"2024-03-05", "yyyy-mm-dd"),
+    "sw", SWITCH(2, 1, "one", 2, "two", "other"), "d", DATEDIFF(dt"2024-01-01", dt"2024-03-01", MONTH),
+    "dv", DIVIDE(1, 0, -1), "r", ROUND(2.5, 0), "c", CONTAINSSTRING("Hello", "ELL"), "dt", DATE(2024, 14, 1))

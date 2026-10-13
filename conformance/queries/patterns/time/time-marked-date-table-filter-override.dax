@@ -1,0 +1,9 @@
+// note: a CALCULATE filter on the Date column of the marked date table removes the Year filter of the row, unless wrapped in KEEPFILTERS
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year],
+    "Sales", [Sales Amount],
+    "From April 2023", CALCULATE([Sales Amount], 'Date'[Date] >= DATE(2023, 4, 1)),
+    "From April 2023 Keep", CALCULATE([Sales Amount], KEEPFILTERS('Date'[Date] >= DATE(2023, 4, 1)))
+)
+ORDER BY 'Date'[Year]

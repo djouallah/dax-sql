@@ -1,0 +1,11 @@
+// note: the inactive ship-date relationship under SUMX over years: the total of Shipped Amount counts the NULL ship dates and the 2025-01-03 ship date past the Date table, while summing it year by year does not; inside USERELATIONSHIP, VALUES of the year may also show the blank row
+EVALUATE
+SUMMARIZECOLUMNS(
+    ROLLUPADDISSUBTOTAL('Date'[Year], "Is Total"),
+    "Shipped Amount", [Shipped Amount],
+    "Shipped Summed Over Years", SUMX(VALUES('Date'[Year]), [Shipped Amount]),
+    "Summed Under Ship Relationship", CALCULATE(SUMX(VALUES('Date'[Year]), [Sales Amount]), USERELATIONSHIP(Sales[Ship Date], 'Date'[Date])),
+    "Years Under Ship Relationship", CALCULATE(COUNTROWS(VALUES('Date'[Year])), USERELATIONSHIP(Sales[Ship Date], 'Date'[Date])),
+    "Last Ship Date", CALCULATE(MAXX(Sales, Sales[Ship Date]), USERELATIONSHIP(Sales[Ship Date], 'Date'[Date]))
+)
+ORDER BY [Is Total], 'Date'[Year]

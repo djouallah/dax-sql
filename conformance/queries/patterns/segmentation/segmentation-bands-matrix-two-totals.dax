@@ -1,0 +1,9 @@
+// note: a matrix of customer sales bands by year with totals on both axes: ROLLUPADDISSUBTOTAL on the band rows crossed with ROLLUPADDISSUBTOTAL on the year columns, the band measures evaluated at each row total, column total and the corner
+EVALUATE
+SUMMARIZECOLUMNS(
+    ROLLUPADDISSUBTOTAL(Segments[Segment], "Is Segment Total"),
+    ROLLUPADDISSUBTOTAL('Date'[Year], "Is Year Total"),
+    "Customers", [Segment Customer Count],
+    "Sales", [Segment Customer Sales]
+)
+ORDER BY [Is Segment Total], Segments[Segment], [Is Year Total], 'Date'[Year]

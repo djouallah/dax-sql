@@ -1,0 +1,8 @@
+// note: at quarter grain PARALLELPERIOD by -1 YEAR returns the whole previous year, SAMEPERIODLASTYEAR the same quarter
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year], 'Date'[Quarter],
+    "Parallel PY", [Sales PY Parallel],
+    "SPLY", [Sales PY SPLY]
+)
+ORDER BY 'Date'[Year], 'Date'[Quarter]

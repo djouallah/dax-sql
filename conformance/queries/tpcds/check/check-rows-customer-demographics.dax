@@ -1,0 +1,2 @@
+// note: the row count of customer_demographics
+EVALUATE ROW("table", "customer_demographics", "rows", COUNTROWS('customer_demographics'))

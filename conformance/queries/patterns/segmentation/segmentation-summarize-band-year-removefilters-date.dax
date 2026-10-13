@@ -1,0 +1,13 @@
+// note: SUMMARIZE of Sales by price band and year evaluates its extension columns with the group's Sales rows as a filter: CALCULATE removing the year, all of Date or all of Product still sees only those rows, and the Low-band customer count with Date removed classifies each customer on the group's rows alone
+EVALUATE
+SUMMARIZE(
+    Sales,
+    Product[Price Band],
+    'Date'[Year],
+    "Sales", [Sales Amount],
+    "Removing Year", CALCULATE([Sales Amount], REMOVEFILTERS('Date'[Year])),
+    "Removing Date", CALCULATE([Sales Amount], REMOVEFILTERS('Date')),
+    "Removing Product", CALCULATE([Sales Amount], REMOVEFILTERS(Product)),
+    "Low Customers All Dates", CALCULATE([Segment Customer Count], REMOVEFILTERS('Date'), Segments[Segment] = "Low")
+)
+ORDER BY Product[Price Band], 'Date'[Year]

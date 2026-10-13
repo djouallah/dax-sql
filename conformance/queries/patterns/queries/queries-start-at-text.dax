@@ -1,0 +1,5 @@
+// note: START AT resumes a text-ordered result at a value that is not itself a row
+EVALUATE
+SUMMARIZECOLUMNS('Product'[Product], "Sales_Amount", 'Sales'[Sales Amount])
+ORDER BY 'Product'[Product]
+START AT "R"

@@ -1,0 +1,8 @@
+// note: a filter on the Product[Category] calculated column does not overwrite the grouping on Category[Category]: the two intersect
+EVALUATE
+SUMMARIZECOLUMNS(
+    Category[Category],
+    "Sales", [Sales Amount],
+    "Bikes By Product Column", CALCULATE([Sales Amount], Product[Category] = "Bikes"),
+    "Bikes By Category Column", CALCULATE([Sales Amount], Category[Category] = "Bikes")
+)

@@ -1,0 +1,24 @@
+// note: distinct buyers in the windows of 12 months, 4 quarters and 1 year back, and 3 months forward, from each month's last day (DATESINPERIOD from MAX('Date'[Date])), with each window's first or last date; February 2024 ends on a leap day, and the forward windows of late 2024 run past the date table
+DEFINE
+    MEASURE Sales[Cust2 Customers Back 12M] = CALCULATE([Customers], DATESINPERIOD('Date'[Date], MAX('Date'[Date]), -12, MONTH))
+    MEASURE Sales[Cust2 Start Back 12M] = MINX(DATESINPERIOD('Date'[Date], MAX('Date'[Date]), -12, MONTH), 'Date'[Date])
+    MEASURE Sales[Cust2 Customers Back 4Q] = CALCULATE([Customers], DATESINPERIOD('Date'[Date], MAX('Date'[Date]), -4, QUARTER))
+    MEASURE Sales[Cust2 Start Back 4Q] = MINX(DATESINPERIOD('Date'[Date], MAX('Date'[Date]), -4, QUARTER), 'Date'[Date])
+    MEASURE Sales[Cust2 Customers Back 1Y] = CALCULATE([Customers], DATESINPERIOD('Date'[Date], MAX('Date'[Date]), -1, YEAR))
+    MEASURE Sales[Cust2 Start Back 1Y] = MINX(DATESINPERIOD('Date'[Date], MAX('Date'[Date]), -1, YEAR), 'Date'[Date])
+    MEASURE Sales[Cust2 Customers Next 3M] = CALCULATE([Customers], DATESINPERIOD('Date'[Date], MAX('Date'[Date]), 3, MONTH))
+    MEASURE Sales[Cust2 End Next 3M] = MAXX(DATESINPERIOD('Date'[Date], MAX('Date'[Date]), 3, MONTH), 'Date'[Date])
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year Month],
+    TREATAS({ 2023, 2024 }, 'Date'[Year]),
+    "Back 12M", [Cust2 Customers Back 12M],
+    "Start 12M", [Cust2 Start Back 12M],
+    "Back 4Q", [Cust2 Customers Back 4Q],
+    "Start 4Q", [Cust2 Start Back 4Q],
+    "Back 1Y", [Cust2 Customers Back 1Y],
+    "Start 1Y", [Cust2 Start Back 1Y],
+    "Next 3M", [Cust2 Customers Next 3M],
+    "End 3M", [Cust2 End Next 3M]
+)
+ORDER BY 'Date'[Year Month]

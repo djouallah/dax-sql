@@ -1,0 +1,9 @@
+// note: a calculation item selected by a filter applies to the measure reference inside an iterator: the average monthly sales of the previous year
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year],
+    TREATAS({"PY"}, 'Time Intelligence'[Time Intelligence]),
+    "Sales", [Sales Amount],
+    "Avg Monthly", AVERAGEX(VALUES('Date'[Month]), [Sales Amount])
+)
+ORDER BY 'Date'[Year]

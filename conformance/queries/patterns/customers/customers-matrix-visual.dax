@@ -1,0 +1,13 @@
+// note: the query a matrix visual writes: quarter and country rows with subtotals, new and returning customers, 2023 as a slicer
+DEFINE
+    VAR __DS0FilterTable = TREATAS({ 2023 }, 'Date'[Year])
+    VAR __DS0Core =
+        SUMMARIZECOLUMNS(
+            ROLLUPADDISSUBTOTAL('Date'[Quarter], "IsGrandTotalRowTotal", Customer[Country], "IsDM1Total"),
+            __DS0FilterTable,
+            "Customers_New", [Customers New],
+            "Customers_Returning", [Customers Returning]
+        )
+EVALUATE
+__DS0Core
+ORDER BY [IsGrandTotalRowTotal] DESC, 'Date'[Quarter], [IsDM1Total] DESC, Customer[Country]

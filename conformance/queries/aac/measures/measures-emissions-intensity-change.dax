@@ -1,0 +1,2 @@
+// note: fct_summary[Emissions intensity change] per region, against the four days before
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS(dim_region[Region], "Emissions intensity change", [Emissions intensity change]), dim_calendar[date] >= dt"2026-08-04", dim_calendar[date] <= dt"2026-08-07")

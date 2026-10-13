@@ -1,0 +1,9 @@
+// note: fiscal YTD of budget and sales side by side, the budget filtered by DATESYTD through the many-to-many YearMonth relationship
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Fiscal Month],
+    TREATAS({2024}, 'Date'[Fiscal Year]),
+    "Budget Fiscal YTD", [Budget Fiscal YTD],
+    "Sales Fiscal YTD", [Sales Fiscal YTD]
+)
+ORDER BY 'Date'[Fiscal Month]

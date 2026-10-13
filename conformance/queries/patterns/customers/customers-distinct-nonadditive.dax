@@ -1,0 +1,9 @@
+// note: distinct customers per category against the sum of the distinct counts of its subcategories and products (SUMX with context transition)
+EVALUATE
+SUMMARIZECOLUMNS(
+    Category[Category],
+    "Customers", [Customers],
+    "Sum Over Subcategories", SUMX(VALUES(Subcategory[Subcategory]), [Customers]),
+    "Sum Over Products", SUMX(VALUES(Product[ProductKey]), [Customers])
+)
+ORDER BY Category[Category]

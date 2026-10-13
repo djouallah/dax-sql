@@ -1,0 +1,14 @@
+// note: PERCENTILE.INC and .EXC over Employee[ParentEmployeeKey], whose one blank (the CEO's) counts in N and sorts first; EXC at 1/16 is in range only with the blank counted (N = 15); MEDIAN alongside (a DAX error: PERCENTILE.EXC k is out of range)
+// expect: error
+EVALUATE
+ROW(
+    "Rows", COUNTROWS(Employee),
+    "Inc 0", PERCENTILE.INC(Employee[ParentEmployeeKey], 0),
+    "Inc 0.05", PERCENTILE.INC(Employee[ParentEmployeeKey], 0.05),
+    "Inc 0.1", PERCENTILE.INC(Employee[ParentEmployeeKey], 0.1),
+    "Inc 0.5", PERCENTILE.INC(Employee[ParentEmployeeKey], 0.5),
+    "Exc 0.0625", PERCENTILE.EXC(Employee[ParentEmployeeKey], 0.0625),
+    "Exc 0.1", PERCENTILE.EXC(Employee[ParentEmployeeKey], 0.1),
+    "Exc 0.5", PERCENTILE.EXC(Employee[ParentEmployeeKey], 0.5),
+    "Median", MEDIAN(Employee[ParentEmployeeKey])
+)

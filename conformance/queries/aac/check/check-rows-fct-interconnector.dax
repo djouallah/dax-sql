@@ -1,0 +1,2 @@
+// note: check_model.py: the row count of fct_interconnector
+EVALUATE ROW("table", "fct_interconnector", "rows", COUNTROWS('fct_interconnector'))

@@ -1,0 +1,2 @@
+// note: REMOVEFILTERS() with no argument clears every filter
+EVALUATE CALCULATETABLE(ROW("s", CALCULATE([Sales Amount], REMOVEFILTERS())), Product[Color] = "Red", Customer[City] = "Paris")

@@ -1,0 +1,3 @@
+// note: OFFSET(-1) over ALLSELECTED year and month: the previous month in the calendar, with or without sales
+EVALUATE SUMMARIZECOLUMNS('Date'[Year], 'Date'[Month], "s", [Sales Amount],
+    "prev", CALCULATE([Sales Amount], OFFSET(-1, ALLSELECTED('Date'[Year], 'Date'[Month]), ORDERBY('Date'[Year], ASC, 'Date'[Month], ASC))))

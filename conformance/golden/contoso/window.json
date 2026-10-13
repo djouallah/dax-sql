@@ -1,0 +1,537 @@
+{
+ "window-index-first": {
+  "hash": "826c46c4a9d1c0a4cbc1e39221c4813cc2f9c5fe",
+  "columns": [
+   "Product[Name]",
+   "Product[Price]"
+  ],
+  "rows": [
+   [
+    "Road Bike",
+    1000.0
+   ]
+  ]
+ },
+ "window-index-last": {
+  "hash": "308b63af28bf83c5e5e7aa1c300e3accd58bc1de",
+  "columns": [
+   "Product[Name]",
+   "Product[Price]"
+  ],
+  "rows": [
+   [
+    "Cap",
+    20.0
+   ]
+  ]
+ },
+ "window-index-partitionby-category": {
+  "hash": "50d104c4b188b9100a1782cdd54dbbc85e85dcb6",
+  "columns": [
+   "Product[Name]",
+   "Product[CategoryKey]",
+   "Product[Price]"
+  ],
+  "rows": [
+   [
+    "Mountain Bike",
+    1,
+    800.0
+   ],
+   [
+    "Cap",
+    2,
+    20.0
+   ],
+   [
+    "Helmet",
+    3,
+    60.0
+   ]
+  ]
+ },
+ "window-index-partitionby-every-partition": {
+  "hash": "e13d2981169b276964be8452a8444d49f49934ae",
+  "columns": [
+   "Customer[Customer]",
+   "Product[Name]",
+   "[s]"
+  ],
+  "rows": [
+   [
+    "Alice",
+    "Road Bike",
+    1000.0
+   ],
+   [
+    "Bob",
+    "Road Bike",
+    1000.0
+   ],
+   [
+    "Chloe",
+    "Road Bike",
+    2000.0
+   ],
+   [
+    null,
+    "Cap",
+    20.0
+   ]
+  ]
+ },
+ "window-moving-sum-of-three": {
+  "hash": "a0c92ee7ed39c7cc5697c5d9a53eeb887fe8ddb1",
+  "columns": [
+   "Product[Price]",
+   "[n]"
+  ],
+  "rows": [
+   [
+    20.0,
+    70.0
+   ],
+   [
+    50.0,
+    130.0
+   ],
+   [
+    60.0,
+    910.0
+   ],
+   [
+    800.0,
+    1860.0
+   ],
+   [
+    1000.0,
+    1800.0
+   ]
+  ]
+ },
+ "window-offset-no-current-row": {
+  "hash": "57b9e5e0298f4cd5e3c70d1984f155d4a0c61bd3",
+  "columns": [
+   "[prev]"
+  ],
+  "rows": [
+   [
+    2130.0
+   ]
+  ]
+ },
+ "window-offset-partitionby-related-column": {
+  "hash": "07121a3fb06b55901e0d85dedc6c564f950dbbcd",
+  "error": "Query (3, 171) PartitionBy column '<oii>Category</oii>' could not be found in OFFSET's Relation parameter."
+ },
+ "window-offset-previous-month": {
+  "hash": "de6be9e3e79d34f6a630c5a203acf7f588724751",
+  "columns": [
+   "Date[Year]",
+   "Date[Month]",
+   "[s]",
+   "[prev]"
+  ],
+  "rows": [
+   [
+    2023,
+    1,
+    1000.0,
+    null
+   ],
+   [
+    2024,
+    1,
+    2000.0,
+    50.0
+   ],
+   [
+    2023,
+    2,
+    900.0,
+    1000.0
+   ],
+   [
+    2024,
+    2,
+    300.0,
+    2000.0
+   ],
+   [
+    2024,
+    3,
+    800.0,
+    300.0
+   ],
+   [
+    2023,
+    6,
+    60.0,
+    null
+   ],
+   [
+    2024,
+    6,
+    1000.0,
+    null
+   ],
+   [
+    2024,
+    7,
+    20.0,
+    1000.0
+   ],
+   [
+    2023,
+    12,
+    50.0,
+    null
+   ],
+   [
+    2023,
+    3,
+    null,
+    900.0
+   ],
+   [
+    2024,
+    4,
+    null,
+    800.0
+   ],
+   [
+    2023,
+    7,
+    null,
+    60.0
+   ],
+   [
+    2024,
+    8,
+    null,
+    20.0
+   ]
+  ]
+ },
+ "window-rank-blanks-last": {
+  "hash": "749dd6adce48e6af1ef2dc6e7b5060c36219d553",
+  "columns": [
+   "Product[Name]",
+   "[r]"
+  ],
+  "rows": [
+   [
+    "Road Bike",
+    4
+   ],
+   [
+    "Mountain Bike",
+    3
+   ],
+   [
+    "Jersey",
+    2
+   ],
+   [
+    "Cap",
+    1
+   ],
+   [
+    "Helmet",
+    5
+   ]
+  ]
+ },
+ "window-rank-by-orderby-columns-only": {
+  "hash": "9b6fccca47c3a99938f46bf5d8936ebb528236cc",
+  "columns": [
+   "Product[Color]",
+   "[r]"
+  ],
+  "rows": [
+   [
+    "Blue",
+    2
+   ]
+  ]
+ },
+ "window-rank-no-relation-blank-row": {
+  "hash": "5bf638794f633f1fbfa4f16ae85fd8dca51411dc",
+  "columns": [
+   "Customer[Customer]",
+   "[r]"
+  ],
+  "rows": [
+   [
+    "Alice",
+    2
+   ],
+   [
+    "Bob",
+    3
+   ],
+   [
+    "Chloe",
+    4
+   ],
+   [
+    "Dan",
+    5
+   ],
+   [
+    null,
+    1
+   ]
+  ]
+ },
+ "window-rank-orderby-added-partitionby-model-column": {
+  "hash": "843b00904663fd5701bc6e5ab0c727b5bd5bc81a",
+  "columns": [
+   "Product[Name]",
+   "[Band]",
+   "[s]",
+   "[r]"
+  ],
+  "rows": [
+   [
+    "Road Bike",
+    "High",
+    4000.0,
+    1
+   ],
+   [
+    "Mountain Bike",
+    "High",
+    1600.0,
+    1
+   ],
+   [
+    "Jersey",
+    null,
+    350.0,
+    1
+   ],
+   [
+    "Cap",
+    null,
+    180.0,
+    1
+   ],
+   [
+    "Helmet",
+    null,
+    null,
+    1
+   ]
+  ]
+ },
+ "window-rank-rownumber": {
+  "hash": "1c2b9fa79243440cf4f75b4ec9967e8479b9ef15",
+  "columns": [
+   "Product[Name]",
+   "[rank]",
+   "[rn]"
+  ],
+  "rows": [
+   [
+    "Road Bike",
+    1,
+    5
+   ],
+   [
+    "Mountain Bike",
+    2,
+    4
+   ],
+   [
+    "Jersey",
+    3,
+    3
+   ],
+   [
+    "Cap",
+    4,
+    1
+   ],
+   [
+    "Helmet",
+    5,
+    2
+   ]
+  ]
+ },
+ "window-rank-table-variable-added-column": {
+  "hash": "4f98d30fd4be1087e2cc4b1b458cbedc58c7ff4e",
+  "columns": [
+   "Product[Name]",
+   "[@s]",
+   "[r]"
+  ],
+  "rows": [
+   [
+    "Road Bike",
+    4000.0,
+    1
+   ],
+   [
+    "Mountain Bike",
+    1600.0,
+    2
+   ],
+   [
+    "Jersey",
+    350.0,
+    3
+   ],
+   [
+    "Cap",
+    180.0,
+    4
+   ],
+   [
+    "Helmet",
+    null,
+    5
+   ]
+  ]
+ },
+ "window-rankx-asc-blank-first": {
+  "hash": "3011e12f54cf69719416048d4423f9fbaa8fa53e",
+  "columns": [
+   "Product[Name]",
+   "[skip]",
+   "[dense]"
+  ],
+  "rows": [
+   [
+    "Road Bike",
+    5,
+    5
+   ],
+   [
+    "Mountain Bike",
+    4,
+    4
+   ],
+   [
+    "Jersey",
+    3,
+    3
+   ],
+   [
+    "Cap",
+    2,
+    2
+   ],
+   [
+    "Helmet",
+    1,
+    1
+   ]
+  ]
+ },
+ "window-rankx-blank-and-zero-tie": {
+  "hash": "810968be3bd935f4172950ac63de5c24eaddc515",
+  "columns": [
+   "Product[Name]",
+   "[skip]",
+   "[dense]"
+  ],
+  "rows": [
+   [
+    "Road Bike",
+    5,
+    4
+   ],
+   [
+    "Mountain Bike",
+    4,
+    3
+   ],
+   [
+    "Jersey",
+    3,
+    2
+   ],
+   [
+    "Cap",
+    1,
+    1
+   ],
+   [
+    "Helmet",
+    1,
+    1
+   ]
+  ]
+ },
+ "window-rankx-blank-ranked-last": {
+  "hash": "0f3a3608d9fe888d961ff964ddb83889fd7a2eb9",
+  "columns": [
+   "Product[Name]",
+   "[rank]"
+  ],
+  "rows": [
+   [
+    "Road Bike",
+    1
+   ],
+   [
+    "Mountain Bike",
+    2
+   ],
+   [
+    "Jersey",
+    3
+   ],
+   [
+    "Cap",
+    4
+   ],
+   [
+    "Helmet",
+    5
+   ]
+  ]
+ },
+ "window-running-total-by-name": {
+  "hash": "8f40dcdc71ad12bb324799970d1243c290076d6c",
+  "columns": [
+   "Product[Name]",
+   "[running]"
+  ],
+  "rows": [
+   [
+    "Road Bike",
+    6130.0
+   ],
+   [
+    "Mountain Bike",
+    2130.0
+   ],
+   [
+    "Jersey",
+    530.0
+   ],
+   [
+    "Cap",
+    180.0
+   ],
+   [
+    "Helmet",
+    180.0
+   ]
+  ]
+ },
+ "window-whole-partition-once": {
+  "hash": "7c07bcffac8c3d7f79f5f973c179e73e7db917b5",
+  "columns": [
+   "[n]"
+  ],
+  "rows": [
+   [
+    5
+   ]
+  ]
+ }
+}

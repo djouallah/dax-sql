@@ -1,0 +1,12 @@
+// note: ABC summary: products classified by context transition in ADDCOLUMNS, then grouped by class with GROUPBY
+EVALUATE
+GROUPBY(
+    ADDCOLUMNS(
+        VALUES(Product[Product]),
+        "@Class", [ABC Product Class],
+        "@Sales", [Sales Amount]
+    ),
+    [@Class],
+    "Products", COUNTX(CURRENTGROUP(), 1),
+    "Sales", SUMX(CURRENTGROUP(), [@Sales])
+)

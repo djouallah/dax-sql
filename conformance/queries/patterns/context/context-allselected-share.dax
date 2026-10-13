@@ -1,0 +1,8 @@
+// note: ALLSELECTED restores the visual's category filter, so the shares of the selected categories add up to one
+EVALUATE
+SUMMARIZECOLUMNS(
+    Category[Category],
+    TREATAS({"Bikes", "Clothing", "Accessories"}, Category[Category]),
+    "Sales", [Sales Amount],
+    "Share", DIVIDE([Sales Amount], CALCULATE([Sales Amount], ALLSELECTED(Category[Category])))
+)

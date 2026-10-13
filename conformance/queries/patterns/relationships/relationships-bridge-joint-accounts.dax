@@ -1,0 +1,10 @@
+// note: each joint account's holders and the sales of those holders, the account filter flowing through the bridge to Customer and Sales
+EVALUATE
+SUMMARIZECOLUMNS(
+    Account[Account],
+    TREATAS({ "Joint" }, Account[Account Type]),
+    "Holders", COUNTROWS(AccountCustomer),
+    "Sales", [Sales Amount],
+    "Orders", [Orders]
+)
+ORDER BY Account[Account]

@@ -1,0 +1,2 @@
+// note: fct_curtailment[Curtailed MWh] per unit, the blank row holding the farm dim_duid lacks
+EVALUATE SUMMARIZECOLUMNS(dim_duid[DUID], "Curtailed MWh", [Curtailed MWh])

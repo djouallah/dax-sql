@@ -1,0 +1,3 @@
+// note: PATH of a parent-child table, PATHLENGTH, PATHITEM and PATHITEMREVERSE as integers, an item past the end
+EVALUATE SELECTCOLUMNS(Staff, "Name", Staff[Name], "Path", PATH(Staff[StaffKey], Staff[ManagerKey]), "Depth", PATHLENGTH(PATH(Staff[StaffKey], Staff[ManagerKey])),
+      "Second", PATHITEM(PATH(Staff[StaffKey], Staff[ManagerKey]), 2, INTEGER), "Manager", PATHITEMREVERSE(PATH(Staff[StaffKey], Staff[ManagerKey]), 2, INTEGER), "Fifth", PATHITEM(PATH(Staff[StaffKey], Staff[ManagerKey]), 5))

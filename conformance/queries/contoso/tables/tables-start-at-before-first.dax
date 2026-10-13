@@ -1,0 +1,2 @@
+// note: ORDER BY ascending with START AT a value before the first row: every row
+EVALUATE SUMMARIZECOLUMNS(Product[Color], "s", [Sales Amount]) ORDER BY [s] ASC START AT -5

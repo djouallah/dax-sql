@@ -1,0 +1,3 @@
+// note: INDEX(1) over SUMMARIZECOLUMNS with PARTITIONBY and no current row: one row per partition, the blank customer's too
+EVALUATE INDEX(1, SUMMARIZECOLUMNS(Customer[Customer], Product[Name], "s", [Sales Amount]),
+    ORDERBY([s], DESC, Product[Name], ASC), PARTITIONBY(Customer[Customer]))

@@ -1,0 +1,22 @@
+// note: a query-defined lost-customers measure on a 30-day window beside the model's 90-day one, by month of 2024
+DEFINE
+    MEASURE Sales[Customers Lost 30d Local] =
+        VAR MinD = MIN('Date'[Date])
+        VAR MaxD = MAX('Date'[Date])
+        VAR Candidates = CALCULATETABLE(VALUES(Sales[CustomerKey]), REMOVEFILTERS('Date'), 'Date'[Date] <= MaxD)
+        RETURN
+            COUNTROWS(
+                FILTER(
+                    Candidates,
+                    VAR LastOrder = CALCULATE(MAX(Sales[Order Date]), REMOVEFILTERS('Date'), 'Date'[Date] <= MaxD)
+                    RETURN LastOrder + 30 >= MinD && LastOrder + 30 <= MaxD
+                )
+            )
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year Month],
+    TREATAS({ 2024 }, 'Date'[Year]),
+    "Lost 30d", [Customers Lost 30d Local],
+    "Lost 90d", [Customers Lost 90d]
+)
+ORDER BY 'Date'[Year Month]

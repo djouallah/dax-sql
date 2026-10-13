@@ -1,0 +1,9 @@
+// note: a three-month moving average, AVERAGEX over WINDOW(-2, REL, 0, REL), shorter on the first selected months
+EVALUATE
+SUMMARIZECOLUMNS(
+	'Date'[YearMonth],
+	TREATAS({(2023, 2), (2023, 3)}, 'Date'[Year], 'Date'[Quarter]),
+	"Sales_Amount", 'Sales'[Sales Amount],
+	"Moving_Avg", 'Sales'[Visual Moving Avg 3M]
+)
+ORDER BY 'Date'[YearMonth]

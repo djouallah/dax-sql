@@ -1,0 +1,3 @@
+// note: NONVISUAL is only allowed as a SUMMARIZECOLUMNS filter, not in CALCULATE
+// expect: error
+EVALUATE ROW("x", CALCULATE([Sales Amount], NONVISUAL(TREATAS({2024}, 'Date'[Year]))))

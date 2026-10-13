@@ -1,0 +1,2 @@
+// note: START AT on a DESC whole-number measure, at a value a group holds exactly (Blue 9): whether that group is included
+EVALUATE SUMMARIZECOLUMNS(Product[Color], "q", [Quantity]) ORDER BY [q] DESC START AT 9

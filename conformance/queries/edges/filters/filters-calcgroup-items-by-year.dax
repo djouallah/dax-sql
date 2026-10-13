@@ -1,0 +1,11 @@
+// note: every Adjust item by 'Date'[Year] on four measures: Shipped moves lines onto the inactive ship date, so the Date blank row can appear; Per Customer divides only the measures ISSELECTEDMEASURE names and leaves Lines and Margin % (which calls Margin) to pass through
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year],
+    Adjust[Adjust],
+    "Sales", [Sales Amount],
+    "Quantity", [Total Quantity],
+    "Lines", [Lines],
+    "Margin %", [Margin %]
+)
+ORDER BY 'Date'[Year], Adjust[Adjust]

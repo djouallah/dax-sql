@@ -1,0 +1,7 @@
+// note: check_model.py: [Price seen] per day, over the newest week fct_summary holds
+EVALUATE
+            VAR newest = MAX(fct_summary[date])
+            RETURN CALCULATETABLE(
+                SUMMARIZECOLUMNS(dim_calendar[date], "Price seen", [Price seen]),
+                dim_calendar[date] > newest - 7, dim_calendar[date] <= newest)
+            ORDER BY dim_calendar[date]

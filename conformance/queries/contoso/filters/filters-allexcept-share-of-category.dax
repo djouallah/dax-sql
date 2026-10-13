@@ -1,0 +1,2 @@
+// note: ALLEXCEPT(Product, Category[Category]) keeps the category of the group: each product's share of its category
+EVALUATE SUMMARIZECOLUMNS(Category[Category], Product[Name], "share", [Share of Category])

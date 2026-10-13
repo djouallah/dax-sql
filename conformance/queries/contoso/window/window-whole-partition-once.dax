@@ -1,0 +1,2 @@
+// note: WINDOW(1, ABS, -1, ABS) with PARTITIONBY and no current row: every partition whole, once
+EVALUATE ROW("n", COUNTROWS(WINDOW(1, ABS, -1, ABS, ALL(Product[Name], Product[CategoryKey]), ORDERBY(Product[Name]), PARTITIONBY(Product[CategoryKey]))))

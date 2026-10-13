@@ -1,0 +1,18 @@
+// note: customers banded by their sales over the quarter ending on each 2024 month's last day (DATESINPERIOD back one QUARTER from the month end, February's ending on the leap day), with the window's first day and length
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year Month],
+    Segments[Segment],
+    TREATAS({ 2024 }, 'Date'[Year]),
+    "Window Start", MINX(DATESINPERIOD('Date'[Date], MAX('Date'[Date]), -1, QUARTER), 'Date'[Date]),
+    "Window Days", COUNTROWS(DATESINPERIOD('Date'[Date], MAX('Date'[Date]), -1, QUARTER)),
+    "Customers",
+        COUNTROWS(
+            FILTER(
+                VALUES(Customer[CustomerKey]),
+                VAR s = CALCULATE([Sales Amount], DATESINPERIOD('Date'[Date], MAX('Date'[Date]), -1, QUARTER))
+                RETURN NOT ISBLANK(s) && s >= MIN(Segments[Min Sales]) && s < MAX(Segments[Max Sales])
+            )
+        )
+)
+ORDER BY 'Date'[Year Month], Segments[Segment]

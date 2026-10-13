@@ -1,0 +1,2 @@
+// note: CLOSINGBALANCEYEAR with a "6/30" year end whose year ends past the date table
+EVALUATE CALCULATETABLE(ROW("c", CLOSINGBALANCEYEAR(MAX('Date'[Date]), 'Date'[Date], "6/30")), 'Date'[Year] = 2024, 'Date'[Month] = 10)

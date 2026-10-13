@@ -1,0 +1,11 @@
+// note: budget read at day grain through the many-to-many repeats the month's budget on every day; the allocated measure spreads it by days
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Date],
+    TREATAS({ 202402 }, 'Date'[YearMonth]),
+    TREATAS({ "Bikes" }, Category[Category]),
+    "Budget", [Budget Amount],
+    "Allocated", [Budget Allocated by Day],
+    "Sales", [Sales Amount]
+)
+ORDER BY 'Date'[Date]

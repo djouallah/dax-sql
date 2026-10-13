@@ -1,0 +1,9 @@
+// note: FILTERS returns the values filtered directly on the column, VALUES those visible once the category cross-filters it too
+EVALUATE
+SUMMARIZECOLUMNS(
+    Category[Category],
+    TREATAS({"Red", "Blue", "Yellow"}, Product[Color]),
+    "Sales", [Sales Amount],
+    "Filters Colors", COUNTROWS(FILTERS(Product[Color])),
+    "Values Colors", COUNTROWS(VALUES(Product[Color]))
+)

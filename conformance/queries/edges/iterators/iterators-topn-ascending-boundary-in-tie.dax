@@ -1,0 +1,10 @@
+// note: TOPN 5 ascending by sales over product names: Never Sold's blank and the zero-sales products come first, and the boundary falls inside the exact Twin A / Twin B tie, so TOPN keeps every tied row
+EVALUATE
+VAR bottom = TOPN(5, ALL(Product[Product]), [Sales Amount], ASC)
+RETURN
+    ADDCOLUMNS(
+        bottom,
+        "Name Is Blank", ISBLANK(Product[Product]),
+        "Sales", [Sales Amount]
+    )
+ORDER BY [Sales], Product[Product], [Name Is Blank]

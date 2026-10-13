@@ -1,0 +1,2 @@
+// note: FIRSTNONBLANK over dates from a day on: the first with a sale
+EVALUATE ROW("d", FIRSTNONBLANK(FILTER(ALL('Date'[Date]), 'Date'[Date] >= DATE(2024, 3, 1)), CALCULATE(COUNTROWS(Sales))))

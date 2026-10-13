@@ -1,0 +1,9 @@
+// note: SELECTCOLUMNS calling measures over a VALUES table: context transition on each country row
+EVALUATE
+SELECTCOLUMNS(
+    VALUES(Customer[Country]),
+    "Country", Customer[Country],
+    "Sales", [Sales Amount],
+    "Customers", [Customers],
+    "Lines Per Customer", DIVIDE([Order Lines], [Customers])
+)

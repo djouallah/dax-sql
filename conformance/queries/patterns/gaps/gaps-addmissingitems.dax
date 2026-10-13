@@ -1,0 +1,7 @@
+// note: ADDMISSINGITEMS puts back the colours a filter on the measure removed, with a blank measure
+EVALUATE
+ADDMISSINGITEMS(
+    Product[Color],
+    FILTER(SUMMARIZECOLUMNS(Product[Color], "Sales", [Sales Amount]), [Sales] > 500000),
+    Product[Color]
+)

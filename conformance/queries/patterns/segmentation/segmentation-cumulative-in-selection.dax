@@ -1,0 +1,9 @@
+// note: running total over ALLSELECTED dates: the 2023 filter of the visual bounds where the running total starts
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year Month],
+    TREATAS({ 2023 }, 'Date'[Year]),
+    "Sales", [Sales Amount],
+    "Cumulative Sales", [Cumulative Sales In Selection]
+)
+ORDER BY 'Date'[Year Month]

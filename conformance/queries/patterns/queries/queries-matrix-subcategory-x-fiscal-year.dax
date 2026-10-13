@@ -1,0 +1,9 @@
+// note: a matrix crossing a two-level row hierarchy with a fiscal-year column axis: subtotals per category, per fiscal year and the corner, under a color filter that leaves some subcategories with no sales
+EVALUATE
+SUMMARIZECOLUMNS(
+	ROLLUPADDISSUBTOTAL('Category'[Category], "IsGrandTotalRowTotal", 'Subcategory'[Subcategory], "IsDM1Total"),
+	ROLLUPADDISSUBTOTAL('Date'[Fiscal Year], "IsGrandTotalColumnTotal"),
+	TREATAS({"Yellow"}, 'Product'[Color]),
+	"Sales_Amount", 'Sales'[Sales Amount]
+)
+ORDER BY [IsGrandTotalRowTotal] DESC, 'Category'[Category], [IsDM1Total] DESC, 'Subcategory'[Subcategory], [IsGrandTotalColumnTotal] DESC, 'Date'[Fiscal Year]

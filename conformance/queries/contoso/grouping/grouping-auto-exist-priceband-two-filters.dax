@@ -1,0 +1,4 @@
+// note: SUMMARIZECOLUMNS auto-exist: color and name filters of one table merge with the PriceBand group; removing the name filter keeps only the combinations that existed
+EVALUATE SUMMARIZECOLUMNS(Product[PriceBand],
+    TREATAS({"Red", "Blue"}, Product[Color]), TREATAS({"Road Bike", "Cap"}, Product[Name]),
+    "s", [Sales Amount], "noname", CALCULATE([Sales Amount], REMOVEFILTERS(Product[Name])))

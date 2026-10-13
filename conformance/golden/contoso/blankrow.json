@@ -1,0 +1,249 @@
+{
+ "blankrow-blank-row-as-filter": {
+  "hash": "48343636014d07ee1938ee14566ff04f7379af68",
+  "columns": [
+   "[s]"
+  ],
+  "rows": [
+   [
+    20.0
+   ]
+  ]
+ },
+ "blankrow-calculated-column-blank-on-blank-row": {
+  "hash": "e78968f63b9b3ba33884de26cd4e9ba43d861948",
+  "columns": [
+   "Customer[Flag]",
+   "[s]"
+  ],
+  "rows": [
+   [
+    null,
+    20.0
+   ],
+   [
+    1,
+    6110.0
+   ]
+  ]
+ },
+ "blankrow-concatenatex-values-cities": {
+  "hash": "609dc7e60145926633f1b21a6ba66850c6480b78",
+  "columns": [
+   "[c]"
+  ],
+  "rows": [
+   [
+    ", Berlin, London, Paris"
+   ]
+  ]
+ },
+ "blankrow-crossfilter-both-reaches-blank-row": {
+  "hash": "74404775a4b68e788edb06cd1a9f4f7e97b0b10c",
+  "columns": [
+   "Product[Name]",
+   "[rows]",
+   "[keys]",
+   "[names]",
+   "[list]"
+  ],
+  "rows": [
+   [
+    "Mountain Bike",
+    2,
+    2,
+    2,
+    "Alice,Bob"
+   ],
+   [
+    "Cap",
+    2,
+    3,
+    2,
+    ",Alice,Chloe"
+   ],
+   [
+    "Jersey",
+    3,
+    3,
+    3,
+    "Alice,Bob,Chloe"
+   ],
+   [
+    "Road Bike",
+    3,
+    3,
+    3,
+    "Alice,Bob,Chloe"
+   ]
+  ]
+ },
+ "blankrow-fact-filter-reaches-blank-city": {
+  "hash": "fc49558ea7bae1c513716ef7be79171a9e3666f8",
+  "columns": [
+   "Customer[City]",
+   "[s]"
+  ],
+  "rows": [
+   [
+    "Paris",
+    1800.0
+   ],
+   [
+    "London",
+    1850.0
+   ],
+   [
+    null,
+    20.0
+   ]
+  ]
+ },
+ "blankrow-filtered-column-no-blank-row": {
+  "hash": "3ce5df32fe9c27838a680f9c9f6fe959d49be507",
+  "columns": [
+   "[n]"
+  ],
+  "rows": [
+   [
+    3
+   ]
+  ]
+ },
+ "blankrow-hasonevalue-selectedvalue": {
+  "hash": "150b1cb869ade76b4975959837a6269fbf0d9a9e",
+  "columns": [
+   "Customer[Customer]",
+   "[h]",
+   "[sv]"
+  ],
+  "rows": [
+   [
+    "Alice",
+    true,
+    "Alice"
+   ],
+   [
+    "Bob",
+    true,
+    "Bob"
+   ],
+   [
+    "Chloe",
+    true,
+    "Chloe"
+   ],
+   [
+    "Dan",
+    true,
+    "Dan"
+   ],
+   [
+    null,
+    true,
+    null
+   ]
+  ]
+ },
+ "blankrow-matched-keys-no-blank-row": {
+  "hash": "244871a99619f1c11e6e26e07b6f830199a58777",
+  "columns": [
+   "[n]"
+  ],
+  "rows": [
+   [
+    3
+   ]
+  ]
+ },
+ "blankrow-treatas-blank-values-vs-distinct": {
+  "hash": "d72221c526ab8e593346d23efc3cbd29105c0274",
+  "columns": [
+   "[t]",
+   "[c]",
+   "[v]",
+   "[d]"
+  ],
+  "rows": [
+   [
+    20.0,
+    true,
+    6130.0,
+    6110.0
+   ]
+  ]
+ },
+ "blankrow-unknown-customer-sales": {
+  "hash": "378ebe8c8bbca418125c7e8d32ec746d13c3c0af",
+  "columns": [
+   "Customer[Customer]",
+   "[s]"
+  ],
+  "rows": [
+   [
+    null,
+    20.0
+   ],
+   [
+    "Alice",
+    2000.0
+   ],
+   [
+    "Bob",
+    1850.0
+   ],
+   [
+    "Chloe",
+    2260.0
+   ]
+  ]
+ },
+ "blankrow-values-all-distinct-counts": {
+  "hash": "7e7f8f3ad6eccf1ed4cf7eb2d066f4b0e544ea9d",
+  "columns": [
+   "[values]",
+   "[distinct]",
+   "[table]",
+   "[all]",
+   "[noblank]"
+  ],
+  "rows": [
+   [
+    5,
+    4,
+    4,
+    5,
+    4
+   ]
+  ]
+ },
+ "blankrow-values-customer-sales": {
+  "hash": "ba6051708bc0a38cd49e2c3e209160869c441d72",
+  "columns": [
+   "Customer[Customer]",
+   "[s]"
+  ],
+  "rows": [
+   [
+    "Alice",
+    2000.0
+   ],
+   [
+    "Bob",
+    1850.0
+   ],
+   [
+    "Chloe",
+    2260.0
+   ],
+   [
+    "Dan",
+    null
+   ],
+   [
+    null,
+    20.0
+   ]
+  ]
+ }
+}

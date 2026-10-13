@@ -1,0 +1,2 @@
+// note: TOPNSKIP: the 2 rows after the first, descending by default
+EVALUATE TOPNSKIP(2, 1, SELECTCOLUMNS(Product, "Name", Product[Name], "Price", Product[Price]), [Price])

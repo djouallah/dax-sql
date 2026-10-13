@@ -1,0 +1,2 @@
+// note: USERELATIONSHIP activates the inactive ship-date relationship in place of the order date
+EVALUATE SUMMARIZECOLUMNS('Date'[Year], "order", [Sales Amount], "ship", [Sales by Ship Date])

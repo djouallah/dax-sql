@@ -1,0 +1,13 @@
+// note: LOOKUPVALUE ignores the filter context: under filters on 2022 and Germany, and per category, it still finds the Bikes key, subcategory 1, customer 5's country and the euro's rate of 2023-05-17
+EVALUATE
+SUMMARIZECOLUMNS(
+    Category[Category],
+    TREATAS({ 2022 }, 'Date'[Year]),
+    TREATAS({ "Germany" }, Customer[Country]),
+    "Sales", [Sales Amount],
+    "Bikes Key", LOOKUPVALUE(Category[CategoryKey], Category[Category], "Bikes"),
+    "Subcategory 1", LOOKUPVALUE(Subcategory[Subcategory], Subcategory[SubcategoryKey], 1),
+    "Customer 5 Country", LOOKUPVALUE(Customer[Country], Customer[CustomerKey], 5),
+    "EUR Rate 2023-05-17", LOOKUPVALUE(ExchangeRate[Rate], ExchangeRate[Date], DATE(2023, 5, 17), ExchangeRate[CurrencyCode], "EUR")
+)
+ORDER BY Category[Category]

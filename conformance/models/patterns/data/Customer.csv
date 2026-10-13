@@ -1,0 +1,121 @@
+"CustomerKey","Customer","City","Country","Gender","Birth Year"
+1,"Customer 001","Berlin","Germany","F",1981
+2,"Customer 002","Boston","United States","F",1950
+3,"Customer 003","Berlin","Germany","F",1988
+4,"Customer 004","Melbourne","Australia","F",1950
+5,"Customer 005","Paris","France","M",1963
+6,"Customer 006","Austin","United States","M",1998
+7,"Customer 007","Munich","Germany","F",1979
+8,"Customer 008","Berlin","Germany","M",1996
+9,"Customer 009","Paris","France","M",1969
+10,"Customer 010","Austin","United States","M",1964
+11,"Customer 011","Paris","France","M",1956
+12,"Customer 012","Austin","United States","M",1985
+13,"Customer 013","Berlin","Germany","M",2001
+14,"Customer 014","Sydney","Australia","F",1977
+15,"Customer 015","Munich","Germany","F",1967
+16,"Customer 016","Lyon","France","M",1998
+17,"Customer 017","Sydney","Australia","F",1957
+18,"Customer 018","Sydney","Australia","F",1992
+19,"Customer 019","Boston","United States","M",2000
+20,"Customer 020","Munich","Germany","M",1953
+21,"Customer 021","Lyon","France","M",1958
+22,"Customer 022","Austin","United States","F",1963
+23,"Customer 023","Paris","France","F",1962
+24,"Customer 024","Boston","United States","F",1990
+25,"Customer 025","Boston","United States","M",1966
+26,"Customer 026","Berlin","Germany","M",1969
+27,"Customer 027","Lyon","France","M",1966
+28,"Customer 028","Sydney","Australia","M",1997
+29,"Customer 029","Berlin","Germany","F",1961
+30,"Customer 030","Austin","United States","M",1990
+31,"Customer 031","Berlin","Germany","F",1972
+32,"Customer 032","Berlin","Germany","M",1957
+33,"Customer 033","Munich","Germany","F",1981
+34,"Customer 034","Munich","Germany","F",1996
+35,"Customer 035","Munich","Germany","F",1973
+36,"Customer 036","Marseille","France","F",1976
+37,"Customer 037","Austin","United States","F",1977
+38,"Customer 038","Sydney","Australia","M",1965
+39,"Customer 039","Sydney","Australia","F",1963
+40,"Customer 040","Melbourne","Australia","F",2000
+41,"Customer 041","Seattle","United States","F",1990
+42,"Customer 042","Melbourne","Australia","F",1966
+43,"Customer 043","Austin","United States","F",1974
+44,"Customer 044","Munich","Germany","F",1994
+45,"Customer 045","Berlin","Germany","F",1997
+46,"Customer 046","Marseille","France","F",2001
+47,"Customer 047","Austin","United States","M",1974
+48,"Customer 048","Sydney","Australia","F",1970
+49,"Customer 049","Melbourne","Australia","M",1994
+50,"Customer 050","Paris","France","F",1991
+51,"Customer 051","Boston","United States","M",1963
+52,"Customer 052","Munich","Germany","M",1968
+53,"Customer 053","Melbourne","Australia","F",1978
+54,"Customer 054","Melbourne","Australia","M",1987
+55,"Customer 055","Boston","United States","M",1994
+56,"Customer 056","Austin","United States","F",1957
+57,"Customer 057","Munich","Germany","M",1971
+58,"Customer 058","Berlin","Germany","M",1953
+59,"Customer 059","Melbourne","Australia","F",1969
+60,"Customer 060","Melbourne","Australia","M",1973
+61,"Customer 061","Paris","France","F",1950
+62,"Customer 062","Marseille","France","F",1967
+63,"Customer 063","Paris","France","M",1967
+64,"Customer 064","Sydney","Australia","M",1979
+65,"Customer 065","Munich","Germany","F",1989
+66,"Customer 066","Seattle","United States","F",1962
+67,"Customer 067","Berlin","Germany","F",1954
+68,"Customer 068","Paris","France","M",1995
+69,"Customer 069","Melbourne","Australia","M",1990
+70,"Customer 070","Sydney","Australia","M",1978
+71,"Customer 071","Munich","Germany","F",1954
+72,"Customer 072","Berlin","Germany","M",1951
+73,"Customer 073","Berlin","Germany","F",1959
+74,"Customer 074","Berlin","Germany","F",1966
+75,"Customer 075","Melbourne","Australia","F",1963
+76,"Customer 076","Lyon","France","M",1964
+77,"Customer 077","Paris","France","M",1985
+78,"Customer 078","Seattle","United States","F",1956
+79,"Customer 079","Berlin","Germany","M",2001
+80,"Customer 080","Paris","France","M",1984
+81,"Customer 081","Seattle","United States","M",1964
+82,"Customer 082","Lyon","France","M",1986
+83,"Customer 083","Marseille","France","F",1985
+84,"Customer 084","Melbourne","Australia","F",1999
+85,"Customer 085","Marseille","France","M",1958
+86,"Customer 086","Sydney","Australia","F",1953
+87,"Customer 087","Melbourne","Australia","M",1968
+88,"Customer 088","Paris","France","M",1984
+89,"Customer 089","Lyon","France","M",1971
+90,"Customer 090","Marseille","France","M",1962
+91,"Customer 091","Austin","United States","M",1982
+92,"Customer 092","Seattle","United States","F",1981
+93,"Customer 093","Berlin","Germany","M",1976
+94,"Customer 094","Melbourne","Australia","M",1965
+95,"Customer 095","Melbourne","Australia","M",1965
+96,"Customer 096","Sydney","Australia","M",1959
+97,"Customer 097","Austin","United States","F",1978
+98,"Customer 098","Munich","Germany","F",1980
+99,"Customer 099","Sydney","Australia","F",1959
+100,"Customer 100","Seattle","United States","M",2000
+101,"Customer 101","Berlin","Germany","M",1992
+102,"Customer 102","Seattle","United States","M",1995
+103,"Customer 103","Sydney","Australia","F",1974
+104,"Customer 104","Munich","Germany","F",1963
+105,"Customer 105","Marseille","France","M",1956
+106,"Customer 106","Marseille","France","F",1959
+107,"Customer 107","Sydney","Australia","M",1953
+108,"Customer 108","Boston","United States","M",1998
+109,"Customer 109","Boston","United States","M",2001
+110,"Customer 110","Berlin","Germany","M",1952
+111,"Customer 111","Lyon","France","M",2000
+112,"Customer 112","Berlin","Germany","M",1974
+113,"Customer 113","Munich","Germany","M",1951
+114,"Customer 114","Marseille","France","F",1991
+115,"Customer 115","Berlin","Germany","F",1980
+116,"Customer 116","Seattle","United States","F",1962
+117,"Customer 117","Paris","France","M",1953
+118,"Customer 118","Munich","Germany","F",2000
+119,"Customer 119","Boston","United States","F",1994
+120,"Customer 120","Melbourne","Australia","M",1971

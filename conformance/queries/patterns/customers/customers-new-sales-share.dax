@@ -1,0 +1,10 @@
+// note: sales made by the period's new customers (a filtered table of keys as a CALCULATE filter) and their share, by year and country
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year],
+    Customer[Country],
+    "New Customer Sales", [Customers New Sales],
+    "Sales", [Sales Amount],
+    "New Share", DIVIDE([Customers New Sales], [Sales Amount])
+)
+ORDER BY 'Date'[Year], Customer[Country]

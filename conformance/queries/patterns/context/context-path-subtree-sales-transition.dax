@@ -1,0 +1,17 @@
+// note: PATH, PATHLENGTH, PATHITEM and PATHITEMREVERSE in a row context over Employee, and each employee's 2024 sales with and without their reports (FILTER(ALL(Employee)) with PATHCONTAINS on the captured key)
+EVALUATE
+CALCULATETABLE(
+    ADDCOLUMNS(
+        Employee,
+        "Path", PATH(Employee[EmployeeKey], Employee[ParentEmployeeKey]),
+        "Depth", PATHLENGTH(PATH(Employee[EmployeeKey], Employee[ParentEmployeeKey])),
+        "Level 2 Head", LOOKUPVALUE(Employee[Employee], Employee[EmployeeKey], PATHITEM(PATH(Employee[EmployeeKey], Employee[ParentEmployeeKey]), 2, INTEGER)),
+        "Manager Key", PATHITEMREVERSE(PATH(Employee[EmployeeKey], Employee[ParentEmployeeKey]), 2, INTEGER),
+        "Own Sales", [Sales Amount],
+        "Team Sales",
+            VAR k = Employee[EmployeeKey]
+            RETURN CALCULATE([Sales Amount], FILTER(ALL(Employee), PATHCONTAINS(PATH(Employee[EmployeeKey], Employee[ParentEmployeeKey]), k)))
+    ),
+    'Date'[Year] = 2024
+)
+ORDER BY Employee[EmployeeKey]

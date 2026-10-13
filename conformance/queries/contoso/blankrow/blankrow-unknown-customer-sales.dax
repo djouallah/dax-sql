@@ -1,0 +1,2 @@
+// note: sales whose customer key is missing from Customer are grouped under the blank row
+EVALUATE SUMMARIZECOLUMNS(Customer[Customer], "s", [Sales Amount])

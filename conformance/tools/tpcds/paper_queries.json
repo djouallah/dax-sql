@@ -1,0 +1,166 @@
+{
+ "source": {
+  "repo": "https://github.com/lipinght/DB-DQ-Whitepaper",
+  "commit": "99f9904d4e2e36f08bcd0fc8daf0f8deb70aad06",
+  "path": "load_test_json/PowerBIPerformanceData.json",
+  "fetched": "2026-09-03",
+  "paper": "Modern Power BI Architecture Choices for Reporting on Azure Databricks, Data Leaps / Microsoft, June-July 2026"
+ },
+ "capture": {
+  "dax_events": 24,
+  "slicer_events": [
+   3,
+   7,
+   8,
+   11,
+   15,
+   16,
+   17,
+   18,
+   21
+  ],
+  "visual_queries": 15,
+  "rounds": [
+   "AR",
+   "CO",
+   "CA"
+  ]
+ },
+ "queries": [
+  {
+   "name": "q4_catalog_yoy_ar",
+   "visual": "Catalog Sales Quantity YoY combo",
+   "query_number": 1,
+   "round": 1,
+   "slicer_state": "AR",
+   "row_count": 4,
+   "dax": "DEFINE\r\n\tVAR __DS0FilterTable = \r\n\t\tTREATAS({\"AR\"}, 'customer_address'[ca_state])\r\n\r\n\tVAR __DS0FilterTable2 = \r\n\t\tTREATAS({\"2 yr Degree\"}, 'customer_demographics'[cd_education_status])\r\n\r\n\tVAR __DS0FilterTable3 = \r\n\t\tTREATAS({2025}, 'date_dim'[d_year])\r\n\r\n\tVAR __DS0FilterTable4 = \r\n\t\tFILTER(\r\n\t\t\tKEEPFILTERS(VALUES('catalog_sales'[cache_buster])),\r\n\t\t\t'catalog_sales'[cache_buster] < 2\r\n\t\t)\r\n\r\n\tVAR __DS0FilterTable5 = \r\n\t\tFILTER(KEEPFILTERS(VALUES('store_sales'[cache_buster])), 'store_sales'[cache_buster] < 2)\r\n\r\n\tVAR __DS0Core = \r\n\t\tSUMMARIZECOLUMNS(\r\n\t\t\t'date_dim'[d_quarter_name],\r\n\t\t\t__DS0FilterTable,\r\n\t\t\t__DS0FilterTable2,\r\n\t\t\t__DS0FilterTable3,\r\n\t\t\t__DS0FilterTable4,\r\n\t\t\t__DS0FilterTable5,\r\n\t\t\t\"Catalog_Sales_Quantity\", 'Measures 1'[Catalog Sales Quantity],\r\n\t\t\t\"Catalog_Sales_Same_Period_LY\", 'Measures 1'[Catalog Sales Same Period LY],\r\n\t\t\t\"Catalog_Sales_YoY\", 'Measures 1'[Catalog Sales YoY]\r\n\t\t)\r\n\r\n\tVAR __DS0PrimaryWindowed = \r\n\t\tTOPN(1001, __DS0Core, 'date_dim'[d_quarter_name], 0)\r\n\r\nEVALUATE\r\n\t__DS0PrimaryWindowed\r\n\r\nORDER BY\r\n\t'date_dim'[d_quarter_name] DESC"
+  },
+  {
+   "name": "q2_profit_share_ar",
+   "visual": "Store Profit % Split by Category donut",
+   "query_number": 2,
+   "round": 1,
+   "slicer_state": "AR",
+   "row_count": 11,
+   "dax": "DEFINE\r\n\tVAR __DS0FilterTable = \r\n\t\tTREATAS({\"AR\"}, 'customer_address'[ca_state])\r\n\r\n\tVAR __DS0FilterTable2 = \r\n\t\tTREATAS({\"2 yr Degree\"}, 'customer_demographics'[cd_education_status])\r\n\r\n\tVAR __DS0FilterTable3 = \r\n\t\tTREATAS({2025}, 'date_dim'[d_year])\r\n\r\n\tVAR __DS0FilterTable4 = \r\n\t\tFILTER(\r\n\t\t\tKEEPFILTERS(VALUES('catalog_sales'[cache_buster])),\r\n\t\t\t'catalog_sales'[cache_buster] < 2\r\n\t\t)\r\n\r\n\tVAR __DS0FilterTable5 = \r\n\t\tFILTER(KEEPFILTERS(VALUES('store_sales'[cache_buster])), 'store_sales'[cache_buster] < 2)\r\n\r\n\tVAR __DS0Core = \r\n\t\tSUMMARIZECOLUMNS(\r\n\t\t\t'item'[i_category],\r\n\t\t\t__DS0FilterTable,\r\n\t\t\t__DS0FilterTable2,\r\n\t\t\t__DS0FilterTable3,\r\n\t\t\t__DS0FilterTable4,\r\n\t\t\t__DS0FilterTable5,\r\n\t\t\t\"Store_Profit___by_Item_Category\", 'Measures 1'[Store Profit % by Item Category]\r\n\t\t)\r\n\r\n\tVAR __DS0BodyLimited = \r\n\t\tTOPN(1002, __DS0Core, [Store_Profit___by_Item_Category], 0, 'item'[i_category], 1)\r\n\r\nEVALUATE\r\n\t__DS0BodyLimited\r\n\r\nORDER BY\r\n\t[Store_Profit___by_Item_Category] DESC, 'item'[i_category]"
+  },
+  {
+   "name": "q3_revenue_rank_ar",
+   "visual": "Catalog Revenue Ranked by Promotion bar",
+   "query_number": 4,
+   "round": 1,
+   "slicer_state": "AR",
+   "row_count": 12,
+   "dax": "DEFINE\r\n\tCOLUMN '__SQDS0VisualCalcs'[Rank] = \r\n\t\t(/* USER DAX BEGIN */\r\nRank(ORDERBY([Catalog Revenue],Desc))\r\n/* USER DAX END */)\r\n\r\n\tVAR __SQDS0FilterTable = \r\n\t\tTREATAS({\"AR\"}, 'customer_address'[ca_state])\r\n\r\n\tVAR __SQDS0FilterTable2 = \r\n\t\tTREATAS({\"2 yr Degree\"}, 'customer_demographics'[cd_education_status])\r\n\r\n\tVAR __SQDS0FilterTable3 = \r\n\t\tTREATAS({2025}, 'date_dim'[d_year])\r\n\r\n\tVAR __SQDS0FilterTable4 = \r\n\t\tFILTER(\r\n\t\t\tKEEPFILTERS(VALUES('catalog_sales'[cache_buster])),\r\n\t\t\t'catalog_sales'[cache_buster] < 2\r\n\t\t)\r\n\r\n\tVAR __SQDS0FilterTable5 = \r\n\t\tFILTER(KEEPFILTERS(VALUES('store_sales'[cache_buster])), 'store_sales'[cache_buster] < 2)\r\n\r\n\tVAR __SQDS0Core = \r\n\t\tSUMMARIZECOLUMNS(\r\n\t\t\tROLLUPADDISSUBTOTAL('promotion'[p_promo_name], \"IsSQDS0GrandTotalRowTotal\"),\r\n\t\t\t__SQDS0FilterTable,\r\n\t\t\t__SQDS0FilterTable2,\r\n\t\t\t__SQDS0FilterTable3,\r\n\t\t\t__SQDS0FilterTable4,\r\n\t\t\t__SQDS0FilterTable5,\r\n\t\t\t\"Catalog_Revenue\", 'Measures 1'[Catalog Revenue]\r\n\t\t)\r\n\r\n\tVAR __SQDS0VisualCalcsInput = \r\n\t\tSELECTCOLUMNS(\r\n\t\t\tKEEPFILTERS(\r\n\t\t\t\tSELECTCOLUMNS(\r\n\t\t\t\t\t__SQDS0Core,\r\n\t\t\t\t\t\"p_promo_name\", 'promotion'[p_promo_name],\r\n\t\t\t\t\t\"IsSQDS0GrandTotalRowTotal\", [IsSQDS0GrandTotalRowTotal],\r\n\t\t\t\t\t\"Catalog_Revenue\", [Catalog_Revenue]\r\n\t\t\t\t)\r\n\t\t\t),\r\n\t\t\t\"p_promo_name\", [p_promo_name],\r\n\t\t\t\"IsSQDS0GrandTotalRowTotal\", [IsSQDS0GrandTotalRowTotal],\r\n\t\t\t\"Catalog Revenue\", [Catalog_Revenue]\r\n\t\t)\r\n\r\n\tTABLE '__SQDS0VisualCalcs' = \r\n\t\t__SQDS0VisualCalcsInput\r\n\t\tWITH VISUAL SHAPE\r\n\t\t\tAXIS rows\r\n\t\t\t\tGROUP [p_promo_name] TOTAL [IsSQDS0GrandTotalRowTotal]\r\n\t\t\t\tORDER BY\r\n\t\t\t\t\t[p_promo_name] ASC\r\n\t\t\tDENSIFY \"IsDensifiedRow\"\r\n\r\n\tVAR __SQDS0RemoveEmptyDensified = \r\n\t\tFILTER(\r\n\t\t\tKEEPFILTERS('__SQDS0VisualCalcs'),\r\n\t\t\tOR(\r\n\t\t\t\tNOT('__SQDS0VisualCalcs'[IsDensifiedRow]),\r\n\t\t\t\tNOT(ISBLANK('__SQDS0VisualCalcs'[Rank]))\r\n\t\t\t)\r\n\t\t)\r\n\r\n\tVAR __DS0Core = \r\n\t\tSELECTCOLUMNS(\r\n\t\t\tKEEPFILTERS(\r\n\t\t\t\tFILTER(\r\n\t\t\t\t\tKEEPFILTERS(__SQDS0RemoveEmptyDensified),\r\n\t\t\t\t\t'__SQDS0VisualCalcs'[IsSQDS0GrandTotalRowTotal] = FALSE\r\n\t\t\t\t)\r\n\t\t\t),\r\n\t\t\t\"'__SQDS0VisualCalcs'[p_promo_name]\", '__SQDS0VisualCalcs'[p_promo_name],\r\n\t\t\t\"'__SQDS0VisualCalcs'[Rank]\", '__SQDS0VisualCalcs'[Rank],\r\n\t\t\t\"'__SQDS0VisualCalcs'[Catalog Revenue]\", '__SQDS0VisualCalcs'[Catalog Revenue]\r\n\t\t)\r\n\r\n\tVAR __DS0PrimaryWindowed = \r\n\t\tTOPN(\r\n\t\t\t1001,\r\n\t\t\t__DS0Core,\r\n\t\t\t'__SQDS0VisualCalcs'[Catalog Revenue],\r\n\t\t\t0,\r\n\t\t\t'__SQDS0VisualCalcs'[p_promo_name],\r\n\t\t\t1\r\n\t\t)\r\n\r\nEVALUATE\r\n\tGROUPBY(\r\n\t\t__DS0Core,\r\n\t\t\"MinRank\", MINX(CURRENTGROUP(), '__SQDS0VisualCalcs'[Rank]),\r\n\t\t\"MaxRank\", MAXX(CURRENTGROUP(), '__SQDS0VisualCalcs'[Rank])\r\n\t)\r\n\r\nEVALUATE\r\n\t__DS0PrimaryWindowed\r\n\r\nORDER BY\r\n\t'__SQDS0VisualCalcs'[Catalog Revenue] DESC, '__SQDS0VisualCalcs'[p_promo_name]"
+  },
+  {
+   "name": "q1_distinct_count_ar",
+   "visual": "Customer Count card",
+   "query_number": 5,
+   "round": 1,
+   "slicer_state": "AR",
+   "row_count": 1,
+   "dax": "DEFINE\r\n\tVAR __DS0FilterTable = \r\n\t\tTREATAS({\"AR\"}, 'customer_address'[ca_state])\r\n\r\n\tVAR __DS0FilterTable2 = \r\n\t\tTREATAS({\"2 yr Degree\"}, 'customer_demographics'[cd_education_status])\r\n\r\n\tVAR __DS0FilterTable3 = \r\n\t\tTREATAS({2025}, 'date_dim'[d_year])\r\n\r\n\tVAR __DS0FilterTable4 = \r\n\t\tFILTER(\r\n\t\t\tKEEPFILTERS(VALUES('catalog_sales'[cache_buster])),\r\n\t\t\t'catalog_sales'[cache_buster] < 2\r\n\t\t)\r\n\r\n\tVAR __DS0FilterTable5 = \r\n\t\tFILTER(KEEPFILTERS(VALUES('store_sales'[cache_buster])), 'store_sales'[cache_buster] < 2)\r\n\r\nEVALUATE\r\n\tSUMMARIZECOLUMNS(\r\n\t\t__DS0FilterTable,\r\n\t\t__DS0FilterTable2,\r\n\t\t__DS0FilterTable3,\r\n\t\t__DS0FilterTable4,\r\n\t\t__DS0FilterTable5,\r\n\t\t\"Store_Distinct_Customers\", IGNORE('Measures 1'[Store Distinct Customers])\r\n\t)"
+  },
+  {
+   "name": "q5_store_yoy_ytd_ar",
+   "visual": "Store Revenue Time Analysis matrix",
+   "query_number": 6,
+   "round": 1,
+   "slicer_state": "AR",
+   "row_count": 44,
+   "dax": "DEFINE\r\n\tVAR __DS0FilterTable = \r\n\t\tTREATAS({\"AR\"}, 'customer_address'[ca_state])\r\n\r\n\tVAR __DS0FilterTable2 = \r\n\t\tTREATAS({\"2 yr Degree\"}, 'customer_demographics'[cd_education_status])\r\n\r\n\tVAR __DS0FilterTable3 = \r\n\t\tTREATAS({2025}, 'date_dim'[d_year])\r\n\r\n\tVAR __DS0FilterTable4 = \r\n\t\tFILTER(\r\n\t\t\tKEEPFILTERS(VALUES('catalog_sales'[cache_buster])),\r\n\t\t\t'catalog_sales'[cache_buster] < 2\r\n\t\t)\r\n\r\n\tVAR __DS0FilterTable5 = \r\n\t\tFILTER(KEEPFILTERS(VALUES('store_sales'[cache_buster])), 'store_sales'[cache_buster] < 2)\r\n\r\n\tVAR __DS0Core = \r\n\t\tSUMMARIZECOLUMNS(\r\n\t\t\t'item'[i_category],\r\n\t\t\t'date_dim'[d_quarter_name],\r\n\t\t\t'date_dim'[d_year],\r\n\t\t\t__DS0FilterTable,\r\n\t\t\t__DS0FilterTable2,\r\n\t\t\t__DS0FilterTable3,\r\n\t\t\t__DS0FilterTable4,\r\n\t\t\t__DS0FilterTable5,\r\n\t\t\t\"Store_Revenue\", 'Measures 1'[Store Revenue],\r\n\t\t\t\"Store_Revenue_YoY\", 'Measures 1'[Store Revenue YoY],\r\n\t\t\t\"Store_Revenue_YTD\", 'Measures 1'[Store Revenue YTD]\r\n\t\t)\r\n\r\n\tVAR __DS0PrimaryWindowed = \r\n\t\tTOPN(501, __DS0Core, 'item'[i_category], 0, 'date_dim'[d_quarter_name], 1, 'date_dim'[d_year], 1)\r\n\r\nEVALUATE\r\n\t__DS0PrimaryWindowed\r\n\r\nORDER BY\r\n\t'item'[i_category] DESC, 'date_dim'[d_quarter_name], 'date_dim'[d_year]"
+  },
+  {
+   "name": "q4_catalog_yoy_co",
+   "visual": "Catalog Sales Quantity YoY combo",
+   "query_number": 9,
+   "round": 2,
+   "slicer_state": "CO",
+   "row_count": 4,
+   "dax": "DEFINE\r\n\tVAR __DS0FilterTable = \r\n\t\tTREATAS({\"CO\"}, 'customer_address'[ca_state])\r\n\r\n\tVAR __DS0FilterTable2 = \r\n\t\tTREATAS({\"Advanced Degree\"}, 'customer_demographics'[cd_education_status])\r\n\r\n\tVAR __DS0FilterTable3 = \r\n\t\tTREATAS({\"Brian Moss\"}, 'store'[s_manager])\r\n\r\n\tVAR __DS0FilterTable4 = \r\n\t\tTREATAS({2026}, 'date_dim'[d_year])\r\n\r\n\tVAR __DS0FilterTable5 = \r\n\t\tFILTER(\r\n\t\t\tKEEPFILTERS(VALUES('catalog_sales'[cache_buster])),\r\n\t\t\t'catalog_sales'[cache_buster] < 2\r\n\t\t)\r\n\r\n\tVAR __DS0FilterTable6 = \r\n\t\tFILTER(KEEPFILTERS(VALUES('store_sales'[cache_buster])), 'store_sales'[cache_buster] < 2)\r\n\r\n\tVAR __DS0Core = \r\n\t\tSUMMARIZECOLUMNS(\r\n\t\t\t'date_dim'[d_quarter_name],\r\n\t\t\t__DS0FilterTable,\r\n\t\t\t__DS0FilterTable2,\r\n\t\t\t__DS0FilterTable3,\r\n\t\t\t__DS0FilterTable4,\r\n\t\t\t__DS0FilterTable5,\r\n\t\t\t__DS0FilterTable6,\r\n\t\t\t\"Catalog_Sales_Quantity\", 'Measures 1'[Catalog Sales Quantity],\r\n\t\t\t\"Catalog_Sales_Same_Period_LY\", 'Measures 1'[Catalog Sales Same Period LY],\r\n\t\t\t\"Catalog_Sales_YoY\", 'Measures 1'[Catalog Sales YoY]\r\n\t\t)\r\n\r\n\tVAR __DS0PrimaryWindowed = \r\n\t\tTOPN(1001, __DS0Core, 'date_dim'[d_quarter_name], 0)\r\n\r\nEVALUATE\r\n\t__DS0PrimaryWindowed\r\n\r\nORDER BY\r\n\t'date_dim'[d_quarter_name] DESC"
+  },
+  {
+   "name": "q2_profit_share_co",
+   "visual": "Store Profit % Split by Category donut",
+   "query_number": 10,
+   "round": 2,
+   "slicer_state": "CO",
+   "row_count": 10,
+   "dax": "DEFINE\r\n\tVAR __DS0FilterTable = \r\n\t\tTREATAS({\"CO\"}, 'customer_address'[ca_state])\r\n\r\n\tVAR __DS0FilterTable2 = \r\n\t\tTREATAS({\"Advanced Degree\"}, 'customer_demographics'[cd_education_status])\r\n\r\n\tVAR __DS0FilterTable3 = \r\n\t\tTREATAS({\"Brian Moss\"}, 'store'[s_manager])\r\n\r\n\tVAR __DS0FilterTable4 = \r\n\t\tTREATAS({2026}, 'date_dim'[d_year])\r\n\r\n\tVAR __DS0FilterTable5 = \r\n\t\tFILTER(\r\n\t\t\tKEEPFILTERS(VALUES('catalog_sales'[cache_buster])),\r\n\t\t\t'catalog_sales'[cache_buster] < 2\r\n\t\t)\r\n\r\n\tVAR __DS0FilterTable6 = \r\n\t\tFILTER(KEEPFILTERS(VALUES('store_sales'[cache_buster])), 'store_sales'[cache_buster] < 2)\r\n\r\n\tVAR __DS0Core = \r\n\t\tSUMMARIZECOLUMNS(\r\n\t\t\t'item'[i_category],\r\n\t\t\t__DS0FilterTable,\r\n\t\t\t__DS0FilterTable2,\r\n\t\t\t__DS0FilterTable3,\r\n\t\t\t__DS0FilterTable4,\r\n\t\t\t__DS0FilterTable5,\r\n\t\t\t__DS0FilterTable6,\r\n\t\t\t\"Store_Profit___by_Item_Category\", 'Measures 1'[Store Profit % by Item Category]\r\n\t\t)\r\n\r\n\tVAR __DS0BodyLimited = \r\n\t\tTOPN(1002, __DS0Core, [Store_Profit___by_Item_Category], 0, 'item'[i_category], 1)\r\n\r\nEVALUATE\r\n\t__DS0BodyLimited\r\n\r\nORDER BY\r\n\t[Store_Profit___by_Item_Category] DESC, 'item'[i_category]"
+  },
+  {
+   "name": "q3_revenue_rank_co",
+   "visual": "Catalog Revenue Ranked by Promotion bar",
+   "query_number": 12,
+   "round": 2,
+   "slicer_state": "CO",
+   "row_count": 12,
+   "dax": "DEFINE\r\n\tCOLUMN '__SQDS0VisualCalcs'[Rank] = \r\n\t\t(/* USER DAX BEGIN */\r\nRank(ORDERBY([Catalog Revenue],Desc))\r\n/* USER DAX END */)\r\n\r\n\tVAR __SQDS0FilterTable = \r\n\t\tTREATAS({\"CO\"}, 'customer_address'[ca_state])\r\n\r\n\tVAR __SQDS0FilterTable2 = \r\n\t\tTREATAS({\"Advanced Degree\"}, 'customer_demographics'[cd_education_status])\r\n\r\n\tVAR __SQDS0FilterTable3 = \r\n\t\tTREATAS({\"Brian Moss\"}, 'store'[s_manager])\r\n\r\n\tVAR __SQDS0FilterTable4 = \r\n\t\tTREATAS({2026}, 'date_dim'[d_year])\r\n\r\n\tVAR __SQDS0FilterTable5 = \r\n\t\tFILTER(\r\n\t\t\tKEEPFILTERS(VALUES('catalog_sales'[cache_buster])),\r\n\t\t\t'catalog_sales'[cache_buster] < 2\r\n\t\t)\r\n\r\n\tVAR __SQDS0FilterTable6 = \r\n\t\tFILTER(KEEPFILTERS(VALUES('store_sales'[cache_buster])), 'store_sales'[cache_buster] < 2)\r\n\r\n\tVAR __SQDS0Core = \r\n\t\tSUMMARIZECOLUMNS(\r\n\t\t\tROLLUPADDISSUBTOTAL('promotion'[p_promo_name], \"IsSQDS0GrandTotalRowTotal\"),\r\n\t\t\t__SQDS0FilterTable,\r\n\t\t\t__SQDS0FilterTable2,\r\n\t\t\t__SQDS0FilterTable3,\r\n\t\t\t__SQDS0FilterTable4,\r\n\t\t\t__SQDS0FilterTable5,\r\n\t\t\t__SQDS0FilterTable6,\r\n\t\t\t\"Catalog_Revenue\", 'Measures 1'[Catalog Revenue]\r\n\t\t)\r\n\r\n\tVAR __SQDS0VisualCalcsInput = \r\n\t\tSELECTCOLUMNS(\r\n\t\t\tKEEPFILTERS(\r\n\t\t\t\tSELECTCOLUMNS(\r\n\t\t\t\t\t__SQDS0Core,\r\n\t\t\t\t\t\"p_promo_name\", 'promotion'[p_promo_name],\r\n\t\t\t\t\t\"IsSQDS0GrandTotalRowTotal\", [IsSQDS0GrandTotalRowTotal],\r\n\t\t\t\t\t\"Catalog_Revenue\", [Catalog_Revenue]\r\n\t\t\t\t)\r\n\t\t\t),\r\n\t\t\t\"p_promo_name\", [p_promo_name],\r\n\t\t\t\"IsSQDS0GrandTotalRowTotal\", [IsSQDS0GrandTotalRowTotal],\r\n\t\t\t\"Catalog Revenue\", [Catalog_Revenue]\r\n\t\t)\r\n\r\n\tTABLE '__SQDS0VisualCalcs' = \r\n\t\t__SQDS0VisualCalcsInput\r\n\t\tWITH VISUAL SHAPE\r\n\t\t\tAXIS rows\r\n\t\t\t\tGROUP [p_promo_name] TOTAL [IsSQDS0GrandTotalRowTotal]\r\n\t\t\t\tORDER BY\r\n\t\t\t\t\t[p_promo_name] ASC\r\n\t\t\tDENSIFY \"IsDensifiedRow\"\r\n\r\n\tVAR __SQDS0RemoveEmptyDensified = \r\n\t\tFILTER(\r\n\t\t\tKEEPFILTERS('__SQDS0VisualCalcs'),\r\n\t\t\tOR(\r\n\t\t\t\tNOT('__SQDS0VisualCalcs'[IsDensifiedRow]),\r\n\t\t\t\tNOT(ISBLANK('__SQDS0VisualCalcs'[Rank]))\r\n\t\t\t)\r\n\t\t)\r\n\r\n\tVAR __DS0Core = \r\n\t\tSELECTCOLUMNS(\r\n\t\t\tKEEPFILTERS(\r\n\t\t\t\tFILTER(\r\n\t\t\t\t\tKEEPFILTERS(__SQDS0RemoveEmptyDensified),\r\n\t\t\t\t\t'__SQDS0VisualCalcs'[IsSQDS0GrandTotalRowTotal] = FALSE\r\n\t\t\t\t)\r\n\t\t\t),\r\n\t\t\t\"'__SQDS0VisualCalcs'[p_promo_name]\", '__SQDS0VisualCalcs'[p_promo_name],\r\n\t\t\t\"'__SQDS0VisualCalcs'[Rank]\", '__SQDS0VisualCalcs'[Rank],\r\n\t\t\t\"'__SQDS0VisualCalcs'[Catalog Revenue]\", '__SQDS0VisualCalcs'[Catalog Revenue]\r\n\t\t)\r\n\r\n\tVAR __DS0PrimaryWindowed = \r\n\t\tTOPN(\r\n\t\t\t1001,\r\n\t\t\t__DS0Core,\r\n\t\t\t'__SQDS0VisualCalcs'[Catalog Revenue],\r\n\t\t\t0,\r\n\t\t\t'__SQDS0VisualCalcs'[p_promo_name],\r\n\t\t\t1\r\n\t\t)\r\n\r\nEVALUATE\r\n\tGROUPBY(\r\n\t\t__DS0Core,\r\n\t\t\"MinRank\", MINX(CURRENTGROUP(), '__SQDS0VisualCalcs'[Rank]),\r\n\t\t\"MaxRank\", MAXX(CURRENTGROUP(), '__SQDS0VisualCalcs'[Rank])\r\n\t)\r\n\r\nEVALUATE\r\n\t__DS0PrimaryWindowed\r\n\r\nORDER BY\r\n\t'__SQDS0VisualCalcs'[Catalog Revenue] DESC, '__SQDS0VisualCalcs'[p_promo_name]"
+  },
+  {
+   "name": "q1_distinct_count_co",
+   "visual": "Customer Count card",
+   "query_number": 13,
+   "round": 2,
+   "slicer_state": "CO",
+   "row_count": 1,
+   "dax": "DEFINE\r\n\tVAR __DS0FilterTable = \r\n\t\tTREATAS({\"CO\"}, 'customer_address'[ca_state])\r\n\r\n\tVAR __DS0FilterTable2 = \r\n\t\tTREATAS({\"Advanced Degree\"}, 'customer_demographics'[cd_education_status])\r\n\r\n\tVAR __DS0FilterTable3 = \r\n\t\tTREATAS({\"Brian Moss\"}, 'store'[s_manager])\r\n\r\n\tVAR __DS0FilterTable4 = \r\n\t\tTREATAS({2026}, 'date_dim'[d_year])\r\n\r\n\tVAR __DS0FilterTable5 = \r\n\t\tFILTER(\r\n\t\t\tKEEPFILTERS(VALUES('catalog_sales'[cache_buster])),\r\n\t\t\t'catalog_sales'[cache_buster] < 2\r\n\t\t)\r\n\r\n\tVAR __DS0FilterTable6 = \r\n\t\tFILTER(KEEPFILTERS(VALUES('store_sales'[cache_buster])), 'store_sales'[cache_buster] < 2)\r\n\r\nEVALUATE\r\n\tSUMMARIZECOLUMNS(\r\n\t\t__DS0FilterTable,\r\n\t\t__DS0FilterTable2,\r\n\t\t__DS0FilterTable3,\r\n\t\t__DS0FilterTable4,\r\n\t\t__DS0FilterTable5,\r\n\t\t__DS0FilterTable6,\r\n\t\t\"Store_Distinct_Customers\", IGNORE('Measures 1'[Store Distinct Customers])\r\n\t)"
+  },
+  {
+   "name": "q5_store_yoy_ytd_co",
+   "visual": "Store Revenue Time Analysis matrix",
+   "query_number": 14,
+   "round": 2,
+   "slicer_state": "CO",
+   "row_count": 41,
+   "dax": "DEFINE\r\n\tVAR __DS0FilterTable = \r\n\t\tTREATAS({\"CO\"}, 'customer_address'[ca_state])\r\n\r\n\tVAR __DS0FilterTable2 = \r\n\t\tTREATAS({\"Advanced Degree\"}, 'customer_demographics'[cd_education_status])\r\n\r\n\tVAR __DS0FilterTable3 = \r\n\t\tTREATAS({\"Brian Moss\"}, 'store'[s_manager])\r\n\r\n\tVAR __DS0FilterTable4 = \r\n\t\tTREATAS({2026}, 'date_dim'[d_year])\r\n\r\n\tVAR __DS0FilterTable5 = \r\n\t\tFILTER(\r\n\t\t\tKEEPFILTERS(VALUES('catalog_sales'[cache_buster])),\r\n\t\t\t'catalog_sales'[cache_buster] < 2\r\n\t\t)\r\n\r\n\tVAR __DS0FilterTable6 = \r\n\t\tFILTER(KEEPFILTERS(VALUES('store_sales'[cache_buster])), 'store_sales'[cache_buster] < 2)\r\n\r\n\tVAR __DS0Core = \r\n\t\tSUMMARIZECOLUMNS(\r\n\t\t\t'item'[i_category],\r\n\t\t\t'date_dim'[d_quarter_name],\r\n\t\t\t'date_dim'[d_year],\r\n\t\t\t__DS0FilterTable,\r\n\t\t\t__DS0FilterTable2,\r\n\t\t\t__DS0FilterTable3,\r\n\t\t\t__DS0FilterTable4,\r\n\t\t\t__DS0FilterTable5,\r\n\t\t\t__DS0FilterTable6,\r\n\t\t\t\"Store_Revenue\", 'Measures 1'[Store Revenue],\r\n\t\t\t\"Store_Revenue_YoY\", 'Measures 1'[Store Revenue YoY],\r\n\t\t\t\"Store_Revenue_YTD\", 'Measures 1'[Store Revenue YTD]\r\n\t\t)\r\n\r\n\tVAR __DS0PrimaryWindowed = \r\n\t\tTOPN(501, __DS0Core, 'item'[i_category], 0, 'date_dim'[d_quarter_name], 1, 'date_dim'[d_year], 1)\r\n\r\nEVALUATE\r\n\t__DS0PrimaryWindowed\r\n\r\nORDER BY\r\n\t'item'[i_category] DESC, 'date_dim'[d_quarter_name], 'date_dim'[d_year]"
+  },
+  {
+   "name": "q4_catalog_yoy_ca",
+   "visual": "Catalog Sales Quantity YoY combo",
+   "query_number": 19,
+   "round": 3,
+   "slicer_state": "CA",
+   "row_count": 4,
+   "dax": "DEFINE\r\n\tVAR __DS0FilterTable = \r\n\t\tTREATAS({\"CA\"}, 'customer_address'[ca_state])\r\n\r\n\tVAR __DS0FilterTable2 = \r\n\t\tTREATAS({\"College\"}, 'customer_demographics'[cd_education_status])\r\n\r\n\tVAR __DS0FilterTable3 = \r\n\t\tTREATAS({\"Brett Yates\"}, 'store'[s_manager])\r\n\r\n\tVAR __DS0FilterTable4 = \r\n\t\tTREATAS({\"FEDEX\"}, 'ship_mode'[sm_carrier])\r\n\r\n\tVAR __DS0FilterTable5 = \r\n\t\tTREATAS({\"quarterly\"}, 'catalog_page'[cp_type])\r\n\r\n\tVAR __DS0FilterTable6 = \r\n\t\tTREATAS({2026}, 'date_dim'[d_year])\r\n\r\n\tVAR __DS0FilterTable7 = \r\n\t\tFILTER(\r\n\t\t\tKEEPFILTERS(VALUES('catalog_sales'[cache_buster])),\r\n\t\t\t'catalog_sales'[cache_buster] < 2\r\n\t\t)\r\n\r\n\tVAR __DS0FilterTable8 = \r\n\t\tFILTER(KEEPFILTERS(VALUES('store_sales'[cache_buster])), 'store_sales'[cache_buster] < 2)\r\n\r\n\tVAR __DS0Core = \r\n\t\tSUMMARIZECOLUMNS(\r\n\t\t\t'date_dim'[d_quarter_name],\r\n\t\t\t__DS0FilterTable,\r\n\t\t\t__DS0FilterTable2,\r\n\t\t\t__DS0FilterTable3,\r\n\t\t\t__DS0FilterTable4,\r\n\t\t\t__DS0FilterTable5,\r\n\t\t\t__DS0FilterTable6,\r\n\t\t\t__DS0FilterTable7,\r\n\t\t\t__DS0FilterTable8,\r\n\t\t\t\"Catalog_Sales_Quantity\", 'Measures 1'[Catalog Sales Quantity],\r\n\t\t\t\"Catalog_Sales_Same_Period_LY\", 'Measures 1'[Catalog Sales Same Period LY],\r\n\t\t\t\"Catalog_Sales_YoY\", 'Measures 1'[Catalog Sales YoY]\r\n\t\t)\r\n\r\n\tVAR __DS0PrimaryWindowed = \r\n\t\tTOPN(1001, __DS0Core, 'date_dim'[d_quarter_name], 0)\r\n\r\nEVALUATE\r\n\t__DS0PrimaryWindowed\r\n\r\nORDER BY\r\n\t'date_dim'[d_quarter_name] DESC"
+  },
+  {
+   "name": "q2_profit_share_ca",
+   "visual": "Store Profit % Split by Category donut",
+   "query_number": 20,
+   "round": 3,
+   "slicer_state": "CA",
+   "row_count": 10,
+   "dax": "DEFINE\r\n\tVAR __DS0FilterTable = \r\n\t\tTREATAS({\"CA\"}, 'customer_address'[ca_state])\r\n\r\n\tVAR __DS0FilterTable2 = \r\n\t\tTREATAS({\"College\"}, 'customer_demographics'[cd_education_status])\r\n\r\n\tVAR __DS0FilterTable3 = \r\n\t\tTREATAS({\"Brett Yates\"}, 'store'[s_manager])\r\n\r\n\tVAR __DS0FilterTable4 = \r\n\t\tTREATAS({\"FEDEX\"}, 'ship_mode'[sm_carrier])\r\n\r\n\tVAR __DS0FilterTable5 = \r\n\t\tTREATAS({\"quarterly\"}, 'catalog_page'[cp_type])\r\n\r\n\tVAR __DS0FilterTable6 = \r\n\t\tTREATAS({2026}, 'date_dim'[d_year])\r\n\r\n\tVAR __DS0FilterTable7 = \r\n\t\tFILTER(\r\n\t\t\tKEEPFILTERS(VALUES('catalog_sales'[cache_buster])),\r\n\t\t\t'catalog_sales'[cache_buster] < 2\r\n\t\t)\r\n\r\n\tVAR __DS0FilterTable8 = \r\n\t\tFILTER(KEEPFILTERS(VALUES('store_sales'[cache_buster])), 'store_sales'[cache_buster] < 2)\r\n\r\n\tVAR __DS0Core = \r\n\t\tSUMMARIZECOLUMNS(\r\n\t\t\t'item'[i_category],\r\n\t\t\t__DS0FilterTable,\r\n\t\t\t__DS0FilterTable2,\r\n\t\t\t__DS0FilterTable3,\r\n\t\t\t__DS0FilterTable4,\r\n\t\t\t__DS0FilterTable5,\r\n\t\t\t__DS0FilterTable6,\r\n\t\t\t__DS0FilterTable7,\r\n\t\t\t__DS0FilterTable8,\r\n\t\t\t\"Store_Profit___by_Item_Category\", 'Measures 1'[Store Profit % by Item Category]\r\n\t\t)\r\n\r\n\tVAR __DS0BodyLimited = \r\n\t\tTOPN(1002, __DS0Core, [Store_Profit___by_Item_Category], 0, 'item'[i_category], 1)\r\n\r\nEVALUATE\r\n\t__DS0BodyLimited\r\n\r\nORDER BY\r\n\t[Store_Profit___by_Item_Category] DESC, 'item'[i_category]"
+  },
+  {
+   "name": "q3_revenue_rank_ca",
+   "visual": "Catalog Revenue Ranked by Promotion bar",
+   "query_number": 22,
+   "round": 3,
+   "slicer_state": "CA",
+   "row_count": 11,
+   "dax": "DEFINE\r\n\tCOLUMN '__SQDS0VisualCalcs'[Rank] = \r\n\t\t(/* USER DAX BEGIN */\r\nRank(ORDERBY([Catalog Revenue],Desc))\r\n/* USER DAX END */)\r\n\r\n\tVAR __SQDS0FilterTable = \r\n\t\tTREATAS({\"CA\"}, 'customer_address'[ca_state])\r\n\r\n\tVAR __SQDS0FilterTable2 = \r\n\t\tTREATAS({\"College\"}, 'customer_demographics'[cd_education_status])\r\n\r\n\tVAR __SQDS0FilterTable3 = \r\n\t\tTREATAS({\"Brett Yates\"}, 'store'[s_manager])\r\n\r\n\tVAR __SQDS0FilterTable4 = \r\n\t\tTREATAS({\"FEDEX\"}, 'ship_mode'[sm_carrier])\r\n\r\n\tVAR __SQDS0FilterTable5 = \r\n\t\tTREATAS({\"quarterly\"}, 'catalog_page'[cp_type])\r\n\r\n\tVAR __SQDS0FilterTable6 = \r\n\t\tTREATAS({2026}, 'date_dim'[d_year])\r\n\r\n\tVAR __SQDS0FilterTable7 = \r\n\t\tFILTER(\r\n\t\t\tKEEPFILTERS(VALUES('catalog_sales'[cache_buster])),\r\n\t\t\t'catalog_sales'[cache_buster] < 2\r\n\t\t)\r\n\r\n\tVAR __SQDS0FilterTable8 = \r\n\t\tFILTER(KEEPFILTERS(VALUES('store_sales'[cache_buster])), 'store_sales'[cache_buster] < 2)\r\n\r\n\tVAR __SQDS0Core = \r\n\t\tSUMMARIZECOLUMNS(\r\n\t\t\tROLLUPADDISSUBTOTAL('promotion'[p_promo_name], \"IsSQDS0GrandTotalRowTotal\"),\r\n\t\t\t__SQDS0FilterTable,\r\n\t\t\t__SQDS0FilterTable2,\r\n\t\t\t__SQDS0FilterTable3,\r\n\t\t\t__SQDS0FilterTable4,\r\n\t\t\t__SQDS0FilterTable5,\r\n\t\t\t__SQDS0FilterTable6,\r\n\t\t\t__SQDS0FilterTable7,\r\n\t\t\t__SQDS0FilterTable8,\r\n\t\t\t\"Catalog_Revenue\", 'Measures 1'[Catalog Revenue]\r\n\t\t)\r\n\r\n\tVAR __SQDS0VisualCalcsInput = \r\n\t\tSELECTCOLUMNS(\r\n\t\t\tKEEPFILTERS(\r\n\t\t\t\tSELECTCOLUMNS(\r\n\t\t\t\t\t__SQDS0Core,\r\n\t\t\t\t\t\"p_promo_name\", 'promotion'[p_promo_name],\r\n\t\t\t\t\t\"IsSQDS0GrandTotalRowTotal\", [IsSQDS0GrandTotalRowTotal],\r\n\t\t\t\t\t\"Catalog_Revenue\", [Catalog_Revenue]\r\n\t\t\t\t)\r\n\t\t\t),\r\n\t\t\t\"p_promo_name\", [p_promo_name],\r\n\t\t\t\"IsSQDS0GrandTotalRowTotal\", [IsSQDS0GrandTotalRowTotal],\r\n\t\t\t\"Catalog Revenue\", [Catalog_Revenue]\r\n\t\t)\r\n\r\n\tTABLE '__SQDS0VisualCalcs' = \r\n\t\t__SQDS0VisualCalcsInput\r\n\t\tWITH VISUAL SHAPE\r\n\t\t\tAXIS rows\r\n\t\t\t\tGROUP [p_promo_name] TOTAL [IsSQDS0GrandTotalRowTotal]\r\n\t\t\t\tORDER BY\r\n\t\t\t\t\t[p_promo_name] ASC\r\n\t\t\tDENSIFY \"IsDensifiedRow\"\r\n\r\n\tVAR __SQDS0RemoveEmptyDensified = \r\n\t\tFILTER(\r\n\t\t\tKEEPFILTERS('__SQDS0VisualCalcs'),\r\n\t\t\tOR(\r\n\t\t\t\tNOT('__SQDS0VisualCalcs'[IsDensifiedRow]),\r\n\t\t\t\tNOT(ISBLANK('__SQDS0VisualCalcs'[Rank]))\r\n\t\t\t)\r\n\t\t)\r\n\r\n\tVAR __DS0Core = \r\n\t\tSELECTCOLUMNS(\r\n\t\t\tKEEPFILTERS(\r\n\t\t\t\tFILTER(\r\n\t\t\t\t\tKEEPFILTERS(__SQDS0RemoveEmptyDensified),\r\n\t\t\t\t\t'__SQDS0VisualCalcs'[IsSQDS0GrandTotalRowTotal] = FALSE\r\n\t\t\t\t)\r\n\t\t\t),\r\n\t\t\t\"'__SQDS0VisualCalcs'[p_promo_name]\", '__SQDS0VisualCalcs'[p_promo_name],\r\n\t\t\t\"'__SQDS0VisualCalcs'[Rank]\", '__SQDS0VisualCalcs'[Rank],\r\n\t\t\t\"'__SQDS0VisualCalcs'[Catalog Revenue]\", '__SQDS0VisualCalcs'[Catalog Revenue]\r\n\t\t)\r\n\r\n\tVAR __DS0PrimaryWindowed = \r\n\t\tTOPN(\r\n\t\t\t1001,\r\n\t\t\t__DS0Core,\r\n\t\t\t'__SQDS0VisualCalcs'[Catalog Revenue],\r\n\t\t\t0,\r\n\t\t\t'__SQDS0VisualCalcs'[p_promo_name],\r\n\t\t\t1\r\n\t\t)\r\n\r\nEVALUATE\r\n\tGROUPBY(\r\n\t\t__DS0Core,\r\n\t\t\"MinRank\", MINX(CURRENTGROUP(), '__SQDS0VisualCalcs'[Rank]),\r\n\t\t\"MaxRank\", MAXX(CURRENTGROUP(), '__SQDS0VisualCalcs'[Rank])\r\n\t)\r\n\r\nEVALUATE\r\n\t__DS0PrimaryWindowed\r\n\r\nORDER BY\r\n\t'__SQDS0VisualCalcs'[Catalog Revenue] DESC, '__SQDS0VisualCalcs'[p_promo_name]"
+  },
+  {
+   "name": "q1_distinct_count_ca",
+   "visual": "Customer Count card",
+   "query_number": 23,
+   "round": 3,
+   "slicer_state": "CA",
+   "row_count": 1,
+   "dax": "DEFINE\r\n\tVAR __DS0FilterTable = \r\n\t\tTREATAS({\"CA\"}, 'customer_address'[ca_state])\r\n\r\n\tVAR __DS0FilterTable2 = \r\n\t\tTREATAS({\"College\"}, 'customer_demographics'[cd_education_status])\r\n\r\n\tVAR __DS0FilterTable3 = \r\n\t\tTREATAS({\"Brett Yates\"}, 'store'[s_manager])\r\n\r\n\tVAR __DS0FilterTable4 = \r\n\t\tTREATAS({\"FEDEX\"}, 'ship_mode'[sm_carrier])\r\n\r\n\tVAR __DS0FilterTable5 = \r\n\t\tTREATAS({\"quarterly\"}, 'catalog_page'[cp_type])\r\n\r\n\tVAR __DS0FilterTable6 = \r\n\t\tTREATAS({2026}, 'date_dim'[d_year])\r\n\r\n\tVAR __DS0FilterTable7 = \r\n\t\tFILTER(\r\n\t\t\tKEEPFILTERS(VALUES('catalog_sales'[cache_buster])),\r\n\t\t\t'catalog_sales'[cache_buster] < 2\r\n\t\t)\r\n\r\n\tVAR __DS0FilterTable8 = \r\n\t\tFILTER(KEEPFILTERS(VALUES('store_sales'[cache_buster])), 'store_sales'[cache_buster] < 2)\r\n\r\nEVALUATE\r\n\tSUMMARIZECOLUMNS(\r\n\t\t__DS0FilterTable,\r\n\t\t__DS0FilterTable2,\r\n\t\t__DS0FilterTable3,\r\n\t\t__DS0FilterTable4,\r\n\t\t__DS0FilterTable5,\r\n\t\t__DS0FilterTable6,\r\n\t\t__DS0FilterTable7,\r\n\t\t__DS0FilterTable8,\r\n\t\t\"Store_Distinct_Customers\", IGNORE('Measures 1'[Store Distinct Customers])\r\n\t)"
+  },
+  {
+   "name": "q5_store_yoy_ytd_ca",
+   "visual": "Store Revenue Time Analysis matrix",
+   "query_number": 24,
+   "round": 3,
+   "slicer_state": "CA",
+   "row_count": 42,
+   "dax": "DEFINE\r\n\tVAR __DS0FilterTable = \r\n\t\tTREATAS({\"CA\"}, 'customer_address'[ca_state])\r\n\r\n\tVAR __DS0FilterTable2 = \r\n\t\tTREATAS({\"College\"}, 'customer_demographics'[cd_education_status])\r\n\r\n\tVAR __DS0FilterTable3 = \r\n\t\tTREATAS({\"Brett Yates\"}, 'store'[s_manager])\r\n\r\n\tVAR __DS0FilterTable4 = \r\n\t\tTREATAS({\"FEDEX\"}, 'ship_mode'[sm_carrier])\r\n\r\n\tVAR __DS0FilterTable5 = \r\n\t\tTREATAS({\"quarterly\"}, 'catalog_page'[cp_type])\r\n\r\n\tVAR __DS0FilterTable6 = \r\n\t\tTREATAS({2026}, 'date_dim'[d_year])\r\n\r\n\tVAR __DS0FilterTable7 = \r\n\t\tFILTER(\r\n\t\t\tKEEPFILTERS(VALUES('catalog_sales'[cache_buster])),\r\n\t\t\t'catalog_sales'[cache_buster] < 2\r\n\t\t)\r\n\r\n\tVAR __DS0FilterTable8 = \r\n\t\tFILTER(KEEPFILTERS(VALUES('store_sales'[cache_buster])), 'store_sales'[cache_buster] < 2)\r\n\r\n\tVAR __DS0Core = \r\n\t\tSUMMARIZECOLUMNS(\r\n\t\t\t'item'[i_category],\r\n\t\t\t'date_dim'[d_quarter_name],\r\n\t\t\t'date_dim'[d_year],\r\n\t\t\t__DS0FilterTable,\r\n\t\t\t__DS0FilterTable2,\r\n\t\t\t__DS0FilterTable3,\r\n\t\t\t__DS0FilterTable4,\r\n\t\t\t__DS0FilterTable5,\r\n\t\t\t__DS0FilterTable6,\r\n\t\t\t__DS0FilterTable7,\r\n\t\t\t__DS0FilterTable8,\r\n\t\t\t\"Store_Revenue\", 'Measures 1'[Store Revenue],\r\n\t\t\t\"Store_Revenue_YoY\", 'Measures 1'[Store Revenue YoY],\r\n\t\t\t\"Store_Revenue_YTD\", 'Measures 1'[Store Revenue YTD]\r\n\t\t)\r\n\r\n\tVAR __DS0PrimaryWindowed = \r\n\t\tTOPN(501, __DS0Core, 'item'[i_category], 0, 'date_dim'[d_quarter_name], 1, 'date_dim'[d_year], 1)\r\n\r\nEVALUATE\r\n\t__DS0PrimaryWindowed\r\n\r\nORDER BY\r\n\t'item'[i_category] DESC, 'date_dim'[d_quarter_name], 'date_dim'[d_year]"
+  }
+ ]
+}

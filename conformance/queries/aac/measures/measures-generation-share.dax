@@ -1,0 +1,2 @@
+// note: fct_summary[Generation share] per fuel, of all the units shown
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS(dim_duid[FuelSourceDescriptor], "Generation share", [Generation share]), dim_calendar[date] >= dt"2026-08-07", dim_calendar[date] <= dt"2026-08-13")

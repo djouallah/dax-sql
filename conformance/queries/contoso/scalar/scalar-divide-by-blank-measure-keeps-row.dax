@@ -1,0 +1,2 @@
+// note: 1 / a blank measure is infinity, not blank, so the product without sales stays (infinity shown as 1E300)
+EVALUATE SUMMARIZECOLUMNS(Product[Name], "x", VAR v = 1 / [Sales Amount] RETURN IF(v > 1E300, 1E300, v))

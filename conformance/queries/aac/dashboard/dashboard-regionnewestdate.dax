@@ -1,0 +1,2 @@
+// note: the dashboard's regionNewestDate query, the newest day of the regional table
+EVALUATE ROW("date", MAX(fct_region[date]))

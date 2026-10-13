@@ -1,0 +1,14 @@
+// note: PERCENTILEX.EXC and .INC over the four sales bands' customer sales by year and quarter, at k = 0.2 and 0.8, the very edges 1/(N+1) and N/(N+1) that EXC allows for N = 4: a band without customers in the quarter gives a blank, which counts in N and sorts first
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year],
+    'Date'[Quarter],
+    "Top Customers", CALCULATE([Segment Customer Count], Segments[Segment] = "Top"),
+    "Low Customers", CALCULATE([Segment Customer Count], Segments[Segment] = "Low"),
+    "P20 Exc", PERCENTILEX.EXC(VALUES(Segments[Segment]), [Segment Customer Sales], 0.2),
+    "P50 Exc", PERCENTILEX.EXC(VALUES(Segments[Segment]), [Segment Customer Sales], 0.5),
+    "P80 Exc", PERCENTILEX.EXC(VALUES(Segments[Segment]), [Segment Customer Sales], 0.8),
+    "P20 Inc", PERCENTILEX.INC(VALUES(Segments[Segment]), [Segment Customer Sales], 0.2),
+    "P80 Inc", PERCENTILEX.INC(VALUES(Segments[Segment]), [Segment Customer Sales], 0.8)
+)
+ORDER BY 'Date'[Year], 'Date'[Quarter]

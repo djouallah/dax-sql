@@ -1,0 +1,9 @@
+// note: same ISO week of the previous ISO year, through VALUES of ISO Week after REMOVEFILTERS on Date
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[ISO Year], 'Date'[ISO Week],
+    TREATAS({2024}, 'Date'[ISO Year]),
+    "Sales", [Sales Amount],
+    "ISO Week PY", [Sales ISO Week PY]
+)
+ORDER BY 'Date'[ISO Year], 'Date'[ISO Week]

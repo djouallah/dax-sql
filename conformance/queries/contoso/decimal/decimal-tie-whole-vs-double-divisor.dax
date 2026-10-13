@@ -1,0 +1,2 @@
+// note: a fixed decimal divided by a whole number and by a double, at a tie (1.0001 / 2): whether both round the exact quotient to 4 places
+EVALUATE ROW("w", CURRENCY(1.0001) / 2, "d", CURRENCY(1.0001) / CONVERT(2, DOUBLE), "dw", DIVIDE(CURRENCY(1.0001), 2), "dd", DIVIDE(CURRENCY(1.0001), CONVERT(2, DOUBLE)))

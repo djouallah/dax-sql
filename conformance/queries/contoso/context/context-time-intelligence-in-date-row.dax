@@ -1,0 +1,2 @@
+// note: PREVIOUSMONTH in a row of the date table: context transition makes each day's month the base
+EVALUATE ROW("s", SUMX(FILTER('Date', 'Date'[Year] = 2024), CALCULATE([Sales Amount], PREVIOUSMONTH('Date'[Date]))))

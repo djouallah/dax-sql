@@ -1,0 +1,8 @@
+// note: Customer reaches AccountCustomer but the bridge does not filter Account unless CROSSFILTER turns that relationship both ways
+EVALUATE
+SUMMARIZECOLUMNS(
+    Customer[Country],
+    "Customers", COUNTROWS(Customer),
+    "Accounts", COUNTROWS(Account),
+    "Accounts Held", [Accounts Held Bridge]
+)

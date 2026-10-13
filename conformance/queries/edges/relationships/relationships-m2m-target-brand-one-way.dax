@@ -1,0 +1,11 @@
+// note: the many-to-many filters only from Product to Target: grouped by Target[Brand], products and sales ignore the brand until CROSSFILTER BOTH turns the relationship around, and then Ghost reaches no product
+EVALUATE
+SUMMARIZECOLUMNS(
+    Target[Brand],
+    "Target", [Target Amount],
+    "Products", COUNTROWS(Product),
+    "Sales", [Sales Amount],
+    "Products Both", CALCULATE(COUNTROWS(Product), CROSSFILTER(Target[Brand], Product[Brand], BOTH)),
+    "Sales Both", CALCULATE([Sales Amount], CROSSFILTER(Target[Brand], Product[Brand], BOTH))
+)
+ORDER BY Target[Brand]

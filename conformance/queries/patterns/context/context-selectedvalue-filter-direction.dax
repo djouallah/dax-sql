@@ -1,0 +1,9 @@
+// note: grouped by subcategory, Category is not filtered (the relationship filters the other way) unless CROSSFILTER makes it both ways; the Product[Category] calculated column is filtered
+EVALUATE
+SUMMARIZECOLUMNS(
+    Subcategory[Subcategory],
+    "Sales", [Sales Amount],
+    "Category Upstream", SELECTEDVALUE(Category[Category], "none"),
+    "Category Both Ways", CALCULATE(SELECTEDVALUE(Category[Category], "none"), CROSSFILTER(Subcategory[CategoryKey], Category[CategoryKey], BOTH)),
+    "Product Category Column", SELECTEDVALUE(Product[Category], "none")
+)

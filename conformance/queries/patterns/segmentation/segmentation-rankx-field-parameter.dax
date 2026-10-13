@@ -1,0 +1,7 @@
+// note: ranking driven by the Metric field parameter's selection: categories ranked DENSE by sales, margin or quantity, one block per metric
+EVALUATE
+SUMMARIZECOLUMNS(
+    Metric[Metric],
+    Category[Category],
+    "Rank", [Category Rank By Metric]
+)

@@ -1,0 +1,2 @@
+// note: TOPN(2) of product names by a measure
+EVALUATE TOPN(2, VALUES(Product[Name]), [Sales Amount])

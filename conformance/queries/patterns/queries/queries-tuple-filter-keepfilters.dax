@@ -1,0 +1,8 @@
+// note: the same two-column year-month filter wrapped in KEEPFILTERS, so grouping by year intersects with it instead of overwriting it
+EVALUATE
+SUMMARIZECOLUMNS(
+	'Date'[Year],
+	KEEPFILTERS(TREATAS({(2023, 12), (2024, 1)}, 'Date'[Year], 'Date'[Month])),
+	"Sales_Amount", 'Sales'[Sales Amount]
+)
+ORDER BY 'Date'[Year]

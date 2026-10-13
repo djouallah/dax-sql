@@ -2,6 +2,7 @@
   ([DESIGN.md](DESIGN.md#api)).
 - **Out:** one SQL `SELECT` and its columns.
 - **Errors:** `SYNTAX`, `SEMANTIC`, `UNSUPPORTED`.
+- **Tested:** against Power BI's own answers, in [conformance/](conformance/README.md).
 
 ## Known limitations
 

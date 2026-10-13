@@ -1,0 +1,2 @@
+// note: fct_summary_daily[Average MWh a day] per unit
+EVALUATE SUMMARIZECOLUMNS(dim_duid[DUID], "Average MWh a day", [Average MWh a day])

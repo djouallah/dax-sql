@@ -1,0 +1,19 @@
+// note: PATH, PATHLENGTH, PATHITEM and PATHITEMREVERSE on the Employee parent-child table, and each employee's 2024 sales against their team's through PATHCONTAINS
+EVALUATE
+ADDCOLUMNS(
+    Employee,
+    "Path", PATH(Employee[EmployeeKey], Employee[ParentEmployeeKey]),
+    "Depth", PATHLENGTH(PATH(Employee[EmployeeKey], Employee[ParentEmployeeKey])),
+    "Level 2", PATHITEM(PATH(Employee[EmployeeKey], Employee[ParentEmployeeKey]), 2, INTEGER),
+    "Manager", PATHITEMREVERSE(PATH(Employee[EmployeeKey], Employee[ParentEmployeeKey]), 2, INTEGER),
+    "Own Sales 2024", CALCULATE([Sales Amount], 'Date'[Year] = 2024),
+    "Team Sales 2024",
+        VAR k = Employee[EmployeeKey]
+        RETURN
+            CALCULATE(
+                [Sales Amount],
+                'Date'[Year] = 2024,
+                FILTER(ALL(Employee), PATHCONTAINS(PATH(Employee[EmployeeKey], Employee[ParentEmployeeKey]), k))
+            )
+)
+ORDER BY Employee[EmployeeKey]

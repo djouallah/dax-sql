@@ -1,0 +1,2 @@
+// note: dim_month[Month days] per month
+EVALUATE SUMMARIZECOLUMNS(dim_month[month], "Month days", [Month days])

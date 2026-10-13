@@ -1,0 +1,8 @@
+// note: budget sits at month grain on a many-to-many YearMonth relationship, so every weekday of 2024 sees the whole year's budget
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Day Name],
+    TREATAS({ 2024 }, 'Date'[Year]),
+    "Budget", [Budget Amount],
+    "Sales", [Sales Amount]
+)

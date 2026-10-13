@@ -1,0 +1,2 @@
+// note: fct_summary[Charging MW] per 5-minute time of one day
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS(dim_time[time], "Charging MW", [Charging MW]), dim_calendar[date] = dt"2026-08-12")

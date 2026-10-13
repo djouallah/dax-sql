@@ -1,0 +1,4 @@
+// note: under a role securing Customer, CROSSFILTER BOTH lets Customer reach itself through Sales: rejected
+// roles: Paris
+// expect: error
+EVALUATE ROW("n", CALCULATE(COUNTROWS(Customer), CROSSFILTER(Sales[CustomerKey], Customer[CustomerKey], BOTH)))

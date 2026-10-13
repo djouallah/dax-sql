@@ -1,0 +1,14 @@
+// note: quartiles of customers' 2023 sales by country with PERCENTILEX.EXC over every customer of the country, those without 2023 sales giving a blank value, and how many customers sit above their country's third quartile (a DAX error: k must lie in 1/(N+1)..N/(N+1))
+// expect: error
+EVALUATE
+SUMMARIZECOLUMNS(
+    Customer[Country],
+    TREATAS({ 2023 }, 'Date'[Year]),
+    "Customers", [Customers],
+    "P25", PERCENTILEX.EXC(VALUES(Customer[CustomerKey]), [Sales Amount], 0.25),
+    "P75", PERCENTILEX.EXC(VALUES(Customer[CustomerKey]), [Sales Amount], 0.75),
+    "Above P75",
+        VAR p = PERCENTILEX.EXC(VALUES(Customer[CustomerKey]), [Sales Amount], 0.75)
+        RETURN COUNTROWS(FILTER(VALUES(Customer[CustomerKey]), [Sales Amount] > p))
+)
+ORDER BY Customer[Country]

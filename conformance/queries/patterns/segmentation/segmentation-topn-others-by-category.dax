@@ -1,0 +1,10 @@
+// note: TOPN plus Others per group: GENERATE over categories, the two best products of each and an Others row for the rest of that category
+EVALUATE
+GENERATE(
+    VALUES(Category[Category]),
+    VAR Products = CALCULATETABLE(VALUES(Product[Product]))
+    VAR Top2 = TOPN(2, Products, [Sales Amount], DESC)
+    VAR OthersSales = CALCULATE([Sales Amount], EXCEPT(Products, Top2))
+    RETURN
+        UNION(ADDCOLUMNS(Top2, "Sales", [Sales Amount]), ROW("Product", "Others", "Sales", OthersSales))
+)

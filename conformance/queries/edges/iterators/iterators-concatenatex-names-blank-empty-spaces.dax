@@ -1,0 +1,10 @@
+// note: CONCATENATEX of product names per brand, sorted by name: "" (Contoso) and the NULL name (Fabrikam) both print as "<>" but count apart, leading and trailing spaces survive, and the blank brand holds the NULL-brand product plus the blank row
+EVALUATE
+SUMMARIZECOLUMNS(
+    Product[Brand],
+    "Names", CONCATENATEX(VALUES(Product[Product]), "<" & Product[Product] & ">", "|", Product[Product], ASC),
+    "Name Count", COUNTROWS(VALUES(Product[Product])),
+    "Blank Names", COUNTROWS(FILTER(VALUES(Product[Product]), ISBLANK(Product[Product]))),
+    "Empty Names", COUNTROWS(FILTER(VALUES(Product[Product]), Product[Product] == ""))
+)
+ORDER BY Product[Brand]

@@ -1,0 +1,7 @@
+// note: check_model.py: [Price at hour] per month, over the newest three
+EVALUATE
+            VAR newest = MAX(dim_month[month])
+            RETURN CALCULATETABLE(
+                SUMMARIZECOLUMNS(dim_month[month], "Price at hour", [Price at hour]),
+                dim_month[month] > EDATE(newest, -3))
+            ORDER BY dim_month[month]

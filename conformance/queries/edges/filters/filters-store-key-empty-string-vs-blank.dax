@@ -1,0 +1,11 @@
+// note: by Store[StoreKey] including the blank row, which collects the unknown "XXX-99", the empty-string "" key and the NULL key: lines filtered on Sales[StoreKey] = "" (where = treats a blank as equal to ""), == "" (strict), ISBLANK and == BLANK(), so the empty string and the NULL can be told apart inside one blank row
+EVALUATE
+ADDCOLUMNS(
+    VALUES(Store[StoreKey]),
+    "Lines", [Lines],
+    "Key Eq Empty", CALCULATE([Lines], Sales[StoreKey] = ""),
+    "Key Strict Empty", CALCULATE([Lines], Sales[StoreKey] == ""),
+    "Key Is Blank", CALCULATE([Lines], ISBLANK(Sales[StoreKey])),
+    "Key Strict Blank", CALCULATE([Lines], Sales[StoreKey] == BLANK())
+)
+ORDER BY Store[StoreKey]

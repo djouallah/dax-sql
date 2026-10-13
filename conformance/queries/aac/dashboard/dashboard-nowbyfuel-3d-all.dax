@@ -1,0 +1,2 @@
+// note: the dashboard's nowByFuel query, "Right now": per fuel at one interval, output, charging and share, with the total (page state: 3 days to 2026-08-11, all)
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS(ROLLUPADDISSUBTOTAL(dim_duid[FuelSourceDescriptor], "all"), "mw", [Generation MW], "charging", [Charging MW], "share", [Generation share]), fct_summary[date] = dt"2026-08-11", fct_summary[time] = 1200), "fuel", [FuelSourceDescriptor], "mw", [mw], "charging", [charging], "share", [share], "all", [all])

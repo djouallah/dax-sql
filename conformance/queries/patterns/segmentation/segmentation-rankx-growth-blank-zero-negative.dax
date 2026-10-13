@@ -1,0 +1,18 @@
+// note: RANKX of German customers by 2023 growth over 2022, flattened to zero within 1,000 and blank for customers with neither year: a blank compares as zero, so it ties with the zeros (one value under DENSE) and sits above the declines in a descending rank, ascending alongside
+DEFINE
+    MEASURE Sales[Seg Growth 2023] =
+        VAR cur = CALCULATE([Sales Amount], 'Date'[Year] = 2023)
+        VAR prev = CALCULATE([Sales Amount], 'Date'[Year] = 2022)
+        VAR g = cur - prev
+        RETURN IF(NOT ISBLANK(cur) || NOT ISBLANK(prev), IF(ABS(g) < 1000, 0, g))
+EVALUATE
+VAR Ger = CALCULATETABLE(VALUES(Customer[Customer]), Customer[Country] = "Germany")
+RETURN
+    ADDCOLUMNS(
+        Ger,
+        "Growth", [Seg Growth 2023],
+        "Rank Desc Dense", RANKX(Ger, [Seg Growth 2023], , DESC, DENSE),
+        "Rank Desc Skip", RANKX(Ger, [Seg Growth 2023], , DESC, SKIP),
+        "Rank Asc Dense", RANKX(Ger, [Seg Growth 2023], , ASC, DENSE)
+    )
+ORDER BY Customer[Customer]

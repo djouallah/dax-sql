@@ -1,0 +1,5 @@
+// note: START AT with two ORDER BY keys resumes a year-month result at July 2023
+EVALUATE
+SUMMARIZECOLUMNS('Date'[Year], 'Date'[Month], "Sales_Amount", 'Sales'[Sales Amount], "Orders", 'Sales'[Orders])
+ORDER BY 'Date'[Year], 'Date'[Month]
+START AT 2023, 7

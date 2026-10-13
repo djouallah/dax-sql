@@ -1,0 +1,14 @@
+// note: PERCENTILEX.EXC and .INC at 0.25 and 0.75 over each subcategory's three to five products in June 2023, many unsold that month: the unsold products' blanks count in N and sort first, so k = 0.25 on three products sits exactly on the lower bound 1/(N+1) and stays in range
+EVALUATE
+SUMMARIZECOLUMNS(
+	Subcategory[Subcategory],
+	TREATAS({"2023-06"}, 'Date'[Year Month]),
+	"Products", COUNTROWS(Product),
+	"Products Sold", CALCULATE(DISTINCTCOUNT(Sales[ProductKey])),
+	"Sales", [Sales Amount],
+	"P25 Exc", PERCENTILEX.EXC(VALUES(Product[Product]), [Sales Amount], 0.25),
+	"P75 Exc", PERCENTILEX.EXC(VALUES(Product[Product]), [Sales Amount], 0.75),
+	"P25 Inc", PERCENTILEX.INC(VALUES(Product[Product]), [Sales Amount], 0.25),
+	"P75 Inc", PERCENTILEX.INC(VALUES(Product[Product]), [Sales Amount], 0.75)
+)
+ORDER BY Subcategory[Subcategory]

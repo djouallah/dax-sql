@@ -1,0 +1,2 @@
+// note: SUMX with RELATED, against the sum of a calculated column with the same expression
+EVALUATE ROW("a", [Line Value], "b", [Line Value Column])

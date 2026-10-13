@@ -1,0 +1,2 @@
+// note: xmla_compare.py probe: DISTINCTCOUNT of a key with no dimension
+EVALUATE ROW("x", DISTINCTCOUNT(store_sales[ss_customer_sk]))

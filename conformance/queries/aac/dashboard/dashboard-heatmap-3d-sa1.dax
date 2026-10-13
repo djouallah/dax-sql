@@ -1,0 +1,2 @@
+// note: the dashboard's heatmap query, the price heatmap: per date (month) and hour (page state: 3 days to 2026-08-11, region SA1)
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS(fct_region[date], dim_time[hour], "price", [Average price]), fct_region[date] >= dt"2026-08-09", fct_region[date] <= dt"2026-08-11", fct_region[REGIONID] = "SA1"), "date", [date], "y", [hour], "price", [price]) ORDER BY [date], [y]

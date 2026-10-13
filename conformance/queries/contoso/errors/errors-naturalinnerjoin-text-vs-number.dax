@@ -1,0 +1,3 @@
+// note: NATURALINNERJOIN on a column that is text on one side and a number on the other is rejected
+// expect: error
+EVALUATE NATURALINNERJOIN(SELECTCOLUMNS(Category, "k", Category[CategoryKey] & ""), SELECTCOLUMNS(Product, "k", Product[CategoryKey] + 0, "Name", Product[Name]))

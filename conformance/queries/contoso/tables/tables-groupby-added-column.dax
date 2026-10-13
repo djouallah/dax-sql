@@ -1,0 +1,2 @@
+// note: GROUPBY a boolean column added by ADDCOLUMNS, COUNTX over CURRENTGROUP()
+EVALUATE GROUPBY(ADDCOLUMNS(Sales, "big", Sales[Amount] >= 1000), [big], "n", COUNTX(CURRENTGROUP(), Sales[Qty]))

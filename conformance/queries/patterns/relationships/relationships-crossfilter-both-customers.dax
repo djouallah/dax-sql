@@ -1,0 +1,7 @@
+// note: CROSSFILTER BOTH lets Sales filter Customer, so a count of the Customer dimension per category differs from a distinct count of the fact's keys
+EVALUATE
+SUMMARIZECOLUMNS(
+    Category[Category],
+    "Customers in Dimension", [Customers with Sales Relationship],
+    "Customer Keys in Sales", [Customers]
+)

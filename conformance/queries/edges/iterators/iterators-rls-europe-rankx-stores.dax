@@ -1,0 +1,12 @@
+// note: under the Europe role, set on Region at the top of the snowflake, RANKX over ALL(Store[Store]) ranks only the European stores, LYS-01's blank sales included; ALL cannot bring back the other stores or the blank row of unknown store keys
+// roles: Europe
+EVALUATE
+ADDCOLUMNS(
+    ALL(Store[Store]),
+    "Sales", [Sales Amount],
+    "Rank Dense", RANKX(ALL(Store[Store]), [Sales Amount], , DESC, Dense),
+    "Rank Asc Skip", RANKX(ALL(Store[Store]), [Sales Amount], , ASC, Skip),
+    "Visible Stores", COUNTROWS(ALL(Store)),
+    "Visible Store Names", COUNTROWS(ALL(Store[Store]))
+)
+ORDER BY Store[Store]

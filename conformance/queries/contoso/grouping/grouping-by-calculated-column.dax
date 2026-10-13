@@ -1,0 +1,2 @@
+// note: grouped by a calculated column of the dimension
+EVALUATE SUMMARIZECOLUMNS(Product[PriceBand], "s", [Sales Amount])

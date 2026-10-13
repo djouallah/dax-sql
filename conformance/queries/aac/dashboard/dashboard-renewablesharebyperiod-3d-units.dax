@@ -1,0 +1,2 @@
+// note: the dashboard's renewableShareByPeriod query, the renewable share per interval (the fuel filter ignored) (page state: 3 days to 2026-08-11, units HPR1 BALDHWF1)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS(fct_summary[date], fct_summary[time], "share", [Renewable share]), fct_summary[date] >= dt"2026-08-09", fct_summary[date] <= dt"2026-08-11", fct_summary[DUID] IN {"HPR1", "BALDHWF1"}) ORDER BY [date], [time]

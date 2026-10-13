@@ -1,0 +1,11 @@
+// note: the blank customer row filtering Product back over CROSSFILTER BOTH: the blank country's sales reach a known product and the blank product row, and the counts say whether the blank row is counted
+EVALUATE
+SUMMARIZECOLUMNS(
+	'Customer'[Country],
+	TREATAS({2024}, 'Date'[Year]),
+	"Sales_Amount", 'Sales'[Sales Amount],
+	"Products_Rows", CALCULATE(COUNTROWS('Product'), CROSSFILTER('Sales'[ProductKey], 'Product'[ProductKey], BOTH)),
+	"Product_Keys", CALCULATE(COUNTROWS(VALUES('Product'[ProductKey])), CROSSFILTER('Sales'[ProductKey], 'Product'[ProductKey], BOTH)),
+	"Product_Categories", CALCULATE(DISTINCTCOUNT('Product'[Category]), CROSSFILTER('Sales'[ProductKey], 'Product'[ProductKey], BOTH))
+)
+ORDER BY 'Customer'[Country]

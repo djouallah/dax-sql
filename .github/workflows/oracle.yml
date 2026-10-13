@@ -1,0 +1,92 @@
+name: Oracle
+
+# Asks Power BI the suite's queries and commits its answers (conformance/golden/), what every engine is held
+# to. Publishes each model with its data inside (an Import model, conformance/oracle/export.mjs) to the
+# workspace, refreshes it, and asks it over XMLA every query whose golden is missing or stale
+# (conformance/oracle/oracle.py).
+#
+# Manual only: it creates or updates a Fabric item and costs the capacity's CU. The identity is
+# an OIDC federated login to Azure (repository variables AZURE_CLIENT_ID, AZURE_TENANT_ID,
+# WS_ID); it can create items in the workspace, whose capacity has XMLA read enabled, and the
+# export makes it a member of every role, so that role queries run as it.
+
+on:
+  workflow_dispatch:
+    inputs:
+      all:
+        description: "Ask every query again, not only those whose golden is missing or stale"
+        type: boolean
+        default: false
+      publish:
+        description: "Publish and refresh the model first (off: ask the model as deployed)"
+        type: boolean
+        default: true
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+concurrency:
+  group: oracle
+  cancel-in-progress: false
+
+permissions:
+  contents: write   # commits the goldens
+  id-token: write   # OIDC federated login to Azure
+
+jobs:
+  oracle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      WS_ID: ${{ vars.WS_ID }}
+      AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+      AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -q "fabric-cicd==1.3.0" "pythonnet==3.1.0"
+      - name: Install the ADOMD.NET client
+        # The .NET Core build runs on Linux under pythonnet; publishing a throwaway project
+        # that references it puts the DLL and what it depends on in one folder.
+        run: |
+          set -euo pipefail
+          proj="$RUNNER_TEMP/adomd"
+          mkdir -p "$proj" && cd "$proj"
+          dotnet new console -o . --force >/dev/null
+          dotnet add package Microsoft.AnalysisServices.AdomdClient.NetCore.retail.amd64 --version 19.84.1 >/dev/null
+          dotnet publish -c Release -o publish >/dev/null
+          test -f "$proj/publish/Microsoft.AnalysisServices.AdomdClient.dll"
+          echo "ADOMD_DIR=$proj/publish" >> "$GITHUB_ENV"
+      - name: Azure federated login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          allow-no-subscriptions: true
+      - name: Mint Power BI token
+        run: |
+          TOKEN=$(az account get-access-token --resource https://analysis.windows.net/powerbi/api --query accessToken -o tsv)
+          echo "::add-mask::$TOKEN"
+          echo "POWERBI_TOKEN=$TOKEN" >> "$GITHUB_ENV"
+      - name: Ask Power BI
+        env:
+          PYTHONNET_RUNTIME: coreclr
+        run: |
+          set -euo pipefail
+          node conformance/oracle/export.mjs "$RUNNER_TEMP/oracle"
+          python conformance/oracle/oracle.py "$RUNNER_TEMP/oracle" \
+            ${{ inputs.all && '--all' || '' }} ${{ !inputs.publish && '--no-publish' || '' }}
+      - name: Commit the goldens
+        run: |
+          set -euo pipefail
+          git add conformance/golden
+          if git diff --cached --quiet; then echo "no golden changed"; exit 0; fi
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -m "golden: Power BI's answers (oracle run ${{ github.run_id }})"
+          git pull --rebase
+          git push

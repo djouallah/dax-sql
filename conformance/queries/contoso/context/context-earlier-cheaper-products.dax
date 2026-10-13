@@ -1,0 +1,2 @@
+// note: EARLIER reads the outer row context: the number of cheaper products, blank for the cheapest
+EVALUATE ADDCOLUMNS(VALUES(Product[Price]), "cheaper", COUNTROWS(FILTER(ALL(Product), Product[Price] < EARLIER(Product[Price]))))

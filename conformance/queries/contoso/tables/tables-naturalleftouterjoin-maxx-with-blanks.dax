@@ -1,0 +1,2 @@
+// note: NATURALLEFTOUTERJOIN of text with a bare MAXX of text that is blank for some rows (a category with no product matching)
+EVALUATE NATURALLEFTOUTERJOIN(SELECTCOLUMNS(Category, "Name", CALCULATE(MAXX(FILTER(Product, Product[Price] > 500), Product[Name]))), SELECTCOLUMNS(Product, "Name", Product[Name] & ""))

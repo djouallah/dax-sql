@@ -1,0 +1,327 @@
+{
+ "bench-catalog-by-page-type": {
+  "hash": "85f7c05ff9de06c130717fee7d0b9815c22f26bd",
+  "columns": [
+   "catalog_page[cp_type]",
+   "[Revenue]",
+   "[Profit]"
+  ],
+  "rows": [
+   [
+    "quarterly",
+    252391.72,
+    11000.25
+   ],
+   [
+    "monthly",
+    142241.6,
+    -3557.47
+   ],
+   [
+    "bi-annual",
+    160395.5,
+    -4381.59
+   ]
+  ]
+ },
+ "bench-catalog-by-ship-mode-x-year": {
+  "hash": "121a91a019c4b54bc86b6dbd20e7fa665ec30359",
+  "columns": [
+   "ship_mode[sm_type]",
+   "date_dim[d_year]",
+   "[Revenue]",
+   "[Qty]"
+  ],
+  "rows": [
+   [
+    "EXPRESS",
+    2024,
+    24136.17,
+    318
+   ],
+   [
+    "EXPRESS",
+    2025,
+    59328.86,
+    896
+   ],
+   [
+    "EXPRESS",
+    2026,
+    87454.35,
+    1101
+   ],
+   [
+    "REGULAR",
+    2024,
+    13369.59,
+    189
+   ],
+   [
+    "REGULAR",
+    2025,
+    40512.34,
+    566
+   ],
+   [
+    "REGULAR",
+    2026,
+    23292.34,
+    339
+   ],
+   [
+    "NEXT DAY",
+    2024,
+    29179.03,
+    431
+   ],
+   [
+    "NEXT DAY",
+    2025,
+    40368.17,
+    496
+   ],
+   [
+    "NEXT DAY",
+    2026,
+    20386.59,
+    197
+   ],
+   [
+    "OVERNIGHT",
+    2024,
+    27091.43,
+    358
+   ],
+   [
+    "OVERNIGHT",
+    2025,
+    52136.82,
+    739
+   ],
+   [
+    "OVERNIGHT",
+    2026,
+    49261.82,
+    490
+   ],
+   [
+    "TWO DAY",
+    2024,
+    27046.54,
+    367
+   ],
+   [
+    "TWO DAY",
+    2025,
+    31750.63,
+    438
+   ],
+   [
+    "TWO DAY",
+    2026,
+    29714.14,
+    371
+   ]
+  ]
+ },
+ "bench-narrow-one-measure": {
+  "hash": "24e51213e26f4a0cfd297e500be33346dfd74d9c",
+  "columns": [
+   "date_dim[d_year]",
+   "[a]"
+  ],
+  "rows": [
+   [
+    2024,
+    26326.63
+   ],
+   [
+    2025,
+    71843.52
+   ],
+   [
+    2026,
+    69397.34
+   ]
+  ]
+ },
+ "bench-probe-customer": {
+  "hash": "7aa36ecdd68f6e6f3edfc73792ff9d518bf5bf10",
+  "columns": [
+   "[x]"
+  ],
+  "rows": [
+   [
+    40
+   ]
+  ]
+ },
+ "bench-probe-ext-sales-price": {
+  "hash": "6e5f09f8ea5c49e3a66a379b58e95bc42cda962a",
+  "columns": [
+   "[x]"
+  ],
+  "rows": [
+   [
+    167567.49
+   ]
+  ]
+ },
+ "bench-probe-item": {
+  "hash": "b12542736098e7c0a52fbb7653685aa4bcb4e743",
+  "columns": [
+   "[x]"
+  ],
+  "rows": [
+   [
+    16
+   ]
+  ]
+ },
+ "bench-probe-quantity": {
+  "hash": "f1bc0ba6fc20a1de0e923fc5fc0d5cdf8ed7f660",
+  "columns": [
+   "[x]"
+  ],
+  "rows": [
+   [
+    3910
+   ]
+  ]
+ },
+ "bench-probe-rowcount": {
+  "hash": "007e78ad6340ab13cc998abc52d65ef4229f3017",
+  "columns": [
+   "[x]"
+  ],
+  "rows": [
+   [
+    380
+   ]
+  ]
+ },
+ "bench-probe-sold-date": {
+  "hash": "ae97d4a90de702792da27d69b0344483b28be71e",
+  "columns": [
+   "[x]"
+  ],
+  "rows": [
+   [
+    310
+   ]
+  ]
+ },
+ "bench-probe-store": {
+  "hash": "90534967bcee7cec71ae604a8576822e957d2a80",
+  "columns": [
+   "[x]"
+  ],
+  "rows": [
+   [
+    6
+   ]
+  ]
+ },
+ "bench-raw-archive-log": {
+  "hash": "623b368ee7f7f19a5c7fd09737a2b288f586427f",
+  "columns": [
+   "stg_tpcds_archive_log[source_type]",
+   "[Files]",
+   "[Rows]"
+  ],
+  "rows": [
+   [
+    "fact",
+    2,
+    665
+   ],
+   [
+    "dimension",
+    3,
+    1118
+   ]
+  ]
+ },
+ "bench-sel-1mo": {
+  "hash": "87a0cc4276cb65def3463b2ce0dcbe38105d95ba",
+  "columns": [
+   "[r]"
+  ],
+  "rows": [
+   [
+    95780.56
+   ]
+  ]
+ },
+ "bench-sel-1store": {
+  "hash": "293812354866ea522f1255b17261ab322ce59cb9",
+  "columns": [
+   "[r]"
+  ],
+  "rows": [
+   [
+    374758.15
+   ]
+  ]
+ },
+ "bench-sel-1store-1mo": {
+  "hash": "9fcefd0f4a6523fd990c3c687706b12dcd59a5a2",
+  "columns": [
+   "[r]"
+  ],
+  "rows": [
+   [
+    22966.53
+   ]
+  ]
+ },
+ "bench-sel-1yr": {
+  "hash": "31181019c8c7a4904c18a31b8f0346afda299221",
+  "columns": [
+   "[r]"
+  ],
+  "rows": [
+   [
+    1036961.42
+   ]
+  ]
+ },
+ "bench-wide-all-measures": {
+  "hash": "88d6ea583f009ef39e70c0fa528b439c937a70d0",
+  "columns": [
+   "date_dim[d_year]",
+   "[a]",
+   "[b]",
+   "[c]",
+   "[d]",
+   "[e]"
+  ],
+  "rows": [
+   [
+    2024,
+    26326.63,
+    -483.2,
+    32,
+    120822.76,
+    1663
+   ],
+   [
+    2025,
+    71843.52,
+    3143.69,
+    40,
+    224096.82,
+    3135
+   ],
+   [
+    2026,
+    69397.34,
+    4647.81,
+    38,
+    210109.24,
+    2498
+   ]
+  ]
+ }
+}

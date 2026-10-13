@@ -1,0 +1,10 @@
+// note: the Time Intelligence calculation group shifts dates; the shifted dates reach Budget through the many-to-many YearMonth relationship
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year],
+    'Time Intelligence'[Time Intelligence],
+    TREATAS({ "Current", "PY", "YoY", "YoY %" }, 'Time Intelligence'[Time Intelligence]),
+    "Budget", [Budget Amount],
+    "Sales", [Sales Amount]
+)
+ORDER BY 'Date'[Year], 'Time Intelligence'[Time Intelligence]

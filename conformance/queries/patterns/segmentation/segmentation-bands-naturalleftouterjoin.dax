@@ -1,0 +1,14 @@
+// note: NATURALLEFTOUTERJOIN of customers' 2022 bands with a copy of Segments, joined on a column name both tables share without lineage: customers without 2022 sales have a blank band with no match, and the joined rows are grouped by band and order (a DAX error: the join columns have different data types)
+// expect: error
+EVALUATE
+VAR Banded =
+    SELECTCOLUMNS(
+        VALUES(Customer[CustomerKey]),
+        "Key", Customer[CustomerKey] + 0,
+        "Segment", CALCULATE([Customer Sales Band], 'Date'[Year] = 2022)
+    )
+VAR Bands = SELECTCOLUMNS(Segments, "Segment", Segments[Segment] & "", "Order", Segments[Segment Order] + 0)
+VAR Joined = NATURALLEFTOUTERJOIN(Banded, Bands)
+RETURN
+    GROUPBY(Joined, [Segment], [Order], "Customers", COUNTX(CURRENTGROUP(), 1))
+ORDER BY [Order], [Segment]

@@ -1,0 +1,2 @@
+// note: a calculation item returning SELECTEDMEASURENAME()
+EVALUATE CALCULATETABLE(ROW("n", [Quantity]), 'Time Calc'[Time Calc] = "Name")

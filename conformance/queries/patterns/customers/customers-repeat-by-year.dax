@@ -1,0 +1,9 @@
+// note: customers with more than one order in the period, and their share of the period's customers, by year
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year],
+    "Customers", [Customers],
+    "Repeat", [Customers Repeat],
+    "Repeat %", DIVIDE([Customers Repeat], [Customers])
+)
+ORDER BY 'Date'[Year]

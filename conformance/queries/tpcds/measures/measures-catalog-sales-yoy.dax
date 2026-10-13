@@ -1,0 +1,2 @@
+// note: catalog_sales[Catalog Sales YoY] per month of the newest year
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS(date_dim[d_year], date_dim[d_moy], "Catalog Sales YoY", [Catalog Sales YoY]), date_dim[d_year] IN {2026})

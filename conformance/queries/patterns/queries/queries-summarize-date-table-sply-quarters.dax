@@ -1,0 +1,12 @@
+// note: SUMMARIZE over the Date table itself (2023 and 2024) by year and quarter: SAMEPERIODLASTYEAR inside the extension columns, on the order date and through USERELATIONSHIP on the delivery date, where the group's base rows are Date rows rather than Sales rows
+EVALUATE
+SUMMARIZE(
+	FILTER('Date', 'Date'[Year] >= 2023),
+	'Date'[Year],
+	'Date'[Quarter],
+	"Days", COUNTROWS('Date'),
+	"Sales", [Sales Amount],
+	"PY", CALCULATE([Sales Amount], SAMEPERIODLASTYEAR('Date'[Date])),
+	"PY Delivered", CALCULATE([Sales Amount], SAMEPERIODLASTYEAR('Date'[Date]), USERELATIONSHIP(Sales[Delivery Date], 'Date'[Date]))
+)
+ORDER BY 'Date'[Year], 'Date'[Quarter]

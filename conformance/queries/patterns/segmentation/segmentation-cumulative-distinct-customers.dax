@@ -1,0 +1,8 @@
+// note: a cumulative distinct count: customers who have bought up to each month's end, not additive across months
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year Month],
+    "Customers", [Customers],
+    "Cumulative Customers", [Cumulative Customers Distinct]
+)
+ORDER BY 'Date'[Year Month]

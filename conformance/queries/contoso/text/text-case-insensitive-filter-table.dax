@@ -1,0 +1,3 @@
+// note: text compared without regard to case in a FILTER table of SUMMARIZECOLUMNS: = and IN
+EVALUATE SUMMARIZECOLUMNS(Product[Color],
+    FILTER(ALL(Product[Color]), Product[Color] = "red" || Product[Color] IN { "BLUE" }), "n", COUNTROWS(Product))

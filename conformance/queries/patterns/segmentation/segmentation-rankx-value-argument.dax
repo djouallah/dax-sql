@@ -1,0 +1,9 @@
+// note: RANKX with its value argument: where each month's budget would rank among monthly sales; ALL on Year Month leaves the Year filter, so the 2022 months rank as blank
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year Month],
+    TREATAS({ 2023, 2024 }, 'Date'[Year]),
+    "Budget", [Budget Amount],
+    "Budget Rank Among Monthly Sales", RANKX(ALL('Date'[Year Month]), [Sales Amount], [Budget Amount], DESC, SKIP)
+)
+ORDER BY 'Date'[Year Month]

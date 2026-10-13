@@ -1,0 +1,2 @@
+// note: fct_region_hourly[Price at hour] per region and hour of day
+EVALUATE SUMMARIZECOLUMNS(dim_region[Region], fct_region_hourly[hour], "Price at hour", [Price at hour])

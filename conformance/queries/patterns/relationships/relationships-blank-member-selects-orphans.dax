@@ -1,0 +1,10 @@
+// note: filtering a dimension to its blank member selects exactly the fact rows whose key the dimension lacks, by category and country
+EVALUATE
+SUMMARIZECOLUMNS(
+    Category[Category],
+    Customer[Country],
+    "Lines", [Order Lines],
+    "Sales", [Sales Amount],
+    "Unknown Product Sales", CALCULATE([Sales Amount], ISBLANK(Product[ProductKey])),
+    "Unknown Customer Sales", CALCULATE([Sales Amount], ISBLANK(Customer[Customer]))
+)

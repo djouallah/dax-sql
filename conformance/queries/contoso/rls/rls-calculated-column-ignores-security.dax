@@ -1,0 +1,3 @@
+// note: a calculated column (CALCULATE(SUM(Sales[Amount])) on Customer) is computed without the role's filter
+// roles: RedOnly
+EVALUATE SELECTCOLUMNS(FILTER(Customer, Customer[Customer] = "Alice"), "t", Customer[Total Sales])

@@ -1,0 +1,2 @@
+// note: a filter on Product reaches Sales, but Sales does not filter Customer, so CityTarget is unfiltered
+EVALUATE CALCULATETABLE(ROW("t", [Target Total]), Product[Color] = "Red")

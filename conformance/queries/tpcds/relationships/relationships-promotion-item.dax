@@ -1,0 +1,2 @@
+// note: promotions per item category: none follows the inactive promotion-to-item relationship until USERELATIONSHIP
+EVALUATE SUMMARIZECOLUMNS('item'[i_category], "all", COUNTROWS(promotion), "of the item", CALCULATE(COUNTROWS(promotion), USERELATIONSHIP(promotion[p_item_sk], 'item'[i_item_sk])))

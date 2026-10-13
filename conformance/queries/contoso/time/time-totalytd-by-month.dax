@@ -1,0 +1,2 @@
+// note: TOTALYTD by month of one year: months without sales keep the running total
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('Date'[Month], "s", [Sales Amount], "ytd", [Sales YTD]), 'Date'[Year] = 2024)

@@ -1,0 +1,3 @@
+// note: PREVIOUSYEAR / NEXTYEAR / PREVIOUSDAY / NEXTDAY across a year end: from the first and the last visible dates, outside the date table
+EVALUATE CALCULATETABLE(ROW("py", COUNTROWS(PREVIOUSYEAR('Date'[Date])), "ny", COUNTROWS(NEXTYEAR('Date'[Date])),
+      "pd", PREVIOUSDAY('Date'[Date]), "nd", NEXTDAY('Date'[Date])), DATESBETWEEN('Date'[Date], dt"2023-12-30", dt"2024-01-02"))

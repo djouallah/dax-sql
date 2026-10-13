@@ -1,0 +1,15 @@
+// note: DIVIDE per order line over the lines with zero or negative quantity: by a zero denominator with and without an alternate result, a Currency numerator, a zero unit price, and a discount applied to a negative amount
+EVALUATE
+SELECTCOLUMNS(
+    FILTER(Sales, Sales[Quantity] <= 0),
+    "Order", Sales[Order Number],
+    "Line", Sales[Line Number],
+    "Quantity", Sales[Quantity],
+    "Line Amount", Sales[Line Amount],
+    "Amount Per Unit", DIVIDE(Sales[Line Amount], Sales[Quantity]),
+    "Amount Per Unit Or -1", DIVIDE(Sales[Line Amount], Sales[Quantity], -1),
+    "Cost Per Unit", DIVIDE(Sales[Quantity] * Sales[Unit Cost], Sales[Quantity], 0),
+    "Units Per Price", DIVIDE(Sales[Quantity], Sales[Unit Price]),
+    "Discounted", Sales[Line Amount] * (1 - Sales[Discount])
+)
+ORDER BY [Order], [Line]

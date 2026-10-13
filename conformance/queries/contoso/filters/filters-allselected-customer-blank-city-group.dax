@@ -1,0 +1,2 @@
+// note: ALLSELECTED(Customer) by city: the blank city is a group, and a city with no sales stays because the total is not blank
+EVALUATE SUMMARIZECOLUMNS(Customer[City], "s", [Sales Amount], "tot", CALCULATE([Sales Amount], ALLSELECTED(Customer)))

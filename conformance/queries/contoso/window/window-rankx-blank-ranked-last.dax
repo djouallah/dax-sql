@@ -1,0 +1,2 @@
+// note: RANKX descending over ALL(Product[Name]): a product with no sales ranks last
+EVALUATE ADDCOLUMNS(VALUES(Product[Name]), "rank", RANKX(ALL(Product[Name]), [Sales Amount]))

@@ -1,0 +1,7 @@
+// note: a rank measure switching on ISINSCOPE in a matrix with subtotals: subcategories ranked within their category, categories ranked at their subtotal, blank at the grand total
+EVALUATE
+SUMMARIZECOLUMNS(
+    ROLLUPADDISSUBTOTAL(Category[Category], "IsCategoryTotal", Subcategory[Subcategory], "IsSubcategoryTotal"),
+    "Sales", [Sales Amount],
+    "Rank", [Subcategory Rank In Scope]
+)

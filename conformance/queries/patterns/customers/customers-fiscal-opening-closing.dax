@@ -1,0 +1,13 @@
+// note: cumulative buyers at the opening and the closing of the fiscal year (year end "6/30") by fiscal quarter, with OPENINGBALANCEYEAR/CLOSINGBALANCEYEAR; FY2022 opens before the date table and FY2025 closes after it
+DEFINE
+    MEASURE Sales[Cust2 FY Opening To Date] = OPENINGBALANCEYEAR([Customers To Date], 'Date'[Date], "6/30")
+    MEASURE Sales[Cust2 FY Closing To Date] = CLOSINGBALANCEYEAR([Customers To Date], 'Date'[Date], "6/30")
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Fiscal Year],
+    'Date'[Fiscal Quarter],
+    "To Date", [Customers To Date],
+    "Opening", [Cust2 FY Opening To Date],
+    "Closing", [Cust2 FY Closing To Date]
+)
+ORDER BY 'Date'[Fiscal Year], 'Date'[Fiscal Quarter]

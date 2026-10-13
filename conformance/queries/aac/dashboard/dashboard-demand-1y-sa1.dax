@@ -1,0 +1,2 @@
+// note: the dashboard's demand query, the demand line over the generation chart, rooftop solar included (page state: 1 year to 2026-08-11, region SA1)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS(dim_calendar[date], "demand", [Demand with rooftop MWh]), dim_calendar[date] >= dt"2026-07-28", dim_calendar[date] <= dt"2026-08-11", dim_region[Region] = "SA1") ORDER BY [date]

@@ -1,0 +1,15 @@
+// note: a slicer cross-filtered through the fact: cities listed only where Sales has rows under the other slicers, via a CALCULATE(COUNTROWS) column
+DEFINE
+	VAR __DS0FilterTable = TREATAS({"Bikes"}, 'Category'[Category])
+	VAR __DS0FilterTable2 = TREATAS({2022}, 'Date'[Year])
+	VAR __DS0Core =
+		SUMMARIZECOLUMNS(
+			'Customer'[City],
+			__DS0FilterTable,
+			__DS0FilterTable2,
+			"CountRowsSales", CALCULATE(COUNTROWS('Sales'))
+		)
+EVALUATE
+	SELECTCOLUMNS(__DS0Core, "City", 'Customer'[City])
+ORDER BY
+	[City]

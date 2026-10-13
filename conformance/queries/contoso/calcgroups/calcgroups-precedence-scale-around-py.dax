@@ -1,0 +1,2 @@
+// note: two calculation groups: the higher precedence (Scale x2) applies around the lower (PY)
+EVALUATE CALCULATETABLE(ROW("s", [Sales Amount]), 'Time Calc'[Time Calc] = "PY", Scale[Scale] = "x2", 'Date'[Year] = 2024)

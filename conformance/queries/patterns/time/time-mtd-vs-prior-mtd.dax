@@ -1,0 +1,9 @@
+// note: month-to-date with TOTALMTD against the prior month's month-to-date (DATEADD of DATESMTD), day by day through January
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Date],
+    TREATAS({202401}, 'Date'[YearMonth]),
+    "MTD", [Sales Month To Date],
+    "Prior MTD", [Sales Prior Month To Date]
+)
+ORDER BY 'Date'[Date]

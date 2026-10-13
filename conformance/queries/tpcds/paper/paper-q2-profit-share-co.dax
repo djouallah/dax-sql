@@ -1,0 +1,43 @@
+// note: the paper's "Store Profit % Split by Category donut" visual, round 2 (state CO, a store manager), as Power BI wrote it
+DEFINE
+	VAR __DS0FilterTable = 
+		TREATAS({"CO"}, 'customer_address'[ca_state])
+
+	VAR __DS0FilterTable2 = 
+		TREATAS({"Advanced Degree"}, 'customer_demographics'[cd_education_status])
+
+	VAR __DS0FilterTable3 = 
+		TREATAS({"Brian Moss"}, 'store'[s_manager])
+
+	VAR __DS0FilterTable4 = 
+		TREATAS({2026}, 'date_dim'[d_year])
+
+	VAR __DS0FilterTable5 = 
+		FILTER(
+			KEEPFILTERS(VALUES('catalog_sales'[cache_buster])),
+			'catalog_sales'[cache_buster] < 2
+		)
+
+	VAR __DS0FilterTable6 = 
+		FILTER(KEEPFILTERS(VALUES('store_sales'[cache_buster])), 'store_sales'[cache_buster] < 2)
+
+	VAR __DS0Core = 
+		SUMMARIZECOLUMNS(
+			'item'[i_category],
+			__DS0FilterTable,
+			__DS0FilterTable2,
+			__DS0FilterTable3,
+			__DS0FilterTable4,
+			__DS0FilterTable5,
+			__DS0FilterTable6,
+			"Store_Profit___by_Item_Category", 'store_sales'[Store Profit % by Item Category]
+		)
+
+	VAR __DS0BodyLimited = 
+		TOPN(1002, __DS0Core, [Store_Profit___by_Item_Category], 0, 'item'[i_category], 1)
+
+EVALUATE
+	__DS0BodyLimited
+
+ORDER BY
+	[Store_Profit___by_Item_Category] DESC, 'item'[i_category]

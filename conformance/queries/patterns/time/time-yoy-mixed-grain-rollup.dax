@@ -1,0 +1,9 @@
+// note: year-over-year with DATEADD at quarter, year and grand-total grain in one ROLLUPADDISSUBTOTAL query
+EVALUATE
+SUMMARIZECOLUMNS(
+    ROLLUPADDISSUBTOTAL('Date'[Year], "Is Year Total", 'Date'[Quarter], "Is Quarter Total"),
+    "Sales", [Sales Amount],
+    "PY", [Sales PY DateAdd],
+    "YoY %", [Sales YoY % DateAdd]
+)
+ORDER BY [Is Year Total], 'Date'[Year], [Is Quarter Total], 'Date'[Quarter]

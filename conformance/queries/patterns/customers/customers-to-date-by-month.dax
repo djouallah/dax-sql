@@ -1,0 +1,10 @@
+// note: running distinct count of customers (every date up to the month's end) beside the month's new customers, 2023
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year Month],
+    TREATAS({ 2023 }, 'Date'[Year]),
+    "Customers To Date", [Customers To Date],
+    "New", [Customers New],
+    "Customers", [Customers]
+)
+ORDER BY 'Date'[Year Month]

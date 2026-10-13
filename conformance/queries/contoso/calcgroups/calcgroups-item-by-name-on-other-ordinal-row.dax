@@ -1,0 +1,3 @@
+// note: grouped by item name and ordinal: YOY's inner filter on the name selects PY though the row's ordinal is YOY's
+EVALUATE SUMMARIZECOLUMNS('Time Calc'[Time Calc], 'Time Calc'[Ordinal], TREATAS({2024}, 'Date'[Year]),
+    KEEPFILTERS(TREATAS({"Current", "PY", "YOY"}, 'Time Calc'[Time Calc])), "s", [Sales Amount])

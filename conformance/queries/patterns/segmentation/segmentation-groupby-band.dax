@@ -1,0 +1,12 @@
+// note: a text measure naming each customer's 2023 band, then GROUPBY on that computed column with CURRENTGROUP aggregations (customers without sales group under a blank band)
+EVALUATE
+GROUPBY(
+    ADDCOLUMNS(
+        VALUES(Customer[Customer]),
+        "@Band", CALCULATE([Customer Sales Band], 'Date'[Year] = 2023),
+        "@Sales", CALCULATE([Sales Amount], 'Date'[Year] = 2023)
+    ),
+    [@Band],
+    "Customers", COUNTX(CURRENTGROUP(), 1),
+    "Sales", SUMX(CURRENTGROUP(), [@Sales])
+)

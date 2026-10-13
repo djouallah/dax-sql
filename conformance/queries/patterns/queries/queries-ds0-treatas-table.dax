@@ -1,0 +1,18 @@
+// note: the table visual shape: TREATAS filter tables, a SUMMARIZECOLUMNS core and a TOPN(n+1) window ordered on the group columns
+DEFINE
+	VAR __DS0FilterTable = TREATAS({2023}, 'Date'[Year])
+	VAR __DS0FilterTable2 = TREATAS({"France", "Germany"}, 'Customer'[Country])
+	VAR __DS0Core =
+		SUMMARIZECOLUMNS(
+			'Product'[Brand],
+			'Product'[Color],
+			__DS0FilterTable,
+			__DS0FilterTable2,
+			"Sales_Amount", 'Sales'[Sales Amount],
+			"Orders", 'Sales'[Orders]
+		)
+	VAR __DS0PrimaryWindowed = TOPN(501, __DS0Core, 'Product'[Brand], 1, 'Product'[Color], 1)
+EVALUATE
+	__DS0PrimaryWindowed
+ORDER BY
+	'Product'[Brand], 'Product'[Color]

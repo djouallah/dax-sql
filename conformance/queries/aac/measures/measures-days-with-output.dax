@@ -1,0 +1,2 @@
+// note: fct_summary[Days with output] per unit
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS(dim_duid[DUID], "Days with output", [Days with output]), dim_calendar[date] >= dt"2026-08-01", dim_calendar[date] <= dt"2026-08-13")

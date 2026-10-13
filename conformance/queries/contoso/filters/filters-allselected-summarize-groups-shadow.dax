@@ -1,0 +1,3 @@
+// note: SUMMARIZE's groups are a shadow filter context for ALLSELECTED
+EVALUATE CALCULATETABLE(SUMMARIZE(Product, Product[Color], "pct", DIVIDE([Sales Amount], CALCULATE([Sales Amount], ALLSELECTED(Product[Color])))),
+    Product[Color] IN {"Red", "Blue"})

@@ -1,0 +1,9 @@
+// note: a year > month matrix: the month name is grouped with its sort-by column inside ROLLUPGROUP, with year subtotals
+EVALUATE
+SUMMARIZECOLUMNS(
+	ROLLUPADDISSUBTOTAL('Date'[Year], "IsGrandTotalRowTotal", ROLLUPGROUP('Date'[Month Name], 'Date'[Month]), "IsDM1Total"),
+	TREATAS({2023, 2024}, 'Date'[Year]),
+	"Sales_Amount", 'Sales'[Sales Amount],
+	"Budget_Amount", 'Budget'[Budget Amount]
+)
+ORDER BY [IsGrandTotalRowTotal] DESC, 'Date'[Year], [IsDM1Total] DESC, 'Date'[Month]

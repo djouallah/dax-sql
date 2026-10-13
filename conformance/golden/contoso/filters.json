@@ -1,0 +1,476 @@
+{
+ "filters-all-column-keeps-other-filters": {
+  "hash": "554c3b4a14bb1805fdb7a715b20bd0f8a4ec6b55",
+  "columns": [
+   "[s]"
+  ],
+  "rows": [
+   [
+    350.0
+   ]
+  ]
+ },
+ "filters-all-fact-table": {
+  "hash": "dac1ac846cf4d1fc5b998a73c5f06b14879ca32c",
+  "columns": [
+   "Product[Color]",
+   "[all]"
+  ],
+  "rows": [
+   [
+    "Red",
+    6130.0
+   ],
+   [
+    "Black",
+    6130.0
+   ],
+   [
+    "Blue",
+    6130.0
+   ]
+  ]
+ },
+ "filters-allexcept-share-by-name-only": {
+  "hash": "f037e4eb2854027a01bfc2e5b61060379db6e06b",
+  "columns": [
+   "Product[Name]",
+   "[share]"
+  ],
+  "rows": [
+   [
+    "Road Bike",
+    0.6525285481239804
+   ],
+   [
+    "Mountain Bike",
+    0.26101141924959215
+   ],
+   [
+    "Jersey",
+    0.057096247960848286
+   ],
+   [
+    "Cap",
+    0.02936378466557912
+   ]
+  ]
+ },
+ "filters-allexcept-share-of-category": {
+  "hash": "268f2a2313cc76c2a6ecc7d2acba44decca33273",
+  "columns": [
+   "Category[Category]",
+   "Product[Name]",
+   "[share]"
+  ],
+  "rows": [
+   [
+    "Bikes",
+    "Road Bike",
+    0.7142857142857143
+   ],
+   [
+    "Bikes",
+    "Mountain Bike",
+    0.2857142857142857
+   ],
+   [
+    "Clothing",
+    "Jersey",
+    0.660377358490566
+   ],
+   [
+    "Clothing",
+    "Cap",
+    0.33962264150943394
+   ]
+  ]
+ },
+ "filters-allselected-customer-blank-city-group": {
+  "hash": "97896010613b7a7e5dea72df40be3ab3b8b0bdd4",
+  "columns": [
+   "Customer[City]",
+   "[s]",
+   "[tot]"
+  ],
+  "rows": [
+   [
+    null,
+    20.0,
+    6130.0
+   ],
+   [
+    "Paris",
+    4260.0,
+    6130.0
+   ],
+   [
+    "London",
+    1850.0,
+    6130.0
+   ],
+   [
+    "Berlin",
+    null,
+    6130.0
+   ]
+  ]
+ },
+ "filters-allselected-grouped-column-other-filter": {
+  "hash": "29b78e8cf93260f028d68e44a69b98353d254fbd",
+  "columns": [
+   "Product[Name]",
+   "[n]"
+  ],
+  "rows": [
+   [
+    "Road Bike",
+    5
+   ],
+   [
+    "Jersey",
+    5
+   ]
+  ]
+ },
+ "filters-allselected-grouped-column-own-filter": {
+  "hash": "e8fd0bc3de6a5f87f2f189dedb85208c89f7e3f5",
+  "columns": [
+   "Product[Name]",
+   "[n]"
+  ],
+  "rows": [
+   [
+    "Jersey",
+    1
+   ]
+  ]
+ },
+ "filters-allselected-in-addcolumns": {
+  "hash": "9c658ce9157bc9bd7d76a338b3b240d4c8a7ca4d",
+  "columns": [
+   "Product[Color]",
+   "[pct]"
+  ],
+  "rows": [
+   [
+    "Red",
+    0.9602649006622517
+   ],
+   [
+    "Blue",
+    0.039735099337748346
+   ]
+  ]
+ },
+ "filters-allselected-in-sumx": {
+  "hash": "5219261a28f97121ca2d0c85a8aa7aeee6049c98",
+  "columns": [
+   "[x]"
+  ],
+  "rows": [
+   [
+    9060.0
+   ]
+  ]
+ },
+ "filters-allselected-no-argument-keeps-inner-filter": {
+  "hash": "5483928199fce9a0342f49d8104695da5b93f10b",
+  "columns": [
+   "Customer[City]",
+   "[x]"
+  ],
+  "rows": [
+   [
+    "Paris",
+    0.7586206896551724
+   ],
+   [
+    "London",
+    0.2413793103448276
+   ]
+  ]
+ },
+ "filters-allselected-product-share-max-count": {
+  "hash": "76af9f47d607dbf2e77bc4d9a28d5e08c7cf0ba0",
+  "columns": [
+   "Product[Color]",
+   "[s]",
+   "[share]",
+   "[max]",
+   "[n]"
+  ],
+  "rows": [
+   [
+    "Red",
+    4350.0,
+    0.7096247960848288,
+    2000.0,
+    11
+   ],
+   [
+    "Black",
+    1600.0,
+    0.26101141924959215,
+    2000.0,
+    11
+   ],
+   [
+    "Blue",
+    180.0,
+    0.02936378466557912,
+    2000.0,
+    11
+   ]
+  ]
+ },
+ "filters-allselected-shadow-iterating-all-color": {
+  "hash": "e7b8c2c3f58fd53309fbee802d6aeb11b7f37a69",
+  "columns": [
+   "Product[Color]",
+   "[n]"
+  ],
+  "rows": [
+   [
+    "Red",
+    4
+   ],
+   [
+    "Black",
+    4
+   ],
+   [
+    "Blue",
+    4
+   ]
+  ]
+ },
+ "filters-allselected-share-of-selected": {
+  "hash": "e482ca3035681f436c96322229c40e5edd99fe94",
+  "columns": [
+   "Product[Color]",
+   "[pct]"
+  ],
+  "rows": [
+   [
+    "Red",
+    0.9602649006622517
+   ],
+   [
+    "Blue",
+    0.039735099337748346
+   ]
+  ]
+ },
+ "filters-allselected-summarize-groups-shadow": {
+  "hash": "5845e6cfe92fcd2e46b6ea6bd3274a4da0604fda",
+  "columns": [
+   "Product[Color]",
+   "[pct]"
+  ],
+  "rows": [
+   [
+    "Red",
+    0.9602649006622517
+   ],
+   [
+    "Blue",
+    0.039735099337748346
+   ]
+  ]
+ },
+ "filters-allselected-without-iterator": {
+  "hash": "6f7a82c32453228202c6a31a5098a85fe6e1fd35",
+  "columns": [
+   "[t]",
+   "[c]"
+  ],
+  "rows": [
+   [
+    3,
+    5
+   ]
+  ]
+ },
+ "filters-category-two-hops": {
+  "hash": "32ba65a6490559573fb6dd2a127594fb1b8cd737",
+  "columns": [
+   "[s]"
+  ],
+  "rows": [
+   [
+    530.0
+   ]
+  ]
+ },
+ "filters-filter-all-date-ranges": {
+  "hash": "8fe90609a73dca6e9218713b804652ad15538244",
+  "columns": [
+   "[from]",
+   "[upto]",
+   "[year]"
+  ],
+  "rows": [
+   [
+    4120.0,
+    2010.0,
+    4120.0
+   ]
+  ]
+ },
+ "filters-filter-all-year-by-measure": {
+  "hash": "99d953e0657623aff84ad7449ec92afc72fc9d0f",
+  "columns": [
+   "[m]"
+  ],
+  "rows": [
+   [
+    6130.0
+   ]
+  ]
+ },
+ "filters-filter-fact-table": {
+  "hash": "9311c4c1d9344f742ce413a2afcedbc800830d87",
+  "columns": [
+   "Product[Color]",
+   "[big]"
+  ],
+  "rows": [
+   [
+    "Red",
+    4
+   ],
+   [
+    "Black",
+    2
+   ]
+  ]
+ },
+ "filters-filters-hasonefilter-hasonevalue": {
+  "hash": "545a0edd764930b2963a08b2b3d174a569abc393",
+  "columns": [
+   "[n]",
+   "[one]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    2,
+    false,
+    false
+   ]
+  ]
+ },
+ "filters-in-table-variable": {
+  "hash": "cf6411cf819446788feac7dfb34e0799cf99bbb3",
+  "columns": [
+   "[s]"
+  ],
+  "rows": [
+   [
+    4530.0
+   ]
+  ]
+ },
+ "filters-keepfilters-treatas": {
+  "hash": "a74c2b4d2c953c7ed7f17785e9321b5e978da46c",
+  "columns": [
+   "[keep]",
+   "[replace]"
+  ],
+  "rows": [
+   [
+    4350.0,
+    4530.0
+   ]
+  ]
+ },
+ "filters-nonvisual-not-allselected": {
+  "hash": "d3ee60b76b523e093f4e442efdce00ce702535e8",
+  "columns": [
+   "Date[Year]",
+   "[Sales]",
+   "[Selected]"
+  ],
+  "rows": [
+   [
+    2024,
+    4120.0,
+    6130.0
+   ]
+  ]
+ },
+ "filters-removefilters-no-argument": {
+  "hash": "5b7b2fc6e5c26220131a8b7224fca112d21ec86a",
+  "columns": [
+   "[s]"
+  ],
+  "rows": [
+   [
+    6130.0
+   ]
+  ]
+ },
+ "filters-replace-vs-keepfilters": {
+  "hash": "635f8e830b9cf14f2ffdaec00520a20f25192289",
+  "columns": [
+   "Product[Color]",
+   "[red]",
+   "[kept]"
+  ],
+  "rows": [
+   [
+    "Red",
+    4350.0,
+    4350.0
+   ],
+   [
+    "Black",
+    4350.0,
+    null
+   ],
+   [
+    "Blue",
+    4350.0,
+    null
+   ]
+  ]
+ },
+ "filters-treatas-city": {
+  "hash": "f0bae4bec7f915d69dfe5e41063f99d2daf41dd9",
+  "columns": [
+   "[s]"
+  ],
+  "rows": [
+   [
+    4260.0
+   ]
+  ]
+ },
+ "filters-two-filters-same-column-intersect": {
+  "hash": "9ba89367689b4f121e6cbdb43168c21e21111b68",
+  "columns": [
+   "[s]"
+  ],
+  "rows": [
+   [
+    null
+   ]
+  ]
+ },
+ "filters-visual-filter-allselected": {
+  "hash": "7d557fd94ace28fa75df96cc48db3628bb212d1b",
+  "columns": [
+   "Date[Year]",
+   "[Sales]",
+   "[Selected]"
+  ],
+  "rows": [
+   [
+    2024,
+    4120.0,
+    4120.0
+   ]
+  ]
+ }
+}

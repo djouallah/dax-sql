@@ -1,0 +1,8 @@
+// note: rolling twelve months without the date helpers: FILTER(ALL('Date')) on dates after EDATE(last date, -12)
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year Month],
+    TREATAS({2023}, 'Date'[Year]),
+    "Rolling 12M", [Sales Rolling 12M Manual]
+)
+ORDER BY 'Date'[Year Month]

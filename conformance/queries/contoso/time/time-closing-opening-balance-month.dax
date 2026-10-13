@@ -1,0 +1,3 @@
+// note: CLOSINGBALANCEMONTH (the last day of the month) and OPENINGBALANCEMONTH (the day before it began)
+EVALUATE CALCULATETABLE(ROW("c", CLOSINGBALANCEMONTH([Sales Amount], 'Date'[Date]), "o", OPENINGBALANCEMONTH([Sales Amount], 'Date'[Date])),
+    'Date'[Year] = 2024, 'Date'[Month] = 2)

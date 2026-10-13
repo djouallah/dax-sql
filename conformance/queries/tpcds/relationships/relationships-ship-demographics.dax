@@ -1,0 +1,2 @@
+// note: catalog quantity per education status, of the bill-to (active) and the ship-to (inactive) demographic
+EVALUATE SUMMARIZECOLUMNS(customer_demographics[cd_education_status], "billed", [Catalog Sales Quantity], "shipped", CALCULATE([Catalog Sales Quantity], USERELATIONSHIP(catalog_sales[cs_ship_cdemo_sk], customer_demographics[cd_demo_sk])))

@@ -1,0 +1,2 @@
+// note: ENDOFYEAR with a "6/30" year end past the date table's last date
+EVALUATE CALCULATETABLE(ROW("eoy", ENDOFYEAR('Date'[Date], "6/30")), 'Date'[Year] = 2024, 'Date'[Month] = 10)

@@ -1,0 +1,2 @@
+// note: an IF whose condition is a constant, with a fixed-decimal branch and a double branch: whether the type is both branches' (a double) or the taken one's (a fixed decimal, 4 places)
+EVALUATE ROW("a", DIVIDE(IF(TRUE(), [Sales Amount], 0.5), 7), "b", DIVIDE(IF(1 = 2, 0.5, [Sales Amount]), 7))

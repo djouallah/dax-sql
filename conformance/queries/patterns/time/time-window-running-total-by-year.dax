@@ -1,0 +1,14 @@
+// note: running total that restarts each year, with WINDOW from the first row of a PARTITIONBY year
+DEFINE
+    MEASURE Sales[Running In Year] =
+        SUMX(
+            WINDOW(1, ABS, 0, REL, ALLSELECTED('Date'[Year], 'Date'[Month]), ORDERBY('Date'[Month], ASC), PARTITIONBY('Date'[Year])),
+            [Sales Amount]
+        )
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year], 'Date'[Month],
+    "Sales", [Sales Amount],
+    "Running In Year", [Running In Year]
+)
+ORDER BY 'Date'[Year], 'Date'[Month]

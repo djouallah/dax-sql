@@ -1,0 +1,2 @@
+// note: fct_region[Demand with rooftop MWh] per region
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS(dim_region[Region], "Demand with rooftop MWh", [Demand with rooftop MWh]), dim_calendar[date] >= dt"2026-08-07", dim_calendar[date] <= dt"2026-08-13")

@@ -1,0 +1,2 @@
+// note: fct_summary[Reads 5 minutes] by hour of day, which asks for the 5-minute table
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS(dim_time[hour], "Reads 5 minutes", [Reads 5 minutes]), dim_time[hour] IN {4, 12, 19})

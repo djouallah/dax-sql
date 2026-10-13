@@ -1,0 +1,9 @@
+// note: running total with WINDOW from the first to the current Year Month of ALLSELECTED months, in 2024
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year Month],
+    TREATAS({ 2024 }, 'Date'[Year]),
+    "Sales", [Sales Amount],
+    "Cumulative Sales", [Cumulative Sales Window]
+)
+ORDER BY 'Date'[Year Month]

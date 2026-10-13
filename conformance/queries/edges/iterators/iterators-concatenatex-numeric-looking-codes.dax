@@ -1,0 +1,9 @@
+// note: product codes that look like numbers ("0042", "42", "1e3", "-7", "3.10", "007", "00", "1,000,000") sorted as text by CONCATENATEX both ways, with MINX and MAXX over the text and the total of their lengths
+EVALUATE
+ROW(
+    "Codes Asc", CONCATENATEX(Product, Product[Code], ",", Product[Code], ASC),
+    "Codes Desc", CONCATENATEX(Product, Product[Code], ",", Product[Code], DESC),
+    "Min Code", MINX(Product, Product[Code]),
+    "Max Code", MAXX(Product, Product[Code]),
+    "Code Characters", SUMX(Product, LEN(Product[Code]))
+)

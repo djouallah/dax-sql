@@ -1,0 +1,2 @@
+// note: xmla_compare.py probe: COUNTROWS of the fact
+EVALUATE ROW("x", COUNTROWS(store_sales))

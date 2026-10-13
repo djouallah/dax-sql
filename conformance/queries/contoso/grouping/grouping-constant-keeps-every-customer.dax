@@ -1,0 +1,2 @@
+// note: a constant expression keeps every customer, the one without sales and the blank row too
+EVALUATE SUMMARIZECOLUMNS(Customer[Customer], "s", [Sales Amount], "one", 1)

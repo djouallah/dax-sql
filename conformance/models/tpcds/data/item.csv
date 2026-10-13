@@ -1,0 +1,17 @@
+"i_item_sk","i_brand","i_category","i_class","i_color","i_current_price","i_manufact","i_size","i_wholesale_cost"
+1,"exportcorp #7","Books","accessories","plum",7.91,"anti","small",2.39
+2,"importcorp #7","Children","classical","snow",41.92,"able","N/A",16.16
+3,"scholarpack #6","Electronics","pants","blue",79.06,"bar","large",42.33
+4,"scholarcorp #4","Home","dresses","olive",36.64,"able","large",15.53
+5,"scholaruniv #4","Jewelry","rock","blue",18.07,"eing","small",8.93
+6,"edupack #2","Men","accessories","navy",39.66,"able","medium",12.33
+7,"scholaruniv #6","Music","dresses","plum",14.74,"ought","extra large",5.24
+8,"edupack #9","Shoes","pants","olive",51.38,"ought","medium",26.21
+9,"importcorp #1","Sports","dresses","almond",81.92,"eing","large",42.52
+10,"amalguniv #7","Women","rock","coral",41.89,"anti","small",13.99
+11,"importpack #1","Books","pants","almond",61.94,"able","N/A",47.28
+12,"eduuniv #3","Children","classical","almond",37.82,"cally","large",17.63
+13,"scholarpack #8","Electronics","fiction","olive",40.25,"bar","medium",13.11
+14,"amalgpack #6","Home","dresses","blue",39.27,"anti","small",24.14
+15,"amalgcorp #6","Jewelry","fiction","khaki",6.91,"anti","small",5.01
+16,"amalgcorp #9","Men","accessories","snow",70.98,"anti","small",29.87

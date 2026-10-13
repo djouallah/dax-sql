@@ -1,0 +1,12 @@
+// note: grouped by the Time Intelligence item and its ordinal, a CALCULATE filter on the item name overrides the grouped item, for a budget reached through the many-to-many YearMonth relationship in fiscal 2024
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Time Intelligence'[Time Intelligence],
+    'Time Intelligence'[Ordinal],
+    TREATAS({ 2024 }, 'Date'[Fiscal Year]),
+    TREATAS({ "Bikes" }, Category[Category]),
+    "Budget", [Budget Amount],
+    "Budget Forced YTD", CALCULATE([Budget Amount], 'Time Intelligence'[Time Intelligence] = "YTD"),
+    "Budget Forced Current", CALCULATE([Budget Amount], 'Time Intelligence'[Time Intelligence] = "Current")
+)
+ORDER BY 'Time Intelligence'[Ordinal]

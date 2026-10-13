@@ -1,0 +1,2 @@
+// note: SUMMARIZECOLUMNS auto-exist: the names the filters keep are the groups, even where an expression removes one of the filters
+EVALUATE SUMMARIZECOLUMNS(Product[Name], TREATAS({"Black"}, Product[Color]), TREATAS({1, 2}, Product[CategoryKey]), "s", [Sales Amount], "nocolor", CALCULATE([Sales Amount], REMOVEFILTERS(Product[Color])))

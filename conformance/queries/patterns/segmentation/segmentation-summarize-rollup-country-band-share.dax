@@ -1,0 +1,16 @@
+// note: SUMMARIZE with ROLLUP over country and price band of 2023 sales: every row's extension columns, subtotals and grand total included, are filtered by that row's Sales rows, so CALCULATE removing Customer or Product keeps them; the row's own sales band, and ISSUBTOTAL telling a subtotal from the blank band of the product-less line
+EVALUATE
+CALCULATETABLE(
+    SUMMARIZE(
+        Sales,
+        ROLLUP(Customer[Country], Product[Price Band]),
+        "Sales", [Sales Amount],
+        "Country Subtotal", ISSUBTOTAL(Product[Price Band]),
+        "Grand Total", ISSUBTOTAL(Customer[Country]),
+        "Removing Customer", CALCULATE([Sales Amount], REMOVEFILTERS(Customer)),
+        "Removing Product", CALCULATE([Sales Amount], REMOVEFILTERS(Product)),
+        "Band Of Row", [Customer Sales Band]
+    ),
+    'Date'[Year] = 2023
+)
+ORDER BY [Grand Total], Customer[Country], [Country Subtotal], Product[Price Band]

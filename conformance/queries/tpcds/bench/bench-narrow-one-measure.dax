@@ -1,0 +1,2 @@
+// note: xmla_compare.py: one measure by year
+EVALUATE SUMMARIZECOLUMNS(date_dim[d_year], "a", [Store Revenue])

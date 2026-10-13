@@ -1,0 +1,2 @@
+// note: the dashboard's readWholeDays query, the first and last day a daily table holds
+EVALUATE ROW("first", MIN(fct_region_daily[date]), "last", MAX(fct_region_daily[date]))

@@ -1,0 +1,2 @@
+// note: the row count of ship_mode
+EVALUATE ROW("table", "ship_mode", "rows", COUNTROWS('ship_mode'))

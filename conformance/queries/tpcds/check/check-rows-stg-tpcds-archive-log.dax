@@ -1,0 +1,2 @@
+// note: the row count of stg_tpcds_archive_log
+EVALUATE ROW("table", "stg_tpcds_archive_log", "rows", COUNTROWS('stg_tpcds_archive_log'))

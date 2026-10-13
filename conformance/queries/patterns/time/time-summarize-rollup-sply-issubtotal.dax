@@ -1,0 +1,11 @@
+// note: SUMMARIZE with ROLLUP of year and quarter and ISSUBTOTAL: SAMEPERIODLASTYEAR at quarter, year subtotal and grand total
+EVALUATE
+SUMMARIZE(
+    Sales,
+    ROLLUP('Date'[Year], 'Date'[Quarter]),
+    "Sales", [Sales Amount],
+    "SPLY", [Sales PY SPLY],
+    "Is Year Total", ISSUBTOTAL('Date'[Year]),
+    "Is Quarter Total", ISSUBTOTAL('Date'[Quarter])
+)
+ORDER BY 'Date'[Year], 'Date'[Quarter]

@@ -1,0 +1,9 @@
+// note: dynamic segmentation: customers counted in the Segments band their yearly sales fall in, with the band's sales
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year],
+    Segments[Segment],
+    "Customers", [Segment Customer Count],
+    "Sales", [Segment Customer Sales]
+)
+ORDER BY 'Date'[Year], Segments[Segment]

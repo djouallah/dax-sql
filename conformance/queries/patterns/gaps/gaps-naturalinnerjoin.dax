@@ -1,0 +1,6 @@
+// note: NATURALINNERJOIN of two tables without lineage, joined on their one column of the same name
+EVALUATE
+NATURALINNERJOIN(
+    SELECTCOLUMNS(Product, "SubcategoryKey", Product[SubcategoryKey] + 0, "Product", Product[Product]),
+    SELECTCOLUMNS(Subcategory, "SubcategoryKey", Subcategory[SubcategoryKey] + 0, "Subcategory", Subcategory[Subcategory])
+)

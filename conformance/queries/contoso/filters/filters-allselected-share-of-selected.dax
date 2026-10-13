@@ -1,0 +1,3 @@
+// note: ALLSELECTED(Product[Color]) under an outer CALCULATETABLE filter: the share of the selected colors
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS(Product[Color],
+      "pct", DIVIDE([Sales Amount], CALCULATE([Sales Amount], ALLSELECTED(Product[Color])))), Product[Color] IN {"Red", "Blue"})

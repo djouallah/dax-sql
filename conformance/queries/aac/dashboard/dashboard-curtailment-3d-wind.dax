@@ -1,0 +1,2 @@
+// note: the dashboard's curtailment query, the curtailment chart: per day (per month beyond 120 days) and fuel (page state: 3 days to 2026-08-11, fuel Wind)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS(dim_calendar[date], fct_curtailment_region[fuel], "cur", [Wind and solar curtailed MWh], "avail", [Wind and solar available MWh], "rate", [Wind and solar curtailment rate]), dim_calendar[date] >= dt"2026-08-09", dim_calendar[date] <= dt"2026-08-11", fct_curtailment_region[fuel] = "Wind") ORDER BY [date], [fuel]

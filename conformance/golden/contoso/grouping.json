@@ -1,0 +1,373 @@
+{
+ "grouping-auto-exist-filters-group-by-name": {
+  "hash": "09d2b2ec9039411441e210bdde3ca0673013aa10",
+  "columns": [
+   "Product[Name]",
+   "[s]",
+   "[nocolor]"
+  ],
+  "rows": [
+   [
+    "Mountain Bike",
+    1600.0,
+    1600.0
+   ]
+  ]
+ },
+ "grouping-auto-exist-filters-no-groups": {
+  "hash": "f5490bbef43b78d807fc3d87dc7e373e62fbfb21",
+  "columns": [
+   "[s]",
+   "[nocolor]"
+  ],
+  "rows": [
+   [
+    1600.0,
+    5600.0
+   ]
+  ]
+ },
+ "grouping-auto-exist-priceband-two-filters": {
+  "hash": "fc2778136af30b2399cc94ff0e8bd2ac672b4c92",
+  "columns": [
+   "Product[PriceBand]",
+   "[s]",
+   "[noname]"
+  ],
+  "rows": [
+   [
+    "High",
+    4000.0,
+    4000.0
+   ],
+   [
+    "Low",
+    180.0,
+    180.0
+   ]
+  ]
+ },
+ "grouping-by-calculated-column": {
+  "hash": "395f2488f9f894d95ad0104b74750a6ccb76bf51",
+  "columns": [
+   "Product[PriceBand]",
+   "[s]"
+  ],
+  "rows": [
+   [
+    "High",
+    5600.0
+   ],
+   [
+    "Low",
+    530.0
+   ]
+  ]
+ },
+ "grouping-by-category-snowflake": {
+  "hash": "3a2d25b741e333fd46a9c6417fc44f74255d3c37",
+  "columns": [
+   "Category[Category]",
+   "[s]"
+  ],
+  "rows": [
+   [
+    "Bikes",
+    5600.0
+   ],
+   [
+    "Clothing",
+    530.0
+   ]
+  ]
+ },
+ "grouping-by-color": {
+  "hash": "0e5512d690d6c7da1719fec3c5e1524fa221f05f",
+  "columns": [
+   "Product[Color]",
+   "[s]"
+  ],
+  "rows": [
+   [
+    "Red",
+    4350.0
+   ],
+   [
+    "Black",
+    1600.0
+   ],
+   [
+    "Blue",
+    180.0
+   ]
+  ]
+ },
+ "grouping-city-by-year": {
+  "hash": "275b8368abc41a39b1a74f44d96d70feeff43a0b",
+  "columns": [
+   "Customer[City]",
+   "Date[Year]",
+   "[s]"
+  ],
+  "rows": [
+   [
+    "Paris",
+    2023,
+    1160.0
+   ],
+   [
+    "London",
+    2023,
+    850.0
+   ],
+   [
+    null,
+    2024,
+    20.0
+   ],
+   [
+    "Paris",
+    2024,
+    3100.0
+   ],
+   [
+    "London",
+    2024,
+    1000.0
+   ]
+  ]
+ },
+ "grouping-constant-filtered-city-drops-blank-row": {
+  "hash": "e9446c62120e38875f954fc2274712603df245ea",
+  "columns": [
+   "Customer[Customer]",
+   "[one]"
+  ],
+  "rows": [
+   [
+    "Alice",
+    1
+   ],
+   [
+    "Chloe",
+    1
+   ]
+  ]
+ },
+ "grouping-constant-keeps-every-customer": {
+  "hash": "eabb151dd56776695a43bb3bd4f49a17936672b6",
+  "columns": [
+   "Customer[Customer]",
+   "[s]",
+   "[one]"
+  ],
+  "rows": [
+   [
+    null,
+    20.0,
+    1
+   ],
+   [
+    "Alice",
+    2000.0,
+    1
+   ],
+   [
+    "Bob",
+    1850.0,
+    1
+   ],
+   [
+    "Chloe",
+    2260.0,
+    1
+   ],
+   [
+    "Dan",
+    null,
+    1
+   ]
+  ]
+ },
+ "grouping-filter-table-and-ignore": {
+  "hash": "5f85327f748b3b30a729020a4c5c75a9fcfb4ebf",
+  "columns": [
+   "Product[Color]",
+   "[s]",
+   "[i]"
+  ],
+  "rows": [
+   [
+    "Red",
+    4350.0,
+    1
+   ],
+   [
+    "Black",
+    1600.0,
+    1
+   ]
+  ]
+ },
+ "grouping-measure-alone": {
+  "hash": "d62556200dcd603dbcd21870dd9067e022614082",
+  "columns": [
+   "[s]"
+  ],
+  "rows": [
+   [
+    6130.0
+   ]
+  ]
+ },
+ "grouping-never-blank-expressions-keep-all-cities": {
+  "hash": "e78d9d7731e45c76fbcc8a780fa03eec778bbae2",
+  "columns": [
+   "Customer[City]",
+   "[f]",
+   "[cf]",
+   "[pf]",
+   "[s]"
+  ],
+  "rows": [
+   [
+    "Paris",
+    true,
+    true,
+    false,
+    4260.0
+   ],
+   [
+    "London",
+    true,
+    true,
+    false,
+    1850.0
+   ],
+   [
+    "Berlin",
+    true,
+    true,
+    false,
+    null
+   ],
+   [
+    null,
+    true,
+    true,
+    false,
+    20.0
+   ]
+  ]
+ },
+ "grouping-rollupaddissubtotal-isinscope": {
+  "hash": "c8b3346d825cc9d3af3dbb7a3a38b11faf84b3fb",
+  "columns": [
+   "Product[Color]",
+   "[IsTotal]",
+   "[s]",
+   "[lvl]"
+  ],
+  "rows": [
+   [
+    "Red",
+    false,
+    4350.0,
+    "color"
+   ],
+   [
+    "Black",
+    false,
+    1600.0,
+    "color"
+   ],
+   [
+    "Blue",
+    false,
+    180.0,
+    "color"
+   ],
+   [
+    null,
+    true,
+    6130.0,
+    "total"
+   ]
+  ]
+ },
+ "grouping-two-rollupaddissubtotal-axes": {
+  "hash": "ba631fafd532b24017c42e4896fb942f067491f3",
+  "columns": [
+   "Category[Category]",
+   "Date[Year]",
+   "[ct]",
+   "[yt]",
+   "[s]"
+  ],
+  "rows": [
+   [
+    "Bikes",
+    2023,
+    false,
+    false,
+    1800.0
+   ],
+   [
+    "Clothing",
+    2023,
+    false,
+    false,
+    210.0
+   ],
+   [
+    "Bikes",
+    2024,
+    false,
+    false,
+    3800.0
+   ],
+   [
+    "Clothing",
+    2024,
+    false,
+    false,
+    320.0
+   ],
+   [
+    null,
+    2023,
+    true,
+    false,
+    2010.0
+   ],
+   [
+    null,
+    2024,
+    true,
+    false,
+    4120.0
+   ],
+   [
+    "Bikes",
+    null,
+    false,
+    true,
+    5600.0
+   ],
+   [
+    "Clothing",
+    null,
+    false,
+    true,
+    530.0
+   ],
+   [
+    null,
+    null,
+    true,
+    true,
+    6130.0
+   ]
+  ]
+ }
+}

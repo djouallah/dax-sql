@@ -1,0 +1,2 @@
+// note: ALL(Sales) removes the filters coming from its dimensions (expanded table)
+EVALUATE SUMMARIZECOLUMNS(Product[Color], "all", [All Sales])

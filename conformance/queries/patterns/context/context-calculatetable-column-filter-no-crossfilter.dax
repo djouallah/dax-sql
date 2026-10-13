@@ -1,0 +1,3 @@
+// note: a column predicate on Sales in CALCULATETABLE does not filter Product (the relationship filters from Product to Sales only), so every color comes back
+EVALUATE
+CALCULATETABLE(VALUES(Product[Color]), Sales[Quantity] >= 6, 'Date'[Year] = 2022)

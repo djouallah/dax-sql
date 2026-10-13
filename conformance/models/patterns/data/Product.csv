@@ -1,0 +1,46 @@
+"ProductKey","Product","Color","Brand","SubcategoryKey","Unit Price","Unit Cost"
+1,"Road Bike A","Blue","Northwind",1,799.69,510.75
+2,"Road Bike B","Yellow","Contoso",1,707.21,321.31
+3,"Road Bike C","Blue","Litware",1,608.88,407.27
+4,"Road Bike D","Black","Northwind",1,2573.69,1249.26
+5,"Mountain Bike A","Black","Northwind",2,2864.88,1930.31
+6,"Mountain Bike B","Silver","Litware",2,1589.1,805.1
+7,"Mountain Bike C","Silver","Fabrikam",2,1672.2,918.03
+8,"Mountain Bike D","Yellow","Fabrikam",2,2980.3,1650.39
+9,"Touring Bike A","Red","Fabrikam",3,2518.04,1288.91
+10,"Touring Bike B","White","Litware",3,1093.11,600.09
+11,"Touring Bike C","Red","Litware",3,3107.22,1435.06
+12,"Jersey A","Blue","Contoso",4,61.88,32.59
+13,"Jersey B","Red","Litware",4,45.48,21.58
+14,"Jersey C","Red","Contoso",4,51.24,33.98
+15,"Jersey D","Silver","Fabrikam",4,92.82,61.01
+16,"Short A","Silver","Contoso",5,110.74,65.33
+17,"Short B","Blue","Northwind",5,49.51,31.73
+18,"Short C","Yellow","Contoso",5,89.3,49.57
+19,"Short D","Silver","Northwind",5,110.41,49.91
+20,"Glove A","Red","Northwind",6,65.13,38.67
+21,"Glove B","Blue","Contoso",6,66.61,41.88
+22,"Glove C","Yellow","Fabrikam",6,89.63,47.64
+23,"Helmet A","Red","Litware",7,36.33,21.83
+24,"Helmet B","Red","Litware",7,74.82,35
+25,"Helmet C","Yellow","Northwind",7,17.02,9.4
+26,"Helmet D","Silver","Contoso",7,55.48,28.73
+27,"Light A","Silver","Fabrikam",8,20.9,11.14
+28,"Light B","Yellow","Fabrikam",8,69.93,45.39
+29,"Light C","Silver","Fabrikam",8,95.56,49.59
+30,"Light D","Blue","Contoso",8,15.28,8.12
+31,"Bottle A","Blue","Contoso",9,89.67,47.14
+32,"Bottle B","Silver","Contoso",9,35.61,16.25
+33,"Bottle C","Silver","Litware",9,120.74,68.54
+34,"Wheel A","Red","Northwind",10,210.21,135.46
+35,"Wheel B","White","Northwind",10,121.78,57.54
+36,"Wheel C","Black","Contoso",10,537.33,274.27
+37,"Wheel D","White","Contoso",10,424.46,292.6
+38,"Brake A","Blue","Litware",11,356.21,165.48
+39,"Brake B","Black","Northwind",11,579.88,296.66
+40,"Brake C","Black","Contoso",11,142.32,77.52
+41,"Brake D","White","Contoso",11,35.51,17.04
+42,"Chain A","Blue","Contoso",12,193.65,94.04
+43,"Chain B","Black","Contoso",12,200.39,119.45
+44,"Chain C","Yellow","Contoso",12,523.27,312.08
+45,"Unsold Widget","Black","Litware",12,9.99,4.5

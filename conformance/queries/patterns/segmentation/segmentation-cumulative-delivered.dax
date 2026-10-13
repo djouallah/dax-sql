@@ -1,0 +1,9 @@
+// note: running total on the inactive delivery-date relationship (USERELATIONSHIP) next to the order-date running total, by quarter
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year],
+    'Date'[Quarter],
+    "Cumulative Ordered", [Cumulative Sales All Dates],
+    "Cumulative Delivered", [Cumulative Sales Delivered]
+)
+ORDER BY 'Date'[Year], 'Date'[Quarter]

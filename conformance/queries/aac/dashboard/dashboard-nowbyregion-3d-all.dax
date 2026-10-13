@@ -1,0 +1,2 @@
+// note: the dashboard's nowByRegion query, "Right now": each region's price, demand and net interchange at one interval (page state: 3 days to 2026-08-11, all)
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS(fct_region[REGIONID], "price", [Average price], "demand", [Demand MW], "net", [Net interchange MW]), fct_region[date] = dt"2026-08-11", fct_region[time] = 1200), "region", [REGIONID], "price", [price], "demand", [demand], "net", [net]) ORDER BY [region]

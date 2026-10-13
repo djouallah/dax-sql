@@ -1,0 +1,102 @@
+{
+ "rls-calculated-column-ignores-security": {
+  "hash": "c05ba3e2d83f5a28c04de2ad367c94f08b4ec73e",
+  "columns": [
+   "[t]"
+  ],
+  "rows": [
+   [
+    2000.0
+   ]
+  ]
+ },
+ "rls-define-column-ignores-security": {
+  "hash": "f9da538f3753c195e88b7d5c2f42eb1f823d5e9b",
+  "columns": [
+   "[max]"
+  ],
+  "rows": [
+   [
+    2
+   ]
+  ]
+ },
+ "rls-paris-all-does-not-restore": {
+  "hash": "f2b21bfce3426d4e57ecdc85a150394cd563a307",
+  "columns": [
+   "[s]",
+   "[all]",
+   "[c]"
+  ],
+  "rows": [
+   [
+    4260.0,
+    4260.0,
+    2
+   ]
+  ]
+ },
+ "rls-paris-countrows-customer": {
+  "hash": "c2c8fb856ff007ebc21a0ca03080f20d19d12188",
+  "columns": [
+   "[n]"
+  ],
+  "rows": [
+   [
+    2
+   ]
+  ]
+ },
+ "rls-paris-many-to-many-target": {
+  "hash": "a3f95bc46e2eeb5c3ab01c13331ba2ef00ef90c6",
+  "columns": [
+   "CityTarget[City]",
+   "[t]"
+  ],
+  "rows": [
+   [
+    "Paris",
+    5000
+   ]
+  ]
+ },
+ "rls-paris-sales-by-customer": {
+  "hash": "4b08cd92e949bfbb3ed00b069dd5172c9724768e",
+  "columns": [
+   "Customer[Customer]",
+   "[s]"
+  ],
+  "rows": [
+   [
+    "Alice",
+    2000.0
+   ],
+   [
+    "Chloe",
+    2260.0
+   ]
+  ]
+ },
+ "rls-redonly-crossfilter-both-customer": {
+  "hash": "8d3d1cc3751b642e5d5a93a9ecbcf9e7b936c5ea",
+  "columns": [
+   "[n]"
+  ],
+  "rows": [
+   [
+    4
+   ]
+  ]
+ },
+ "rls-two-roles-union": {
+  "hash": "443488bf560137b10ea758416282049a60dc2473",
+  "columns": [
+   "[s]"
+  ],
+  "rows": [
+   [
+    5310.0
+   ]
+  ]
+ }
+}

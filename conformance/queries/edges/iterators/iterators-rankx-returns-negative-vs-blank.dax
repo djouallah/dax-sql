@@ -1,0 +1,11 @@
+// note: RANKX ascending and descending over customer keys by returned quantity, a sum of negatives that is blank for customers with no returns: where blank ranks among the negatives, with the blank customer key (unknown key 500 and NULL keys) ranked too
+DEFINE
+    MEASURE Sales[Returned Quantity] = SUMX(FILTER(Sales, Sales[Quantity] < 0), Sales[Quantity])
+EVALUATE
+ADDCOLUMNS(
+    ALL(Customer[CustomerKey]),
+    "Returned", [Returned Quantity],
+    "Rank Asc Dense", RANKX(ALL(Customer[CustomerKey]), [Returned Quantity], , ASC, Dense),
+    "Rank Desc Skip", RANKX(ALL(Customer[CustomerKey]), [Returned Quantity], , DESC, Skip)
+)
+ORDER BY Customer[CustomerKey]

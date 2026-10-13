@@ -1,0 +1,18 @@
+// note: NATURALINNERJOIN of each year's Low-band customer count with a table of fiscal labels, joined on a Year column both build without lineage, a number on one side and text on the other (a DAX error: natural join columns must have the same data type)
+// expect: error
+EVALUATE
+VAR ByYear =
+    SELECTCOLUMNS(
+        VALUES('Date'[Year]),
+        "Year", 'Date'[Year] + 0,
+        "Low Customers", CALCULATE([Segment Customer Count], Segments[Segment] = "Low")
+    )
+VAR Labels =
+    SELECTCOLUMNS(
+        VALUES('Date'[Year]),
+        "Year", FORMAT('Date'[Year], "0"),
+        "Label", "FY" & FORMAT('Date'[Year] + 1, "0")
+    )
+RETURN
+    NATURALINNERJOIN(ByYear, Labels)
+ORDER BY [Year]

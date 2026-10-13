@@ -1,0 +1,2 @@
+// note: catalog_sales[Catalog Sales Same Period LY] per quarter, a year back, blank in the first year
+EVALUATE SUMMARIZECOLUMNS(date_dim[d_quarter_name], "Catalog Sales Same Period LY", [Catalog Sales Same Period LY])

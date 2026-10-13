@@ -1,0 +1,9 @@
+// note: new customers from the Customer[First Order] calculated column (TREATAS of the dates) against the dynamic measure, by year and category
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year],
+    Category[Category],
+    "New Static", [Customers New Static],
+    "New Dynamic", [Customers New]
+)
+ORDER BY 'Date'[Year], Category[Category]

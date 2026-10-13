@@ -1,0 +1,831 @@
+{
+ "tables-addcolumns-summarize-all-color": {
+  "hash": "5bef45982383fd4e261de01b353007fe5d501d81",
+  "columns": [
+   "Product[Color]",
+   "[s]",
+   "[all]"
+  ],
+  "rows": [
+   [
+    "Red",
+    4350.0,
+    6130.0
+   ],
+   [
+    "Black",
+    1600.0,
+    6130.0
+   ],
+   [
+    "Blue",
+    180.0,
+    6130.0
+   ]
+  ]
+ },
+ "tables-addcolumns-summarize-related-city": {
+  "hash": "52225eb44cfa26866cddeecfb6cf893e0d044b9b",
+  "columns": [
+   "Customer[City]",
+   "[s]"
+  ],
+  "rows": [
+   [
+    null,
+    20.0
+   ],
+   [
+    "Paris",
+    4260.0
+   ],
+   [
+    "London",
+    1850.0
+   ]
+  ]
+ },
+ "tables-addmissingitems": {
+  "hash": "b688501fbb15e1c869fd1d1e1d6b648cf3a4d931",
+  "columns": [
+   "Product[Color]",
+   "[s]"
+  ],
+  "rows": [
+   [
+    "Red",
+    4350.0
+   ],
+   [
+    "Black",
+    1600.0
+   ],
+   [
+    "Blue",
+    null
+   ]
+  ]
+ },
+ "tables-calculated-table": {
+  "hash": "dfcd873c80ae96a9791ef44f2d6e3853304b652d",
+  "columns": [
+   "Big Products[ProductKey]",
+   "Big Products[Name]",
+   "Big Products[Price]"
+  ],
+  "rows": [
+   [
+    2,
+    "Mountain Bike",
+    800.0
+   ],
+   [
+    1,
+    "Road Bike",
+    1000.0
+   ]
+  ]
+ },
+ "tables-calculated-table-own-columns": {
+  "hash": "7a9be50b290fa754676a3e57ababd60b3062d11c",
+  "columns": [
+   "[n]",
+   "[b]"
+  ],
+  "rows": [
+   [
+    5,
+    1
+   ]
+  ]
+ },
+ "tables-calendarauto": {
+  "hash": "3352d2cdeb6e990113afb4bd2ff35c55096dc26c",
+  "columns": [
+   "[n]",
+   "[first]",
+   "[last]"
+  ],
+  "rows": [
+   [
+    731,
+    "2023-01-01",
+    "2024-12-31"
+   ]
+  ]
+ },
+ "tables-datatable": {
+  "hash": "c0b5e7bbfbbc14d5d22a38f16047d16473ae0e08",
+  "columns": [
+   "[a]",
+   "[b]"
+  ],
+  "rows": [
+   [
+    1,
+    "x"
+   ],
+   [
+    2,
+    "y"
+   ]
+  ]
+ },
+ "tables-define-column-filtered": {
+  "hash": "7006a713d14274bee1adbc3d0f69174b3b6e1fa1",
+  "columns": [
+   "[Other]"
+  ],
+  "rows": [
+   [
+    1850.0
+   ]
+  ]
+ },
+ "tables-define-column-grouped": {
+  "hash": "4987ff9aa0109ee213b3e99264b26d6113f2d2c5",
+  "columns": [
+   "Customer[Region]",
+   "[Sales]",
+   "[All]"
+  ],
+  "rows": [
+   [
+    "Paris",
+    4260.0,
+    6130.0
+   ],
+   [
+    "Other",
+    1850.0,
+    6130.0
+   ],
+   [
+    null,
+    20.0,
+    6130.0
+   ]
+  ]
+ },
+ "tables-define-column-relatedtable": {
+  "hash": "f74254a80b1e19cab43ad4c27b80ed8e20ddf89a",
+  "columns": [
+   "[n]",
+   "[max]"
+  ],
+  "rows": [
+   [
+    3,
+    4
+   ]
+  ]
+ },
+ "tables-except-colors": {
+  "hash": "76fd6275d602ede781de2735dff0bc1bc0969124",
+  "columns": [
+   "Product[Color]"
+  ],
+  "rows": [
+   [
+    "Black"
+   ],
+   [
+    "Blue"
+   ]
+  ]
+ },
+ "tables-field-parameter-table": {
+  "hash": "aba4be6bc682bb8e33c094f99bf3743210b4baf9",
+  "columns": [
+   "Fields[Fields]",
+   "Fields[Fields Fields]",
+   "Fields[Fields Order]"
+  ],
+  "rows": [
+   [
+    "Sales",
+    "'Sales'[Sales Amount]",
+    0
+   ],
+   [
+    "Quantity",
+    "'Sales'[Quantity]",
+    1
+   ],
+   [
+    "Color",
+    "'Product'[Color]",
+    2
+   ]
+  ]
+ },
+ "tables-groupby-added-column": {
+  "hash": "e998590b65cb1638e58b78f1c45628f41eaf2974",
+  "columns": [
+   "[big]",
+   "[n]"
+  ],
+  "rows": [
+   [
+    true,
+    3
+   ],
+   [
+    false,
+    8
+   ]
+  ]
+ },
+ "tables-groupby-currentgroup": {
+  "hash": "add503a03297de08ed6f098aff68571912194378",
+  "columns": [
+   "Product[Color]",
+   "[q]"
+  ],
+  "rows": [
+   [
+    "Red",
+    11
+   ],
+   [
+    "Black",
+    2
+   ],
+   [
+    "Blue",
+    9
+   ]
+  ]
+ },
+ "tables-intersect-cities": {
+  "hash": "cfea7567e24161abf4fd4d9bde1c145bdb3118fb",
+  "columns": [
+   "Customer[City]"
+  ],
+  "rows": [
+   [
+    "Paris"
+   ]
+  ]
+ },
+ "tables-naturalinnerjoin-by-name": {
+  "hash": "f91295e927ac664384eaaa06b50f79cc5c32cd60",
+  "columns": [
+   "[k]",
+   "[Category]",
+   "[Name]"
+  ],
+  "rows": [
+   [
+    1,
+    "Bikes",
+    "Road Bike"
+   ],
+   [
+    1,
+    "Bikes",
+    "Mountain Bike"
+   ],
+   [
+    3,
+    "Accessories",
+    "Helmet"
+   ]
+  ]
+ },
+ "tables-naturalinnerjoin-numbers": {
+  "hash": "d42e42b59265ea29f38cb31f353a9d520e310d05",
+  "columns": [
+   "[k]",
+   "[Name]"
+  ],
+  "rows": [
+   [
+    1,
+    "Road Bike"
+   ],
+   [
+    1,
+    "Mountain Bike"
+   ],
+   [
+    2,
+    "Jersey"
+   ],
+   [
+    2,
+    "Cap"
+   ],
+   [
+    3,
+    "Helmet"
+   ]
+  ]
+ },
+ "tables-naturalleftouterjoin-by-name": {
+  "hash": "6f40627571def0e1dbb97f8e9e73b0592afedbdf",
+  "columns": [
+   "[k]",
+   "[Category]",
+   "[Name]"
+  ],
+  "rows": [
+   [
+    1,
+    "Bikes",
+    "Road Bike"
+   ],
+   [
+    1,
+    "Bikes",
+    "Mountain Bike"
+   ],
+   [
+    2,
+    "Clothing",
+    null
+   ],
+   [
+    3,
+    "Accessories",
+    "Helmet"
+   ]
+  ]
+ },
+ "tables-naturalleftouterjoin-if-maxx-inline": {
+  "hash": "a8583e07e12458eacfc98d607f8de6a755532409",
+  "columns": [
+   "[Name]"
+  ],
+  "rows": [
+   [
+    "Road Bike"
+   ],
+   [
+    "Jersey"
+   ],
+   [
+    "Helmet"
+   ]
+  ]
+ },
+ "tables-naturalleftouterjoin-if-maxx-with-blanks": {
+  "hash": "120ea517b7cdbf0cc01363b56dc54979eef00744",
+  "columns": [
+   "[Name]"
+  ],
+  "rows": [
+   [
+    "Road Bike"
+   ],
+   [
+    null
+   ],
+   [
+    null
+   ]
+  ]
+ },
+ "tables-naturalleftouterjoin-maxx-with-blanks": {
+  "hash": "2574a14e7f70fc4696946cdb55e0e673ab63cdda",
+  "columns": [
+   "[Name]"
+  ],
+  "rows": [
+   [
+    "Road Bike"
+   ],
+   [
+    null
+   ],
+   [
+    null
+   ]
+  ]
+ },
+ "tables-naturalleftouterjoin-measure-if-maxx": {
+  "hash": "44e06916045c78fd50319f74f6c9c0474438c0d8",
+  "error": "Query (3, 79) An incompatible join column, ('<oii></oii>'[<oii>Name</oii>]) was detected. 'NATURALLEFTOUTERJOIN' doesn't support joins by using columns with different data types or lineage."
+ },
+ "tables-naturalleftouterjoin-measure-maxx": {
+  "hash": "eae19aa5da176d3df987a483d227b7711065b3a6",
+  "error": "Query (3, 76) An incompatible join column, ('<oii></oii>'[<oii>Name</oii>]) was detected. 'NATURALLEFTOUTERJOIN' doesn't support joins by using columns with different data types or lineage."
+ },
+ "tables-order-by-measure-desc": {
+  "hash": "e11056e45b49ddbf6df6a71a07d84ea25c07fa83",
+  "columns": [
+   "Customer[Customer]",
+   "[s]"
+  ],
+  "rows": [
+   [
+    "Chloe",
+    2260.0
+   ],
+   [
+    "Alice",
+    2000.0
+   ],
+   [
+    "Bob",
+    1850.0
+   ],
+   [
+    null,
+    20.0
+   ]
+  ]
+ },
+ "tables-start-at-asc-decimal-measure": {
+  "hash": "3607532ebb72edd903ed79a4531c863aba91dfd4",
+  "columns": [
+   "Product[Color]",
+   "[s]"
+  ],
+  "rows": [
+   [
+    "Black",
+    1600.0
+   ],
+   [
+    "Red",
+    4350.0
+   ]
+  ]
+ },
+ "tables-start-at-before-first": {
+  "hash": "ff29629eafafd0b41f0ec18d6a30f5969788769c",
+  "columns": [
+   "Product[Color]",
+   "[s]"
+  ],
+  "rows": [
+   [
+    "Blue",
+    180.0
+   ],
+   [
+    "Black",
+    1600.0
+   ],
+   [
+    "Red",
+    4350.0
+   ]
+  ]
+ },
+ "tables-start-at-desc-decimal-literal": {
+  "hash": "f078b7979b08ba9605a4443aa7694cd1865b6341",
+  "columns": [
+   "Product[Color]",
+   "[s]"
+  ],
+  "rows": [
+   [
+    "Black",
+    1600.0
+   ],
+   [
+    "Blue",
+    180.0
+   ]
+  ]
+ },
+ "tables-start-at-desc-double-measure": {
+  "hash": "9c1c179d250e179c7053d2d5229bca6e3002c8f9",
+  "columns": [
+   "Product[Color]",
+   "[s]"
+  ],
+  "rows": [
+   [
+    "Black",
+    1600.5
+   ],
+   [
+    "Blue",
+    180.5
+   ]
+  ]
+ },
+ "tables-start-at-desc-integer-measure": {
+  "hash": "76a3691d57c468859ed7fc20ebd120bbd66d581c",
+  "columns": [
+   "Product[Color]",
+   "[q]"
+  ],
+  "rows": [
+   [
+    "Blue",
+    9
+   ],
+   [
+    "Black",
+    2
+   ]
+  ]
+ },
+ "tables-start-at-desc-model-column": {
+  "hash": "80cd0513cc00bb3efaeebcd9e4f7b973cc30a85c",
+  "columns": [
+   "Product[Price]"
+  ],
+  "rows": [
+   [
+    800.0
+   ],
+   [
+    60.0
+   ],
+   [
+    50.0
+   ],
+   [
+    20.0
+   ]
+  ]
+ },
+ "tables-start-at-descending": {
+  "hash": "2c6784de9833e2034335a1c45500919285150f0b",
+  "columns": [
+   "Product[Color]",
+   "[s]"
+  ],
+  "rows": [
+   [
+    "Blue",
+    180.0
+   ]
+  ]
+ },
+ "tables-start-at-text-descending": {
+  "hash": "383d815e24ee41451c56014d38a0c090744f89d0",
+  "columns": [
+   "Product[Name]"
+  ],
+  "rows": [
+   [
+    "Cap"
+   ]
+  ]
+ },
+ "tables-start-at-two-columns": {
+  "hash": "83d2d61e494998cfc5a3a2bb3412bb1fb8cd7656",
+  "columns": [
+   "Product[Color]",
+   "Customer[City]",
+   "[s]"
+  ],
+  "rows": [
+   [
+    "Black",
+    "Paris",
+    800.0
+   ],
+   [
+    "Blue",
+    null,
+    20.0
+   ],
+   [
+    "Blue",
+    "Paris",
+    160.0
+   ],
+   [
+    "Red",
+    "London",
+    1050.0
+   ],
+   [
+    "Red",
+    "Paris",
+    3300.0
+   ]
+  ]
+ },
+ "tables-substitutewithindex": {
+  "hash": "9b8186fd71c5eb43136353dd68176f62349c65a8",
+  "columns": [
+   "[s]",
+   "[i]"
+  ],
+  "rows": [
+   [
+    5600.0,
+    1
+   ],
+   [
+    530.0,
+    2
+   ]
+  ]
+ },
+ "tables-summarize-all-keeps-group-rows": {
+  "hash": "e47d1214c103ae1bfa3696c9a72892e914e3f52b",
+  "columns": [
+   "Product[Color]",
+   "[s]",
+   "[all]"
+  ],
+  "rows": [
+   [
+    "Red",
+    4350.0,
+    4350.0
+   ],
+   [
+    "Black",
+    1600.0,
+    1600.0
+   ],
+   [
+    "Blue",
+    180.0,
+    180.0
+   ]
+  ]
+ },
+ "tables-summarize-expression-per-group": {
+  "hash": "831c44f5841317460561810cfcb4ee166f1fcfc7",
+  "columns": [
+   "Product[Color]",
+   "[q]"
+  ],
+  "rows": [
+   [
+    "Red",
+    11
+   ],
+   [
+    "Black",
+    2
+   ],
+   [
+    "Blue",
+    9
+   ]
+  ]
+ },
+ "tables-summarize-rollup-filter-replaces-year": {
+  "hash": "6098334b9b385e3d0a37974fb3b83c0303eda24e",
+  "columns": [
+   "Date[Year]",
+   "[y2024]"
+  ],
+  "rows": [
+   [
+    2023,
+    null
+   ],
+   [
+    2024,
+    4120.0
+   ],
+   [
+    null,
+    4120.0
+   ]
+  ]
+ },
+ "tables-summarize-rollup-issubtotal": {
+  "hash": "33f39cdb9069884045dc2baaeeeffddbb2a365af",
+  "columns": [
+   "Category[Category]",
+   "Product[Name]",
+   "[s]",
+   "[byName]",
+   "[byCategory]"
+  ],
+  "rows": [
+   [
+    "Bikes",
+    "Road Bike",
+    4000.0,
+    false,
+    false
+   ],
+   [
+    "Bikes",
+    "Mountain Bike",
+    1600.0,
+    false,
+    false
+   ],
+   [
+    "Clothing",
+    "Jersey",
+    350.0,
+    false,
+    false
+   ],
+   [
+    "Clothing",
+    "Cap",
+    180.0,
+    false,
+    false
+   ],
+   [
+    "Bikes",
+    null,
+    5600.0,
+    true,
+    false
+   ],
+   [
+    "Clothing",
+    null,
+    530.0,
+    true,
+    false
+   ],
+   [
+    null,
+    null,
+    6130.0,
+    true,
+    true
+   ]
+  ]
+ },
+ "tables-topn-products-by-sales": {
+  "hash": "2c3c5b6829f4afc4e077d522987281269ab15f0c",
+  "columns": [
+   "Product[Name]"
+  ],
+  "rows": [
+   [
+    "Mountain Bike"
+   ],
+   [
+    "Road Bike"
+   ]
+  ]
+ },
+ "tables-topn-ties-table-constructor": {
+  "hash": "6f7aa158733f29a2a81b648a2718af0375878be5",
+  "columns": [
+   "[Value1]",
+   "[Value2]"
+  ],
+  "rows": [
+   [
+    "a",
+    1
+   ],
+   [
+    "b",
+    1
+   ]
+  ]
+ },
+ "tables-topnskip-ascending": {
+  "hash": "a2176dd3f9e4b33c52c14292da5ddf22494f3862",
+  "columns": [
+   "[Name]",
+   "[Price]"
+  ],
+  "rows": [
+   [
+    "Jersey",
+    50.0
+   ],
+   [
+    "Helmet",
+    60.0
+   ]
+  ]
+ },
+ "tables-topnskip-descending": {
+  "hash": "9dc2d911e41d079ca4e25a7d004313cf8bb4a0b9",
+  "columns": [
+   "[Name]",
+   "[Price]"
+  ],
+  "rows": [
+   [
+    "Mountain Bike",
+    800.0
+   ],
+   [
+    "Helmet",
+    60.0
+   ]
+  ]
+ },
+ "tables-union-constants": {
+  "hash": "3872ade34c773b61416ea08e78ac1cc1e642151a",
+  "columns": [
+   "[Value]"
+  ],
+  "rows": [
+   [
+    1
+   ],
+   [
+    2
+   ]
+  ]
+ }
+}

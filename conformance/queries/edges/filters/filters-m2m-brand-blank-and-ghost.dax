@@ -1,0 +1,12 @@
+// note: Target through the many-to-many on Product[Brand], a column that is not a key, by brand with a total: the NULL-brand target against the NULL-brand product (a blank meeting a blank), the "Ghost" brand no product has (a many-to-many has no blank row, so only the unfiltered total can see it), and Target rows with Product's filters removed
+EVALUATE
+SUMMARIZECOLUMNS(
+    ROLLUPADDISSUBTOTAL(Product[Brand], "Is Total"),
+    "Target", [Target Amount],
+    "Target Rows", COUNTROWS(Target),
+    "Target Rows No Product Filter", CALCULATE(COUNTROWS(Target), REMOVEFILTERS(Product)),
+    "Ghost Target", CALCULATE([Target Amount], Target[Brand] = "Ghost"),
+    "Blank Brand Target", CALCULATE([Target Amount], ISBLANK(Target[Brand])),
+    "Products", COUNTROWS(Product)
+)
+ORDER BY [Is Total], Product[Brand]

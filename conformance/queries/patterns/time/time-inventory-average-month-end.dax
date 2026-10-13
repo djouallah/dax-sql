@@ -1,0 +1,7 @@
+// note: average of month-end balances: AVERAGEX over months with context transition into LASTDATE
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year], Product[Category],
+    "Avg Month End", [Inventory Avg Month End]
+)
+ORDER BY 'Date'[Year], Product[Category]

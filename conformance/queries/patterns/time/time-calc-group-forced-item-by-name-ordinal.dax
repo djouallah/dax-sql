@@ -1,0 +1,9 @@
+// note: a CALCULATE filter on the calculation group's name column replaces the item of a row grouped by the group's name and ordinal
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Time Intelligence'[Time Intelligence], 'Time Intelligence'[Ordinal], 'Date'[Year],
+    "Sales", [Sales Amount],
+    "Forced PY", CALCULATE([Sales Amount], 'Time Intelligence'[Time Intelligence] = "PY"),
+    "Forced YTD", CALCULATE([Sales Amount], 'Time Intelligence'[Time Intelligence] = "YTD")
+)
+ORDER BY 'Time Intelligence'[Ordinal], 'Date'[Year]

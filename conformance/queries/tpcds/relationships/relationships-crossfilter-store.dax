@@ -1,0 +1,2 @@
+// note: stores per item category: a store is filtered by the items it sold only once CROSSFILTER makes store_sales filter it
+EVALUATE SUMMARIZECOLUMNS('item'[i_category], "all", COUNTROWS(store), "sold there", CALCULATE(COUNTROWS(store), CROSSFILTER(store_sales[ss_store_sk], store[s_store_sk], BOTH)))

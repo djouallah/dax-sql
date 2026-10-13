@@ -1,0 +1,16 @@
+// note: visual calculation, two levels on the rows, state then store: share of the grand total, through COLLAPSEALL
+DEFINE
+	COLUMN 'V'[calc] = DIVIDE([Rev], COLLAPSEALL([Rev], ROWS))
+	TABLE 'V' =
+		SELECTCOLUMNS(
+			SUMMARIZECOLUMNS(ROLLUPADDISSUBTOTAL('store'[s_state], "T1", 'store'[s_store_name], "T2"), "Rev", [Store Revenue]),
+			"state", 'store'[s_state], "T1", [T1], "store", 'store'[s_store_name], "T2", [T2], "Rev", [Rev]
+		)
+		WITH VISUAL SHAPE
+		AXIS rows
+			GROUP [state] TOTAL [T1]
+			GROUP [store] TOTAL [T2]
+			ORDER BY [state] ASC, [store] ASC
+		DENSIFY "IsDensifiedRow"
+EVALUATE 'V'
+ORDER BY 'V'[T1], 'V'[state], 'V'[T2], 'V'[store]

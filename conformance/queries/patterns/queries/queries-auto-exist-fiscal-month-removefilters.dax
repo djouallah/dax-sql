@@ -1,0 +1,11 @@
+// note: auto-exist between two filters on the Date table: fiscal years 2022 and 2025 with July keep only fiscal 2025 (July 2022 is fiscal 2023), so removing the month filter must not bring fiscal 2022 back
+EVALUATE
+SUMMARIZECOLUMNS(
+	'Date'[Year],
+	TREATAS({2022, 2025}, 'Date'[Fiscal Year]),
+	TREATAS({7}, 'Date'[Month]),
+	"Sales_Amount", 'Sales'[Sales Amount],
+	"Month_Removed", CALCULATE([Sales Amount], REMOVEFILTERS('Date'[Month])),
+	"Year_And_Month_Removed", CALCULATE([Sales Amount], REMOVEFILTERS('Date'[Year], 'Date'[Month]))
+)
+ORDER BY 'Date'[Year]

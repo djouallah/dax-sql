@@ -1,0 +1,8 @@
+// note: RELATEDTABLE in an iterator over Customer is a context transition: customers with orders and their order lines, by country, in 2023
+EVALUATE
+SUMMARIZECOLUMNS(
+    Customer[Country],
+    TREATAS({2023}, 'Date'[Year]),
+    "Buying Customers", COUNTROWS(FILTER(Customer, NOT ISEMPTY(RELATEDTABLE(Sales)))),
+    "Lines", SUMX(Customer, COUNTROWS(RELATEDTABLE(Sales)))
+)

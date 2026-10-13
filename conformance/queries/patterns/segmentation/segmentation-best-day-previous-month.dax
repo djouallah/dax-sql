@@ -1,0 +1,16 @@
+// note: in each month of 2024, the best day of the month before and its number of selling days, found by iterating ALL('Date'[Date]) and calling the measure by context transition on the date table's key while the month and the year are still filtered
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year Month],
+    TREATAS({ 2024 }, 'Date'[Year]),
+    "Sales", [Sales Amount],
+    "Best Day Previous Month",
+        VAR lo = EOMONTH(MIN('Date'[Date]), -2) + 1
+        VAR hi = EOMONTH(MIN('Date'[Date]), -1)
+        RETURN MAXX(FILTER(ALL('Date'[Date]), 'Date'[Date] >= lo && 'Date'[Date] <= hi), [Sales Amount]),
+    "Selling Days Previous Month",
+        VAR lo = EOMONTH(MIN('Date'[Date]), -2) + 1
+        VAR hi = EOMONTH(MIN('Date'[Date]), -1)
+        RETURN COUNTROWS(FILTER(FILTER(ALL('Date'[Date]), 'Date'[Date] >= lo && 'Date'[Date] <= hi), NOT ISBLANK([Sales Amount])))
+)
+ORDER BY 'Date'[Year Month]

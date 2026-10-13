@@ -1,0 +1,12 @@
+// note: SUMMARIZECOLUMNS grouped by quarter and customer band with two filters on the Date table (year 2024; February and March): the band counts inside the filters, then with REMOVEFILTERS of the month name alone
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Quarter],
+    Segments[Segment],
+    TREATAS({ 2024 }, 'Date'[Year]),
+    TREATAS({ "February", "March" }, 'Date'[Month Name]),
+    "Customers", [Segment Customer Count],
+    "Customers Without Month Filter", CALCULATE([Segment Customer Count], REMOVEFILTERS('Date'[Month Name])),
+    "Sales Without Month Filter", CALCULATE([Sales Amount], REMOVEFILTERS('Date'[Month Name]))
+)
+ORDER BY 'Date'[Quarter], Segments[Segment]

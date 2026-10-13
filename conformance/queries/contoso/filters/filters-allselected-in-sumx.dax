@@ -1,0 +1,3 @@
+// note: ALLSELECTED inside SUMX over colors restores the selection, not the row's color
+EVALUATE CALCULATETABLE(ROW("x", SUMX(VALUES(Product[Color]), CALCULATE([Sales Amount], ALLSELECTED(Product[Color])))),
+    Product[Color] IN {"Red", "Blue"})

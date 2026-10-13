@@ -1,0 +1,2 @@
+// note: two fixed decimals divided, and a fixed decimal plus a fractional number
+EVALUATE ROW("s", DIVIDE([Red Sales], [Sales Amount]), "p", [Red Sales] + 1 / 3)

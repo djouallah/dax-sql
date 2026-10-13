@@ -1,0 +1,2 @@
+// note: xmla_compare.py selectivity ladder: SUMX of a product, one store and month
+EVALUATE ROW("r", CALCULATE(SUMX(store_sales, store_sales[ss_quantity] * store_sales[ss_ext_sales_price]), store_sales[ss_store_sk] = 1, date_dim[d_year] = 2025, date_dim[d_moy] = 6))

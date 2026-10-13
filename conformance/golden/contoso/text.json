@@ -1,0 +1,57 @@
+{
+ "text-case-insensitive-compare": {
+  "hash": "4efabd17ed0bfe5cef4559492016e71bad81d5d9",
+  "columns": [
+   "[pred]",
+   "[treatas]",
+   "[one]",
+   "[lookup]",
+   "[strict]",
+   "[lt]"
+  ],
+  "rows": [
+   [
+    2,
+    3,
+    2,
+    "Cap",
+    2,
+    true
+   ]
+  ]
+ },
+ "text-case-insensitive-filter-table": {
+  "hash": "2c2685b2a5518e17d07446c63217918700c67ec0",
+  "columns": [
+   "Product[Color]",
+   "[n]"
+  ],
+  "rows": [
+   [
+    "Red",
+    2
+   ],
+   [
+    "Blue",
+    1
+   ]
+  ]
+ },
+ "text-substitute-instance": {
+  "hash": "df0a2ab826e90ec3db1f7a3a1f4ba12700848494",
+  "columns": [
+   "[second]",
+   "[none]",
+   "[longer]",
+   "[every]"
+  ],
+  "rows": [
+   [
+    "a-b+c",
+    "a-b-c",
+    "x--y=z",
+    "a+b+c"
+   ]
+  ]
+ }
+}

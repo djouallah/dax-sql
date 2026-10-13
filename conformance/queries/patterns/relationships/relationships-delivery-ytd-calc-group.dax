@@ -1,0 +1,10 @@
+// note: the YTD calculation item applied to a measure that switches to the Delivery Date relationship, beside the same item on order dates
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[YearMonth],
+    TREATAS({ 2024 }, 'Date'[Year]),
+    TREATAS({ "YTD" }, 'Time Intelligence'[Time Intelligence]),
+    "Delivered YTD", [Sales Delivered via Relationship],
+    "Ordered YTD", [Sales Amount]
+)
+ORDER BY 'Date'[YearMonth]

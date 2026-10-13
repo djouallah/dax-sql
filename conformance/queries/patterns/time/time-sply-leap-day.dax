@@ -1,0 +1,10 @@
+// note: SAMEPERIODLASTYEAR day by day through a leap February (Feb 29 maps onto Feb 28)
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Date],
+    TREATAS({202402}, 'Date'[YearMonth]),
+    "Days", COUNTROWS('Date'),
+    "Sales", [Sales Amount],
+    "SPLY", [Sales PY SPLY]
+)
+ORDER BY 'Date'[Date]

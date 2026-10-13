@@ -1,0 +1,7 @@
+// note: ROWNUMBER partitioned by country over SUMMARIZE(Sales) with an added sales column: the three best customers of each country, the sales of a customer missing from Customer forming a blank-country partition of its own
+EVALUATE
+VAR t = ADDCOLUMNS(SUMMARIZE(Sales, Customer[Country], Customer[Customer]), "@Sales", [Sales Amount])
+VAR numbered = ADDCOLUMNS(t, "@Row", ROWNUMBER(t, ORDERBY([@Sales], DESC, Customer[Customer], ASC), PARTITIONBY(Customer[Country])))
+RETURN
+    FILTER(numbered, [@Row] <= 3)
+ORDER BY Customer[Country], [@Row]

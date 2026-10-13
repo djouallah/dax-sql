@@ -1,0 +1,12 @@
+// note: by StoreProfile[Format] across the both-directions one-to-one with gaps on both sides (SYD-01 has no profile, BER-01 no store): SUMX over Store of lines times RELATED floors, store and profile counts and managers; Format "" (NYC-01) and the blank format (NULL format plus the blank row) are separate rows
+EVALUATE
+SUMMARIZECOLUMNS(
+    StoreProfile[Format],
+    "Format Is Blank", ISBLANK(SELECTEDVALUE(StoreProfile[Format])),
+    "Stores", COUNTROWS(Store),
+    "Profiles", COUNTROWS(StoreProfile),
+    "Lines", [Lines],
+    "Lines Times Floors", SUMX(Store, [Lines] * RELATED(StoreProfile[Floors])),
+    "Managers", CONCATENATEX(StoreProfile, StoreProfile[Manager], ", ", StoreProfile[StoreKey], ASC)
+)
+ORDER BY StoreProfile[Format], [Format Is Blank]

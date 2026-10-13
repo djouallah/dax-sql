@@ -1,0 +1,2 @@
+// note: START AT on a DESC fixed-decimal measure with a decimal literal (1600.0) instead of a whole number
+EVALUATE SUMMARIZECOLUMNS(Product[Color], "s", [Sales Amount]) ORDER BY [s] DESC START AT 1600.0

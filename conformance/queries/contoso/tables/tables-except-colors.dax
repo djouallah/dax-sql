@@ -1,0 +1,2 @@
+// note: EXCEPT of a column's values and a constant table
+EVALUATE EXCEPT(VALUES(Product[Color]), {"Red"})

@@ -1,0 +1,2 @@
+// note: CONCATENATEX over VALUES(column): the blank row of the unknown customer is listed, first when ascending
+EVALUATE ROW("c", CONCATENATEX(VALUES(Customer[City]), Customer[City], ", ", Customer[City], ASC))

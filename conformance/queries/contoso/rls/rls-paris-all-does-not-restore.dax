@@ -1,0 +1,3 @@
+// note: ALL does not bring back the rows a role removes
+// roles: Paris
+EVALUATE ROW("s", [Sales Amount], "all", CALCULATE([Sales Amount], ALL(Customer)), "c", COUNTROWS(ALL(Customer)))

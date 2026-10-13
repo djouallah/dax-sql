@@ -1,0 +1,2 @@
+// note: fct_summary[Revenue] per region of the unit
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS(dim_duid[Region], "Revenue", [Revenue]), dim_calendar[date] >= dt"2026-08-01", dim_calendar[date] <= dt"2026-08-13")

@@ -1,0 +1,2 @@
+// note: CALENDARAUTO covers whole years of the model's dates
+EVALUATE ROW("n", COUNTROWS(Days), "first", MIN(Days[Date]), "last", MAX(Days[Date]))

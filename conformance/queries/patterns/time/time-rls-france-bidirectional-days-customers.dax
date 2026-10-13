@@ -1,0 +1,12 @@
+// note: under the France role, Sales (filtered by the secured Customer table) filters back over relationships made bidirectional only for the query: to the days with sales and to Customer itself (a DAX error: two join paths from Customer to Customer)
+// expect: error
+// roles: France
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year],
+    "Sales", [Sales Amount],
+    "Days With Sales", CALCULATE(COUNTROWS('Date'), CROSSFILTER(Sales[Order Date], 'Date'[Date], BOTH)),
+    "Customer Rows Both", CALCULATE(COUNTROWS(Customer), CROSSFILTER(Sales[CustomerKey], Customer[CustomerKey], BOTH)),
+    "Customer Rows", COUNTROWS(Customer)
+)
+ORDER BY 'Date'[Year]

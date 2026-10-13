@@ -1,0 +1,3 @@
+// note: two roles: the rows either one keeps
+// roles: Paris, RedOnly
+EVALUATE ROW("s", [Sales Amount])

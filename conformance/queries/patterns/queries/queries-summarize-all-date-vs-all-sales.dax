@@ -1,0 +1,16 @@
+// note: SUMMARIZE of Sales by category and year, whose extension columns take the group's Sales rows as their filter: ALL('Date') and ALL(Product) inside them still leave the group's rows, where ALL(Sales) removes them, and REMOVEFILTERS of the year column keeps them too
+EVALUATE
+CALCULATETABLE(
+	SUMMARIZE(
+		Sales,
+		Product[Category],
+		'Date'[Year],
+		"Sales", [Sales Amount],
+		"All Date", CALCULATE([Sales Amount], ALL('Date')),
+		"All Product", CALCULATE([Sales Amount], ALL(Product)),
+		"All Sales", CALCULATE([Sales Amount], ALL(Sales)),
+		"Year Removed", CALCULATE([Sales Amount], REMOVEFILTERS('Date'[Year]))
+	),
+	'Date'[Year] IN {2023, 2024}
+)
+ORDER BY Product[Category], 'Date'[Year]

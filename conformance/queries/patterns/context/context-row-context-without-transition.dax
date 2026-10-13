@@ -1,0 +1,7 @@
+// note: an aggregation inside an iterator sees no row context without CALCULATE, while CALCULATE turns the row into a filter
+EVALUATE
+SUMMARIZECOLUMNS(
+    Customer[Country],
+    "No Transition", SUMX(Customer, SUM(Sales[Quantity])),
+    "Transition", SUMX(Customer, CALCULATE(SUM(Sales[Quantity])))
+)

@@ -1,0 +1,36 @@
+name: Conformance
+
+# Runs the conformance suite (conformance/) against this repo through its adapter and prints the
+# scoreboard. The engine is a black box: the runner gives the adapter the models, their data and
+# the queries, and compares the rows it answers with Power BI's (conformance/golden/).
+
+on:
+  push:
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  contents: read
+
+jobs:
+  dax-sql:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: The suite against dax-sql
+        run: |
+          node conformance/runner/run.mjs --adapter "node conformance/engines/dax-sql/adapter.mjs ." \
+            --known conformance/engines/dax-sql/known.json --report "$RUNNER_TEMP/dax-sql.json"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dax-sql-report
+          path: ${{ runner.temp }}/dax-sql.json

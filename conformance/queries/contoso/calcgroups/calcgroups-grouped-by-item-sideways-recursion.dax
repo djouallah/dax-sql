@@ -1,0 +1,3 @@
+// note: grouped by year and calculation item; YOY calls the PY item (sideways recursion); blank cells drop out
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('Date'[Year], 'Time Calc'[Time Calc], "s", [Sales Amount]),
+    'Time Calc'[Time Calc] IN {"Current", "PY", "YOY"})

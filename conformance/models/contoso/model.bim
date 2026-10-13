@@ -1,0 +1,681 @@
+{
+  "name": "contoso",
+  "compatibilityLevel": 1604,
+  "model": {
+    "culture": "en-US",
+    "discourageImplicitMeasures": true,
+    "defaultPowerBIDataSourceVersion": "powerBI_V3",
+    "tables": [
+      {
+        "name": "Category",
+        "columns": [
+          {
+            "name": "CategoryKey",
+            "dataType": "int64",
+            "sourceColumn": "CategoryKey",
+            "isKey": true
+          },
+          {
+            "name": "Category",
+            "dataType": "string",
+            "sourceColumn": "Category"
+          }
+        ],
+        "measures": [],
+        "partitions": [
+          {
+            "name": "Category",
+            "source": {
+              "type": "entity",
+              "entityName": "Category"
+            }
+          }
+        ]
+      },
+      {
+        "name": "Product",
+        "columns": [
+          {
+            "name": "ProductKey",
+            "dataType": "int64",
+            "sourceColumn": "ProductKey",
+            "isKey": true
+          },
+          {
+            "name": "Name",
+            "dataType": "string",
+            "sourceColumn": "Name"
+          },
+          {
+            "name": "Color",
+            "dataType": "string",
+            "sourceColumn": "Color"
+          },
+          {
+            "name": "CategoryKey",
+            "dataType": "int64",
+            "sourceColumn": "CategoryKey"
+          },
+          {
+            "name": "Price",
+            "dataType": "double",
+            "sourceColumn": "Price"
+          },
+          {
+            "name": "PriceBand",
+            "dataType": "string",
+            "type": "calculated",
+            "expression": "IF(Product[Price] >= 100, \"High\", \"Low\")"
+          }
+        ],
+        "measures": [
+          {
+            "name": "Avg Price",
+            "expression": "AVERAGE(Product[Price])"
+          },
+          {
+            "name": "Product Count",
+            "expression": "COUNTROWS(Product)"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Product",
+            "source": {
+              "type": "entity",
+              "entityName": "Product"
+            }
+          }
+        ]
+      },
+      {
+        "name": "Customer",
+        "columns": [
+          {
+            "name": "CustomerKey",
+            "dataType": "int64",
+            "sourceColumn": "CustomerKey",
+            "isKey": true
+          },
+          {
+            "name": "Customer",
+            "dataType": "string",
+            "sourceColumn": "Customer"
+          },
+          {
+            "name": "City",
+            "dataType": "string",
+            "sourceColumn": "City"
+          },
+          {
+            "name": "Flag",
+            "dataType": "int64",
+            "type": "calculated",
+            "expression": "1"
+          },
+          {
+            "name": "Total Sales",
+            "dataType": "double",
+            "type": "calculated",
+            "expression": "CALCULATE(SUM(Sales[Amount]))"
+          }
+        ],
+        "measures": [],
+        "partitions": [
+          {
+            "name": "Customer",
+            "source": {
+              "type": "entity",
+              "entityName": "Customer"
+            }
+          }
+        ]
+      },
+      {
+        "name": "Date",
+        "dataCategory": "Time",
+        "columns": [
+          {
+            "name": "Date",
+            "dataType": "dateTime",
+            "sourceColumn": "Date",
+            "isKey": true
+          },
+          {
+            "name": "Year",
+            "dataType": "int64",
+            "sourceColumn": "Year"
+          },
+          {
+            "name": "Month",
+            "dataType": "int64",
+            "sourceColumn": "Month"
+          },
+          {
+            "name": "Quarter",
+            "dataType": "int64",
+            "sourceColumn": "Quarter"
+          }
+        ],
+        "measures": [],
+        "partitions": [
+          {
+            "name": "Date",
+            "source": {
+              "type": "entity",
+              "entityName": "Date"
+            }
+          }
+        ]
+      },
+      {
+        "name": "Sales",
+        "columns": [
+          {
+            "name": "OrderDate",
+            "dataType": "dateTime",
+            "sourceColumn": "OrderDate"
+          },
+          {
+            "name": "ShipDate",
+            "dataType": "dateTime",
+            "sourceColumn": "ShipDate"
+          },
+          {
+            "name": "ProductKey",
+            "dataType": "int64",
+            "sourceColumn": "ProductKey"
+          },
+          {
+            "name": "CustomerKey",
+            "dataType": "int64",
+            "sourceColumn": "CustomerKey"
+          },
+          {
+            "name": "Qty",
+            "dataType": "int64",
+            "sourceColumn": "Qty"
+          },
+          {
+            "name": "Amount",
+            "dataType": "decimal",
+            "sourceColumn": "Amount"
+          },
+          {
+            "name": "LineValue",
+            "dataType": "double",
+            "type": "calculated",
+            "expression": "Sales[Qty] * RELATED(Product[Price])"
+          }
+        ],
+        "measures": [
+          {
+            "name": "Sales Amount",
+            "expression": "SUM(Sales[Amount])"
+          },
+          {
+            "name": "Quantity",
+            "expression": "SUM(Sales[Qty])"
+          },
+          {
+            "name": "Orders",
+            "expression": "COUNTROWS(Sales)"
+          },
+          {
+            "name": "Customers",
+            "expression": "DISTINCTCOUNT(Sales[CustomerKey])"
+          },
+          {
+            "name": "All Sales",
+            "expression": "CALCULATE([Sales Amount], ALL(Sales))"
+          },
+          {
+            "name": "Red Sales",
+            "expression": "CALCULATE([Sales Amount], Product[Color] = \"Red\")"
+          },
+          {
+            "name": "Red Sales Kept",
+            "expression": "CALCULATE([Sales Amount], KEEPFILTERS(Product[Color] = \"Red\"))"
+          },
+          {
+            "name": "Share of Category",
+            "expression": "DIVIDE([Sales Amount], CALCULATE([Sales Amount], ALLEXCEPT(Product, Category[Category])))"
+          },
+          {
+            "name": "Sales by Ship Date",
+            "expression": "CALCULATE([Sales Amount], USERELATIONSHIP(Sales[ShipDate], 'Date'[Date]))"
+          },
+          {
+            "name": "Sales YTD",
+            "expression": "TOTALYTD([Sales Amount], 'Date'[Date])"
+          },
+          {
+            "name": "Sales PY",
+            "expression": "CALCULATE([Sales Amount], SAMEPERIODLASTYEAR('Date'[Date]))"
+          },
+          {
+            "name": "Big Orders",
+            "expression": "CALCULATE([Orders], FILTER(Sales, Sales[Amount] > 100))"
+          },
+          {
+            "name": "Best Customer Sales",
+            "expression": "MAXX(VALUES(Customer[Customer]), [Sales Amount])"
+          },
+          {
+            "name": "Products Sold",
+            "expression": "COUNTROWS(FILTER(Product, [Sales Amount] > 0))"
+          },
+          {
+            "name": "Line Value",
+            "expression": "SUMX(Sales, Sales[Qty] * RELATED(Product[Price]))"
+          },
+          {
+            "name": "Line Value Column",
+            "expression": "SUM(Sales[LineValue])"
+          },
+          {
+            "name": "Return Rate",
+            "expression": "DIVIDE([Returned], [Quantity])"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Sales",
+            "source": {
+              "type": "entity",
+              "entityName": "Sales"
+            }
+          }
+        ]
+      },
+      {
+        "name": "Returns",
+        "columns": [
+          {
+            "name": "Date",
+            "dataType": "dateTime",
+            "sourceColumn": "Date"
+          },
+          {
+            "name": "ProductKey",
+            "dataType": "int64",
+            "sourceColumn": "ProductKey"
+          },
+          {
+            "name": "ReturnQty",
+            "dataType": "int64",
+            "sourceColumn": "ReturnQty"
+          }
+        ],
+        "measures": [
+          {
+            "name": "Returned",
+            "expression": "SUM(Returns[ReturnQty])"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Returns",
+            "source": {
+              "type": "entity",
+              "entityName": "Returns"
+            }
+          }
+        ]
+      },
+      {
+        "name": "CityTarget",
+        "columns": [
+          {
+            "name": "City",
+            "dataType": "string",
+            "sourceColumn": "City"
+          },
+          {
+            "name": "Target",
+            "dataType": "int64",
+            "sourceColumn": "Target"
+          }
+        ],
+        "measures": [
+          {
+            "name": "Target Total",
+            "expression": "SUM(CityTarget[Target])"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "CityTarget",
+            "source": {
+              "type": "entity",
+              "entityName": "CityTarget"
+            }
+          }
+        ]
+      },
+      {
+        "name": "Staff",
+        "columns": [
+          {
+            "name": "StaffKey",
+            "dataType": "int64",
+            "sourceColumn": "StaffKey",
+            "isKey": true
+          },
+          {
+            "name": "Name",
+            "dataType": "string",
+            "sourceColumn": "Name"
+          },
+          {
+            "name": "ManagerKey",
+            "dataType": "int64",
+            "sourceColumn": "ManagerKey"
+          }
+        ],
+        "measures": [],
+        "partitions": [
+          {
+            "name": "Staff",
+            "source": {
+              "type": "entity",
+              "entityName": "Staff"
+            }
+          }
+        ]
+      },
+      {
+        "name": "Big Products",
+        "columns": [
+          {
+            "name": "ProductKey",
+            "dataType": "int64",
+            "type": "calculatedTableColumn",
+            "sourceColumn": "[ProductKey]"
+          },
+          {
+            "name": "Name",
+            "dataType": "string",
+            "type": "calculatedTableColumn",
+            "sourceColumn": "[Name]"
+          },
+          {
+            "name": "Price",
+            "dataType": "double",
+            "type": "calculatedTableColumn",
+            "sourceColumn": "[Price]"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Big Products",
+            "source": {
+              "type": "calculated",
+              "expression": "SELECTCOLUMNS(FILTER(Product, Product[Price] >= 100), \"ProductKey\", Product[ProductKey], \"Name\", Product[Name], \"Price\", Product[Price])"
+            }
+          }
+        ]
+      },
+      {
+        "name": "Days",
+        "columns": [
+          {
+            "name": "Date",
+            "dataType": "dateTime",
+            "type": "calculatedTableColumn",
+            "sourceColumn": "[Date]"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Days",
+            "source": {
+              "type": "calculated",
+              "expression": "CALENDARAUTO()"
+            }
+          }
+        ]
+      },
+      {
+        "name": "Time Calc",
+        "calculationGroup": {
+          "precedence": 10,
+          "calculationItems": [
+            {
+              "name": "Current",
+              "expression": "SELECTEDMEASURE()",
+              "ordinal": 0
+            },
+            {
+              "name": "YTD",
+              "expression": "CALCULATE(SELECTEDMEASURE(), DATESYTD('Date'[Date]))",
+              "ordinal": 1
+            },
+            {
+              "name": "PY",
+              "expression": "CALCULATE(SELECTEDMEASURE(), SAMEPERIODLASTYEAR('Date'[Date]))",
+              "ordinal": 2
+            },
+            {
+              "name": "YOY",
+              "expression": "SELECTEDMEASURE() - CALCULATE(SELECTEDMEASURE(), 'Time Calc'[Time Calc] = \"PY\")",
+              "ordinal": 3
+            },
+            {
+              "name": "Name",
+              "expression": "SELECTEDMEASURENAME()",
+              "ordinal": 4
+            },
+            {
+              "name": "Tenfold",
+              "expression": "[Sales Amount] * 10",
+              "ordinal": 5
+            }
+          ]
+        },
+        "columns": [
+          {
+            "name": "Time Calc",
+            "dataType": "string",
+            "sourceColumn": "Name",
+            "sortByColumn": "Ordinal"
+          },
+          {
+            "name": "Ordinal",
+            "dataType": "int64",
+            "sourceColumn": "Ordinal"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Time Calc Partition",
+            "source": {
+              "type": "calculationGroup"
+            }
+          }
+        ]
+      },
+      {
+        "name": "Scale",
+        "calculationGroup": {
+          "precedence": 20,
+          "calculationItems": [
+            {
+              "name": "x2",
+              "expression": "SELECTEDMEASURE() * 2",
+              "ordinal": 0
+            },
+            {
+              "name": "plus1",
+              "expression": "SELECTEDMEASURE() + 1",
+              "ordinal": 1
+            }
+          ]
+        },
+        "columns": [
+          {
+            "name": "Scale",
+            "dataType": "string",
+            "sourceColumn": "Name",
+            "sortByColumn": "Ordinal"
+          },
+          {
+            "name": "Ordinal",
+            "dataType": "int64",
+            "sourceColumn": "Ordinal"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Scale Partition",
+            "source": {
+              "type": "calculationGroup"
+            }
+          }
+        ]
+      },
+      {
+        "name": "Fields",
+        "columns": [
+          {
+            "name": "Fields",
+            "dataType": "string",
+            "type": "calculatedTableColumn",
+            "sourceColumn": "[Value1]"
+          },
+          {
+            "name": "Fields Fields",
+            "dataType": "string",
+            "type": "calculatedTableColumn",
+            "sourceColumn": "[Value2]",
+            "extendedProperties": [
+              {
+                "type": "json",
+                "name": "ParameterMetadata",
+                "value": {
+                  "version": 3,
+                  "kind": 2
+                }
+              }
+            ]
+          },
+          {
+            "name": "Fields Order",
+            "dataType": "int64",
+            "type": "calculatedTableColumn",
+            "sourceColumn": "[Value3]"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Fields",
+            "source": {
+              "type": "calculated",
+              "expression": "{ (\"Sales\", NAMEOF('Sales'[Sales Amount]), 0), (\"Quantity\", NAMEOF('Sales'[Quantity]), 1), (\"Color\", NAMEOF('Product'[Color]), 2) }"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "name": "sales_product",
+        "fromTable": "Sales",
+        "fromColumn": "ProductKey",
+        "toTable": "Product",
+        "toColumn": "ProductKey"
+      },
+      {
+        "name": "product_category",
+        "fromTable": "Product",
+        "fromColumn": "CategoryKey",
+        "toTable": "Category",
+        "toColumn": "CategoryKey"
+      },
+      {
+        "name": "sales_customer",
+        "fromTable": "Sales",
+        "fromColumn": "CustomerKey",
+        "toTable": "Customer",
+        "toColumn": "CustomerKey"
+      },
+      {
+        "name": "sales_orderdate",
+        "fromTable": "Sales",
+        "fromColumn": "OrderDate",
+        "toTable": "Date",
+        "toColumn": "Date"
+      },
+      {
+        "name": "sales_shipdate",
+        "fromTable": "Sales",
+        "fromColumn": "ShipDate",
+        "toTable": "Date",
+        "toColumn": "Date",
+        "isActive": false
+      },
+      {
+        "name": "returns_product",
+        "fromTable": "Returns",
+        "fromColumn": "ProductKey",
+        "toTable": "Product",
+        "toColumn": "ProductKey"
+      },
+      {
+        "name": "returns_date",
+        "fromTable": "Returns",
+        "fromColumn": "Date",
+        "toTable": "Date",
+        "toColumn": "Date"
+      },
+      {
+        "name": "target_city",
+        "fromTable": "CityTarget",
+        "fromColumn": "City",
+        "toTable": "Customer",
+        "toColumn": "City",
+        "fromCardinality": "many",
+        "toCardinality": "many"
+      },
+      {
+        "name": "sales_big",
+        "fromTable": "Sales",
+        "fromColumn": "ProductKey",
+        "toTable": "Big Products",
+        "toColumn": "ProductKey"
+      }
+    ],
+    "roles": [
+      {
+        "name": "Paris",
+        "modelPermission": "read",
+        "tablePermissions": [
+          {
+            "name": "Customer",
+            "filterExpression": "Customer[City] = \"Paris\""
+          }
+        ]
+      },
+      {
+        "name": "RedOnly",
+        "modelPermission": "read",
+        "tablePermissions": [
+          {
+            "name": "Product",
+            "filterExpression": "Product[Color] = \"Red\""
+          }
+        ]
+      },
+      {
+        "name": "Me",
+        "modelPermission": "read",
+        "tablePermissions": [
+          {
+            "name": "Customer",
+            "filterExpression": "Customer[Customer] = USERPRINCIPALNAME()"
+          }
+        ]
+      }
+    ]
+  }
+}

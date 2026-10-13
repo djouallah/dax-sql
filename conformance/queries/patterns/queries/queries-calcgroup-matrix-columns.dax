@@ -1,0 +1,11 @@
+// note: calculation items as matrix columns (KEEPFILTERS on the item list) under a category rollup, at one month
+EVALUATE
+SUMMARIZECOLUMNS(
+	ROLLUPADDISSUBTOTAL('Category'[Category], "IsGrandTotalRowTotal"),
+	'Time Intelligence'[Time Intelligence],
+	'Time Intelligence'[Ordinal],
+	TREATAS({202406}, 'Date'[YearMonth]),
+	KEEPFILTERS(TREATAS({"Current", "YTD", "MAT"}, 'Time Intelligence'[Time Intelligence])),
+	"Sales_Amount", 'Sales'[Sales Amount]
+)
+ORDER BY [IsGrandTotalRowTotal] DESC, 'Category'[Category], 'Time Intelligence'[Ordinal]

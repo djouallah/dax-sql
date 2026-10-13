@@ -1,0 +1,2 @@
+// note: CALCULATE(..., ALL(Product)) inside SUMX over colors removes the transition's filter: the total once per color
+EVALUATE ROW("x", SUMX(VALUES(Product[Color]), CALCULATE([Sales Amount], ALL(Product))))

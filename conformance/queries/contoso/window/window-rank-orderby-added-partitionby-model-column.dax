@@ -1,0 +1,2 @@
+// note: RANK over a table variable, ORDERBY an added column and PARTITIONBY a model column
+EVALUATE VAR t = ADDCOLUMNS(VALUES(Product[Name]), "Band", IF(CALCULATE(MAX(Product[Price])) >= 100, "High"), "s", [Sales Amount]) RETURN ADDCOLUMNS(t, "r", RANK(DENSE, t, ORDERBY([s], DESC), PARTITIONBY(Product[Name])))

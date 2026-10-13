@@ -1,0 +1,9 @@
+// note: USERELATIONSHIP on Delivery Date around the conversion measure: amounts land on delivery dates and convert at the delivery date's rate
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year],
+    Currency[CurrencyCode],
+    "Sales USD", [Sales USD],
+    "Sales USD at Delivery", [Sales USD Delivered Relationship]
+)
+ORDER BY 'Date'[Year], Currency[CurrencyCode]

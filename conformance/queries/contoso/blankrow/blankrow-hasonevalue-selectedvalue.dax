@@ -1,0 +1,2 @@
+// note: HASONEVALUE and SELECTEDVALUE on the blank row's group
+EVALUATE SUMMARIZECOLUMNS(Customer[Customer], "h", HASONEVALUE(Customer[Customer]), "sv", SELECTEDVALUE(Customer[Customer], "none"))

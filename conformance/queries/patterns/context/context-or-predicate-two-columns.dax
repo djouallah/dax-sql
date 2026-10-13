@@ -1,0 +1,8 @@
+// note: a CALCULATE predicate on two columns of one table (color OR brand) overwrites the filters on both columns; KEEPFILTERS intersects with the color grouping
+EVALUATE
+SUMMARIZECOLUMNS(
+    Product[Color],
+    "Sales", [Sales Amount],
+    "Red Or Contoso", CALCULATE([Sales Amount], Product[Color] = "Red" || Product[Brand] = "Contoso"),
+    "Red Or Contoso Kept", CALCULATE([Sales Amount], KEEPFILTERS(Product[Color] = "Red" || Product[Brand] = "Contoso"))
+)

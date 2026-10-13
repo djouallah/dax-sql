@@ -1,0 +1,8 @@
+// note: OPENINGBALANCEQUARTER reads the snapshot of the day before the quarter, blank for the first quarter
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year], 'Date'[Quarter],
+    "Opening", [Inventory Opening Quarter],
+    "Closing", [Inventory Closing Month]
+)
+ORDER BY 'Date'[Year], 'Date'[Quarter]

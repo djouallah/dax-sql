@@ -1,0 +1,12 @@
+// note: the Bikes role on Category filters Budget and, down the snowflake, Sales; fact rows with a missing product are hidden too
+// roles: Bikes
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year],
+    Category[Category],
+    "Lines", [Order Lines],
+    "Sales", [Sales Amount],
+    "Budget", [Budget Amount],
+    "Visible Lines", COUNTROWS(ALL(Sales))
+)
+ORDER BY 'Date'[Year], Category[Category]

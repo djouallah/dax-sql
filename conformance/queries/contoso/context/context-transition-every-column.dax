@@ -1,0 +1,3 @@
+// note: context transition over a Customer row filters every column: ALLEXCEPT keeps the city, removing the key keeps the rest
+EVALUATE SELECTCOLUMNS(Customer, "Customer", Customer[Customer], "city", CALCULATE([Sales Amount], ALLEXCEPT(Customer, Customer[City])),
+    "noKey", CALCULATE([Sales Amount], REMOVEFILTERS(Customer[CustomerKey])))

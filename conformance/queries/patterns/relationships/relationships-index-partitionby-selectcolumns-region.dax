@@ -1,0 +1,17 @@
+// note: INDEX of the best category per region, the region a column computed by SELECTCOLUMNS over 2023 sales by country and category (a DAX error: PARTITIONBY cannot use columns added by table functions)
+// expect: error
+DEFINE
+    VAR t =
+        SELECTCOLUMNS(
+            SUMMARIZECOLUMNS(Customer[Country], Category[Category], TREATAS({ 2023 }, 'Date'[Year]), "Sales", [Sales Amount]),
+            Customer[Country],
+            Category[Category],
+            "Sales", [Sales],
+            "Region", IF(Customer[Country] IN { "France", "Germany" }, "Europe", "Rest")
+        )
+EVALUATE
+ADDCOLUMNS(
+    t,
+    "Best In Region", MAXX(INDEX(1, t, ORDERBY([Sales], DESC, Customer[Country], ASC, Category[Category], ASC), PARTITIONBY([Region])), [Sales])
+)
+ORDER BY Customer[Country], Category[Category]

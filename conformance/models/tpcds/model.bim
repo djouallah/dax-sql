@@ -1,0 +1,1011 @@
+{
+  "name": "tpcds",
+  "compatibilityLevel": 1604,
+  "model": {
+    "culture": "en-US",
+    "defaultPowerBIDataSourceVersion": "powerBI_V3",
+    "annotations": [
+      {
+        "name": "PBI_ProTooling",
+        "value": "[\"RemoteModeling\", \"DirectLakeOnOneLakeCreatedInDesktop\"]"
+      }
+    ],
+    "tables": [
+      {
+        "name": "date_dim",
+        "description": "The date dimension, 2,191 rows covering 2021-01-01..2026-12-31, marked as the model's date table (dataCategory Time). THE KEY COLUMN IS d_date, NOT d_date_sk_1: a Tabular table may carry at most ONE isKey column, and a marked date table requires it to be the DATE column -- both keyed is what Fabric rejected at create time on run 34563142340. d_date_sk_1 is still the relationship target for both facts (the paper's shifted key; d_date_sk is not in the model at all, so the substitution cannot be undone by accident), which needs uniqueness but not isKey. The time-intelligence measures name date_dim[d_date] explicitly, so they never depended on the marking.",
+        "sourceLineageTag": "[mart].[date_dim]",
+        "columns": [
+          {
+            "name": "d_date_sk_1",
+            "dataType": "int64",
+            "sourceColumn": "d_date_sk_1",
+            "sourceLineageTag": "d_date_sk_1",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "d_date",
+            "dataType": "dateTime",
+            "sourceColumn": "d_date",
+            "sourceLineageTag": "d_date",
+            "summarizeBy": "none",
+            "formatString": "yyyy-MM-dd",
+            "isKey": true
+          },
+          {
+            "name": "d_year",
+            "dataType": "int64",
+            "sourceColumn": "d_year",
+            "sourceLineageTag": "d_year",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "d_qoy",
+            "dataType": "int64",
+            "sourceColumn": "d_qoy",
+            "sourceLineageTag": "d_qoy",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "d_moy",
+            "dataType": "int64",
+            "sourceColumn": "d_moy",
+            "sourceLineageTag": "d_moy",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "d_dow",
+            "dataType": "int64",
+            "sourceColumn": "d_dow",
+            "sourceLineageTag": "d_dow",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "d_dom",
+            "dataType": "int64",
+            "sourceColumn": "d_dom",
+            "sourceLineageTag": "d_dom",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "d_quarter_name",
+            "dataType": "string",
+            "sourceColumn": "d_quarter_name",
+            "sourceLineageTag": "d_quarter_name",
+            "summarizeBy": "none"
+          }
+        ],
+        "dataCategory": "Time",
+        "partitions": [
+          {
+            "name": "date_dim",
+            "source": {
+              "type": "entity",
+              "entityName": "date_dim"
+            }
+          }
+        ]
+      },
+      {
+        "name": "item",
+        "description": "Item dimension. i_category is the axis of the paper's percentage-share query.",
+        "sourceLineageTag": "[mart].[item]",
+        "columns": [
+          {
+            "name": "i_item_sk",
+            "dataType": "int64",
+            "sourceColumn": "i_item_sk",
+            "sourceLineageTag": "i_item_sk",
+            "summarizeBy": "none",
+            "isKey": true
+          },
+          {
+            "name": "i_brand",
+            "dataType": "string",
+            "sourceColumn": "i_brand",
+            "sourceLineageTag": "i_brand",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "i_category",
+            "dataType": "string",
+            "sourceColumn": "i_category",
+            "sourceLineageTag": "i_category",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "i_class",
+            "dataType": "string",
+            "sourceColumn": "i_class",
+            "sourceLineageTag": "i_class",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "i_color",
+            "dataType": "string",
+            "sourceColumn": "i_color",
+            "sourceLineageTag": "i_color",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "i_current_price",
+            "dataType": "decimal",
+            "sourceColumn": "i_current_price",
+            "sourceLineageTag": "i_current_price",
+            "summarizeBy": "none",
+            "formatString": "#,##0.00"
+          },
+          {
+            "name": "i_manufact",
+            "dataType": "string",
+            "sourceColumn": "i_manufact",
+            "sourceLineageTag": "i_manufact",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "i_size",
+            "dataType": "string",
+            "sourceColumn": "i_size",
+            "sourceLineageTag": "i_size",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "i_wholesale_cost",
+            "dataType": "decimal",
+            "sourceColumn": "i_wholesale_cost",
+            "sourceLineageTag": "i_wholesale_cost",
+            "summarizeBy": "none",
+            "formatString": "#,##0.00"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "item",
+            "source": {
+              "type": "entity",
+              "entityName": "item"
+            }
+          }
+        ]
+      },
+      {
+        "name": "store",
+        "description": "Store dimension. s_manager is a report slicer; s_store_sk is the ladder's key.",
+        "sourceLineageTag": "[mart].[store]",
+        "columns": [
+          {
+            "name": "s_store_sk",
+            "dataType": "int64",
+            "sourceColumn": "s_store_sk",
+            "sourceLineageTag": "s_store_sk",
+            "summarizeBy": "none",
+            "isKey": true
+          },
+          {
+            "name": "s_city",
+            "dataType": "string",
+            "sourceColumn": "s_city",
+            "sourceLineageTag": "s_city",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "s_county",
+            "dataType": "string",
+            "sourceColumn": "s_county",
+            "sourceLineageTag": "s_county",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "s_manager",
+            "dataType": "string",
+            "sourceColumn": "s_manager",
+            "sourceLineageTag": "s_manager",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "s_market_manager",
+            "dataType": "string",
+            "sourceColumn": "s_market_manager",
+            "sourceLineageTag": "s_market_manager",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "s_state",
+            "dataType": "string",
+            "sourceColumn": "s_state",
+            "sourceLineageTag": "s_state",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "s_store_name",
+            "dataType": "string",
+            "sourceColumn": "s_store_name",
+            "sourceLineageTag": "s_store_name",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "s_tax_percentage",
+            "dataType": "decimal",
+            "sourceColumn": "s_tax_percentage",
+            "sourceLineageTag": "s_tax_percentage",
+            "summarizeBy": "none",
+            "formatString": "#,##0.00"
+          },
+          {
+            "name": "s_zip",
+            "dataType": "string",
+            "sourceColumn": "s_zip",
+            "sourceLineageTag": "s_zip",
+            "summarizeBy": "none"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "store",
+            "source": {
+              "type": "entity",
+              "entityName": "store"
+            }
+          }
+        ]
+      },
+      {
+        "name": "promotion",
+        "description": "Promotion dimension. p_promo_name is the axis of the paper's rank query.",
+        "sourceLineageTag": "[mart].[promotion]",
+        "columns": [
+          {
+            "name": "p_promo_sk",
+            "dataType": "int64",
+            "sourceColumn": "p_promo_sk",
+            "sourceLineageTag": "p_promo_sk",
+            "summarizeBy": "none",
+            "isKey": true
+          },
+          {
+            "name": "p_item_sk",
+            "dataType": "int64",
+            "sourceColumn": "p_item_sk",
+            "sourceLineageTag": "p_item_sk",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "p_cost",
+            "dataType": "decimal",
+            "sourceColumn": "p_cost",
+            "sourceLineageTag": "p_cost",
+            "summarizeBy": "none",
+            "formatString": "#,##0.00"
+          },
+          {
+            "name": "p_promo_name",
+            "dataType": "string",
+            "sourceColumn": "p_promo_name",
+            "sourceLineageTag": "p_promo_name",
+            "summarizeBy": "none"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "promotion",
+            "source": {
+              "type": "entity",
+              "entityName": "promotion"
+            }
+          }
+        ]
+      },
+      {
+        "name": "ship_mode",
+        "description": "Ship-mode dimension, reached only from catalog_sales. sm_carrier is a slicer.",
+        "sourceLineageTag": "[mart].[ship_mode]",
+        "columns": [
+          {
+            "name": "sm_ship_mode_sk",
+            "dataType": "int64",
+            "sourceColumn": "sm_ship_mode_sk",
+            "sourceLineageTag": "sm_ship_mode_sk",
+            "summarizeBy": "none",
+            "isKey": true
+          },
+          {
+            "name": "sm_carrier",
+            "dataType": "string",
+            "sourceColumn": "sm_carrier",
+            "sourceLineageTag": "sm_carrier",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "sm_code",
+            "dataType": "string",
+            "sourceColumn": "sm_code",
+            "sourceLineageTag": "sm_code",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "sm_type",
+            "dataType": "string",
+            "sourceColumn": "sm_type",
+            "sourceLineageTag": "sm_type",
+            "summarizeBy": "none"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "ship_mode",
+            "source": {
+              "type": "entity",
+              "entityName": "ship_mode"
+            }
+          }
+        ]
+      },
+      {
+        "name": "catalog_page",
+        "description": "Catalog-page dimension, reached only from catalog_sales. cp_type is a slicer.",
+        "sourceLineageTag": "[mart].[catalog_page]",
+        "columns": [
+          {
+            "name": "cp_catalog_page_sk",
+            "dataType": "int64",
+            "sourceColumn": "cp_catalog_page_sk",
+            "sourceLineageTag": "cp_catalog_page_sk",
+            "summarizeBy": "none",
+            "isKey": true
+          },
+          {
+            "name": "cp_type",
+            "dataType": "string",
+            "sourceColumn": "cp_type",
+            "sourceLineageTag": "cp_type",
+            "summarizeBy": "none"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "catalog_page",
+            "source": {
+              "type": "entity",
+              "entityName": "catalog_page"
+            }
+          }
+        ]
+      },
+      {
+        "name": "customer_address",
+        "description": "Customer-address dimension. ca_state is a report slicer.",
+        "sourceLineageTag": "[mart].[customer_address]",
+        "columns": [
+          {
+            "name": "ca_address_sk",
+            "dataType": "int64",
+            "sourceColumn": "ca_address_sk",
+            "sourceLineageTag": "ca_address_sk",
+            "summarizeBy": "none",
+            "isKey": true
+          },
+          {
+            "name": "ca_city",
+            "dataType": "string",
+            "sourceColumn": "ca_city",
+            "sourceLineageTag": "ca_city",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "ca_county",
+            "dataType": "string",
+            "sourceColumn": "ca_county",
+            "sourceLineageTag": "ca_county",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "ca_location_type",
+            "dataType": "string",
+            "sourceColumn": "ca_location_type",
+            "sourceLineageTag": "ca_location_type",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "ca_state",
+            "dataType": "string",
+            "sourceColumn": "ca_state",
+            "sourceLineageTag": "ca_state",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "ca_zip",
+            "dataType": "string",
+            "sourceColumn": "ca_zip",
+            "sourceLineageTag": "ca_zip",
+            "summarizeBy": "none"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "customer_address",
+            "source": {
+              "type": "entity",
+              "entityName": "customer_address"
+            }
+          }
+        ]
+      },
+      {
+        "name": "customer_demographics",
+        "description": "Customer-demographics dimension. cd_education_status is a report slicer.",
+        "sourceLineageTag": "[mart].[customer_demographics]",
+        "columns": [
+          {
+            "name": "cd_demo_sk",
+            "dataType": "int64",
+            "sourceColumn": "cd_demo_sk",
+            "sourceLineageTag": "cd_demo_sk",
+            "summarizeBy": "none",
+            "isKey": true
+          },
+          {
+            "name": "cd_education_status",
+            "dataType": "string",
+            "sourceColumn": "cd_education_status",
+            "sourceLineageTag": "cd_education_status",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "cd_marital_status",
+            "dataType": "string",
+            "sourceColumn": "cd_marital_status",
+            "sourceLineageTag": "cd_marital_status",
+            "summarizeBy": "none"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "customer_demographics",
+            "source": {
+              "type": "entity",
+              "entityName": "customer_demographics"
+            }
+          }
+        ]
+      },
+      {
+        "name": "store_sales",
+        "description": "The larger fact table and this dataset's mart: 26,206,837 rows at SF10, 262,082,396 at SF100. Carries the paper's `cache_buster` column, unread here.",
+        "sourceLineageTag": "[mart].[store_sales]",
+        "columns": [
+          {
+            "name": "cache_buster",
+            "dataType": "int64",
+            "sourceColumn": "cache_buster",
+            "sourceLineageTag": "cache_buster",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "ss_addr_sk",
+            "dataType": "int64",
+            "sourceColumn": "ss_addr_sk",
+            "sourceLineageTag": "ss_addr_sk",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "ss_cdemo_sk",
+            "dataType": "int64",
+            "sourceColumn": "ss_cdemo_sk",
+            "sourceLineageTag": "ss_cdemo_sk",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "ss_customer_sk",
+            "dataType": "int64",
+            "sourceColumn": "ss_customer_sk",
+            "sourceLineageTag": "ss_customer_sk",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "ss_item_sk",
+            "dataType": "int64",
+            "sourceColumn": "ss_item_sk",
+            "sourceLineageTag": "ss_item_sk",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "ss_promo_sk",
+            "dataType": "int64",
+            "sourceColumn": "ss_promo_sk",
+            "sourceLineageTag": "ss_promo_sk",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "ss_sold_date_sk",
+            "dataType": "int64",
+            "sourceColumn": "ss_sold_date_sk",
+            "sourceLineageTag": "ss_sold_date_sk",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "ss_store_sk",
+            "dataType": "int64",
+            "sourceColumn": "ss_store_sk",
+            "sourceLineageTag": "ss_store_sk",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "ss_ticket_number",
+            "dataType": "int64",
+            "sourceColumn": "ss_ticket_number",
+            "sourceLineageTag": "ss_ticket_number",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "ss_quantity",
+            "dataType": "int64",
+            "sourceColumn": "ss_quantity",
+            "sourceLineageTag": "ss_quantity",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "ss_ext_list_price",
+            "dataType": "decimal",
+            "sourceColumn": "ss_ext_list_price",
+            "sourceLineageTag": "ss_ext_list_price",
+            "summarizeBy": "none",
+            "formatString": "#,##0.00"
+          },
+          {
+            "name": "ss_ext_sales_price",
+            "dataType": "decimal",
+            "sourceColumn": "ss_ext_sales_price",
+            "sourceLineageTag": "ss_ext_sales_price",
+            "summarizeBy": "none",
+            "formatString": "#,##0.00"
+          },
+          {
+            "name": "ss_list_price",
+            "dataType": "decimal",
+            "sourceColumn": "ss_list_price",
+            "sourceLineageTag": "ss_list_price",
+            "summarizeBy": "none",
+            "formatString": "#,##0.00"
+          },
+          {
+            "name": "ss_net_profit",
+            "dataType": "decimal",
+            "sourceColumn": "ss_net_profit",
+            "sourceLineageTag": "ss_net_profit",
+            "summarizeBy": "none",
+            "formatString": "#,##0.00"
+          }
+        ],
+        "measures": [
+          {
+            "name": "Store Revenue",
+            "expression": "SUM(store_sales[ss_ext_sales_price])",
+            "formatString": "#,##0.00",
+            "description": "Q5's value. The matrix on the paper's report page titles it Store Revenue."
+          },
+          {
+            "name": "Store Net Profit",
+            "expression": "SUM(store_sales[ss_net_profit])",
+            "formatString": "#,##0.00",
+            "description": "The numerator of Q2's share."
+          },
+          {
+            "name": "Store Distinct Customers",
+            "expression": "DISTINCTCOUNT(store_sales[ss_customer_sk])",
+            "formatString": "#,##0",
+            "description": "Q1. The report page's Customer Count card, which reads 496K at SF10 -- 500,000 customers exist and 496K of them appear in store_sales."
+          },
+          {
+            "name": "Store Profit % by Item Category",
+            "expression": "DIVIDE([Store Net Profit], CALCULATE([Store Net Profit], REMOVEFILTERS('item')))",
+            "formatString": "0.00%",
+            "description": "Q2. Each category's share of total store profit, which is what the donut splits."
+          },
+          {
+            "name": "Store Revenue Same Period LY",
+            "expression": "CALCULATE([Store Revenue], SAMEPERIODLASTYEAR(date_dim[d_date]))",
+            "formatString": "#,##0.00",
+            "description": "Q5's prior-year term. Needs date_dim marked as the date table."
+          },
+          {
+            "name": "Store Revenue YoY",
+            "expression": "DIVIDE([Store Revenue] - [Store Revenue Same Period LY], [Store Revenue Same Period LY])",
+            "formatString": "0.00%",
+            "description": "Q5's year-over-year column."
+          },
+          {
+            "name": "Store Revenue YTD",
+            "expression": "TOTALYTD([Store Revenue], date_dim[d_date])",
+            "formatString": "#,##0.00",
+            "description": "Q5's year-to-date column."
+          }
+        ],
+        "partitions": [
+          {
+            "name": "store_sales",
+            "source": {
+              "type": "entity",
+              "entityName": "store_sales"
+            }
+          }
+        ]
+      },
+      {
+        "name": "catalog_sales",
+        "description": "The second fact table, 14,257,451 rows at SF10. It reaches customer_address and customer_demographics twice over, and the shipping-side relationships are INACTIVE so the path stays unambiguous -- the paper's section 4.4.",
+        "sourceLineageTag": "[mart].[catalog_sales]",
+        "columns": [
+          {
+            "name": "cache_buster",
+            "dataType": "int64",
+            "sourceColumn": "cache_buster",
+            "sourceLineageTag": "cache_buster",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "cs_bill_addr_sk",
+            "dataType": "int64",
+            "sourceColumn": "cs_bill_addr_sk",
+            "sourceLineageTag": "cs_bill_addr_sk",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "cs_bill_cdemo_sk",
+            "dataType": "int64",
+            "sourceColumn": "cs_bill_cdemo_sk",
+            "sourceLineageTag": "cs_bill_cdemo_sk",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "cs_catalog_page_sk",
+            "dataType": "int64",
+            "sourceColumn": "cs_catalog_page_sk",
+            "sourceLineageTag": "cs_catalog_page_sk",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "cs_item_sk",
+            "dataType": "int64",
+            "sourceColumn": "cs_item_sk",
+            "sourceLineageTag": "cs_item_sk",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "cs_promo_sk",
+            "dataType": "int64",
+            "sourceColumn": "cs_promo_sk",
+            "sourceLineageTag": "cs_promo_sk",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "cs_ship_addr_sk",
+            "dataType": "int64",
+            "sourceColumn": "cs_ship_addr_sk",
+            "sourceLineageTag": "cs_ship_addr_sk",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "cs_ship_cdemo_sk",
+            "dataType": "int64",
+            "sourceColumn": "cs_ship_cdemo_sk",
+            "sourceLineageTag": "cs_ship_cdemo_sk",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "cs_ship_mode_sk",
+            "dataType": "int64",
+            "sourceColumn": "cs_ship_mode_sk",
+            "sourceLineageTag": "cs_ship_mode_sk",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "cs_sold_date_sk",
+            "dataType": "int64",
+            "sourceColumn": "cs_sold_date_sk",
+            "sourceLineageTag": "cs_sold_date_sk",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "cs_order_number",
+            "dataType": "int64",
+            "sourceColumn": "cs_order_number",
+            "sourceLineageTag": "cs_order_number",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "cs_quantity",
+            "dataType": "int64",
+            "sourceColumn": "cs_quantity",
+            "sourceLineageTag": "cs_quantity",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "cs_ext_list_price",
+            "dataType": "decimal",
+            "sourceColumn": "cs_ext_list_price",
+            "sourceLineageTag": "cs_ext_list_price",
+            "summarizeBy": "none",
+            "formatString": "#,##0.00"
+          },
+          {
+            "name": "cs_ext_sales_price",
+            "dataType": "decimal",
+            "sourceColumn": "cs_ext_sales_price",
+            "sourceLineageTag": "cs_ext_sales_price",
+            "summarizeBy": "none",
+            "formatString": "#,##0.00"
+          },
+          {
+            "name": "cs_list_price",
+            "dataType": "decimal",
+            "sourceColumn": "cs_list_price",
+            "sourceLineageTag": "cs_list_price",
+            "summarizeBy": "none",
+            "formatString": "#,##0.00"
+          },
+          {
+            "name": "cs_net_profit",
+            "dataType": "decimal",
+            "sourceColumn": "cs_net_profit",
+            "sourceLineageTag": "cs_net_profit",
+            "summarizeBy": "none",
+            "formatString": "#,##0.00"
+          }
+        ],
+        "measures": [
+          {
+            "name": "Catalog Revenue",
+            "expression": "SUM(catalog_sales[cs_ext_sales_price])",
+            "formatString": "#,##0.00",
+            "description": "Q3's value -- the bar chart the paper ranks by promotion."
+          },
+          {
+            "name": "Catalog Sales Quantity",
+            "expression": "SUM(catalog_sales[cs_quantity])",
+            "formatString": "#,##0",
+            "description": "Q4's value."
+          },
+          {
+            "name": "Catalog Sales Same Period LY",
+            "expression": "CALCULATE([Catalog Sales Quantity], SAMEPERIODLASTYEAR(date_dim[d_date]))",
+            "formatString": "#,##0",
+            "description": "Q4's prior-year series."
+          },
+          {
+            "name": "Catalog Sales YoY",
+            "expression": "DIVIDE([Catalog Sales Quantity] - [Catalog Sales Same Period LY], [Catalog Sales Same Period LY])",
+            "formatString": "0.00%",
+            "description": "Q4's third series."
+          },
+          {
+            "name": "Catalog Net Profit",
+            "expression": "SUM(catalog_sales[cs_net_profit])",
+            "formatString": "#,##0.00",
+            "description": "Not a paper measure. Carried so the catalog-page composite has a second value and cs_net_profit is not a column the suite never touches."
+          }
+        ],
+        "partitions": [
+          {
+            "name": "catalog_sales",
+            "source": {
+              "type": "entity",
+              "entityName": "catalog_sales"
+            }
+          }
+        ]
+      },
+      {
+        "name": "stg_tpcds_archive_log",
+        "description": "What download_tpcds.py landed: one row per parquet file. `etag` carries sf<N>, so a reader can tell which scale factor a run measured.",
+        "sourceLineageTag": "[landing].[stg_tpcds_archive_log]",
+        "columns": [
+          {
+            "name": "source_type",
+            "dataType": "string",
+            "sourceColumn": "source_type",
+            "sourceLineageTag": "source_type",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "source_filename",
+            "dataType": "string",
+            "sourceColumn": "source_filename",
+            "sourceLineageTag": "source_filename",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "archive_path",
+            "dataType": "string",
+            "sourceColumn": "archive_path",
+            "sourceLineageTag": "archive_path",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "archived_at",
+            "dataType": "dateTime",
+            "sourceColumn": "archived_at",
+            "sourceLineageTag": "archived_at",
+            "summarizeBy": "none",
+            "formatString": "yyyy-MM-dd"
+          },
+          {
+            "name": "row_count",
+            "dataType": "int64",
+            "sourceColumn": "row_count",
+            "sourceLineageTag": "row_count",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "etag",
+            "dataType": "string",
+            "sourceColumn": "etag",
+            "sourceLineageTag": "etag",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "file_stem",
+            "dataType": "string",
+            "sourceColumn": "file_stem",
+            "sourceLineageTag": "file_stem",
+            "summarizeBy": "none"
+          }
+        ],
+        "measures": [
+          {
+            "name": "Archive Files",
+            "expression": "COUNTROWS(stg_tpcds_archive_log)",
+            "formatString": "#,##0",
+            "description": "Raw-tier query."
+          },
+          {
+            "name": "Archive Source Rows",
+            "expression": "SUM(stg_tpcds_archive_log[row_count])",
+            "formatString": "#,##0",
+            "description": "Rows the generator logged, summed -- the same number the singular tests reconcile."
+          }
+        ],
+        "partitions": [
+          {
+            "name": "stg_tpcds_archive_log",
+            "source": {
+              "type": "entity",
+              "entityName": "stg_tpcds_archive_log"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "name": "store_sales_to_date_dim",
+        "fromTable": "store_sales",
+        "fromColumn": "ss_sold_date_sk",
+        "toTable": "date_dim",
+        "toColumn": "d_date_sk_1",
+        "relyOnReferentialIntegrity": true
+      },
+      {
+        "name": "store_sales_to_item",
+        "fromTable": "store_sales",
+        "fromColumn": "ss_item_sk",
+        "toTable": "item",
+        "toColumn": "i_item_sk",
+        "relyOnReferentialIntegrity": true
+      },
+      {
+        "name": "store_sales_to_store",
+        "fromTable": "store_sales",
+        "fromColumn": "ss_store_sk",
+        "toTable": "store",
+        "toColumn": "s_store_sk",
+        "relyOnReferentialIntegrity": true
+      },
+      {
+        "name": "store_sales_to_promotion",
+        "fromTable": "store_sales",
+        "fromColumn": "ss_promo_sk",
+        "toTable": "promotion",
+        "toColumn": "p_promo_sk",
+        "relyOnReferentialIntegrity": true
+      },
+      {
+        "name": "store_sales_to_customer_address",
+        "fromTable": "store_sales",
+        "fromColumn": "ss_addr_sk",
+        "toTable": "customer_address",
+        "toColumn": "ca_address_sk",
+        "relyOnReferentialIntegrity": true
+      },
+      {
+        "name": "store_sales_to_customer_demographics",
+        "fromTable": "store_sales",
+        "fromColumn": "ss_cdemo_sk",
+        "toTable": "customer_demographics",
+        "toColumn": "cd_demo_sk",
+        "relyOnReferentialIntegrity": true
+      },
+      {
+        "name": "catalog_sales_to_date_dim",
+        "fromTable": "catalog_sales",
+        "fromColumn": "cs_sold_date_sk",
+        "toTable": "date_dim",
+        "toColumn": "d_date_sk_1",
+        "relyOnReferentialIntegrity": true
+      },
+      {
+        "name": "catalog_sales_to_item",
+        "fromTable": "catalog_sales",
+        "fromColumn": "cs_item_sk",
+        "toTable": "item",
+        "toColumn": "i_item_sk",
+        "relyOnReferentialIntegrity": true
+      },
+      {
+        "name": "catalog_sales_to_promotion",
+        "fromTable": "catalog_sales",
+        "fromColumn": "cs_promo_sk",
+        "toTable": "promotion",
+        "toColumn": "p_promo_sk",
+        "relyOnReferentialIntegrity": true
+      },
+      {
+        "name": "catalog_sales_to_catalog_page",
+        "fromTable": "catalog_sales",
+        "fromColumn": "cs_catalog_page_sk",
+        "toTable": "catalog_page",
+        "toColumn": "cp_catalog_page_sk",
+        "relyOnReferentialIntegrity": true
+      },
+      {
+        "name": "catalog_sales_to_ship_mode",
+        "fromTable": "catalog_sales",
+        "fromColumn": "cs_ship_mode_sk",
+        "toTable": "ship_mode",
+        "toColumn": "sm_ship_mode_sk",
+        "relyOnReferentialIntegrity": true
+      },
+      {
+        "name": "catalog_sales_to_customer_address",
+        "fromTable": "catalog_sales",
+        "fromColumn": "cs_bill_addr_sk",
+        "toTable": "customer_address",
+        "toColumn": "ca_address_sk",
+        "relyOnReferentialIntegrity": true
+      },
+      {
+        "name": "catalog_sales_to_customer_demographics",
+        "fromTable": "catalog_sales",
+        "fromColumn": "cs_bill_cdemo_sk",
+        "toTable": "customer_demographics",
+        "toColumn": "cd_demo_sk",
+        "relyOnReferentialIntegrity": true
+      },
+      {
+        "name": "catalog_sales_ship_addr_to_customer_address",
+        "fromTable": "catalog_sales",
+        "fromColumn": "cs_ship_addr_sk",
+        "toTable": "customer_address",
+        "toColumn": "ca_address_sk",
+        "relyOnReferentialIntegrity": true,
+        "isActive": false
+      },
+      {
+        "name": "catalog_sales_ship_cdemo_to_customer_demographics",
+        "fromTable": "catalog_sales",
+        "fromColumn": "cs_ship_cdemo_sk",
+        "toTable": "customer_demographics",
+        "toColumn": "cd_demo_sk",
+        "relyOnReferentialIntegrity": true,
+        "isActive": false
+      },
+      {
+        "name": "promotion_to_item",
+        "fromTable": "promotion",
+        "fromColumn": "p_item_sk",
+        "toTable": "item",
+        "toColumn": "i_item_sk",
+        "isActive": false
+      }
+    ]
+  }
+}

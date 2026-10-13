@@ -1,0 +1,9 @@
+// note: orders of each subcategory that also hold a Bikes line (product-snowflake filters removed inside the measure), and the attach rate
+EVALUATE
+SUMMARIZECOLUMNS(
+    Subcategory[Subcategory],
+    "Orders", [Orders],
+    "With Bikes", [Basket Orders With Bikes],
+    "Attach %", [Basket Bike Attach %]
+)
+ORDER BY Subcategory[Subcategory]

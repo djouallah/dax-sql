@@ -1,0 +1,15 @@
+// note: a matrix with totals on both axes (category rows, year columns: two ROLLUPADDISSUBTOTAL crossed) under a country filter: shares of ALLSELECTED and of the column total on cells, row totals, column totals and the grand total
+DEFINE
+    VAR __DS0FilterTable = TREATAS({"Germany", "Australia"}, 'Customer'[Country])
+    VAR __DS0Core =
+        SUMMARIZECOLUMNS(
+            ROLLUPADDISSUBTOTAL('Category'[Category], "IsCategoryTotal"),
+            ROLLUPADDISSUBTOTAL('Date'[Year], "IsYearTotal"),
+            __DS0FilterTable,
+            "Sales_Amount", 'Sales'[Sales Amount],
+            "Pct_Of_Selected", 'Sales'[Context Pct Of Selected],
+            "Pct_Of_Column", DIVIDE('Sales'[Sales Amount], CALCULATE('Sales'[Sales Amount], ALLSELECTED('Category'[Category])))
+        )
+EVALUATE
+__DS0Core
+ORDER BY [IsCategoryTotal] DESC, 'Category'[Category], [IsYearTotal] DESC, 'Date'[Year]

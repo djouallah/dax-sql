@@ -1,0 +1,10 @@
+// note: ALL(Category) leaves the Subcategory filter in place, ALL(Subcategory) removes the Category filter too (Subcategory's expanded table holds Category)
+EVALUATE
+SUMMARIZECOLUMNS(
+    Category[Category],
+    Subcategory[Subcategory],
+    "Sales", [Sales Amount],
+    "All Category", IF(NOT ISBLANK([Sales Amount]), CALCULATE([Sales Amount], ALL(Category))),
+    "All Subcategory", IF(NOT ISBLANK([Sales Amount]), CALCULATE([Sales Amount], ALL(Subcategory)))
+)
+ORDER BY Category[Category], Subcategory[Subcategory]

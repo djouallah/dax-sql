@@ -1,0 +1,11 @@
+// note: Sales[Store Region], a calculated column that RELATEDs three hops up the snowflake, against filtering Region[Region] through the relationships: lines and sales per region either way, and the lines whose column is blank
+EVALUATE
+ADDCOLUMNS(
+    VALUES(Region[Region]),
+    "Lines By Relationship", [Lines],
+    "Lines By Column", CALCULATE([Lines], REMOVEFILTERS(Region), TREATAS(VALUES(Region[Region]), Sales[Store Region])),
+    "Sales By Relationship", [Sales Amount],
+    "Sales By Column", CALCULATE([Sales Amount], REMOVEFILTERS(Region), TREATAS(VALUES(Region[Region]), Sales[Store Region])),
+    "Blank Column Lines", CALCULATE([Lines], REMOVEFILTERS(Region), ISBLANK(Sales[Store Region]))
+)
+ORDER BY Region[Region]

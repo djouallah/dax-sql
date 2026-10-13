@@ -1,0 +1,10 @@
+// note: a matrix of categories by customer country with totals on both axes (two ROLLUPADDISSUBTOTAL), the blank category and blank country from orphan sales included
+EVALUATE
+SUMMARIZECOLUMNS(
+    ROLLUPADDISSUBTOTAL(Category[Category], "Category Total"),
+    ROLLUPADDISSUBTOTAL(Customer[Country], "Country Total"),
+    TREATAS({ 2024 }, 'Date'[Year]),
+    "Sales", [Sales Amount],
+    "Lines", [Order Lines]
+)
+ORDER BY [Category Total], Category[Category], [Country Total], Customer[Country]

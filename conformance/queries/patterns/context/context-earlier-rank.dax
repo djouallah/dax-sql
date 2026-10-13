@@ -1,0 +1,4 @@
+// note: two row contexts on the same table variable: EARLIER reaches the outer one to rank subcategories by sales
+EVALUATE
+VAR t = ADDCOLUMNS(VALUES(Subcategory[Subcategory]), "Sales", [Sales Amount])
+RETURN ADDCOLUMNS(t, "Rank", COUNTROWS(FILTER(t, [Sales] >= EARLIER([Sales]))))

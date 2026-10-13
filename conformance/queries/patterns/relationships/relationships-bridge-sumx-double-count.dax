@@ -1,0 +1,8 @@
+// note: iterating accounts sums a joint holder's sales once per account; the measure through the bridge and an expanded AccountCustomer table filter count them once
+EVALUATE
+SUMMARIZECOLUMNS(
+    Category[Category],
+    "Sales", [Sales Amount],
+    "Sales via Accounts", [Sales via Account Iteration],
+    "Sales of Account Holders", CALCULATE([Sales Amount], AccountCustomer)
+)

@@ -1,0 +1,2 @@
+// note: fct_region[Reads 5 minutes regional] per region of dim_region, which does not ask for the 5-minute table
+EVALUATE SUMMARIZECOLUMNS(dim_region[Region], "Reads 5 minutes regional", [Reads 5 minutes regional])

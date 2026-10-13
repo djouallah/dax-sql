@@ -1,0 +1,12 @@
+// note: the Metric field parameter stacked with the Time Intelligence calculation group: each metric under each item, in 2024
+EVALUATE
+SUMMARIZECOLUMNS(
+	'Metric'[Metric],
+	'Metric'[Metric Order],
+	'Time Intelligence'[Time Intelligence],
+	'Time Intelligence'[Ordinal],
+	TREATAS({2024}, 'Date'[Year]),
+	KEEPFILTERS(TREATAS({"Current", "PY", "YoY", "YoY %"}, 'Time Intelligence'[Time Intelligence])),
+	"Value", 'Sales'[Visual Metric Value]
+)
+ORDER BY 'Metric'[Metric Order], 'Time Intelligence'[Ordinal]

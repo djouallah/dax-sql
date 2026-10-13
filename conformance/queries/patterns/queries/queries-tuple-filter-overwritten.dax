@@ -1,0 +1,8 @@
+// note: a two-column TREATAS filter (a hierarchy slicer) on year and month; grouping by year overwrites its year part
+EVALUATE
+SUMMARIZECOLUMNS(
+	'Date'[Year],
+	TREATAS({(2023, 12), (2024, 1)}, 'Date'[Year], 'Date'[Month]),
+	"Sales_Amount", 'Sales'[Sales Amount]
+)
+ORDER BY 'Date'[Year]

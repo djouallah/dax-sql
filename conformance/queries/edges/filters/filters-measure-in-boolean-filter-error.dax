@@ -1,0 +1,9 @@
+// note: a CALCULATE boolean filter that compares Sales[Quantity] with the measure [Total Quantity], by brand (a DAX error: a True/False filter argument of CALCULATE cannot reference a measure; it has to be written as FILTER over a table)
+// expect: error
+EVALUATE
+SUMMARIZECOLUMNS(
+    Product[Brand],
+    "Lines", [Lines],
+    "Lines Above Total", CALCULATE([Lines], Sales[Quantity] > [Total Quantity])
+)
+ORDER BY Product[Brand]

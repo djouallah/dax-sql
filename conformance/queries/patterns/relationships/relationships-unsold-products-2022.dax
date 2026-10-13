@@ -1,0 +1,10 @@
+// note: products with no 2022 sales: ISEMPTY of RELATEDTABLE(Sales) from each product, the date filter kept through context transition
+EVALUATE
+CALCULATETABLE(
+    SELECTCOLUMNS(
+        FILTER(Product, ISEMPTY(RELATEDTABLE(Sales))),
+        "Product", Product[Product],
+        "Category", Product[Category]
+    ),
+    'Date'[Year] = 2022
+)

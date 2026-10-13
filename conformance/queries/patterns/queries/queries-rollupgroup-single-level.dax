@@ -1,0 +1,9 @@
+// note: ROLLUPGROUP folds category and subcategory into one level, so only the grand total is added, no per-category subtotal
+EVALUATE
+SUMMARIZECOLUMNS(
+	ROLLUPADDISSUBTOTAL(ROLLUPGROUP('Category'[Category], 'Subcategory'[Subcategory]), "IsGrandTotalRowTotal"),
+	TREATAS({2022}, 'Date'[Year]),
+	"Sales_Amount", 'Sales'[Sales Amount],
+	"Customers", 'Sales'[Customers]
+)
+ORDER BY [IsGrandTotalRowTotal] DESC, 'Category'[Category], 'Subcategory'[Subcategory]

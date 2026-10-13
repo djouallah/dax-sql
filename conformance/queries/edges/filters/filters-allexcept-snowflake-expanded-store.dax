@@ -1,0 +1,15 @@
+// note: European stores (a filter on Region, two hops up the snowflake) by Store[Store]: ALLEXCEPT(Store, Region[Region]) and ALLEXCEPT(Store, Country[Country]) naming columns of Store's expanded table, ALLEXCEPT(Sales, Region[Region]), and REMOVEFILTERS of Store, of Store[Store], of Country and of Region, which do or do not reach the filter on Region
+EVALUATE
+SUMMARIZECOLUMNS(
+    Store[Store],
+    TREATAS({"Europe"}, Region[Region]),
+    "Sales", [Sales Amount],
+    "ALLEXCEPT Store Region", CALCULATE([Sales Amount], ALLEXCEPT(Store, Region[Region])),
+    "ALLEXCEPT Store Country", CALCULATE([Sales Amount], ALLEXCEPT(Store, Country[Country])),
+    "ALLEXCEPT Sales Region", CALCULATE([Sales Amount], ALLEXCEPT(Sales, Region[Region])),
+    "REMOVEFILTERS Store", CALCULATE([Sales Amount], REMOVEFILTERS(Store)),
+    "REMOVEFILTERS Store Column", CALCULATE([Sales Amount], REMOVEFILTERS(Store[Store])),
+    "REMOVEFILTERS Country", CALCULATE([Sales Amount], REMOVEFILTERS(Country)),
+    "REMOVEFILTERS Region", CALCULATE([Sales Amount], REMOVEFILTERS(Region))
+)
+ORDER BY Store[Store]

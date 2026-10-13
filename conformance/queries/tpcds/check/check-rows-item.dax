@@ -1,0 +1,2 @@
+// note: the row count of item
+EVALUATE ROW("table", "item", "rows", COUNTROWS('item'))

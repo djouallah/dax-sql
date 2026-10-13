@@ -1,0 +1,8 @@
+// note: distinct customers by order year (active relationship) and by delivery year (USERELATIONSHIP on the inactive one)
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year],
+    "By Order Date", [Customers],
+    "By Delivery Date", CALCULATE([Customers], USERELATIONSHIP(Sales[Delivery Date], 'Date'[Date]))
+)
+ORDER BY 'Date'[Year]

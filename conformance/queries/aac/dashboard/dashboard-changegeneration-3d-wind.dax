@@ -1,0 +1,2 @@
+// note: the dashboard's changeGeneration query, the generation KPI's change against the days before (page state: 3 days to 2026-08-11, fuel Wind)
+EVALUATE CALCULATETABLE(ROW("v", [Average generation MW change]), dim_calendar[date] >= dt"2026-08-09", dim_calendar[date] <= dt"2026-08-11", dim_duid[FuelSourceDescriptor] = "Wind")

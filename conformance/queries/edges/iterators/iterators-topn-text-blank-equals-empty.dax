@@ -1,0 +1,17 @@
+// note: TOPN over customer names ordered by the name itself: the blank name (NULL customer plus the blank row) and "" compare equal, so TOPN 1 keeps both; TOPN 3 shows where the space-padded and numeric-looking names sort
+EVALUATE
+UNION(
+    SELECTCOLUMNS(
+        TOPN(1, ALL(Customer[Customer]), Customer[Customer], ASC),
+        "N", 1,
+        "Customer", Customer[Customer],
+        "Name Is Blank", ISBLANK(Customer[Customer])
+    ),
+    SELECTCOLUMNS(
+        TOPN(3, ALL(Customer[Customer]), Customer[Customer], ASC),
+        "N", 3,
+        "Customer", Customer[Customer],
+        "Name Is Blank", ISBLANK(Customer[Customer])
+    )
+)
+ORDER BY [N], [Customer], [Name Is Blank]

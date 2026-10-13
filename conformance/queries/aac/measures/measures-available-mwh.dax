@@ -1,0 +1,2 @@
+// note: fct_curtailment[Available MWh] per fuel of the unit
+EVALUATE SUMMARIZECOLUMNS(dim_duid[FuelSourceDescriptor], "Available MWh", [Available MWh])

@@ -1,0 +1,2 @@
+// note: catalog_sales[Catalog Revenue] per ship-mode type
+EVALUATE SUMMARIZECOLUMNS(ship_mode[sm_type], "Catalog Revenue", [Catalog Revenue])

@@ -1,0 +1,6 @@
+// note: every item of the Time Intelligence calculation group applied to Sales Amount, by year
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year], 'Time Intelligence'[Time Intelligence],
+    "Sales", [Sales Amount]
+)

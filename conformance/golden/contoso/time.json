@@ -1,0 +1,294 @@
+{
+ "time-closing-opening-balance-month": {
+  "hash": "fbdaa05e7839d3ea88ba0015ba8757d3674a9455",
+  "columns": [
+   "[c]",
+   "[o]"
+  ],
+  "rows": [
+   [
+    200.0,
+    null
+   ]
+  ]
+ },
+ "time-dateadd-partial-month": {
+  "hash": "5dd13c8dabec9ff229a250241272060da026f50b",
+  "columns": [
+   "[n]"
+  ],
+  "rows": [
+   [
+    11
+   ]
+  ]
+ },
+ "time-dateadd-whole-month-to-month-end": {
+  "hash": "7e05898226325ae76cc0e0b9e4daabb2e7876cb4",
+  "columns": [
+   "[n]"
+  ],
+  "rows": [
+   [
+    31
+   ]
+  ]
+ },
+ "time-datesbetween": {
+  "hash": "87d0983a7cab6bc28a09ba2d15b6ef6d1481a245",
+  "columns": [
+   "[s]"
+  ],
+  "rows": [
+   [
+    2300.0
+   ]
+  ]
+ },
+ "time-datesinperiod-from-month-end": {
+  "hash": "ad8f7161bc89b4e661451d86baa422cfea9d0824",
+  "columns": [
+   "[days]"
+  ],
+  "rows": [
+   [
+    90
+   ]
+  ]
+ },
+ "time-datesinperiod-three-months-back": {
+  "hash": "6bc9f707444d5214e07a9bb8170dfaaea5a148aa",
+  "columns": [
+   "[s]"
+  ],
+  "rows": [
+   [
+    3100.0
+   ]
+  ]
+ },
+ "time-firstnonblank-from-date": {
+  "hash": "e6408ae2820100330a2aded6fc9372d74dae16ed",
+  "columns": [
+   "[d]"
+  ],
+  "rows": [
+   [
+    "2024-03-15"
+   ]
+  ]
+ },
+ "time-fiscal-closingbalanceyear-march": {
+  "hash": "5b4e7a322ca18d74d30a23a23ce2c2f3680cb8bb",
+  "columns": [
+   "[c]"
+  ],
+  "rows": [
+   [
+    "2024-06-30"
+   ]
+  ]
+ },
+ "time-fiscal-closingbalanceyear-past-table": {
+  "hash": "16449671676a8c67e2f2373312ba73e49ff222f7",
+  "columns": [
+   "[c]"
+  ],
+  "rows": [
+   [
+    "2024-12-31"
+   ]
+  ]
+ },
+ "time-fiscal-endofyear-past-table": {
+  "hash": "33249be94894a8155b4661d313484a5ded1c1705",
+  "columns": [
+   "[eoy]"
+  ],
+  "rows": [
+   [
+    "2024-12-31"
+   ]
+  ]
+ },
+ "time-fiscal-previousyear-startofyear-endofyear": {
+  "hash": "e380702ba5c9f86e66cbd8cc7b1d7d44f293c5f1",
+  "columns": [
+   "[days]",
+   "[py]",
+   "[soy]",
+   "[eoy]"
+  ],
+  "rows": [
+   [
+    181,
+    1960.0,
+    "2023-07-01",
+    "2024-06-30"
+   ]
+  ]
+ },
+ "time-lastnonblank-date-replaces-month": {
+  "hash": "1f11273cefa668e86c2a21ab156faf8b7854fa51",
+  "columns": [
+   "[d]"
+  ],
+  "rows": [
+   [
+    "2024-02-29"
+   ]
+  ]
+ },
+ "time-parallelperiod-startof-endof": {
+  "hash": "04306b35ec1fad1e4d52b9f4e0eab33ba5a17713",
+  "columns": [
+   "[py]",
+   "[eom]",
+   "[soq]",
+   "[first]",
+   "[last]",
+   "[next]"
+  ],
+  "rows": [
+   [
+    365,
+    "2024-02-29",
+    "2024-01-01",
+    "2024-02-01",
+    "2024-02-29",
+    "2024-03-01"
+   ]
+  ]
+ },
+ "time-previous-next-across-year-end": {
+  "hash": "374bb3d4f9f9212959cbb9a75c957a5123a99009",
+  "columns": [
+   "[py]",
+   "[ny]",
+   "[pd]",
+   "[nd]"
+  ],
+  "rows": [
+   [
+    null,
+    null,
+    "2023-12-29",
+    "2024-01-03"
+   ]
+  ]
+ },
+ "time-previousmonth": {
+  "hash": "411602da10944a8ccda04b3760ccb98efab9c47c",
+  "columns": [
+   "[pm]"
+  ],
+  "rows": [
+   [
+    300.0
+   ]
+  ]
+ },
+ "time-previousyear-nextyear-end-of-december": {
+  "hash": "17b106ad9fd640b9e7a0ef8ade4b3fc5794ee135",
+  "columns": [
+   "[py]",
+   "[ny]"
+  ],
+  "rows": [
+   [
+    null,
+    366
+   ]
+  ]
+ },
+ "time-sameperiodlastyear-by-year": {
+  "hash": "f38a87fce82c9984210f91d332edcb1e2c02ba7a",
+  "columns": [
+   "Date[Year]",
+   "[s]",
+   "[py]"
+  ],
+  "rows": [
+   [
+    2023,
+    2010.0,
+    null
+   ],
+   [
+    2024,
+    4120.0,
+    2010.0
+   ]
+  ]
+ },
+ "time-totalytd-by-month": {
+  "hash": "2e86470bb84db0a02baa4f1e2124b9b9cb7476aa",
+  "columns": [
+   "Date[Month]",
+   "[s]",
+   "[ytd]"
+  ],
+  "rows": [
+   [
+    1,
+    2000.0,
+    2000.0
+   ],
+   [
+    2,
+    300.0,
+    2300.0
+   ],
+   [
+    3,
+    800.0,
+    3100.0
+   ],
+   [
+    6,
+    1000.0,
+    4100.0
+   ],
+   [
+    7,
+    20.0,
+    4120.0
+   ],
+   [
+    4,
+    null,
+    3100.0
+   ],
+   [
+    5,
+    null,
+    3100.0
+   ],
+   [
+    8,
+    null,
+    4120.0
+   ],
+   [
+    9,
+    null,
+    4120.0
+   ],
+   [
+    10,
+    null,
+    4120.0
+   ],
+   [
+    11,
+    null,
+    4120.0
+   ],
+   [
+    12,
+    null,
+    4120.0
+   ]
+  ]
+ }
+}

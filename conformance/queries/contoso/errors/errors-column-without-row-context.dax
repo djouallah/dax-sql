@@ -1,0 +1,3 @@
+// note: a bare column reference with no row context
+// expect: error
+EVALUATE ROW("x", Sales[Qty])

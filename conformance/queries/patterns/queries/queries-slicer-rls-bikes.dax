@@ -1,0 +1,9 @@
+// note: a subcategory slicer under a role that only sees the Bikes category, the filter flowing down the product snowflake
+// roles: Bikes
+DEFINE
+	VAR __DS0Core = VALUES('Subcategory'[Subcategory])
+	VAR __DS0PrimaryWindowed = TOPN(101, __DS0Core, 'Subcategory'[Subcategory], 1)
+EVALUATE
+	__DS0PrimaryWindowed
+ORDER BY
+	'Subcategory'[Subcategory]

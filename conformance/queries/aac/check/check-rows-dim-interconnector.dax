@@ -1,0 +1,2 @@
+// note: check_model.py: the row count of dim_interconnector
+EVALUATE ROW("table", "dim_interconnector", "rows", COUNTROWS('dim_interconnector'))

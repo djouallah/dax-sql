@@ -1,0 +1,13 @@
+// note: the blank Customer row (sales whose customer is missing) filters back to Product through CROSSFILTER BOTH: the products reached, the blank product among them
+EVALUATE
+CALCULATETABLE(
+    ADDCOLUMNS(
+        VALUES(Product[ProductKey]),
+        "Product", CALCULATE(SELECTEDVALUE(Product[Product])),
+        "Lines", [Order Lines],
+        "Quantity", [Total Quantity]
+    ),
+    CROSSFILTER(Sales[ProductKey], Product[ProductKey], BOTH),
+    FILTER(ALL(Customer[CustomerKey]), ISBLANK(Customer[CustomerKey]))
+)
+ORDER BY Product[ProductKey]

@@ -1,0 +1,13 @@
+// note: PERCENTILEX.INC at 0, 0.1 and 0.5 of 2024 sales over each category's products: products without a 2024 sale (the Unsold Widget among them) give blanks that count in N and sort first; MINX, which skips blanks, alongside
+EVALUATE
+SUMMARIZECOLUMNS(
+    Category[Category],
+    TREATAS({2024}, 'Date'[Year]),
+    "Products", COUNTROWS(Product),
+    "Products Sold", CALCULATE(DISTINCTCOUNT(Sales[ProductKey])),
+    "P0 Inc", PERCENTILEX.INC(VALUES(Product[ProductKey]), [Sales Amount], 0),
+    "P10 Inc", PERCENTILEX.INC(VALUES(Product[ProductKey]), [Sales Amount], 0.1),
+    "P50 Inc", PERCENTILEX.INC(VALUES(Product[ProductKey]), [Sales Amount], 0.5),
+    "Min Sales", MINX(VALUES(Product[ProductKey]), [Sales Amount])
+)
+ORDER BY Category[Category]

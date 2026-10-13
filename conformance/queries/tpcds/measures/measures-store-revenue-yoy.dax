@@ -1,0 +1,2 @@
+// note: store_sales[Store Revenue YoY] per quarter, blank in the first year
+EVALUATE SUMMARIZECOLUMNS(date_dim[d_quarter_name], "Store Revenue YoY", [Store Revenue YoY])

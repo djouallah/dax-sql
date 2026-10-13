@@ -1,0 +1,5 @@
+// note: FILTER(ALL(column)) with a condition on the column: dates from, dates up to, and a year
+EVALUATE ROW(
+    "from", CALCULATE([Sales Amount], FILTER(ALL('Date'[Date]), 'Date'[Date] >= DATE(2024, 1, 1))),
+    "upto", CALCULATE([Sales Amount], FILTER(ALL('Date'[Date]), 'Date'[Date] <= DATE(2023, 12, 31))),
+    "year", CALCULATE([Sales Amount], FILTER(ALL('Date'[Year]), 'Date'[Year] = 2024)))

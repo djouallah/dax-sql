@@ -1,0 +1,145 @@
+{
+ "check-rows-catalog-page": {
+  "hash": "86e43b4db9f09b85aa877db4ed3a8afa247e8a97",
+  "columns": [
+   "[table]",
+   "[rows]"
+  ],
+  "rows": [
+   [
+    "catalog_page",
+    6
+   ]
+  ]
+ },
+ "check-rows-catalog-sales": {
+  "hash": "920528ae85313550c975fe313f9b9564bb9dbe21",
+  "columns": [
+   "[table]",
+   "[rows]"
+  ],
+  "rows": [
+   [
+    "catalog_sales",
+    285
+   ]
+  ]
+ },
+ "check-rows-customer-address": {
+  "hash": "428f4ce550241a965fea90ccad1bf0ea79dbe0f6",
+  "columns": [
+   "[table]",
+   "[rows]"
+  ],
+  "rows": [
+   [
+    "customer_address",
+    15
+   ]
+  ]
+ },
+ "check-rows-customer-demographics": {
+  "hash": "9df8047d5b24273859c7d7fc657eea7c88a6c496",
+  "columns": [
+   "[table]",
+   "[rows]"
+  ],
+  "rows": [
+   [
+    "customer_demographics",
+    14
+   ]
+  ]
+ },
+ "check-rows-date-dim": {
+  "hash": "4adc3c8fea96601b9ce7b99aa3c2ae96293584a2",
+  "columns": [
+   "[table]",
+   "[rows]"
+  ],
+  "rows": [
+   [
+    "date_dim",
+    1096
+   ]
+  ]
+ },
+ "check-rows-item": {
+  "hash": "073fb0fa00aea45671d021329e3e43339170284b",
+  "columns": [
+   "[table]",
+   "[rows]"
+  ],
+  "rows": [
+   [
+    "item",
+    16
+   ]
+  ]
+ },
+ "check-rows-promotion": {
+  "hash": "3db8065876d3cdd1160a0307c65c6e86985c1df9",
+  "columns": [
+   "[table]",
+   "[rows]"
+  ],
+  "rows": [
+   [
+    "promotion",
+    10
+   ]
+  ]
+ },
+ "check-rows-ship-mode": {
+  "hash": "cb1bbd2af934f70abdc9ac2bf8ab7093e43f05e5",
+  "columns": [
+   "[table]",
+   "[rows]"
+  ],
+  "rows": [
+   [
+    "ship_mode",
+    5
+   ]
+  ]
+ },
+ "check-rows-stg-tpcds-archive-log": {
+  "hash": "044f965fe1e4f8d402a76147b7c1b23157a4f838",
+  "columns": [
+   "[table]",
+   "[rows]"
+  ],
+  "rows": [
+   [
+    "stg_tpcds_archive_log",
+    5
+   ]
+  ]
+ },
+ "check-rows-store": {
+  "hash": "7dafd5a419e8d9c16172aa75d6168fb9b419c6b5",
+  "columns": [
+   "[table]",
+   "[rows]"
+  ],
+  "rows": [
+   [
+    "store",
+    6
+   ]
+  ]
+ },
+ "check-rows-store-sales": {
+  "hash": "774a12a67ddcbac8b9767a3a4eb5ecff46e261b7",
+  "columns": [
+   "[table]",
+   "[rows]"
+  ],
+  "rows": [
+   [
+    "store_sales",
+    380
+   ]
+  ]
+ }
+}

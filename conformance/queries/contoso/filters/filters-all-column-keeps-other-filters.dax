@@ -1,0 +1,2 @@
+// note: ALL on one column of a table keeps the filter on another column of it
+EVALUATE CALCULATETABLE(ROW("s", CALCULATE([Sales Amount], ALL(Product[Color]))), Product[Color] = "Black", Product[Name] = "Jersey")

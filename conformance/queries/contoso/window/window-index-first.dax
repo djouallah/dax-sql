@@ -1,0 +1,2 @@
+// note: INDEX(1) by price descending: the most expensive product
+EVALUATE INDEX(1, ALL(Product[Name], Product[Price]), ORDERBY(Product[Price], DESC))

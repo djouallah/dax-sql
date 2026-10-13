@@ -1,0 +1,2 @@
+// note: fct_curtailment_region[Wind and solar curtailment rate] per day, the farms' figures then AEMO's
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS(dim_calendar[date], "Wind and solar curtailment rate", [Wind and solar curtailment rate]), dim_calendar[date] >= dt"2026-08-07", dim_calendar[date] <= dt"2026-08-13")

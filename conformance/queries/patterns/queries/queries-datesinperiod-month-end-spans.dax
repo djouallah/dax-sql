@@ -1,0 +1,13 @@
+// note: DATESINPERIOD from each month's last day (2024-02-29 among them) back one month, one quarter and one year, and forward one month past the table's end
+EVALUATE
+SUMMARIZECOLUMNS(
+	'Date'[Year Month],
+	TREATAS({2024}, 'Date'[Year]),
+	"Back_1M_From", MINX(DATESINPERIOD('Date'[Date], MAX('Date'[Date]), -1, MONTH), 'Date'[Date]),
+	"Back_1Q_From", MINX(DATESINPERIOD('Date'[Date], MAX('Date'[Date]), -1, QUARTER), 'Date'[Date]),
+	"Back_1Y_From", MINX(DATESINPERIOD('Date'[Date], MAX('Date'[Date]), -1, YEAR), 'Date'[Date]),
+	"Back_1Y_Days", COUNTROWS(DATESINPERIOD('Date'[Date], MAX('Date'[Date]), -1, YEAR)),
+	"Fwd_1M_Days", COUNTROWS(DATESINPERIOD('Date'[Date], MAX('Date'[Date]), 1, MONTH)),
+	"Back_1Q_Sales", CALCULATE([Sales Amount], DATESINPERIOD('Date'[Date], MAX('Date'[Date]), -1, QUARTER))
+)
+ORDER BY 'Date'[Year Month]

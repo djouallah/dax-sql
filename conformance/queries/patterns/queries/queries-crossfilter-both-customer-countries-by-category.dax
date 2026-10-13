@@ -1,0 +1,13 @@
+// note: CROSSFILTER BOTH from Sales back to Customer, by category in 2024: the blank customer row is reached only where the category's visible sales carry a customer key Customer lacks; the blank country there in VALUES and CONCATENATEX, against COUNTROWS(Customer) and DISTINCTCOUNT, which leave the blank row out
+EVALUATE
+SUMMARIZECOLUMNS(
+	Category[Category],
+	TREATAS({2024}, 'Date'[Year]),
+	"Sales", [Sales Amount],
+	"Country Values", CALCULATE(COUNTROWS(VALUES(Customer[Country])), CROSSFILTER(Sales[CustomerKey], Customer[CustomerKey], BOTH)),
+	"Country Distinct", CALCULATE(DISTINCTCOUNT(Customer[Country]), CROSSFILTER(Sales[CustomerKey], Customer[CustomerKey], BOTH)),
+	"Customer Rows", CALCULATE(COUNTROWS(Customer), CROSSFILTER(Sales[CustomerKey], Customer[CustomerKey], BOTH)),
+	"Customer Key Values", CALCULATE(COUNTROWS(VALUES(Customer[CustomerKey])), CROSSFILTER(Sales[CustomerKey], Customer[CustomerKey], BOTH)),
+	"Countries", CALCULATE(CONCATENATEX(VALUES(Customer[Country]), Customer[Country], "|", Customer[Country], ASC), CROSSFILTER(Sales[CustomerKey], Customer[CustomerKey], BOTH))
+)
+ORDER BY Category[Category]

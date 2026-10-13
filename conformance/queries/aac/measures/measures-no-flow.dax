@@ -1,0 +1,2 @@
+// note: fct_interconnector[No flow] per link and interval of a day Basslink is out
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS(fct_interconnector[interconnector], fct_interconnector[time], "No flow", [No flow]), fct_interconnector[date] = dt"2026-08-05")

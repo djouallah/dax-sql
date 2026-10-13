@@ -1,0 +1,14 @@
+// note: LOOKUPVALUE under a brand grouping, a color filter and a year filter, all of which it ignores: the brand of the red products (several, so the alternate result), the red Fabrikam product, product 45 (unsold), and the year of order 1
+EVALUATE
+SUMMARIZECOLUMNS(
+	Product[Brand],
+	TREATAS({"Red"}, Product[Color]),
+	TREATAS({2024}, 'Date'[Year]),
+	"Sales", [Sales Amount],
+	"Brand In Context", SELECTEDVALUE(Product[Brand]),
+	"Red Brand", LOOKUPVALUE(Product[Brand], Product[Color], "Red", "several"),
+	"Red Fabrikam", LOOKUPVALUE(Product[Product], Product[Color], "Red", Product[Brand], "Fabrikam", "none"),
+	"Product 45", LOOKUPVALUE(Product[Product], Product[ProductKey], 45),
+	"Year Of Order 1", LOOKUPVALUE('Date'[Year], 'Date'[Date], LOOKUPVALUE(Sales[Order Date], Sales[Order Number], 1, Sales[Line Number], 1))
+)
+ORDER BY Product[Brand]

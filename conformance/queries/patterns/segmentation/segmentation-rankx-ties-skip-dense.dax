@@ -1,0 +1,8 @@
+// note: RANKX with ties on an integer measure: customers ranked by order count, SKIP and DENSE side by side, descending
+EVALUATE
+ADDCOLUMNS(
+    VALUES(Customer[Customer]),
+    "Orders", [Orders],
+    "Rank Skip", RANKX(ALL(Customer[Customer]), [Orders], , DESC, SKIP),
+    "Rank Dense", RANKX(ALL(Customer[Customer]), [Orders], , DESC, DENSE)
+)

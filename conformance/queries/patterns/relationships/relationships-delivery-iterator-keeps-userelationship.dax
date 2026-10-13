@@ -1,0 +1,10 @@
+// note: USERELATIONSHIP set outside an iterator still holds for the measure inside it after context transition, as when the measure sets it itself
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Quarter],
+    TREATAS({ 2024 }, 'Date'[Year]),
+    "Outer USERELATIONSHIP", CALCULATE(SUMX(VALUES('Date'[Date]), [Sales Amount]), USERELATIONSHIP(Sales[Delivery Date], 'Date'[Date])),
+    "Inner USERELATIONSHIP", SUMX(VALUES('Date'[Date]), [Sales Delivered via Relationship]),
+    "Best Delivery Day", MAXX(VALUES('Date'[Date]), [Sales Delivered via Relationship])
+)
+ORDER BY 'Date'[Quarter]

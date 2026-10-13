@@ -1,0 +1,2 @@
+// note: BLANK in addition, multiplication, = against 0, = against BLANK, == against 0, and concatenation
+EVALUATE ROW("a", BLANK() + 1, "b", BLANK() * 2, "c", IF(BLANK() = 0, "yes", "no"), "d", BLANK() = BLANK(), "e", BLANK() == 0, "f", "x" & BLANK() & 1)

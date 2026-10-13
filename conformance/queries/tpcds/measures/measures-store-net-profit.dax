@@ -1,0 +1,2 @@
+// note: store_sales[Store Net Profit] per store, some sales at a loss
+EVALUATE SUMMARIZECOLUMNS(store[s_store_name], "Store Net Profit", [Store Net Profit])

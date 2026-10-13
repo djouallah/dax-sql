@@ -1,0 +1,2 @@
+// note: MAXX over customers of a measure: context transition per customer
+EVALUATE ROW("best", [Best Customer Sales])

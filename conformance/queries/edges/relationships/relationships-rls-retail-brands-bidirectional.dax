@@ -1,0 +1,13 @@
+// note: under the Retail role (a filter on Customer, behind the both-directions relationship) sales by brand keep only retail customers' lines, so the unknown-customer lines go; the customer rows each brand reaches back through Sales
+// roles: Retail
+EVALUATE
+SUMMARIZECOLUMNS(
+    Product[Brand],
+    "Lines", [Lines],
+    "Sales", [Sales Amount],
+    "Customers", [Customers],
+    "Customers No Blank", [Customers No Blank],
+    "Customer Rows", COUNTROWS(Customer),
+    "Products", COUNTROWS(Product)
+)
+ORDER BY Product[Brand]

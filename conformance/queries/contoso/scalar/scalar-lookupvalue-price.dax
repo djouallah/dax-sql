@@ -1,0 +1,2 @@
+// note: LOOKUPVALUE of a price by name
+EVALUATE ROW("p", LOOKUPVALUE(Product[Price], Product[Name], "Cap"))

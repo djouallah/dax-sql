@@ -1,0 +1,2 @@
+// note: check_model.py: the row count of fct_curtailment
+EVALUATE ROW("table", "fct_curtailment", "rows", COUNTROWS('fct_curtailment'))

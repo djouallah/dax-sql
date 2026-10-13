@@ -1,0 +1,13 @@
+// note: grouped by Product[Color] under a filter on the Contoso brand, another column of Product: what ALLSELECTED of the color restores (sales, the colors it lists, the share), against ALL of the color
+EVALUATE
+SUMMARIZECOLUMNS(
+    Product[Color],
+    TREATAS({"Contoso"}, Product[Brand]),
+    TREATAS({2023}, 'Date'[Year]),
+    "Sales", [Sales Amount],
+    "Selected Colors Sales", CALCULATE([Sales Amount], ALLSELECTED(Product[Color])),
+    "All Colors Sales", CALCULATE([Sales Amount], ALL(Product[Color])),
+    "Selected Colors", CALCULATE(CONCATENATEX(VALUES(Product[Color]), Product[Color], ", ", Product[Color], ASC), ALLSELECTED(Product[Color])),
+    "Share Of Selected", DIVIDE([Sales Amount], CALCULATE([Sales Amount], ALLSELECTED(Product[Color])))
+)
+ORDER BY Product[Color]

@@ -1,0 +1,12 @@
+// note: ISFILTERED and ISCROSSFILTERED under a category grouping and a color filter: filters flow down the relationships to Product and Sales, not back up to Subcategory
+EVALUATE
+SUMMARIZECOLUMNS(
+    Category[Category],
+    TREATAS({"Red"}, Product[Color]),
+    "Sales", [Sales Amount],
+    "Category Filtered", ISFILTERED(Category[Category]),
+    "Color Filtered", ISFILTERED(Product[Color]),
+    "Product Crossfiltered", ISCROSSFILTERED(Product),
+    "Subcategory Crossfiltered", ISCROSSFILTERED(Subcategory),
+    "Sales Crossfiltered", ISCROSSFILTERED(Sales)
+)

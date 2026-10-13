@@ -1,0 +1,2 @@
+// note: the dashboard's mapScatter query, the map: each unit with a position and its average MW (page state: 3 days to 2026-08-11, all)
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS(fct_summary[DUID], dim_duid[FuelSourceDescriptor], dim_duid[Region], dim_duid[latitude], dim_duid[longitude], "mw", [Average MW]), fct_summary[date] >= dt"2026-08-09", fct_summary[date] <= dt"2026-08-11", NOT ISBLANK(dim_duid[latitude])), "DUID", [DUID], "fuel", [FuelSourceDescriptor], "Region", [Region], "lat", [latitude], "lon", [longitude], "mw", [mw])

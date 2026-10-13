@@ -1,0 +1,2 @@
+// note: in ADDCOLUMNS over SUMMARIZE's groups, ALL on the grouping column removes the only filter
+EVALUATE ADDCOLUMNS(SUMMARIZE(Sales, Product[Color]), "s", [Sales Amount], "all", CALCULATE([Sales Amount], ALL(Product[Color])))

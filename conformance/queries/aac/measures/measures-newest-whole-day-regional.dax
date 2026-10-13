@@ -1,0 +1,2 @@
+// note: fct_region[Newest whole day regional] per region: the same day whatever the filter
+EVALUATE SUMMARIZECOLUMNS(dim_region[Region], "Newest whole day regional", [Newest whole day regional])

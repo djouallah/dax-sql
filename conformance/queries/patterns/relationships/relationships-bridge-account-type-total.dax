@@ -1,0 +1,8 @@
+// note: sales by account type through the bidirectional AccountCustomer bridge: joint accounts share customers, so the total is not the sum of the rows
+EVALUATE
+SUMMARIZECOLUMNS(
+    ROLLUPADDISSUBTOTAL(Account[Account Type], "Is Total"),
+    "Sales", [Sales Amount],
+    "Customers", [Customers],
+    "Holders", COUNTROWS(AccountCustomer)
+)

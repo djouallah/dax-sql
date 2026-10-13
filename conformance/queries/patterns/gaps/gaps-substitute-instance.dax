@@ -1,0 +1,8 @@
+// note: SUBSTITUTE with an instance number replaces only that occurrence
+EVALUATE
+SELECTCOLUMNS(
+    FILTER(Customer, Customer[CustomerKey] <= 12),
+    "Customer", Customer[Customer],
+    "Second Zero", SUBSTITUTE(Customer[Customer], "0", "#", 2),
+    "Every Zero", SUBSTITUTE(Customer[Customer], "0", "#")
+)

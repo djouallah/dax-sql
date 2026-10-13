@@ -1,0 +1,2 @@
+// note: DATESBETWEEN with date literals, inclusive
+EVALUATE ROW("s", CALCULATE([Sales Amount], DATESBETWEEN('Date'[Date], dt"2024-01-01", dt"2024-02-29")))

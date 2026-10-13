@@ -1,0 +1,10 @@
+// note: the Time Intelligence calculation group on rows, sorted by its ordinal, applied to an additive measure and a ratio
+EVALUATE
+SUMMARIZECOLUMNS(
+	'Time Intelligence'[Time Intelligence],
+	'Time Intelligence'[Ordinal],
+	TREATAS({2024}, 'Date'[Year]),
+	"Sales_Amount", 'Sales'[Sales Amount],
+	"Margin__", 'Sales'[Margin %]
+)
+ORDER BY 'Time Intelligence'[Ordinal]

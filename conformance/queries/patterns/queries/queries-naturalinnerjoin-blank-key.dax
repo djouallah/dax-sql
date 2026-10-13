@@ -1,0 +1,7 @@
+// note: NATURALINNERJOIN of 2023 and 2024 sales by category, both holding the blank category of fact rows whose product is missing: whether a blank key joins a blank key
+DEFINE
+	VAR a = SUMMARIZECOLUMNS('Category'[Category], TREATAS({2023}, 'Date'[Year]), "Sales_2023", [Sales Amount])
+	VAR b = SUMMARIZECOLUMNS('Category'[Category], TREATAS({2024}, 'Date'[Year]), "Sales_2024", [Sales Amount])
+EVALUATE
+NATURALINNERJOIN(a, b)
+ORDER BY 'Category'[Category]

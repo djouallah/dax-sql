@@ -1,0 +1,2 @@
+// note: ORDER BY a measure column descending, the blank customer's row included
+EVALUATE SUMMARIZECOLUMNS(Customer[Customer], "s", [Sales Amount]) ORDER BY [s] DESC, Customer[Customer]

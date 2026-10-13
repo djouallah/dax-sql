@@ -1,0 +1,29 @@
+// note: the parent-child hierarchy flattened with PATH functions: employees grouped by their level-2 manager (blank for the CEO), with team sales, members and depth
+DEFINE
+	VAR e =
+		ADDCOLUMNS(
+			Employee,
+			"Path", PATH(Employee[EmployeeKey], Employee[ParentEmployeeKey]),
+			"Sales", [Sales Amount]
+		)
+	VAR l =
+		ADDCOLUMNS(
+			e,
+			"Level2_Key", PATHITEM([Path], 2, INTEGER),
+			"Level2_Text", PATHITEM([Path], 2),
+			"Depth", PATHLENGTH([Path]),
+			"Parent_Key", PATHITEMREVERSE([Path], 2, INTEGER)
+		)
+	VAR g =
+		GROUPBY(
+			l,
+			[Level2_Key],
+			[Level2_Text],
+			"Members", COUNTX(CURRENTGROUP(), [Depth]),
+			"Team_Sales", SUMX(CURRENTGROUP(), [Sales]),
+			"Max_Depth", MAXX(CURRENTGROUP(), [Depth]),
+			"Members_With_Parent", COUNTX(CURRENTGROUP(), [Parent_Key])
+		)
+EVALUATE
+ADDCOLUMNS(g, "Level2_Name", LOOKUPVALUE(Employee[Employee], Employee[EmployeeKey], [Level2_Key]))
+ORDER BY [Level2_Key]

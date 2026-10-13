@@ -1,0 +1,2 @@
+// note: the row count of customer_address
+EVALUATE ROW("table", "customer_address", "rows", COUNTROWS('customer_address'))

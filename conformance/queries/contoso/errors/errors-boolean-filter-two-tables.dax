@@ -1,0 +1,3 @@
+// note: a CALCULATE boolean filter over columns of two tables
+// expect: error
+EVALUATE ROW("x", CALCULATE([Orders], Product[Color] = "Red" || Customer[City] = "Paris"))

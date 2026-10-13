@@ -1,0 +1,13 @@
+// note: by month of 2024, a KEEPFILTERS filter on 'Date'[Weekend] meeting a year-to-date: the YTD item, the Sales YTD measure and DATESYTD inside CALCULATE each put a filter on 'Date'[Date], the key of a table marked as a date table, which removes the other filters on 'Date', the weekend one among them, or not
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Month],
+    TREATAS({2024}, 'Date'[Year]),
+    "Sales", [Sales Amount],
+    "Weekend Sales", CALCULATE([Sales Amount], KEEPFILTERS('Date'[Weekend] = TRUE())),
+    "YTD Item", CALCULATE([Sales Amount], Adjust[Adjust] = "YTD"),
+    "YTD Item Weekend", CALCULATE([Sales Amount], KEEPFILTERS('Date'[Weekend] = TRUE()), Adjust[Adjust] = "YTD"),
+    "Sales YTD Weekend", CALCULATE([Sales YTD], KEEPFILTERS('Date'[Weekend] = TRUE())),
+    "DATESYTD Inside Weekend", CALCULATE(CALCULATE([Sales Amount], DATESYTD('Date'[Date])), KEEPFILTERS('Date'[Weekend] = TRUE()))
+)
+ORDER BY 'Date'[Month]

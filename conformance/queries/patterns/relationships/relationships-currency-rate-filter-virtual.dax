@@ -1,0 +1,9 @@
+// note: a filter on ExchangeRate does not reach Sales (Currency filters ExchangeRate, not the reverse) until TREATAS carries its currencies to Currency
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year],
+    "Sales", [Sales Amount],
+    "Rate Filter Only", CALCULATE([Sales Amount], ExchangeRate[Rate] > 1),
+    "Currencies above 1", CALCULATE([Sales Amount], TREATAS(CALCULATETABLE(VALUES(ExchangeRate[CurrencyCode]), ExchangeRate[Rate] > 1), Currency[CurrencyCode]))
+)
+ORDER BY 'Date'[Year]

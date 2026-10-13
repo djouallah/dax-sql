@@ -1,0 +1,3 @@
+// note: KEEPFILTERS(TREATAS(...)) intersects with the outer color filter; plain TREATAS replaces it
+EVALUATE CALCULATETABLE(ROW("keep", CALCULATE([Sales Amount], KEEPFILTERS(TREATAS({"Red", "Blue"}, Product[Color]))),
+    "replace", CALCULATE([Sales Amount], TREATAS({"Red", "Blue"}, Product[Color]))), Product[Color] = "Red")

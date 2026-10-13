@@ -1,0 +1,16 @@
+// note: under the France role, accounts counted per customer sales band with the bridge to Account made to filter both ways only inside the measure by CROSSFILTER: with the band's customers as an explicit filter, with only the role's filter on Customer, and with no CROSSFILTER at all
+// roles: France
+EVALUATE
+ADDCOLUMNS(
+    VALUES(Segments[Segment]),
+    "Customers", COUNTROWS(FILTER(VALUES(Customer[CustomerKey]), [Customer Sales Band] = Segments[Segment])),
+    "Accounts Of Band",
+        CALCULATE(
+            COUNTROWS(Account),
+            FILTER(VALUES(Customer[CustomerKey]), [Customer Sales Band] = Segments[Segment]),
+            CROSSFILTER(AccountCustomer[AccountKey], Account[AccountKey], BOTH)
+        ),
+    "Accounts Of Visible Customers", CALCULATE(COUNTROWS(Account), CROSSFILTER(AccountCustomer[AccountKey], Account[AccountKey], BOTH)),
+    "Accounts", COUNTROWS(Account)
+)
+ORDER BY Segments[Segment]

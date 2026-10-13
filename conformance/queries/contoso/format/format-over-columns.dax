@@ -1,0 +1,2 @@
+// note: FORMAT of columns in a row context, with sections and zero padding
+EVALUATE SELECTCOLUMNS(FILTER(Product, Product[Price] >= 800), "Name", Product[Name], "p", FORMAT(-Product[Price], "$#,##0.00;($#,##0.00)"), "k", FORMAT(Product[ProductKey], "000"))

@@ -1,0 +1,2 @@
+// note: SUMMARIZECOLUMNS with ISFILTERED / ISCROSSFILTERED (never blank) keeps every city, the one without sales and the blank row
+EVALUATE SUMMARIZECOLUMNS(Customer[City], "f", ISFILTERED(Customer[City]), "cf", ISCROSSFILTERED(Sales[Qty]), "pf", ISFILTERED(Product[Color]), "s", [Sales Amount])

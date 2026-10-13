@@ -1,0 +1,2 @@
+// note: the dashboard's regionNames query, the regions' names
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS(dim_region[Region], dim_region[State]), NOT ISBLANK(dim_region[State]), NOT ISBLANK(dim_region[Region])), "region", [Region], "state", [State])

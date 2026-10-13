@@ -1,0 +1,8 @@
+// note: average days between orders (span over distinct order dates less one, averaged over customers) by country, the blank customer included
+EVALUATE
+SUMMARIZECOLUMNS(
+    Customer[Country],
+    "Avg Days Between Orders", [Customers Avg Days Between Orders],
+    "Customers", [Customers]
+)
+ORDER BY Customer[Country]

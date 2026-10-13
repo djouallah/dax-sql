@@ -1,0 +1,2 @@
+// note: the dashboard's oldestDate query, the first day the date input offers
+EVALUATE ROW("d", MIN(dim_calendar[date]))

@@ -1,0 +1,2 @@
+// note: xmla_compare.py probe: DISTINCTCOUNT of a key
+EVALUATE ROW("x", DISTINCTCOUNT(store_sales[ss_item_sk]))

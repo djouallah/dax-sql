@@ -1,0 +1,16 @@
+// note: RANK and OFFSET whose ORDERBY and PARTITIONBY are columns added by ADDCOLUMNS, the partition column blank for the months outside winter and summer (a DAX error: PARTITIONBY cannot use columns added by table functions)
+// expect: error
+DEFINE
+	VAR t =
+		ADDCOLUMNS(
+			SUMMARIZECOLUMNS('Date'[Year Month], 'Date'[Month], TREATAS({2023}, 'Date'[Year])),
+			"Sales", [Sales Amount],
+			"Season", SWITCH(TRUE(), 'Date'[Month] IN {12, 1, 2}, "Winter", 'Date'[Month] IN {6, 7, 8}, "Summer")
+		)
+EVALUATE
+ADDCOLUMNS(
+	t,
+	"Rank_In_Season", RANK(DENSE, t, ORDERBY([Sales], DESC), PARTITIONBY([Season])),
+	"Next_Best_Month", MAXX(OFFSET(1, t, ORDERBY([Sales], DESC, 'Date'[Year Month], ASC), PARTITIONBY([Season])), 'Date'[Year Month])
+)
+ORDER BY 'Date'[Year Month]

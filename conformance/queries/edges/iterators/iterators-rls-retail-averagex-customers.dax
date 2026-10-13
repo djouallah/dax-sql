@@ -1,0 +1,14 @@
+// note: under the Retail role (Customer behind the both-directions relationship) per store: AVERAGEX over the customer keys against AVERAGEX over the Customer table, DISTINCTCOUNT against DISTINCTCOUNTNOBLANK, and the FILTER-based Big Customers; the lines of unknown and NULL customers are hidden with the blank row
+// roles: Retail
+EVALUATE
+SUMMARIZECOLUMNS(
+    Store[Store],
+    "Lines", [Lines],
+    "Customers", [Customers],
+    "Customers No Blank", [Customers No Blank],
+    "Avg Per Customer", [Avg Per Customer],
+    "Avg Over Customer Table", AVERAGEX(Customer, [Sales Amount]),
+    "Big Customers", [Big Customers],
+    "Customer Rows", COUNTROWS(Customer)
+)
+ORDER BY Store[Store]

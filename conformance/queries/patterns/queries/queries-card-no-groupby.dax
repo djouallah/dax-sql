@@ -1,0 +1,12 @@
+// note: a card visual: SUMMARIZECOLUMNS with filter tables and measures but no group-by column returns one row
+DEFINE
+	VAR __DS0FilterTable = TREATAS({2023}, 'Date'[Year])
+	VAR __DS0FilterTable2 = TREATAS({"Premium", "Mid"}, 'Product'[Price Band])
+EVALUATE
+SUMMARIZECOLUMNS(
+	__DS0FilterTable,
+	__DS0FilterTable2,
+	"Sales_Amount", 'Sales'[Sales Amount],
+	"Margin__", 'Sales'[Margin %],
+	"Avg_Order_Value", 'Sales'[Avg Order Value]
+)

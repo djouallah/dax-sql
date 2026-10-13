@@ -1,0 +1,9 @@
+// note: IGNORE keeps the budget measure out of the non-blank test, so only the country x year rows with sales survive
+EVALUATE
+SUMMARIZECOLUMNS(
+	'Customer'[Country],
+	'Date'[Year],
+	"Sales_Amount", 'Sales'[Sales Amount],
+	"Budget_Amount", IGNORE('Budget'[Budget Amount])
+)
+ORDER BY 'Customer'[Country], 'Date'[Year]

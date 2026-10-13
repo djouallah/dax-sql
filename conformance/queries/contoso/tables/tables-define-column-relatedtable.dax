@@ -1,0 +1,3 @@
+// note: a query column counting RELATEDTABLE(Sales) in its row context, used in a filter and in MAXX
+DEFINE COLUMN Customer[Orders] = COUNTROWS(RELATEDTABLE(Sales))
+EVALUATE ROW("n", CALCULATE(COUNTROWS(Customer), Customer[Orders] >= 3), "max", MAXX(Customer, Customer[Orders]))

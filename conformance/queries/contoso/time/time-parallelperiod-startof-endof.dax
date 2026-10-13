@@ -1,0 +1,4 @@
+// note: PARALLELPERIOD a year back, ENDOFMONTH, STARTOFQUARTER, FIRSTDATE, LASTDATE and NEXTDAY of a month
+EVALUATE CALCULATETABLE(ROW("py", COUNTROWS(PARALLELPERIOD('Date'[Date], -1, YEAR)),
+      "eom", ENDOFMONTH('Date'[Date]), "soq", STARTOFQUARTER('Date'[Date]), "first", FIRSTDATE('Date'[Date]),
+      "last", LASTDATE('Date'[Date]), "next", NEXTDAY('Date'[Date])), 'Date'[Year] = 2024, 'Date'[Month] = 2)

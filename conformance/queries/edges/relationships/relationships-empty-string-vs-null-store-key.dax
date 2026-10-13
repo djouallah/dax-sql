@@ -1,0 +1,16 @@
+// note: on the fact side the empty-string StoreKey and the NULL StoreKey are separate values of Sales[StoreKey] that find no store, like "XXX-99"; with CROSSFILTER BOTH each one reaches only Store's blank row
+EVALUATE
+ADDCOLUMNS(
+    FILTER(
+        VALUES(Sales[StoreKey]),
+        ISBLANK(LOOKUPVALUE(Store[Store], Store[StoreKey], Sales[StoreKey]))
+    ),
+    "Is Blank", ISBLANK(Sales[StoreKey]),
+    "Equals Empty", Sales[StoreKey] = "",
+    "Strictly Empty", Sales[StoreKey] == "",
+    "Key Length", LEN(Sales[StoreKey]),
+    "Lines", CALCULATE([Lines]),
+    "Store Rows Reached", CALCULATE(COUNTROWS(Store), CROSSFILTER(Sales[StoreKey], Store[StoreKey], BOTH)),
+    "Blank Store Reached", CALCULATE(COUNTROWS(FILTER(Store, ISBLANK(Store[StoreKey]))), CROSSFILTER(Sales[StoreKey], Store[StoreKey], BOTH))
+)
+ORDER BY Sales[StoreKey], [Is Blank]

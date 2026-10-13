@@ -1,0 +1,2 @@
+// note: the dashboard's negativePrices query, the negative-price share and the lowest price per region (page state: 3 days to 2026-08-11, all)
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS(fct_region[REGIONID], "pct", [Negative price share], "lowest", [Lowest price]), fct_region[date] >= dt"2026-08-09", fct_region[date] <= dt"2026-08-11"), "region", [REGIONID], "pct", [pct], "lowest", [lowest]) ORDER BY [region]

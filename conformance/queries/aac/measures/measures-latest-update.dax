@@ -1,0 +1,2 @@
+// note: fct_summary[Latest update] per region: the newest cutoff whatever the filter
+EVALUATE SUMMARIZECOLUMNS(dim_region[Region], "Latest update", [Latest update])

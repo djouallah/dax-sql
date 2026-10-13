@@ -1,0 +1,13 @@
+// note: RANKX ascending, DENSE and SKIP, over every subcategory in France in 2022, where Jerseys sold nothing: where the blank sales rank among the rest
+EVALUATE
+CALCULATETABLE(
+    ADDCOLUMNS(
+        VALUES(Subcategory[Subcategory]),
+        "Sales", [Sales Amount],
+        "Rank Asc Dense", RANKX(ALL(Subcategory[Subcategory]), [Sales Amount], , ASC, DENSE),
+        "Rank Asc Skip", RANKX(ALL(Subcategory[Subcategory]), [Sales Amount], , ASC, SKIP)
+    ),
+    Customer[Country] = "France",
+    'Date'[Year] = 2022
+)
+ORDER BY Subcategory[Subcategory]

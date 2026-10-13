@@ -1,0 +1,10 @@
+// note: RANKX over all months ascending, DENSE and SKIP, for one sparsely sold product: the months without sales are blank and rank ahead
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year Month],
+    TREATAS({"Touring Bike C"}, Product[Product]),
+    "Sales", [Sales Amount],
+    "Dense Asc", RANKX(ALLSELECTED('Date'[Year Month]), [Sales Amount], , ASC, DENSE),
+    "Skip Asc", RANKX(ALLSELECTED('Date'[Year Month]), [Sales Amount], , ASC, SKIP)
+)
+ORDER BY 'Date'[Year Month]

@@ -1,0 +1,2 @@
+// note: NATURALLEFTOUTERJOIN of text with an inline IF over MAXX of text (no blanks): whether IF makes the column a variant
+EVALUATE NATURALLEFTOUTERJOIN(SELECTCOLUMNS(Category, "Name", CALCULATE(IF(TRUE(), MAXX(Product, Product[Name])))), SELECTCOLUMNS(Product, "Name", Product[Name] & ""))

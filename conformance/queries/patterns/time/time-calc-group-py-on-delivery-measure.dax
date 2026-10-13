@@ -1,0 +1,10 @@
+// note: PY and YoY calculation items applied to a query measure that activates the Delivery Date relationship
+DEFINE
+    MEASURE Sales[Delivered Lines] = CALCULATE([Order Lines], USERELATIONSHIP(Sales[Delivery Date], 'Date'[Date]))
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year], 'Time Intelligence'[Time Intelligence],
+    TREATAS({"Current", "PY", "YoY"}, 'Time Intelligence'[Time Intelligence]),
+    "Delivered Lines", [Delivered Lines]
+)
+ORDER BY 'Date'[Year], 'Time Intelligence'[Time Intelligence]

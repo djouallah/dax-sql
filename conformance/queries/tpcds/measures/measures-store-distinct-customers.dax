@@ -1,0 +1,2 @@
+// note: store_sales[Store Distinct Customers] per state of the address
+EVALUATE SUMMARIZECOLUMNS(customer_address[ca_state], "Store Distinct Customers", [Store Distinct Customers])

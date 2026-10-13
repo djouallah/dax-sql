@@ -1,0 +1,3 @@
+// note: PATH over a parent-child hierarchy, in a row context of the table
+EVALUATE
+ADDCOLUMNS(Employee, "Path", PATH(Employee[EmployeeKey], Employee[ParentEmployeeKey]))

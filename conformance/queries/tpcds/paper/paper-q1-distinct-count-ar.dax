@@ -1,0 +1,29 @@
+// note: the paper's "Customer Count card" visual, round 1 (state AR), as Power BI wrote it
+DEFINE
+	VAR __DS0FilterTable = 
+		TREATAS({"AR"}, 'customer_address'[ca_state])
+
+	VAR __DS0FilterTable2 = 
+		TREATAS({"2 yr Degree"}, 'customer_demographics'[cd_education_status])
+
+	VAR __DS0FilterTable3 = 
+		TREATAS({2025}, 'date_dim'[d_year])
+
+	VAR __DS0FilterTable4 = 
+		FILTER(
+			KEEPFILTERS(VALUES('catalog_sales'[cache_buster])),
+			'catalog_sales'[cache_buster] < 2
+		)
+
+	VAR __DS0FilterTable5 = 
+		FILTER(KEEPFILTERS(VALUES('store_sales'[cache_buster])), 'store_sales'[cache_buster] < 2)
+
+EVALUATE
+	SUMMARIZECOLUMNS(
+		__DS0FilterTable,
+		__DS0FilterTable2,
+		__DS0FilterTable3,
+		__DS0FilterTable4,
+		__DS0FilterTable5,
+		"Store_Distinct_Customers", IGNORE('store_sales'[Store Distinct Customers])
+	)

@@ -1,0 +1,6 @@
+// note: a VAR is evaluated where it is defined, so a later CALCULATE does not change its value
+DEFINE
+    MEASURE Sales[Var Then Calculate] = VAR v = [Sales Amount] RETURN CALCULATE(v, REMOVEFILTERS(Category))
+    MEASURE Sales[Calculate Measure] = CALCULATE([Sales Amount], REMOVEFILTERS(Category))
+EVALUATE
+SUMMARIZECOLUMNS(Category[Category], "Var Then Calculate", [Var Then Calculate], "Calculate Measure", [Calculate Measure])

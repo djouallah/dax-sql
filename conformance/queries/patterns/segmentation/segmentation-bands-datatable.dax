@@ -1,0 +1,20 @@
+// note: segmentation against bands defined in the query with DATATABLE, customers' 2024 sales computed once by context transition and matched to each band
+EVALUATE
+VAR Bands =
+    DATATABLE(
+        "Band", STRING, "Lo", DOUBLE, "Hi", DOUBLE,
+        {
+            { "Under 5k", 0.0, 5000.0 },
+            { "5k to 15k", 5000.0, 15000.0 },
+            { "15k to 40k", 15000.0, 40000.0 },
+            { "40k and more", 40000.0, 1000000000.0 }
+        }
+    )
+VAR PerCustomer =
+    ADDCOLUMNS(VALUES(Customer[Customer]), "@s", CALCULATE([Sales Amount], 'Date'[Year] = 2024))
+RETURN
+    ADDCOLUMNS(
+        Bands,
+        "Customers", COUNTROWS(FILTER(PerCustomer, NOT ISBLANK([@s]) && [@s] >= [Lo] && [@s] < [Hi])),
+        "Sales", SUMX(FILTER(PerCustomer, [@s] >= [Lo] && [@s] < [Hi]), [@s])
+    )

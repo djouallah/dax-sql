@@ -1,0 +1,2 @@
+// note: fct_curtailment_region[Wind and solar available MWh] per fuel and source
+EVALUATE SUMMARIZECOLUMNS(fct_curtailment_region[fuel], fct_curtailment_region[source], "Wind and solar available MWh", [Wind and solar available MWh])

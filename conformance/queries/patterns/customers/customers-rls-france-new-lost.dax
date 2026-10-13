@@ -1,0 +1,11 @@
+// note: new, static-new and lost customers by year under the France role (row-level security on Customer)
+// roles: France
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year],
+    "Customers", [Customers],
+    "New", [Customers New],
+    "New Static", [Customers New Static],
+    "Lost", [Customers Lost 90d]
+)
+ORDER BY 'Date'[Year]

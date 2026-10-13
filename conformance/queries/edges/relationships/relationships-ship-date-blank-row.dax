@@ -1,0 +1,11 @@
+// note: the Date blank row under each role: through the active Order Date it holds nothing, through USERELATIONSHIP(Ship Date) it holds the NULL ship dates and the one past the table's end
+EVALUATE
+ROW(
+    "Order Blank Lines", CALCULATE([Lines], ISBLANK('Date'[Date])),
+    "Ship Blank Lines", CALCULATE([Lines], USERELATIONSHIP(Sales[Ship Date], 'Date'[Date]), ISBLANK('Date'[Date])),
+    "Ship Blank Amount", CALCULATE([Sales Amount], USERELATIONSHIP(Sales[Ship Date], 'Date'[Date]), ISBLANK('Date'[Date])),
+    "Order 2024 Lines", CALCULATE([Lines], 'Date'[Year] = 2024),
+    "Ship 2024 Lines", CALCULATE([Lines], USERELATIONSHIP(Sales[Ship Date], 'Date'[Date]), 'Date'[Year] = 2024),
+    "Date Rows", COUNTROWS(ALL('Date'[Date])),
+    "Date Rows Ship", CALCULATE(COUNTROWS(ALL('Date'[Date])), USERELATIONSHIP(Sales[Ship Date], 'Date'[Date]))
+)

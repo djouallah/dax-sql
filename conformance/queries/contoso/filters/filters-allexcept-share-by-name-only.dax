@@ -1,0 +1,2 @@
+// note: ALLEXCEPT(Product, Category[Category]) grouped by the name alone: nothing filters the category, the share is of all sales
+EVALUATE SUMMARIZECOLUMNS(Product[Name], "share", [Share of Category])

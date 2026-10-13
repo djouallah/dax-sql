@@ -1,0 +1,8 @@
+// note: average number of distinct months a customer bought in (SUMMARIZE of Sales by a Date column per customer), by country and year
+EVALUATE
+SUMMARIZECOLUMNS(
+    Customer[Country],
+    'Date'[Year],
+    "Avg Active Months", [Customers Avg Active Months]
+)
+ORDER BY Customer[Country], 'Date'[Year]

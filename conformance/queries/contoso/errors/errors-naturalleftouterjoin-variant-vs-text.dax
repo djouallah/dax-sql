@@ -1,0 +1,2 @@
+// note: NATURALLEFTOUTERJOIN on a column that is CALCULATE(MAXX(...)) of text on one side and text on the other: Power BI joins them
+EVALUATE NATURALLEFTOUTERJOIN(SELECTCOLUMNS(Category, "Name", CALCULATE(MAXX(Product, Product[Name]))), SELECTCOLUMNS(Product, "Name", Product[Name] & ""))

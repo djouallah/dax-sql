@@ -1,0 +1,9 @@
+// note: new customers through a two-column TREATAS onto Sales[CustomerKey] and 'Date'[Date] under KEEPFILTERS, against the FILTER version, by quarter
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year],
+    'Date'[Quarter],
+    "New Lineage", [Customers New Lineage],
+    "New Filter", [Customers New]
+)
+ORDER BY 'Date'[Year], 'Date'[Quarter]

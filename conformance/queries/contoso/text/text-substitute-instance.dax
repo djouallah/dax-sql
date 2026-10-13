@@ -1,0 +1,3 @@
+// note: SUBSTITUTE with an instance number replaces only that occurrence; past the last, nothing
+EVALUATE ROW("second", SUBSTITUTE("a-b-c", "-", "+", 2), "none", SUBSTITUTE("a-b-c", "-", "+", 3),
+    "longer", SUBSTITUTE("x--y--z", "--", "=", 2), "every", SUBSTITUTE("a-b-c", "-", "+"))

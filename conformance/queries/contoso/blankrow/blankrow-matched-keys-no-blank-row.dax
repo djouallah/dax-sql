@@ -1,0 +1,2 @@
+// note: a table whose keys all match has no blank row
+EVALUATE ROW("n", COUNTROWS(VALUES(Product[Color])))

@@ -1,0 +1,3 @@
+// note: RANK over a table variable ordered by a column ADDCOLUMNS added, blanks LAST
+EVALUATE VAR t = ADDCOLUMNS(ALL(Product[Name]), "@s", [Sales Amount])
+    RETURN ADDCOLUMNS(t, "r", RANK(DENSE, t, ORDERBY([@s], DESC), LAST))

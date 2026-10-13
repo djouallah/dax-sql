@@ -1,0 +1,3 @@
+// note: under a role securing Customer, COUNTROWS of Customer
+// roles: Paris
+EVALUATE ROW("n", COUNTROWS(Customer))

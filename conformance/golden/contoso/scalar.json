@@ -1,0 +1,277 @@
+{
+ "scalar-blank-arithmetic": {
+  "hash": "8d97da502cd7e40f8c3e9d106e2b1485f33dc746",
+  "columns": [
+   "[a]",
+   "[b]",
+   "[c]",
+   "[d]",
+   "[e]",
+   "[f]"
+  ],
+  "rows": [
+   [
+    1,
+    null,
+    "yes",
+    true,
+    false,
+    "x1"
+   ]
+  ]
+ },
+ "scalar-branch-types-widen": {
+  "hash": "5a089d26314522403226d9055f08ac6cd20982e9",
+  "columns": [
+   "[a]",
+   "[b]",
+   "[c]",
+   "[d]",
+   "[e]"
+  ],
+  "rows": [
+   [
+    0.5,
+    0.25,
+    0.5,
+    "multi",
+    "none"
+   ]
+  ]
+ },
+ "scalar-coalesce-blank-measure": {
+  "hash": "a089e8e4cd66c888d80e37d3bad8f877598a149d",
+  "columns": [
+   "[a]"
+  ],
+  "rows": [
+   [
+    0.5
+   ]
+  ]
+ },
+ "scalar-concatenatex-distinct-cities": {
+  "hash": "48ae190723118814e3dd9eab0085f4eb19d322fc",
+  "columns": [
+   "[c]"
+  ],
+  "rows": [
+   [
+    "Berlin, London, Paris"
+   ]
+  ]
+ },
+ "scalar-constants-int64-text-blank": {
+  "hash": "17ed606e421741a3858ac8ada3b75e889d59315f",
+  "columns": [
+   "[a]",
+   "[b]",
+   "[l]",
+   "[f]",
+   "[y]",
+   "[w]",
+   "[inf]"
+  ],
+  "rows": [
+   [
+    10000000000,
+    2147483648,
+    5,
+    "12",
+    null,
+    1,
+    1e+300
+   ]
+  ]
+ },
+ "scalar-countrows-empty-is-blank": {
+  "hash": "60ebc3b7601095cb247cf56ac03d799bd5cdbe18",
+  "columns": [
+   "[n]"
+  ],
+  "rows": [
+   [
+    null
+   ]
+  ]
+ },
+ "scalar-define-measure-and-query-var": {
+  "hash": "06b9ad785f67a534bd3e13bea422dce9134cd22a",
+  "columns": [
+   "[d]"
+  ],
+  "rows": [
+   [
+    11200.0
+   ]
+  ]
+ },
+ "scalar-divide-by-blank-measure-keeps-row": {
+  "hash": "ce7f631cfb4e92f3221ee7796236bf91428e53dc",
+  "columns": [
+   "Product[Name]",
+   "[x]"
+  ],
+  "rows": [
+   [
+    "Road Bike",
+    0.00025
+   ],
+   [
+    "Mountain Bike",
+    0.000625
+   ],
+   [
+    "Jersey",
+    0.002857142857142857
+   ],
+   [
+    "Cap",
+    0.005555555555555556
+   ],
+   [
+    "Helmet",
+    1e+300
+   ]
+  ]
+ },
+ "scalar-functions-mixed": {
+  "hash": "5cb267b2696e8d239f2f9ed800eaff1939b40ace",
+  "columns": [
+   "[l]",
+   "[u]",
+   "[len]",
+   "[y]",
+   "[eom]",
+   "[f]",
+   "[fd]",
+   "[sw]",
+   "[d]",
+   "[dv]",
+   "[r]",
+   "[c]",
+   "[dt]"
+  ],
+  "rows": [
+   [
+    "He",
+    "AB",
+    3,
+    2024,
+    "2024-02-29",
+    "1,234.50",
+    "2024-03-05",
+    "two",
+    2,
+    -1.0,
+    3.0,
+    true,
+    "2025-02-01"
+   ]
+  ]
+ },
+ "scalar-generateseries-fractions": {
+  "hash": "629cb22a76de32906a054109b07b59f8f9708a4a",
+  "columns": [
+   "[Value]"
+  ],
+  "rows": [
+   [
+    0.0
+   ],
+   [
+    0.25
+   ],
+   [
+    0.5
+   ],
+   [
+    0.75
+   ],
+   [
+    1.0
+   ]
+  ]
+ },
+ "scalar-lookupvalue-ignores-filter-context": {
+  "hash": "75d6a952aaf22ec1ee9e61abf00d1e138715afbf",
+  "columns": [
+   "Product[Color]",
+   "[cap]",
+   "[red]"
+  ],
+  "rows": [
+   [
+    "Red",
+    20.0,
+    20.0
+   ],
+   [
+    "Black",
+    20.0,
+    20.0
+   ],
+   [
+    "Blue",
+    20.0,
+    20.0
+   ]
+  ]
+ },
+ "scalar-lookupvalue-price": {
+  "hash": "1d9b8f13b59aa6af547ce581697be7d299241fab",
+  "columns": [
+   "[p]"
+  ],
+  "rows": [
+   [
+    20.0
+   ]
+  ]
+ },
+ "scalar-nameof": {
+  "hash": "ae88c24e0f43a2090060de72c34b384d365eb87c",
+  "columns": [
+   "[m]",
+   "[c]"
+  ],
+  "rows": [
+   [
+    "'Sales'[Quantity]",
+    "'Product'[Color]"
+   ]
+  ]
+ },
+ "scalar-names-quotes-comments-case": {
+  "hash": "a26e535e606a65c5aa9dfed903a5da920f3d22d7",
+  "columns": [
+   "[s]"
+  ],
+  "rows": [
+   [
+    4350.0
+   ]
+  ]
+ },
+ "scalar-selectedvalue-alternate": {
+  "hash": "9ea1015f99008348f9824219b38d1dcbd8157b59",
+  "columns": [
+   "Product[Color]",
+   "[name]"
+  ],
+  "rows": [
+   [
+    "Red",
+    "many"
+   ],
+   [
+    "Black",
+    "many"
+   ],
+   [
+    "Blue",
+    "Cap"
+   ]
+  ]
+ }
+}

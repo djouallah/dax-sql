@@ -1,0 +1,3 @@
+// note: a syntax error: an unclosed parenthesis
+// expect: error
+EVALUATE ROW("x", SUM(Sales[Qty]

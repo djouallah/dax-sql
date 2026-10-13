@@ -1,0 +1,2 @@
+// note: UNION of two one-value tables
+EVALUATE UNION({1}, {2})

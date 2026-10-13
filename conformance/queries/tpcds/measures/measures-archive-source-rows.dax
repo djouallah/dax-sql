@@ -1,0 +1,2 @@
+// note: stg_tpcds_archive_log[Archive Source Rows] per file
+EVALUATE SUMMARIZECOLUMNS(stg_tpcds_archive_log[file_stem], "Archive Source Rows", [Archive Source Rows])

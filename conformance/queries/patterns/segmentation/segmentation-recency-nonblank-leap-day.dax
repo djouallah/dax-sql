@@ -1,0 +1,31 @@
+// note: recency segmentation as of the leap day 2024-02-29: each customer's first and last purchase found by FIRSTNONBLANK and LASTNONBLANK over FILTER(ALL('Date'[Date])), then customers grouped by days since their last purchase (the missing customer's row included)
+EVALUATE
+VAR AsOf = DATE(2024, 2, 29)
+VAR PerCustomer =
+    ADDCOLUMNS(
+        VALUES(Customer[CustomerKey]),
+        "@First", FIRSTNONBLANK(FILTER(ALL('Date'[Date]), 'Date'[Date] <= AsOf), [Sales Amount]),
+        "@Last", LASTNONBLANK(FILTER(ALL('Date'[Date]), 'Date'[Date] <= AsOf), [Sales Amount])
+    )
+VAR Banded =
+    ADDCOLUMNS(
+        PerCustomer,
+        "@Band",
+            SWITCH(
+                TRUE(),
+                ISBLANK([@Last]), "Never",
+                DATEDIFF([@Last], AsOf, DAY) <= 90, "Active",
+                DATEDIFF([@Last], AsOf, DAY) <= 365, "Lapsing",
+                "Lost"
+            )
+    )
+RETURN
+    GROUPBY(
+        Banded,
+        [@Band],
+        "Customers", COUNTX(CURRENTGROUP(), 1),
+        "Earliest First", MINX(CURRENTGROUP(), [@First]),
+        "Latest First", MAXX(CURRENTGROUP(), [@First]),
+        "Latest Last", MAXX(CURRENTGROUP(), [@Last])
+    )
+ORDER BY [@Band]

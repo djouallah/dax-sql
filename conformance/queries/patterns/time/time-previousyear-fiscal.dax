@@ -1,0 +1,8 @@
+// note: PREVIOUSYEAR with a fiscal year end, by fiscal year (the first fiscal year has no previous one)
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Fiscal Year],
+    "Sales", [Sales Amount],
+    "Previous Fiscal Year", CALCULATE([Sales Amount], PREVIOUSYEAR('Date'[Date], "6/30"))
+)
+ORDER BY 'Date'[Fiscal Year]

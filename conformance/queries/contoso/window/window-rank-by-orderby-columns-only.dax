@@ -1,0 +1,2 @@
+// note: RANK over (Color, Name) ordered by Color: the current row is matched by the color, names under it tie
+EVALUATE SUMMARIZECOLUMNS(Product[Color], "r", RANK(DENSE, ALL(Product[Color], Product[Name]), ORDERBY(Product[Color])))

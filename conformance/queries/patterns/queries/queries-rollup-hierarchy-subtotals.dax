@@ -1,0 +1,14 @@
+// note: a matrix row hierarchy: ROLLUPADDISSUBTOTAL over category then subcategory gives a subtotal per category and a grand total
+DEFINE
+	VAR __DS0FilterTable = TREATAS({2023}, 'Date'[Year])
+	VAR __DS0Core =
+		SUMMARIZECOLUMNS(
+			ROLLUPADDISSUBTOTAL('Category'[Category], "IsGrandTotalRowTotal", 'Subcategory'[Subcategory], "IsDM1Total"),
+			__DS0FilterTable,
+			"Sales_Amount", 'Sales'[Sales Amount],
+			"Margin__", 'Sales'[Margin %]
+		)
+EVALUATE
+	__DS0Core
+ORDER BY
+	[IsGrandTotalRowTotal] DESC, 'Category'[Category], [IsDM1Total] DESC, 'Subcategory'[Subcategory]

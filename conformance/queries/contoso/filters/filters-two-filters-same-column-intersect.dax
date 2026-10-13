@@ -1,0 +1,2 @@
+// note: two CALCULATE filters on the same column intersect: nothing left
+EVALUATE ROW("s", CALCULATE([Sales Amount], Product[Color] = "Red", Product[Color] = "Blue"))

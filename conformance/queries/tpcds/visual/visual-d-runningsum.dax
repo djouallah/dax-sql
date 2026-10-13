@@ -1,0 +1,18 @@
+// note: visual calculation, stores on the rows, promotions on the columns, many cells empty: RUNNINGSUM over densified cells
+DEFINE
+	COLUMN 'V'[calc] = RUNNINGSUM([Rev])
+	TABLE 'V' =
+		SELECTCOLUMNS(
+			SUMMARIZECOLUMNS(ROLLUPADDISSUBTOTAL('store'[s_store_name], "TR"), ROLLUPADDISSUBTOTAL('promotion'[p_promo_name], "TC"), TREATAS({"AR"}, 'customer_address'[ca_state]), TREATAS({"2 yr Degree"}, 'customer_demographics'[cd_education_status]), TREATAS({2024}, 'date_dim'[d_year]), "Rev", [Store Revenue]),
+			"store", 'store'[s_store_name], "TR", [TR], "promo", 'promotion'[p_promo_name], "TC", [TC], "Rev", [Rev]
+		)
+		WITH VISUAL SHAPE
+		AXIS rows
+			GROUP [store] TOTAL [TR]
+			ORDER BY [store] ASC
+		AXIS columns
+			GROUP [promo] TOTAL [TC]
+			ORDER BY [promo] ASC
+		DENSIFY "IsDensifiedRow"
+EVALUATE 'V'
+ORDER BY 'V'[TR], 'V'[store], 'V'[TC], 'V'[promo]

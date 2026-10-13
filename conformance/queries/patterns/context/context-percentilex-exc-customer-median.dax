@@ -1,0 +1,10 @@
+// note: PERCENTILEX.EXC and .INC at 0.5 over every customer (Customer is not filtered by the subcategory), each customer's 2023 sales by context transition, the customers without sales giving blank
+EVALUATE
+SUMMARIZECOLUMNS(
+    Subcategory[Subcategory],
+    TREATAS({2023}, 'Date'[Year]),
+    "Customers", [Customers],
+    "Median Exc", PERCENTILEX.EXC(VALUES(Customer[CustomerKey]), [Sales Amount], 0.5),
+    "Median Inc", PERCENTILEX.INC(VALUES(Customer[CustomerKey]), [Sales Amount], 0.5)
+)
+ORDER BY Subcategory[Subcategory]

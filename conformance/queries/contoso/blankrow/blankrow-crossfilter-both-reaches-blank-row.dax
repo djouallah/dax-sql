@@ -1,0 +1,6 @@
+// note: CROSSFILTER BOTH from Sales to Customer: VALUES lists the blank row when an unmatched sale is kept; COUNTROWS and DISTINCTCOUNT of the table do not count it
+EVALUATE SUMMARIZECOLUMNS(Product[Name],
+    "rows", CALCULATE(COUNTROWS(Customer), CROSSFILTER(Sales[CustomerKey], Customer[CustomerKey], BOTH)),
+    "keys", CALCULATE(COUNTROWS(VALUES(Customer[CustomerKey])), CROSSFILTER(Sales[CustomerKey], Customer[CustomerKey], BOTH)),
+    "names", CALCULATE(DISTINCTCOUNT(Customer[Customer]), CROSSFILTER(Sales[CustomerKey], Customer[CustomerKey], BOTH)),
+    "list", CALCULATE(CONCATENATEX(VALUES(Customer[Customer]), Customer[Customer], ",", Customer[Customer], ASC), CROSSFILTER(Sales[CustomerKey], Customer[CustomerKey], BOTH)))

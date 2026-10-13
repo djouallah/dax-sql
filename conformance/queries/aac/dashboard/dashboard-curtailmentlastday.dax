@@ -1,0 +1,2 @@
+// note: the dashboard's curtailmentLastDay query, the newest day of the farms' curtailment
+EVALUATE ROW("d", MAX(fct_curtailment[date]))

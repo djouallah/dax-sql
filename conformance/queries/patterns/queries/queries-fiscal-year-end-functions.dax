@@ -1,0 +1,13 @@
+// note: year functions with a June 30 year end by fiscal year, at both ends of the Date table: the first fiscal year starts before it and fiscal 2025 ends after it
+EVALUATE
+SUMMARIZECOLUMNS(
+	'Date'[Fiscal Year],
+	"Sales_Amount", 'Sales'[Sales Amount],
+	"FY_Start", MINX(STARTOFYEAR('Date'[Date], "6/30"), 'Date'[Date]),
+	"FY_End", MAXX(ENDOFYEAR('Date'[Date], "6/30"), 'Date'[Date]),
+	"Prev_FY_Days", COUNTROWS(PREVIOUSYEAR('Date'[Date], "6/30")),
+	"Next_FY_Days", COUNTROWS(NEXTYEAR('Date'[Date], "6/30")),
+	"Next_FY_Sales", CALCULATE([Sales Amount], NEXTYEAR('Date'[Date], "6/30")),
+	"Opening_On_Hand", OPENINGBALANCEYEAR(SUM(Inventory[On Hand]), 'Date'[Date], "6/30")
+)
+ORDER BY 'Date'[Fiscal Year]

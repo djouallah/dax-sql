@@ -1,0 +1,13 @@
+// note: NATURALLEFTOUTERJOIN on Category[Category] lineage: every category's 2024 budget against the sales by category of 2023-05-17, the blank category on both sides
+EVALUATE
+NATURALLEFTOUTERJOIN(
+    ADDCOLUMNS(
+        VALUES(Category[Category]),
+        "Budget 2024", CALCULATE([Budget Amount], 'Date'[Year] = 2024)
+    ),
+    CALCULATETABLE(
+        ADDCOLUMNS(SUMMARIZE(Sales, Category[Category]), "Sales on Day", [Sales Amount]),
+        'Date'[Date] = DATE(2023, 5, 17)
+    )
+)
+ORDER BY Category[Category]

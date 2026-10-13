@@ -1,0 +1,18 @@
+// note: PERCENTILEX.INC of customers' 2022 sales by country over every customer of the country: customers who had not started buying give a blank, which counts in N and sorts first, beside the median of the 2022 buyers alone and MEDIANX over every customer
+EVALUATE
+SUMMARIZECOLUMNS(
+    Customer[Country],
+    "Customers", COUNTROWS(Customer),
+    "Buyers 2022", CALCULATE([Customers], 'Date'[Year] = 2022),
+    "P10 Inc", PERCENTILEX.INC(VALUES(Customer[CustomerKey]), CALCULATE([Sales Amount], 'Date'[Year] = 2022), 0.1),
+    "P50 Inc", PERCENTILEX.INC(VALUES(Customer[CustomerKey]), CALCULATE([Sales Amount], 'Date'[Year] = 2022), 0.5),
+    "P90 Inc", PERCENTILEX.INC(VALUES(Customer[CustomerKey]), CALCULATE([Sales Amount], 'Date'[Year] = 2022), 0.9),
+    "P50 Inc Buyers Only",
+        PERCENTILEX.INC(
+            FILTER(VALUES(Customer[CustomerKey]), NOT ISBLANK(CALCULATE([Sales Amount], 'Date'[Year] = 2022))),
+            CALCULATE([Sales Amount], 'Date'[Year] = 2022),
+            0.5
+        ),
+    "Median All", MEDIANX(VALUES(Customer[CustomerKey]), CALCULATE([Sales Amount], 'Date'[Year] = 2022))
+)
+ORDER BY Customer[Country]

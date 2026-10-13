@@ -1,0 +1,11 @@
+// note: under the Bikes role the security filter reaches Sales through Product; CROSSFILTER BOTH, for this query only, lets Sales filter Customer back to the customers who bought bikes
+// roles: Bikes
+EVALUATE
+SUMMARIZECOLUMNS(
+    Customer[Country],
+    "Customer Rows", COUNTROWS(Customer),
+    "Bike Customers", CALCULATE(COUNTROWS(Customer), CROSSFILTER(Sales[CustomerKey], Customer[CustomerKey], BOTH)),
+    "Bike Customer Keys", CALCULATE(DISTINCTCOUNT(Customer[CustomerKey]), CROSSFILTER(Sales[CustomerKey], Customer[CustomerKey], BOTH)),
+    "Bike Lines", [Order Lines]
+)
+ORDER BY Customer[Country]

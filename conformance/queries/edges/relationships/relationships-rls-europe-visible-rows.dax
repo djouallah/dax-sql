@@ -1,0 +1,17 @@
+// note: under the Europe role, a filter at the top of the snowflake: what each table shows (StoreProfile behind the both-directions one-to-one, Customer behind the both-directions Sales relationship), the lines and targets left, and the Store Region calculated column computed without the role
+// roles: Europe
+EVALUATE
+ROW(
+    "Regions", COUNTROWS(Region),
+    "Countries", COUNTROWS(Country),
+    "Stores", COUNTROWS(Store),
+    "Profiles", COUNTROWS(StoreProfile),
+    "Customers", COUNTROWS(Customer),
+    "Products", COUNTROWS(Product),
+    "Lines", [Lines],
+    "Sales", [Sales Amount],
+    "Target", [Target Amount],
+    "Target Rows", COUNTROWS(Target),
+    "Lines Store Region Europe", CALCULATE([Lines], Sales[Store Region] = "Europe"),
+    "Lines Store Region Blank", CALCULATE([Lines], ISBLANK(Sales[Store Region]))
+)

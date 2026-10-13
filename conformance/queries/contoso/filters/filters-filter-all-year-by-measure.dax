@@ -1,0 +1,2 @@
+// note: FILTER(ALL(year)) with a condition on a measure: the years with more than 3 orders
+EVALUATE ROW("m", CALCULATE([Sales Amount], FILTER(ALL('Date'[Year]), [Orders] > 3)))

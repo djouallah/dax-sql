@@ -1,0 +1,10 @@
+// note: dynamic cohort: customers grouped (GROUPBY over an added column) by the year of their first Bikes purchase
+EVALUATE
+VAR FirstBike =
+    CALCULATETABLE(
+        ADDCOLUMNS(VALUES(Sales[CustomerKey]), "@First Year", YEAR(CALCULATE(MIN(Sales[Order Date])))),
+        Category[Category] = "Bikes"
+    )
+RETURN
+    GROUPBY(FirstBike, [@First Year], "Customers", COUNTX(CURRENTGROUP(), Sales[CustomerKey]))
+ORDER BY [@First Year]

@@ -1,0 +1,10 @@
+// note: "show items with no data": ADDMISSINGITEMS restores the year x category rows the budget leaves blank
+EVALUATE
+ADDMISSINGITEMS(
+	'Date'[Year],
+	'Category'[Category],
+	SUMMARIZECOLUMNS('Date'[Year], 'Category'[Category], "Budget_Amount", 'Budget'[Budget Amount]),
+	'Date'[Year],
+	'Category'[Category]
+)
+ORDER BY 'Date'[Year], 'Category'[Category]

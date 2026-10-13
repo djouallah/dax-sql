@@ -1,0 +1,23 @@
+// note: each Lyon customer's previous order date in 2024 with OFFSET partitioned by customer, and the days between
+EVALUATE
+VAR CustDates =
+    CALCULATETABLE(
+        SUMMARIZE(Sales, Sales[CustomerKey], Sales[Order Date]),
+        Customer[City] = "Lyon",
+        'Date'[Year] = 2024
+    )
+VAR WithPrev =
+    ADDCOLUMNS(
+        CustDates,
+        "Previous Order",
+            MAXX(
+                OFFSET(-1, CustDates, ORDERBY(Sales[Order Date], ASC), PARTITIONBY(Sales[CustomerKey])),
+                Sales[Order Date]
+            )
+    )
+RETURN
+    ADDCOLUMNS(
+        WithPrev,
+        "Days Since Previous", IF(NOT ISBLANK([Previous Order]), DATEDIFF([Previous Order], Sales[Order Date], DAY))
+    )
+ORDER BY Sales[CustomerKey], Sales[Order Date]

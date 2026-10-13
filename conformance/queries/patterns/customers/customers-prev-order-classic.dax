@@ -1,0 +1,17 @@
+// note: each Lyon customer's previous order date in 2024 without window functions: MAXX over a FILTER of the same table on the outer row's values
+EVALUATE
+VAR CustDates =
+    CALCULATETABLE(
+        SUMMARIZE(Sales, Sales[CustomerKey], Sales[Order Date]),
+        Customer[City] = "Lyon",
+        'Date'[Year] = 2024
+    )
+RETURN
+    ADDCOLUMNS(
+        CustDates,
+        "Previous Order",
+            VAR c = Sales[CustomerKey]
+            VAR d = Sales[Order Date]
+            RETURN MAXX(FILTER(CustDates, Sales[CustomerKey] = c && Sales[Order Date] < d), Sales[Order Date])
+    )
+ORDER BY Sales[CustomerKey], Sales[Order Date]

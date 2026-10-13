@@ -1,0 +1,9 @@
+// note: FILTER on a measure over VALUES(Customer) judges each customer in the year's context; with REMOVEFILTERS('Date') inside, on lifetime sales
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year],
+    "Sales", [Sales Amount],
+    "Big In Year", [Context Big Customer Sales],
+    "Big Lifetime", CALCULATE([Sales Amount], FILTER(VALUES(Customer[CustomerKey]), CALCULATE([Sales Amount], REMOVEFILTERS('Date')) > 36000))
+)
+ORDER BY 'Date'[Year]

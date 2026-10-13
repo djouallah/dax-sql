@@ -1,0 +1,3 @@
+// note: a reference to a measure the model does not have
+// expect: error
+EVALUATE ROW("x", [No such measure])

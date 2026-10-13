@@ -1,0 +1,6 @@
+// note: NATURALLEFTOUTERJOIN keeps the left rows that have no match, with blanks on the right
+EVALUATE
+NATURALLEFTOUTERJOIN(
+    SELECTCOLUMNS(Category, "CategoryKey", Category[CategoryKey] + 0, "Category", Category[Category]),
+    SELECTCOLUMNS(FILTER(Budget, Budget[YearMonth] = 202312 && Budget[CategoryKey] <> 2), "CategoryKey", Budget[CategoryKey] + 0, "Budget", Budget[Budget])
+)

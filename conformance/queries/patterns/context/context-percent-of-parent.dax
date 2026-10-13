@@ -1,0 +1,10 @@
+// note: a Category > Subcategory matrix with subtotals: ISINSCOPE picks the level, ALLSELECTED gives the parent for percent of parent
+EVALUATE
+SUMMARIZECOLUMNS(
+    ROLLUPADDISSUBTOTAL(Category[Category], "Category Total", Subcategory[Subcategory], "Subcategory Total"),
+    TREATAS({"Bikes", "Accessories"}, Category[Category]),
+    "Sales", [Sales Amount],
+    "Level", [Context Level],
+    "Pct Of Parent", [Context Pct Of Parent]
+)
+ORDER BY [Category Total], Category[Category], [Subcategory Total], Subcategory[Subcategory]

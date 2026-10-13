@@ -1,0 +1,2 @@
+// note: GROUPBY a related column with SUMX over CURRENTGROUP()
+EVALUATE GROUPBY(Sales, Product[Color], "q", SUMX(CURRENTGROUP(), Sales[Qty]))

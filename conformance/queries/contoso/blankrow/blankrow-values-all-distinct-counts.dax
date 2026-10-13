@@ -1,0 +1,3 @@
+// note: VALUES and ALL count the blank row of an unmatched key; DISTINCT, ALLNOBLANKROW and the table itself do not
+EVALUATE ROW("values", COUNTROWS(VALUES(Customer)), "distinct", COUNTROWS(DISTINCT(Customer)), "table", COUNTROWS(Customer),
+    "all", COUNTROWS(ALL(Customer[Customer])), "noblank", COUNTROWS(ALLNOBLANKROW(Customer[Customer])))

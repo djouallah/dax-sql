@@ -1,0 +1,2 @@
+// note: the dashboard's fuels query, the fuel filter list
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS(dim_duid[FuelSourceDescriptor]), NOT ISBLANK(dim_duid[FuelSourceDescriptor]), NOT ISBLANK(dim_duid[DUID])), "fuel", [FuelSourceDescriptor]) ORDER BY [fuel]

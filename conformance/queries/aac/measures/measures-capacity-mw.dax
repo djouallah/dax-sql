@@ -1,0 +1,2 @@
+// note: fct_summary[Capacity MW] per fuel, the units with output
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS(dim_duid[FuelSourceDescriptor], "Capacity MW", [Capacity MW]), dim_calendar[date] >= dt"2026-08-07", dim_calendar[date] <= dt"2026-08-13")

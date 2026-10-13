@@ -1,0 +1,11 @@
+// note: the both-directions one-to-one StoreProfile <-> Store with gaps on both sides: BER-01 has a profile but no store, SYD-01 a store but no profile; stores and sales grouped by the profile side, its blank row included
+EVALUATE
+SUMMARIZECOLUMNS(
+    StoreProfile[StoreKey],
+    StoreProfile[Manager],
+    "Profiles", COUNTROWS(StoreProfile),
+    "Stores", COUNTROWS(Store),
+    "Lines", [Lines],
+    "Sales", [Sales Amount]
+)
+ORDER BY StoreProfile[StoreKey], StoreProfile[Manager]

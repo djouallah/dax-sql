@@ -1,0 +1,2 @@
+// note: START AT on an ASC fixed-decimal measure, at a value a group holds exactly (Black 1600): whether that group is included
+EVALUATE SUMMARIZECOLUMNS(Product[Color], "s", [Sales Amount]) ORDER BY [s] START AT 1600

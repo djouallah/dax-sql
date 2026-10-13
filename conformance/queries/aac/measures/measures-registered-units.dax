@@ -1,0 +1,2 @@
+// note: dim_duid[Registered units] per fuel, the units that ran or not
+EVALUATE SUMMARIZECOLUMNS(dim_duid[FuelSourceDescriptor], "Registered units", [Registered units])

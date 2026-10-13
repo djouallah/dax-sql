@@ -1,0 +1,13 @@
+// note: under the France role, CROSSFILTER BOTH from Sales back to Product by French city: the price bands of the products sold, where a visible sale of a product missing from Product reaches the blank Product row (a blank band in VALUES and CONCATENATEX) but not COUNTROWS of Product or DISTINCTCOUNT; the customer-less product-less line stays hidden by the role
+// roles: France
+EVALUATE
+SUMMARIZECOLUMNS(
+    Customer[City],
+    "Sales", [Sales Amount],
+    "Price Bands", CALCULATE(CONCATENATEX(VALUES(Product[Price Band]), Product[Price Band], "|", Product[Price Band], ASC), CROSSFILTER(Sales[ProductKey], Product[ProductKey], BOTH)),
+    "Band Values", CALCULATE(COUNTROWS(VALUES(Product[Price Band])), CROSSFILTER(Sales[ProductKey], Product[ProductKey], BOTH)),
+    "Product Values", CALCULATE(COUNTROWS(VALUES(Product[ProductKey])), CROSSFILTER(Sales[ProductKey], Product[ProductKey], BOTH)),
+    "Product Rows", CALCULATE(COUNTROWS(Product), CROSSFILTER(Sales[ProductKey], Product[ProductKey], BOTH)),
+    "Distinct Products", CALCULATE(DISTINCTCOUNT(Product[ProductKey]), CROSSFILTER(Sales[ProductKey], Product[ProductKey], BOTH))
+)
+ORDER BY Customer[City]

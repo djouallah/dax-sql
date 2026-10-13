@@ -1,0 +1,10 @@
+// note: the ten customers with three or more order dates and the longest average gap between orders (TOPN with a tie-breaker)
+EVALUATE
+VAR T =
+    ADDCOLUMNS(
+        FILTER(VALUES(Customer[CustomerKey]), CALCULATE(DISTINCTCOUNT(Sales[Order Date])) >= 3),
+        "Avg Gap", [Customers Avg Days Between Orders]
+    )
+RETURN
+    TOPN(10, T, [Avg Gap], DESC, Customer[CustomerKey], ASC)
+ORDER BY [Avg Gap] DESC, Customer[CustomerKey]

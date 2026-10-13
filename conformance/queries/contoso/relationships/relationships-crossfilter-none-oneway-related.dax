@@ -1,0 +1,6 @@
+// note: CROSSFILTER None and OneWay_LeftFiltersRight stop Product filtering Sales; RELATED still follows the relationship (a DAX error: RELATED cannot cross a relationship CROSSFILTER sets to None)
+// expect: error
+EVALUATE CALCULATETABLE(ROW("none", CALCULATE([Sales Amount], CROSSFILTER(Sales[ProductKey], Product[ProductKey], None)),
+    "rev", CALCULATE([Sales Amount], CROSSFILTER(Sales[ProductKey], Product[ProductKey], OneWay_LeftFiltersRight)),
+    "rel", CALCULATE(SUMX(Sales, Sales[Qty] * RELATED(Product[Price])), CROSSFILTER(Sales[ProductKey], Product[ProductKey], None))),
+    Product[Color] = "Red")

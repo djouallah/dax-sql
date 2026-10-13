@@ -1,0 +1,2 @@
+// note: xmla_compare.py: catalog measures by ship-mode type and year
+EVALUATE SUMMARIZECOLUMNS(ship_mode[sm_type], date_dim[d_year], "Revenue", [Catalog Revenue], "Qty", [Catalog Sales Quantity])

@@ -1,0 +1,16 @@
+// note: CROSSFILTER BOTH from Sales back to Product and to Customer on the three days that hold fact rows whose product or customer is missing: where the dimension's blank row shows up in VALUES and CONCATENATEX against COUNTROWS of the table and DISTINCTCOUNT of its key
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Date],
+    TREATAS({DATE(2023, 5, 17), DATE(2024, 8, 9), DATE(2024, 11, 30)}, 'Date'[Date]),
+    "Lines", [Order Lines],
+    "Product Rows", CALCULATE(COUNTROWS(Product), CROSSFILTER(Sales[ProductKey], Product[ProductKey], BOTH)),
+    "Product Key Count", CALCULATE(DISTINCTCOUNT(Product[ProductKey]), CROSSFILTER(Sales[ProductKey], Product[ProductKey], BOTH)),
+    "Product Values", CALCULATE(COUNTROWS(VALUES(Product[ProductKey])), CROSSFILTER(Sales[ProductKey], Product[ProductKey], BOTH)),
+    "Brands", CALCULATE(CONCATENATEX(VALUES(Product[Brand]), Product[Brand], ", ", Product[Brand], ASC), CROSSFILTER(Sales[ProductKey], Product[ProductKey], BOTH)),
+    "Customer Rows", CALCULATE(COUNTROWS(Customer), CROSSFILTER(Sales[CustomerKey], Customer[CustomerKey], BOTH)),
+    "Customer Key Count", CALCULATE(DISTINCTCOUNT(Customer[CustomerKey]), CROSSFILTER(Sales[CustomerKey], Customer[CustomerKey], BOTH)),
+    "Customer Values", CALCULATE(COUNTROWS(VALUES(Customer[CustomerKey])), CROSSFILTER(Sales[CustomerKey], Customer[CustomerKey], BOTH)),
+    "Countries", CALCULATE(CONCATENATEX(VALUES(Customer[Country]), Customer[Country], ", ", Customer[Country], ASC), CROSSFILTER(Sales[CustomerKey], Customer[CustomerKey], BOTH))
+)
+ORDER BY 'Date'[Date]

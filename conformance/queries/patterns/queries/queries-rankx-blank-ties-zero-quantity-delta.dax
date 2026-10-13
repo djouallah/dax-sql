@@ -1,0 +1,17 @@
+// note: RANKX of a quantity-minus-four measure over the Clothing products in April 2023, unsold products giving blank: a blank compares as 0, tying with the products at exactly four, between the positives and the negatives; DENSE counts blank and 0 as one value; RANKX of BLANK() and of 0 as the value
+DEFINE
+	MEASURE Sales[Quantity Delta] = VAR q = [Total Quantity] RETURN IF(NOT ISBLANK(q), q - 4)
+EVALUATE
+SUMMARIZECOLUMNS(
+	Product[Product],
+	TREATAS({"Clothing"}, Category[Category]),
+	TREATAS({"2023-04"}, 'Date'[Year Month]),
+	"Delta", [Quantity Delta],
+	"Rank Desc", RANKX(ALLSELECTED(Product[Product]), [Quantity Delta], , DESC, SKIP),
+	"Rank Desc Dense", RANKX(ALLSELECTED(Product[Product]), [Quantity Delta], , DESC, DENSE),
+	"Rank Asc", RANKX(ALLSELECTED(Product[Product]), [Quantity Delta], , ASC, SKIP),
+	"Rank Asc Dense", RANKX(ALLSELECTED(Product[Product]), [Quantity Delta], , ASC, DENSE),
+	"Rank Of Blank Dense", RANKX(ALLSELECTED(Product[Product]), [Quantity Delta], BLANK(), DESC, DENSE),
+	"Rank Of Zero Skip", RANKX(ALLSELECTED(Product[Product]), [Quantity Delta], 0, DESC, SKIP)
+)
+ORDER BY Product[Product]

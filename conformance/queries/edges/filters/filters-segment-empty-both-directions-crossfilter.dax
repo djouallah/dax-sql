@@ -1,0 +1,13 @@
+// note: by Product[Brand], filters on Customer[Segment], which holds "" and NULL, behind the both-directions relationship: = "" (also matching the NULL segment and the blank row of unknown and NULL customer keys), == "" (strict) and ISBLANK, the same = "" with CROSSFILTER NONE, and Customer rows that the brand reaches both ways or, with CROSSFILTER ONEWAY, does not
+EVALUATE
+SUMMARIZECOLUMNS(
+    Product[Brand],
+    "Lines", [Lines],
+    "Segment Eq Empty", CALCULATE([Lines], Customer[Segment] = ""),
+    "Segment Strict Empty", CALCULATE([Lines], Customer[Segment] == ""),
+    "Segment Is Blank", CALCULATE([Lines], ISBLANK(Customer[Segment])),
+    "Segment Eq Empty None", CALCULATE([Lines], Customer[Segment] = "", CROSSFILTER(Sales[CustomerKey], Customer[CustomerKey], NONE)),
+    "Customer Rows", COUNTROWS(Customer),
+    "Customer Rows One Way", CALCULATE(COUNTROWS(Customer), CROSSFILTER(Sales[CustomerKey], Customer[CustomerKey], ONEWAY))
+)
+ORDER BY Product[Brand]

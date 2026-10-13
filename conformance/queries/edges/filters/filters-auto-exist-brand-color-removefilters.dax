@@ -1,0 +1,13 @@
+// note: auto-exist: by year under filters Brand = Contoso and Color in {Black, Blue} on the same table, where Contoso has no blue product; REMOVEFILTERS(Product[Brand]) with and without KEEPFILTERS on Blue, the colors it leaves visible, and REMOVEFILTERS(Product[Color]), which show whether the two filters were merged into the existing combinations
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year],
+    TREATAS({"Contoso"}, Product[Brand]),
+    TREATAS({"Black", "Blue"}, Product[Color]),
+    "Sales", [Sales Amount],
+    "Any Brand", CALCULATE([Sales Amount], REMOVEFILTERS(Product[Brand])),
+    "Any Brand Keep Blue", CALCULATE([Sales Amount], REMOVEFILTERS(Product[Brand]), KEEPFILTERS(Product[Color] = "Blue")),
+    "Colors Any Brand", CALCULATE(CONCATENATEX(VALUES(Product[Color]), Product[Color], ", ", Product[Color], ASC), REMOVEFILTERS(Product[Brand])),
+    "Any Color", CALCULATE([Sales Amount], REMOVEFILTERS(Product[Color]))
+)
+ORDER BY 'Date'[Year]

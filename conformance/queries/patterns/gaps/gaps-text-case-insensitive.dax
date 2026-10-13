@@ -1,0 +1,7 @@
+// note: text compares without regard to case: literals in another case filter mixed-case values
+EVALUATE
+SUMMARIZECOLUMNS(
+    Category[Category],
+    FILTER(ALL(Category[Category]), Category[Category] = "bikes" || Category[Category] IN { "CLOTHING" }),
+    "Sales", [Sales Amount]
+)

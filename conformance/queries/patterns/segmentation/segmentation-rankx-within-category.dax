@@ -1,0 +1,8 @@
+// note: RANKX over ALLSELECTED products in a two-level grouping: the rank restarts in each category because the category filter stays
+EVALUATE
+SUMMARIZECOLUMNS(
+    Category[Category],
+    Product[Product],
+    "Sales", [Sales Amount],
+    "Rank", [Product Sales Rank Skip]
+)

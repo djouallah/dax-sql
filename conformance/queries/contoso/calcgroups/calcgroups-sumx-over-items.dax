@@ -1,0 +1,3 @@
+// note: SUMX over the calculation items a filter allows: each item applied to the measure in turn
+EVALUATE CALCULATETABLE(ROW("s", SUMX(VALUES('Time Calc'[Time Calc]), [Sales Amount])),
+    'Time Calc'[Time Calc] IN {"Current", "YTD", "PY", "YOY"}, 'Date'[Year] = 2024)

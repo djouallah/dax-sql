@@ -1,0 +1,7 @@
+// note: a VAR holds the iterated brand so CALCULATE can filter on it after ALL(Product), which also removes the category filter of the cell
+EVALUATE
+SUMMARIZECOLUMNS(
+    Category[Category],
+    "Sales", [Sales Amount],
+    "Brands Everywhere", SUMX(VALUES(Product[Brand]), VAR b = Product[Brand] RETURN CALCULATE([Sales Amount], ALL(Product), Product[Brand] = b))
+)

@@ -1,0 +1,15 @@
+// note: per customer key (the blank one for unknown customers included), the stores and countries its lines reach once CROSSFILTER BOTH opens Sales -> Store, and also Store -> Country; Store's blank row counts for lines with unknown stores
+EVALUATE
+SUMMARIZECOLUMNS(
+    Customer[CustomerKey],
+    "Lines", [Lines],
+    "Stores", COUNTROWS(Store),
+    "Stores Reached", CALCULATE(COUNTROWS(Store), CROSSFILTER(Sales[StoreKey], Store[StoreKey], BOTH)),
+    "Countries Reached", CALCULATE(
+        COUNTROWS(Country),
+        CROSSFILTER(Sales[StoreKey], Store[StoreKey], BOTH),
+        CROSSFILTER(Store[CountryKey], Country[CountryKey], BOTH)
+    ),
+    "Countries One Hop", CALCULATE(COUNTROWS(Country), CROSSFILTER(Sales[StoreKey], Store[StoreKey], BOTH))
+)
+ORDER BY Customer[CustomerKey]

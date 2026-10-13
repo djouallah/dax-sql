@@ -1,0 +1,17 @@
+// note: customers banded by their sales in the previous fiscal year (PREVIOUSYEAR with year end "6/30") for each fiscal year: the first fiscal year's previous year lies before the date table, the second's half inside it, and ENDOFYEAR at the same year end for a last fiscal year that ends past the table
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Fiscal Year],
+    Segments[Segment],
+    "Fiscal Year End", ENDOFYEAR('Date'[Date], "6/30"),
+    "Sales Previous FY", CALCULATE([Sales Amount], PREVIOUSYEAR('Date'[Date], "6/30")),
+    "Customers Previous FY",
+        COUNTROWS(
+            FILTER(
+                VALUES(Customer[CustomerKey]),
+                VAR s = CALCULATE([Sales Amount], PREVIOUSYEAR('Date'[Date], "6/30"))
+                RETURN NOT ISBLANK(s) && s >= MIN(Segments[Min Sales]) && s < MAX(Segments[Max Sales])
+            )
+        )
+)
+ORDER BY 'Date'[Fiscal Year], Segments[Segment]

@@ -1,0 +1,149 @@
+{
+ "context-all-undoes-transition": {
+  "hash": "7bc8bf5adeb0ac2482df8d6add00e049fc8a81ea",
+  "columns": [
+   "[x]"
+  ],
+  "rows": [
+   [
+    18390.0
+   ]
+  ]
+ },
+ "context-earlier-cheaper-products": {
+  "hash": "afdada08c53ad50425cde3ac2ef3fe1d0d920a9b",
+  "columns": [
+   "Product[Price]",
+   "[cheaper]"
+  ],
+  "rows": [
+   [
+    20.0,
+    null
+   ],
+   [
+    50.0,
+    1
+   ],
+   [
+    60.0,
+    2
+   ],
+   [
+    800.0,
+    3
+   ],
+   [
+    1000.0,
+    4
+   ]
+  ]
+ },
+ "context-filter-products-with-sales": {
+  "hash": "2a4be31afe5cdc72d500360523e069a15a7f03ec",
+  "columns": [
+   "Category[Category]",
+   "[n]"
+  ],
+  "rows": [
+   [
+    "Bikes",
+    2
+   ],
+   [
+    "Clothing",
+    2
+   ]
+  ]
+ },
+ "context-generate-topn-ties": {
+  "hash": "a10bf635e554556e2024b3a9962f873d2a7f9f9c",
+  "columns": [
+   "Product[Color]",
+   "Customer[Customer]"
+  ],
+  "rows": [
+   [
+    "Red",
+    "Chloe"
+   ],
+   [
+    "Black",
+    "Alice"
+   ],
+   [
+    "Black",
+    "Bob"
+   ],
+   [
+    "Blue",
+    "Alice"
+   ]
+  ]
+ },
+ "context-related-sumx-vs-calculated-column": {
+  "hash": "ac6da6de8b2c984d104042e743b0688b73298426",
+  "columns": [
+   "[a]",
+   "[b]"
+  ],
+  "rows": [
+   [
+    6130.0,
+    6130.0
+   ]
+  ]
+ },
+ "context-time-intelligence-in-date-row": {
+  "hash": "5e2771eb97b2cd5735bab7000fc78d69e0a667b5",
+  "columns": [
+   "[s]"
+  ],
+  "rows": [
+   [
+    124470.0
+   ]
+  ]
+ },
+ "context-transition-every-column": {
+  "hash": "23bd3909a2d74ee674710d067904671c6fb5bed3",
+  "columns": [
+   "[Customer]",
+   "[city]",
+   "[noKey]"
+  ],
+  "rows": [
+   [
+    "Alice",
+    4260.0,
+    2000.0
+   ],
+   [
+    "Bob",
+    1850.0,
+    1850.0
+   ],
+   [
+    "Chloe",
+    4260.0,
+    2260.0
+   ],
+   [
+    "Dan",
+    null,
+    null
+   ]
+  ]
+ },
+ "context-transition-maxx-customers": {
+  "hash": "5b4c37f51a1bb91a852c1d1f93733088ef1cc6e2",
+  "columns": [
+   "[best]"
+  ],
+  "rows": [
+   [
+    2260.0
+   ]
+  ]
+ }
+}

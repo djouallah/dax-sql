@@ -1,0 +1,3 @@
+// note: ALLSELECTED in ADDCOLUMNS over colors: share of the selected colors
+EVALUATE CALCULATETABLE(ADDCOLUMNS(VALUES(Product[Color]), "pct", DIVIDE([Sales Amount], CALCULATE([Sales Amount], ALLSELECTED(Product[Color])))),
+    Product[Color] IN {"Red", "Blue"})

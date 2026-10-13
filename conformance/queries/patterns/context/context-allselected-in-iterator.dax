@@ -1,0 +1,9 @@
+// note: ALLSELECTED called inside an iterator restores the iteration's shadow filter context, not the visual's selection
+EVALUATE
+SUMMARIZECOLUMNS(
+    ROLLUPADDISSUBTOTAL(Product[Color], "Is Total"),
+    TREATAS({"Red", "Blue", "Black"}, Product[Color]),
+    "Sales", [Sales Amount],
+    "Iterated", [Context Selected Colors Sales]
+)
+ORDER BY [Is Total], Product[Color]

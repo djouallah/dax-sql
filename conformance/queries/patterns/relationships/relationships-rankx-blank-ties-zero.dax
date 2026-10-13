@@ -1,0 +1,15 @@
+// note: RANKX of accessories by April 2023 units over a target of 4, negative, zero or blank (no sales): a blank compares as 0, tying with the zero, and DENSE counts them as one value
+DEFINE
+    MEASURE Sales[Units over Target] = VAR q = [Total Quantity] RETURN IF(NOT ISBLANK(q), q - 4)
+EVALUATE
+SUMMARIZECOLUMNS(
+    Product[Product],
+    TREATAS({ "Accessories" }, Product[Category]),
+    TREATAS({ 202304 }, 'Date'[YearMonth]),
+    "Units over Target", [Units over Target],
+    "Rank Desc", RANKX(ALLSELECTED(Product[Product]), [Units over Target]),
+    "Rank Desc Dense", RANKX(ALLSELECTED(Product[Product]), [Units over Target], , DESC, DENSE),
+    "Rank Asc Dense", RANKX(ALLSELECTED(Product[Product]), [Units over Target], , ASC, DENSE),
+    "Rank of Zero", RANKX(ALLSELECTED(Product[Product]), [Units over Target], 0, DESC, DENSE)
+)
+ORDER BY Product[Product]

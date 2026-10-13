@@ -1,0 +1,4 @@
+// note: CROSSFILTER BOTH lets the color filter reach Customer through Sales; without it Customer is unfiltered
+EVALUATE SUMMARIZECOLUMNS(Product[Color],
+      "c", CALCULATE(COUNTROWS(Customer), CROSSFILTER(Sales[CustomerKey], Customer[CustomerKey], Both)),
+      "n", COUNTROWS(Customer))

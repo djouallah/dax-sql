@@ -1,0 +1,2 @@
+// note: fct_summary[Renewable share change] per region, against the four days before
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS(dim_region[Region], "Renewable share change", [Renewable share change]), dim_calendar[date] >= dt"2026-08-04", dim_calendar[date] <= dt"2026-08-07")

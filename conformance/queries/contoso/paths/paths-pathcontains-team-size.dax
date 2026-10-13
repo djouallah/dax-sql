@@ -1,0 +1,3 @@
+// note: PATHCONTAINS in FILTER(ALL(...)): the size of each person's team, themselves included
+EVALUATE ADDCOLUMNS(SELECTCOLUMNS(Staff, "Key", Staff[StaffKey], "Name", Staff[Name]),
+      "Team", VAR k = [Key] RETURN COUNTROWS(FILTER(ALL(Staff), PATHCONTAINS(PATH(Staff[StaffKey], Staff[ManagerKey]), k))))

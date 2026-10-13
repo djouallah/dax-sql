@@ -1,0 +1,2 @@
+// note: a filter on the fact keeps the blank row of the dimension when its unmatched rows remain
+EVALUATE CALCULATETABLE(ADDCOLUMNS(VALUES(Customer[City]), "s", [Sales Amount]), FILTER(Sales, Sales[Qty] = 1))

@@ -1,0 +1,10 @@
+// note: PREVIOUSYEAR and NEXTYEAR with year end 6/30 move the dates a whole fiscal year, and the many-to-many YearMonth relationship carries them to Budget; FY 2022 and FY 2025 are partial
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Fiscal Year],
+    "Budget", [Budget Amount],
+    "Budget Previous FY", CALCULATE([Budget Amount], PREVIOUSYEAR('Date'[Date], "6/30")),
+    "Budget Next FY", CALCULATE([Budget Amount], NEXTYEAR('Date'[Date], "6/30")),
+    "Sales Next FY", CALCULATE([Sales Amount], NEXTYEAR('Date'[Date], "6/30"))
+)
+ORDER BY 'Date'[Fiscal Year]

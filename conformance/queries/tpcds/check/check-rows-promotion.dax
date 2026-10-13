@@ -1,0 +1,2 @@
+// note: the row count of promotion
+EVALUATE ROW("table", "promotion", "rows", COUNTROWS('promotion'))

@@ -1,0 +1,7 @@
+// note: every Time Intelligence item (PY, YoY and YoY % among them) on the returning-customers measure, by year
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year],
+    'Time Intelligence'[Time Intelligence],
+    "Returning", [Customers Returning]
+)

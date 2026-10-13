@@ -1,0 +1,2 @@
+// note: OFFSET(-1) with no current product: the union of every product's previous one
+EVALUATE ROW("prev", CALCULATE([Sales Amount], OFFSET(-1, ALL(Product[Name]), ORDERBY(Product[Name]))))

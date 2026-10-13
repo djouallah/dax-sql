@@ -1,0 +1,17 @@
+// note: under the Europe role on Region, at the top of the snowflake: what reaches Country, Store, the one-to-one StoreProfile (both directions), Sales and Target, whether the lines and targets with store keys Store lacks stay visible, and what ALL(Store), ALL(Sales) and the calculated Sales[Store Region] see
+// roles: Europe
+EVALUATE
+ROW(
+    "Regions", COUNTROWS(Region),
+    "Countries", COUNTROWS(Country),
+    "Stores", COUNTROWS(Store),
+    "Store Keys", CONCATENATEX(VALUES(Store[StoreKey]), Store[StoreKey], ", ", Store[StoreKey], ASC),
+    "Profiles", COUNTROWS(StoreProfile),
+    "Profile Keys", CONCATENATEX(StoreProfile, StoreProfile[StoreKey], ", ", StoreProfile[StoreKey], ASC),
+    "Lines", [Lines],
+    "Lines ALL Store", CALCULATE([Lines], ALL(Store)),
+    "Sales Rows ALL Sales", COUNTROWS(ALL(Sales)),
+    "Lines Blank Store Region", CALCULATE([Lines], Sales[Store Region] = BLANK()),
+    "Target", [Target Amount],
+    "Target Stores", CONCATENATEX(VALUES(Target[StoreKey]), Target[StoreKey], ", ", Target[StoreKey], ASC)
+)

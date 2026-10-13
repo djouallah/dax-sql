@@ -1,0 +1,11 @@
+// note: inventory opening and closing balances of a fiscal year ending 6/30, by category through Product, with fiscal years cut by the date table's first and last dates (FY 2022 and FY 2025)
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Fiscal Year],
+    Category[Category],
+    "Opening FY", OPENINGBALANCEYEAR(SUM(Inventory[On Hand]), 'Date'[Date], "6/30"),
+    "Closing FY", CLOSINGBALANCEYEAR(SUM(Inventory[On Hand]), 'Date'[Date], "6/30"),
+    "FY Start", STARTOFYEAR('Date'[Date], "6/30"),
+    "FY End", ENDOFYEAR('Date'[Date], "6/30")
+)
+ORDER BY 'Date'[Fiscal Year], Category[Category]

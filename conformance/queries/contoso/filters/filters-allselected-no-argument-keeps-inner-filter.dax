@@ -1,0 +1,2 @@
+// note: ALLSELECTED() inside a CALCULATE that sets a color: the color filter set inside the iteration stays
+EVALUATE SUMMARIZECOLUMNS(Customer[City], "x", CALCULATE(DIVIDE([Sales Amount], CALCULATE([Sales Amount], ALLSELECTED())), Product[Color] = "Red"))

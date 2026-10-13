@@ -1,0 +1,14 @@
+// note: LOOKUPVALUE ignores the filter context: by segment under a filter on Low and Medium, the Top segment's threshold and the next segment by order, also inside CALCULATE filtering the segment to Low, and the Unsold Widget's price inside a filter on Bikes
+EVALUATE
+SUMMARIZECOLUMNS(
+    Segments[Segment],
+    Segments[Segment Order],
+    TREATAS({ "Low", "Medium" }, Segments[Segment]),
+    "Min Sales", MIN(Segments[Min Sales]),
+    "Top Min Via Lookup", LOOKUPVALUE(Segments[Min Sales], Segments[Segment], "Top"),
+    "Next Segment", LOOKUPVALUE(Segments[Segment], Segments[Segment Order], MAX(Segments[Segment Order]) + 1),
+    "Next Segment Under Low", CALCULATE(LOOKUPVALUE(Segments[Segment], Segments[Segment Order], MAX(Segments[Segment Order]) + 1), Segments[Segment] = "Low"),
+    "Unsold Price Under Bikes", CALCULATE(LOOKUPVALUE(Product[Unit Price], Product[Product], "Unsold Widget"), Category[Category] = "Bikes"),
+    "Customers In Segment", [Segment Customer Count]
+)
+ORDER BY Segments[Segment Order]

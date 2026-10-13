@@ -1,0 +1,2 @@
+// note: fct_curtailment[Curtailment rate] per day
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS(dim_calendar[date], "Curtailment rate", [Curtailment rate]), dim_calendar[date] >= dt"2026-08-07", dim_calendar[date] <= dt"2026-08-13")

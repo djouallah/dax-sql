@@ -1,0 +1,7 @@
+// note: RELATEDTABLE of the bridge from each customer picks out the customers holding no account, and their sales by country
+EVALUATE
+SUMMARIZECOLUMNS(
+    Customer[Country],
+    "Sales", [Sales Amount],
+    "Sales without Account", [Sales without Account Bridge]
+)

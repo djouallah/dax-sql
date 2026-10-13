@@ -1,0 +1,15 @@
+// note: ROLLUPADDISSUBTOTAL adds the grand-total row, ranked first by the visual's TOPN window
+DEFINE
+	VAR __DS0FilterTable = TREATAS({2024}, 'Date'[Year])
+	VAR __DS0Core =
+		SUMMARIZECOLUMNS(
+			ROLLUPADDISSUBTOTAL('Category'[Category], "IsGrandTotalRowTotal"),
+			__DS0FilterTable,
+			"Sales_Amount", 'Sales'[Sales Amount],
+			"Orders", 'Sales'[Orders]
+		)
+	VAR __DS0PrimaryWindowed = TOPN(502, __DS0Core, [IsGrandTotalRowTotal], 0, 'Category'[Category], 1)
+EVALUATE
+	__DS0PrimaryWindowed
+ORDER BY
+	[IsGrandTotalRowTotal] DESC, 'Category'[Category]

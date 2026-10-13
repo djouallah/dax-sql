@@ -1,0 +1,2 @@
+// note: IF with a whole-number branch and a fixed-decimal DIVIDE branch: the result type of the branches
+EVALUATE SUMMARIZECOLUMNS(Product[Color], "a", IF([Orders] > 100, 0, DIVIDE([Sales Amount], 7)))

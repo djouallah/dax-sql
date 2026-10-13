@@ -1,0 +1,2 @@
+// note: an item whose expression names a measure ([Sales Amount] * 10) replaces the selected one, and is not applied again to the measure it names
+EVALUATE ROW("q", CALCULATE([Quantity], 'Time Calc'[Time Calc] = "Tenfold"))

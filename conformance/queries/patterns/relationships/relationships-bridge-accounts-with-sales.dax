@@ -1,0 +1,8 @@
+// note: CROSSFILTER BOTH on Sales-Customer and on the bridge-Account relationship counts the accounts whose holders bought in each year
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year],
+    "Accounts with Sales", [Accounts with Sales Bridge],
+    "Customers", [Customers]
+)
+ORDER BY 'Date'[Year]

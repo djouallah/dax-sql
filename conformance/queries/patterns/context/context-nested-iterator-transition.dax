@@ -1,0 +1,3 @@
+// note: two nested iterators (customers, then orders) whose row contexts both become filters on the measure call: the sum of each customer's largest order, by category
+EVALUATE
+SUMMARIZECOLUMNS(Category[Category], "Sales", [Sales Amount], "Sum Of Largest Orders", [Context Sum Of Largest Orders])

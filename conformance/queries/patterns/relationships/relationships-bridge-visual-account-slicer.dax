@@ -1,0 +1,13 @@
+// note: the query a matrix writes for categories with an account slicer and a grand total row, the slicer reaching Sales through the bridge
+DEFINE
+    VAR __DS0FilterTable = TREATAS({ "Account 01", "Account 02", "Account 03" }, Account[Account])
+    VAR __DS0Core =
+        SUMMARIZECOLUMNS(
+            ROLLUPADDISSUBTOTAL(Category[Category], "IsGrandTotalRowTotal"),
+            __DS0FilterTable,
+            "Sales_Amount", [Sales Amount],
+            "Customers", [Customers]
+        )
+EVALUATE
+__DS0Core
+ORDER BY [IsGrandTotalRowTotal] DESC, Category[Category]

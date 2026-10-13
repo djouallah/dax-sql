@@ -1,0 +1,4 @@
+// note: RANKX ascending, SKIP and DENSE: a blank and a zero tie
+DEFINE MEASURE Sales[Floored] = VAR s = [Sales Amount] RETURN IF(NOT ISBLANK(s) && s < 200, 0, s)
+EVALUATE ADDCOLUMNS(VALUES(Product[Name]),
+      "skip", RANKX(ALL(Product[Name]), [Floored], , ASC, SKIP), "dense", RANKX(ALL(Product[Name]), [Floored], , ASC, DENSE))

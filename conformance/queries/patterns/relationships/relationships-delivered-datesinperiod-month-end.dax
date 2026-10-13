@@ -1,0 +1,12 @@
+// note: DATESINPERIOD back from each month's last day (2024-02-29 among them) by 3 months, 1 quarter and 1 year, around a measure that activates the Delivery Date relationship
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[YearMonth],
+    TREATAS({ 202311, 202312, 202401, 202402, 202403 }, 'Date'[YearMonth]),
+    "Delivered", [Sales Delivered via Relationship],
+    "Delivered 3 Months", CALCULATE([Sales Delivered via Relationship], DATESINPERIOD('Date'[Date], MAX('Date'[Date]), -3, MONTH)),
+    "Delivered 1 Quarter", CALCULATE([Sales Delivered via Relationship], DATESINPERIOD('Date'[Date], MAX('Date'[Date]), -1, QUARTER)),
+    "Delivered 1 Year", CALCULATE([Sales Delivered via Relationship], DATESINPERIOD('Date'[Date], MAX('Date'[Date]), -1, YEAR)),
+    "Days in 3 Months", CALCULATE(COUNTROWS('Date'), DATESINPERIOD('Date'[Date], MAX('Date'[Date]), -3, MONTH))
+)
+ORDER BY 'Date'[YearMonth]

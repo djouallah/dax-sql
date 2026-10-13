@@ -1,0 +1,18 @@
+// note: visual calculation, stores on the rows, years on the columns: COLLAPSE the columns: the total of the row
+DEFINE
+	COLUMN 'V'[calc] = COLLAPSE([Rev], COLUMNS)
+	TABLE 'V' =
+		SELECTCOLUMNS(
+			SUMMARIZECOLUMNS(ROLLUPADDISSUBTOTAL('store'[s_store_name], "TR"), ROLLUPADDISSUBTOTAL('date_dim'[d_year], "TC"), TREATAS({"AR"}, 'customer_address'[ca_state]), TREATAS({"2 yr Degree"}, 'customer_demographics'[cd_education_status]), "Rev", [Store Revenue]),
+			"store", 'store'[s_store_name], "TR", [TR], "year", 'date_dim'[d_year], "TC", [TC], "Rev", [Rev]
+		)
+		WITH VISUAL SHAPE
+		AXIS rows
+			GROUP [store] TOTAL [TR]
+			ORDER BY [store] ASC
+		AXIS columns
+			GROUP [year] TOTAL [TC]
+			ORDER BY [year] ASC
+		DENSIFY "IsDensifiedRow"
+EVALUATE 'V'
+ORDER BY 'V'[TR], 'V'[store], 'V'[TC], 'V'[year]

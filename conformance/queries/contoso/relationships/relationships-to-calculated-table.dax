@@ -1,0 +1,2 @@
+// note: a relationship from Sales to a calculated table: the other products' sales go to its blank row
+EVALUATE SUMMARIZECOLUMNS('Big Products'[Name], "s", [Sales Amount])

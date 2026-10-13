@@ -1,0 +1,9 @@
+// note: RANKX of every customer against a table of German customers only: a customer outside the table gets the rank its sales would take among them
+EVALUATE
+VAR Germans = CALCULATETABLE(VALUES(Customer[Customer]), Customer[Country] = "Germany")
+RETURN
+    ADDCOLUMNS(
+        FILTER(VALUES(Customer[Customer]), NOT ISBLANK([Sales Amount])),
+        "Sales", [Sales Amount],
+        "Rank Among Germans", RANKX(Germans, [Sales Amount])
+    )

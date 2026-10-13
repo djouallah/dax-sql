@@ -1,0 +1,2 @@
+// note: START AT on a DESC measure turned into a double (+ 0.5), at a value a group holds exactly (Black 1600.5)
+EVALUATE SUMMARIZECOLUMNS(Product[Color], "s", [Sales Amount] + 0.5) ORDER BY [s] DESC START AT 1600.5

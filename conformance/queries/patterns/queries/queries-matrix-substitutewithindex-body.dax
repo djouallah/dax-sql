@@ -1,0 +1,22 @@
+// note: the matrix body as Power BI writes it: both axes summarized from the core, column values replaced by SUBSTITUTEWITHINDEX and joined to the rows
+DEFINE
+	VAR __DS0Core =
+		SUMMARIZECOLUMNS(
+			ROLLUPADDISSUBTOTAL('Category'[Category], "IsGrandTotalRowTotal"),
+			ROLLUPADDISSUBTOTAL('Date'[Year], "IsGrandTotalColumnTotal"),
+			"Sales_Amount", 'Sales'[Sales Amount],
+			"Budget_Amount", 'Budget'[Budget Amount]
+		)
+	VAR __DS0Primary =
+		TOPN(102, SUMMARIZE(__DS0Core, 'Category'[Category], [IsGrandTotalRowTotal]), [IsGrandTotalRowTotal], 0, 'Category'[Category], 1)
+	VAR __DS0Secondary =
+		TOPN(102, SUMMARIZE(__DS0Core, 'Date'[Year], [IsGrandTotalColumnTotal]), [IsGrandTotalColumnTotal], 1, 'Date'[Year], 1)
+	VAR __DS0BodyLimited =
+		NATURALLEFTOUTERJOIN(
+			__DS0Primary,
+			SUBSTITUTEWITHINDEX(__DS0Core, "ColumnIndex", __DS0Secondary, [IsGrandTotalColumnTotal], ASC, 'Date'[Year], ASC)
+		)
+EVALUATE
+	__DS0BodyLimited
+ORDER BY
+	[IsGrandTotalRowTotal] DESC, 'Category'[Category], [ColumnIndex]

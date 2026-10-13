@@ -1,0 +1,122 @@
+{
+ "paths-path-functions": {
+  "hash": "75a804ab7ccaedc059f6448d346e278944a2a43d",
+  "columns": [
+   "[Name]",
+   "[Path]",
+   "[Depth]",
+   "[Second]",
+   "[Manager]",
+   "[Fifth]"
+  ],
+  "rows": [
+   [
+    "Ann",
+    "1",
+    1,
+    null,
+    null,
+    null
+   ],
+   [
+    "Ben",
+    "1|2",
+    2,
+    2,
+    1,
+    null
+   ],
+   [
+    "Cy",
+    "1|3",
+    2,
+    3,
+    1,
+    null
+   ],
+   [
+    "Di",
+    "1|2|4",
+    3,
+    2,
+    2,
+    null
+   ],
+   [
+    "Ed",
+    "1|2|4|5",
+    4,
+    2,
+    4,
+    null
+   ]
+  ]
+ },
+ "paths-path-ignores-filters": {
+  "hash": "141a76edce72f2bce51298c6b1f042207bc7915f",
+  "columns": [
+   "[Path]"
+  ],
+  "rows": [
+   [
+    "1|2|4|5"
+   ]
+  ]
+ },
+ "paths-pathcontains-team-size": {
+  "hash": "01a52d6756482359012b19e17ce63ab1503aa066",
+  "columns": [
+   "[Key]",
+   "[Name]",
+   "[Team]"
+  ],
+  "rows": [
+   [
+    1,
+    "Ann",
+    5
+   ],
+   [
+    2,
+    "Ben",
+    3
+   ],
+   [
+    3,
+    "Cy",
+    1
+   ],
+   [
+    4,
+    "Di",
+    2
+   ],
+   [
+    5,
+    "Ed",
+    1
+   ]
+  ]
+ },
+ "paths-text-path-functions": {
+  "hash": "ec0fa8ab7249cb0362bc8cf2c2f6186a01601a16",
+  "columns": [
+   "[n]",
+   "[m]",
+   "[i]",
+   "[j]",
+   "[c]",
+   "[d]"
+  ],
+  "rows": [
+   [
+    null,
+    3,
+    null,
+    "c",
+    true,
+    false
+   ]
+  ]
+ }
+}

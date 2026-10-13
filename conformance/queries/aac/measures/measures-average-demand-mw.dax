@@ -1,0 +1,2 @@
+// note: fct_region[Average demand MW] per day
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS(dim_calendar[date], "Average demand MW", [Average demand MW]), dim_calendar[date] >= dt"2026-08-07", dim_calendar[date] <= dt"2026-08-13")

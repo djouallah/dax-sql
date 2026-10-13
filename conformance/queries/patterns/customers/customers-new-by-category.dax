@@ -1,0 +1,9 @@
+// note: dynamic new customers keep the category filter, so a customer is new to each category, by year
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year],
+    Category[Category],
+    "New To Category", [Customers New],
+    "Customers", [Customers]
+)
+ORDER BY 'Date'[Year], Category[Category]

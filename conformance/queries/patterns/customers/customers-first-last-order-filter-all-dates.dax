@@ -1,0 +1,20 @@
+// note: Lyon customers in 2023: first and last order date up to the year's end with FIRSTNONBLANK/LASTNONBLANK over FILTER(ALL('Date'[Date])) (the context transition on a date of the date table drops the year filter), against LASTNONBLANK over the year's own dates
+DEFINE
+    MEASURE Sales[Cust2 First Order Up To End] =
+        VAR MaxD = MAX('Date'[Date])
+        RETURN FIRSTNONBLANK(FILTER(ALL('Date'[Date]), 'Date'[Date] <= MaxD), [Orders])
+    MEASURE Sales[Cust2 Last Order Up To End] =
+        VAR MaxD = MAX('Date'[Date])
+        RETURN LASTNONBLANK(FILTER(ALL('Date'[Date]), 'Date'[Date] <= MaxD), [Orders])
+    MEASURE Sales[Cust2 Last Order In Period] = LASTNONBLANK('Date'[Date], [Orders])
+EVALUATE
+SUMMARIZECOLUMNS(
+    Customer[Customer],
+    TREATAS({ "Lyon" }, Customer[City]),
+    TREATAS({ 2023 }, 'Date'[Year]),
+    "Orders 2023", [Orders],
+    "First Up To End", [Cust2 First Order Up To End],
+    "Last Up To End", [Cust2 Last Order Up To End],
+    "Last In 2023", [Cust2 Last Order In Period]
+)
+ORDER BY Customer[Customer]

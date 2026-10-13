@@ -1,0 +1,9 @@
+// note: RANKX over ALLSELECTED customers under row-level security: ranks run over the French customers only
+// roles: France
+EVALUATE
+SUMMARIZECOLUMNS(
+    Customer[Customer],
+    "Sales", [Sales Amount],
+    "Rank", [Customer Sales Rank Skip]
+)
+ORDER BY [Rank], Customer[Customer]

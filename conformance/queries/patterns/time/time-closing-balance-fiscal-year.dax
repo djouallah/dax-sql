@@ -1,0 +1,8 @@
+// note: CLOSINGBALANCEYEAR with a June 30 year end, including the last fiscal year whose year end lies past the Date table
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Fiscal Year],
+    "Closing", [Inventory Closing Fiscal Year],
+    "Snapshots", [Snapshots]
+)
+ORDER BY 'Date'[Fiscal Year]

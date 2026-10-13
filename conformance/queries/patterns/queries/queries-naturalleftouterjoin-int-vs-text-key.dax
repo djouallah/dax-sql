@@ -1,0 +1,14 @@
+// note: NATURALLEFTOUTERJOIN of the categories with their budget row counts on a Key column neither side has lineage for: an integer on the left, its text on the right (a DAX error: the join columns have different data types)
+// expect: error
+EVALUATE
+VAR categories =
+	SELECTCOLUMNS(Category, "Key", Category[CategoryKey] + 0, "Category Name", Category[Category] & "")
+VAR budgets =
+	SELECTCOLUMNS(
+		SUMMARIZE(Budget, Budget[CategoryKey]),
+		"Key", FORMAT(Budget[CategoryKey], "0"),
+		"Budget Rows", CALCULATE(COUNTROWS(Budget))
+	)
+RETURN
+	NATURALLEFTOUTERJOIN(categories, budgets)
+ORDER BY [Category Name]

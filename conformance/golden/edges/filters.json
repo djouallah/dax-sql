@@ -1,0 +1,1893 @@
+{
+ "filters-allexcept-snowflake-expanded-store": {
+  "hash": "f24416a3ae83728ac439424263c5b2fe496113e6",
+  "columns": [
+   "Store[Store]",
+   "[Sales]",
+   "[ALLEXCEPT Store Region]",
+   "[ALLEXCEPT Store Country]",
+   "[ALLEXCEPT Sales Region]",
+   "[REMOVEFILTERS Store]",
+   "[REMOVEFILTERS Store Column]",
+   "[REMOVEFILTERS Country]",
+   "[REMOVEFILTERS Region]"
+  ],
+  "rows": [
+   [
+    null,
+    null,
+    33373.06999999999,
+    1315429.03,
+    33373.06999999999,
+    1315429.03,
+    33373.06999999999,
+    233.99,
+    233.99
+   ],
+   [
+    "Amsterdam Centraal",
+    6628.489999999999,
+    33373.06999999999,
+    1315429.03,
+    33373.06999999999,
+    1315429.03,
+    33373.06999999999,
+    6628.489999999999,
+    6628.489999999999
+   ],
+   [
+    "Lyon Part-Dieu",
+    null,
+    33373.06999999999,
+    1315429.03,
+    33373.06999999999,
+    1315429.03,
+    33373.06999999999,
+    null,
+    null
+   ],
+   [
+    "New York 5th Ave",
+    null,
+    33373.06999999999,
+    1315429.03,
+    33373.06999999999,
+    1315429.03,
+    33373.06999999999,
+    13774.55,
+    13774.55
+   ],
+   [
+    "Paris Bercy",
+    15292.829999999998,
+    33373.06999999999,
+    1315429.03,
+    33373.06999999999,
+    1315429.03,
+    33373.06999999999,
+    15292.829999999998,
+    15292.829999999998
+   ],
+   [
+    "Paris Rivoli",
+    11451.75,
+    33373.06999999999,
+    1315429.03,
+    33373.06999999999,
+    1315429.03,
+    33373.06999999999,
+    11451.75,
+    11451.75
+   ],
+   [
+    "San Francisco",
+    null,
+    33373.06999999999,
+    1315429.03,
+    33373.06999999999,
+    1315429.03,
+    33373.06999999999,
+    9246.89,
+    9246.89
+   ],
+   [
+    "Sydney Harbour",
+    null,
+    33373.06999999999,
+    1315429.03,
+    33373.06999999999,
+    1315429.03,
+    33373.06999999999,
+    1245833.48,
+    1245833.48
+   ],
+   [
+    "Tōkyō Ginza",
+    null,
+    33373.06999999999,
+    1315429.03,
+    33373.06999999999,
+    1315429.03,
+    33373.06999999999,
+    12967.050000000001,
+    12967.050000000001
+   ]
+  ]
+ },
+ "filters-allnoblankrow-modifier-unknown-store": {
+  "hash": "edc38bb41ca1c4686d84ac1940583f8bf7c93cb1",
+  "columns": [
+   "[Lines]",
+   "[ALL Store]",
+   "[ALLNOBLANKROW Store]",
+   "[ALLNOBLANKROW Key]",
+   "[FILTER ALL Store]",
+   "[FILTER ALLNOBLANKROW Store]",
+   "[Store Rows ALL]",
+   "[Store Rows ALLNOBLANKROW]",
+   "[Store Keys ALL]"
+  ],
+  "rows": [
+   [
+    99,
+    685,
+    681,
+    681,
+    685,
+    681,
+    9,
+    8,
+    9
+   ]
+  ]
+ },
+ "filters-auto-exist-brand-color-removefilters": {
+  "hash": "383571182c0df206796714da44acf6aa0a74f230",
+  "columns": [
+   "Date[Year]",
+   "[Sales]",
+   "[Any Brand]",
+   "[Any Brand Keep Blue]",
+   "[Colors Any Brand]",
+   "[Any Color]"
+  ],
+  "rows": [
+   [
+    null,
+    null,
+    null,
+    null,
+    "Black",
+    null
+   ],
+   [
+    2023,
+    4419.5199999999995,
+    4849.769999999999,
+    null,
+    "Black",
+    4980.809999999999
+   ],
+   [
+    2024,
+    5604.879999999997,
+    5775.879999999998,
+    null,
+    "Black",
+    6018.669999999998
+   ]
+  ]
+ },
+ "filters-calcgroup-item-as-calculate-filter": {
+  "hash": "8964e711c5a08ebe9e6d9763c8658c5a579504b8",
+  "columns": [
+   "Date[Year Month]",
+   "[Sales]",
+   "[PY Item]",
+   "[Sales PY]",
+   "[YTD Item]",
+   "[Sales YTD]",
+   "[PY Item On Sales YTD]",
+   "[Lines PY Item]"
+  ],
+  "rows": [
+   [
+    "2024-01",
+    3060.85,
+    4075.0,
+    4075.0,
+    3060.8500000000004,
+    3060.8500000000004,
+    4075.0,
+    31
+   ],
+   [
+    "2024-02",
+    2198.8799999999997,
+    4650.7,
+    4650.7,
+    5259.73,
+    5259.73,
+    8725.7,
+    33
+   ],
+   [
+    "2024-03",
+    1238579.6900000002,
+    4235.0,
+    4235.0,
+    1243839.42,
+    1243839.42,
+    12960.7,
+    24
+   ],
+   [
+    "2024-04",
+    5595.42,
+    5648.4800000000005,
+    5648.4800000000005,
+    1249434.84,
+    1249434.84,
+    18609.180000000004,
+    37
+   ],
+   [
+    "2024-05",
+    1237.1299999999999,
+    3861.2699999999995,
+    3861.2699999999995,
+    1250671.9700000002,
+    1250671.9700000002,
+    22470.450000000004,
+    44
+   ],
+   [
+    "2024-06",
+    2539.1,
+    4115.57,
+    4115.57,
+    1253211.07,
+    1253211.07,
+    26586.020000000004,
+    38
+   ],
+   [
+    "2024-07",
+    4781.94,
+    1346.54,
+    1346.54,
+    1257993.01,
+    1257993.01,
+    27932.560000000005,
+    39
+   ],
+   [
+    "2024-08",
+    6877.759999999999,
+    null,
+    null,
+    1264870.7699999998,
+    1264870.7699999998,
+    27932.560000000005,
+    null
+   ],
+   [
+    "2024-09",
+    1758.04,
+    2247.15,
+    2247.15,
+    1266628.8099999998,
+    1266628.8099999998,
+    30179.710000000006,
+    31
+   ],
+   [
+    "2024-10",
+    1489.59,
+    5158.85,
+    5158.85,
+    1268118.4,
+    1268118.4,
+    35338.56000000001,
+    34
+   ],
+   [
+    "2024-11",
+    4774.219999999999,
+    2392.04,
+    2392.04,
+    1272892.6199999996,
+    1272892.6199999996,
+    37730.600000000006,
+    26
+   ],
+   [
+    "2024-12",
+    1624.48,
+    3181.33,
+    3181.33,
+    1274517.0999999999,
+    1274517.0999999999,
+    40911.93000000001,
+    23
+   ]
+  ]
+ },
+ "filters-calcgroup-items-by-year": {
+  "hash": "236ea257b586659a6931a2ccfc54f21dd0061a62",
+  "columns": [
+   "Date[Year]",
+   "Adjust[Adjust]",
+   "[Sales]",
+   "[Quantity]",
+   "[Lines]",
+   "[Margin %]"
+  ],
+  "rows": [
+   [
+    null,
+    "Shipped",
+    10732.009999999998,
+    207,
+    71,
+    0.4239382464235496
+   ],
+   [
+    2023,
+    "Current",
+    40911.93,
+    947,
+    360,
+    0.40991079130219477
+   ],
+   [
+    2023,
+    "Per Customer",
+    1778.7795652173913,
+    41.17391304347826,
+    360,
+    0.40991079130219477
+   ],
+   [
+    2023,
+    "Shipped",
+    35319.3,
+    852,
+    325,
+    0.40653761541140404
+   ],
+   [
+    2023,
+    "YTD",
+    40911.93000000001,
+    947,
+    360,
+    0.4099107913021949
+   ],
+   [
+    2024,
+    "Current",
+    1274517.1000000006,
+    866,
+    325,
+    0.20656658596420596
+   ],
+   [
+    2024,
+    "Per Customer",
+    53104.87916666669,
+    36.083333333333336,
+    325,
+    0.20656658596420596
+   ],
+   [
+    2024,
+    "PY",
+    40911.93000000001,
+    947,
+    360,
+    0.4099107913021949
+   ],
+   [
+    2024,
+    "Shipped",
+    1269377.7200000004,
+    754,
+    289,
+    0.20571855806638892
+   ],
+   [
+    2024,
+    "YTD",
+    1274517.0999999999,
+    866,
+    325,
+    0.20656658596420552
+   ]
+  ]
+ },
+ "filters-calcgroup-per-customer-by-store": {
+  "hash": "cab6e18128eac24f2962698b2bf2c5f257c888f7",
+  "columns": [
+   "Store[StoreKey]",
+   "[Sales]",
+   "[Margin]",
+   "[Quantity]",
+   "[Margin %]",
+   "[Lines]",
+   "[Customers]",
+   "[Customers No Blank]"
+  ],
+  "rows": [
+   [
+    null,
+    233.99,
+    127.28600000000002,
+    5.0,
+    0.5439805119876918,
+    4,
+    2,
+    1
+   ],
+   [
+    "AMS-01",
+    331.42449999999997,
+    144.74085999999994,
+    8.75,
+    0.43672347699098885,
+    73,
+    20,
+    20
+   ],
+   [
+    "NYC-01",
+    655.9309523809524,
+    276.3325476190476,
+    11.19047619047619,
+    0.42128298202119124,
+    86,
+    22,
+    21
+   ],
+   [
+    "PAR-01",
+    715.734375,
+    324.0321375,
+    17.125,
+    0.45272680594668935,
+    99,
+    16,
+    16
+   ],
+   [
+    "PAR-02",
+    728.2299999999999,
+    288.60875238095224,
+    18.523809523809526,
+    0.3963153843990941,
+    131,
+    21,
+    21
+   ],
+   [
+    "SFO-01",
+    440.3280952380952,
+    173.69746666666666,
+    11.047619047619047,
+    0.3944728227544612,
+    90,
+    21,
+    21
+   ],
+   [
+    "SYD-01",
+    65570.18315789473,
+    13209.25425263158,
+    14.210526315789474,
+    0.20145214816349294,
+    107,
+    19,
+    19
+   ],
+   [
+    "TYO-01",
+    682.4763157894737,
+    281.52765263157903,
+    12.263157894736842,
+    0.4125090440771032,
+    95,
+    19,
+    19
+   ]
+  ]
+ },
+ "filters-calcgroup-ytd-weekend-keepfilters": {
+  "hash": "32bacac4c6e428797b831861876a37c59d1eb44e",
+  "columns": [
+   "Date[Month]",
+   "[Sales]",
+   "[Weekend Sales]",
+   "[YTD Item]",
+   "[YTD Item Weekend]",
+   "[Sales YTD Weekend]",
+   "[DATESYTD Inside Weekend]"
+  ],
+  "rows": [
+   [
+    1,
+    3060.85,
+    845.77,
+    3060.8500000000004,
+    3035.8500000000004,
+    3035.8500000000004,
+    3035.8500000000004
+   ],
+   [
+    2,
+    2198.8799999999997,
+    193.96,
+    5259.73,
+    4839.76,
+    4839.76,
+    4839.76
+   ],
+   [
+    3,
+    1238579.6900000002,
+    1235699.89,
+    1243839.42,
+    1243839.42,
+    1243839.42,
+    1243839.42
+   ],
+   [
+    4,
+    5595.42,
+    160.75,
+    1249434.84,
+    1249254.84,
+    1249254.84,
+    1249254.84
+   ],
+   [
+    5,
+    1237.1299999999999,
+    -119.19999999999999,
+    1250671.9700000002,
+    1250634.4700000002,
+    1250634.4700000002,
+    1250634.4700000002
+   ],
+   [
+    6,
+    2539.1,
+    707.24,
+    1253211.07,
+    1253211.07,
+    1253211.07,
+    1253211.07
+   ],
+   [
+    7,
+    4781.94,
+    1167.94,
+    1257993.01,
+    1256853.01,
+    1256853.01,
+    1256853.01
+   ],
+   [
+    8,
+    6877.759999999999,
+    790.0,
+    1264870.7699999998,
+    1264870.7699999998,
+    1264870.7699999998,
+    1264870.7699999998
+   ],
+   [
+    9,
+    1758.04,
+    119.97,
+    1266628.8099999998,
+    1266628.8099999998,
+    1266628.8099999998,
+    1266628.8099999998
+   ],
+   [
+    10,
+    1489.59,
+    -77.58999999999997,
+    1268118.4,
+    1268118.38,
+    1268118.38,
+    1268118.38
+   ],
+   [
+    11,
+    4774.219999999999,
+    2224.34,
+    1272892.6199999996,
+    1272892.6199999996,
+    1272892.6199999996,
+    1272892.6199999996
+   ],
+   [
+    12,
+    1624.48,
+    457.73,
+    1274517.0999999999,
+    1274081.7399999998,
+    1274081.7399999998,
+    1274081.7399999998
+   ]
+  ]
+ },
+ "filters-color-empty-string-vs-blank": {
+  "hash": "30bf1e8a1b6432a121b09dc18d4ec986322bf1a5",
+  "columns": [
+   "Product[Color]",
+   "[Color Is Blank]",
+   "[Lines]",
+   "[Color Eq Empty]",
+   "[Keep Color Eq Empty]",
+   "[Color Strict Empty]",
+   "[Color Eq Blank]",
+   "[Color Len Zero]"
+  ],
+  "rows": [
+   [
+    "",
+    false,
+    54,
+    104,
+    54,
+    54,
+    104,
+    104
+   ],
+   [
+    "Black",
+    false,
+    189,
+    104,
+    null,
+    54,
+    104,
+    104
+   ],
+   [
+    "Blue",
+    false,
+    56,
+    104,
+    null,
+    54,
+    104,
+    104
+   ],
+   [
+    "Céladon",
+    false,
+    59,
+    104,
+    null,
+    54,
+    104,
+    104
+   ],
+   [
+    "Green",
+    false,
+    36,
+    104,
+    null,
+    54,
+    104,
+    104
+   ],
+   [
+    "Grey",
+    false,
+    53,
+    104,
+    null,
+    54,
+    104,
+    104
+   ],
+   [
+    "Red",
+    false,
+    40,
+    104,
+    null,
+    54,
+    104,
+    104
+   ],
+   [
+    "Silver",
+    false,
+    95,
+    104,
+    null,
+    54,
+    104,
+    104
+   ],
+   [
+    "White",
+    false,
+    53,
+    104,
+    null,
+    54,
+    104,
+    104
+   ],
+   [
+    null,
+    true,
+    50,
+    104,
+    50,
+    54,
+    104,
+    104
+   ]
+  ]
+ },
+ "filters-inactive-ship-date-blank-year": {
+  "hash": "9c41cbae8af6b42d6351a379c30a8a16441fab12",
+  "columns": [
+   "Date[Year]",
+   "[Lines]",
+   "[Sales]",
+   "[Shipped Amount]",
+   "[Shipped Lines]",
+   "[Unshipped By Ship Date]",
+   "[Ship Lines ALL Date]"
+  ],
+  "rows": [
+   [
+    null,
+    null,
+    null,
+    10732.009999999998,
+    71,
+    68,
+    685
+   ],
+   [
+    2023,
+    360,
+    40911.93,
+    35319.3,
+    325,
+    null,
+    685
+   ],
+   [
+    2024,
+    325,
+    1274517.1000000006,
+    1269377.7200000004,
+    289,
+    null,
+    685
+   ]
+  ]
+ },
+ "filters-m2m-brand-blank-and-ghost": {
+  "hash": "8ca362f79d5dba9aaf51f957e5e67321612ccc45",
+  "columns": [
+   "Product[Brand]",
+   "[Is Total]",
+   "[Target]",
+   "[Target Rows]",
+   "[Target Rows No Product Filter]",
+   "[Ghost Target]",
+   "[Blank Brand Target]",
+   "[Products]"
+  ],
+  "rows": [
+   [
+    null,
+    false,
+    750.25,
+    1,
+    234,
+    null,
+    750.25,
+    1
+   ],
+   [
+    "Contoso",
+    false,
+    219195.8064,
+    80,
+    234,
+    null,
+    null,
+    6
+   ],
+   [
+    "Fabrikam",
+    false,
+    184681.0671,
+    72,
+    234,
+    null,
+    null,
+    6
+   ],
+   [
+    "Ünïcorn",
+    false,
+    241344.3464,
+    80,
+    234,
+    null,
+    null,
+    5
+   ],
+   [
+    null,
+    true,
+    646971.4699,
+    234,
+    234,
+    1000.0,
+    750.25,
+    18
+   ]
+  ]
+ },
+ "filters-m2m-target-by-product-name": {
+  "hash": "69edbd21dd073302c465d1f4f037d296a1a75895",
+  "columns": [
+   "Product[Product]",
+   "[Sales]",
+   "[Target]",
+   "[Brands]",
+   "[Target No Product Filter]",
+   "[Target ALLSELECTED]",
+   "[Sales vs Target]"
+  ],
+  "rows": [
+   [
+    "Ångström Gauge",
+    27187.5,
+    750.25,
+    "",
+    646971.4699,
+    645971.4699,
+    36.237920693102296
+   ],
+   [
+    "Container Ship",
+    1234567.89,
+    241344.3464,
+    "Ünïcorn",
+    646971.4699,
+    645971.4699,
+    5.115379367345312
+   ],
+   [
+    "Gadget",
+    6860.0,
+    460540.1528,
+    "Contoso, Ünïcorn",
+    646971.4699,
+    645971.4699,
+    0.014895552447039533
+   ],
+   [
+    "Never Sold",
+    null,
+    219195.8064,
+    "Contoso",
+    646971.4699,
+    645971.4699,
+    null
+   ],
+   [
+    "Šunka Slicer",
+    20196.95,
+    184681.0671,
+    "Fabrikam",
+    646971.4699,
+    645971.4699,
+    0.10936123727866419
+   ],
+   [
+    "Twin A",
+    50.0,
+    241344.3464,
+    "Ünïcorn",
+    646971.4699,
+    645971.4699,
+    0.00020717286626275824
+   ]
+  ]
+ },
+ "filters-measure-in-boolean-filter-error": {
+  "hash": "eaa7f99fed3b06ef63d0ae09609cf8a390e0ad66",
+  "error": "Query (7, 63) A function 'PLACEHOLDER' has been used in a True/False expression that is used as a table filter expression. This is not allowed."
+ },
+ "filters-one-to-one-profile-gaps": {
+  "hash": "b4c06eed33aaca3094efa0754bef5f5a0b49984a",
+  "columns": [
+   "StoreProfile[Manager]",
+   "[Lines]",
+   "[Sales]",
+   "[Target]",
+   "[Store Keys]",
+   "[Store Rows]",
+   "[Profile Rows]"
+  ],
+  "rows": [
+   [
+    null,
+    111,
+    1246067.47,
+    141142.2568,
+    ", SYD-01",
+    1,
+    null
+   ],
+   [
+    "Anouk de Vries",
+    73,
+    6628.489999999999,
+    110316.9196,
+    "AMS-01",
+    1,
+    1
+   ],
+   [
+    "Dana Whitfield",
+    86,
+    13774.55,
+    136328.4465,
+    "NYC-01",
+    1,
+    1
+   ],
+   [
+    "Hélène Lefèvre",
+    99,
+    11451.75,
+    121341.6163,
+    "PAR-01",
+    1,
+    1
+   ],
+   [
+    "Inès Moreau",
+    null,
+    null,
+    null,
+    "LYS-01",
+    1,
+    1
+   ],
+   [
+    "Jürgen Groß",
+    null,
+    null,
+    null,
+    null,
+    null,
+    1
+   ],
+   [
+    "Miguel Ángel Ruiz",
+    90,
+    9246.89,
+    null,
+    "SFO-01",
+    1,
+    1
+   ],
+   [
+    "Théo Martin",
+    131,
+    15292.829999999998,
+    null,
+    "PAR-02",
+    1,
+    1
+   ],
+   [
+    "佐藤 健",
+    95,
+    12967.050000000001,
+    137842.2307,
+    "TYO-01",
+    1,
+    1
+   ]
+  ]
+ },
+ "filters-product-key-null-vs-missing-vs-zero": {
+  "hash": "ff33d6060c852d1664d6d0ac067eb84f1f826e8a",
+  "columns": [
+   "Product[ProductKey]",
+   "[Lines]",
+   "[Key Is Blank]",
+   "[Key 999]",
+   "[Key Eq Zero]",
+   "[Key Strict Zero]",
+   "[Dimension Key Eq Zero]"
+  ],
+  "rows": [
+   [
+    null,
+    3,
+    2,
+    1,
+    2,
+    null,
+    3
+   ],
+   [
+    1,
+    40,
+    null,
+    null,
+    null,
+    null,
+    3
+   ],
+   [
+    2,
+    57,
+    null,
+    null,
+    null,
+    null,
+    3
+   ],
+   [
+    3,
+    52,
+    null,
+    null,
+    null,
+    null,
+    3
+   ],
+   [
+    4,
+    54,
+    null,
+    null,
+    null,
+    null,
+    3
+   ],
+   [
+    5,
+    47,
+    null,
+    null,
+    null,
+    null,
+    3
+   ],
+   [
+    6,
+    51,
+    null,
+    null,
+    null,
+    null,
+    3
+   ],
+   [
+    7,
+    53,
+    null,
+    null,
+    null,
+    null,
+    3
+   ],
+   [
+    8,
+    2,
+    null,
+    null,
+    null,
+    null,
+    3
+   ],
+   [
+    9,
+    2,
+    null,
+    null,
+    null,
+    null,
+    3
+   ],
+   [
+    10,
+    32,
+    null,
+    null,
+    null,
+    null,
+    3
+   ],
+   [
+    11,
+    49,
+    null,
+    null,
+    null,
+    null,
+    3
+   ],
+   [
+    12,
+    53,
+    null,
+    null,
+    null,
+    null,
+    3
+   ],
+   [
+    13,
+    52,
+    null,
+    null,
+    null,
+    null,
+    3
+   ],
+   [
+    14,
+    1,
+    null,
+    null,
+    null,
+    null,
+    3
+   ],
+   [
+    15,
+    42,
+    null,
+    null,
+    null,
+    null,
+    3
+   ],
+   [
+    16,
+    null,
+    null,
+    null,
+    null,
+    null,
+    3
+   ],
+   [
+    17,
+    59,
+    null,
+    null,
+    null,
+    null,
+    3
+   ],
+   [
+    18,
+    36,
+    null,
+    null,
+    null,
+    null,
+    3
+   ]
+  ]
+ },
+ "filters-quantity-zero-negative-keepfilters": {
+  "hash": "173cf369e6f90de4f07231143f668d3e717de8a6",
+  "columns": [
+   "Sales[Quantity]",
+   "[Lines]",
+   "[Sales]",
+   "[Share Of Lines]",
+   "[Positive Override]",
+   "[Positive Keep]",
+   "[Not Zero Keep]",
+   "[Blank Eq Keep]",
+   "[Returns Of All Lines]"
+  ],
+  "rows": [
+   [
+    -2,
+    24,
+    -2476.88,
+    0.035036496350364967,
+    618,
+    null,
+    24,
+    null,
+    38
+   ],
+   [
+    -1,
+    14,
+    -643.61,
+    0.020437956204379562,
+    618,
+    null,
+    14,
+    null,
+    38
+   ],
+   [
+    0,
+    29,
+    0.0,
+    0.042335766423357665,
+    618,
+    null,
+    null,
+    29,
+    38
+   ],
+   [
+    1,
+    120,
+    1239652.6900000004,
+    0.17518248175182483,
+    618,
+    120,
+    120,
+    null,
+    38
+   ],
+   [
+    2,
+    121,
+    10652.119999999997,
+    0.17664233576642335,
+    618,
+    121,
+    121,
+    null,
+    38
+   ],
+   [
+    3,
+    126,
+    20626.170000000006,
+    0.18394160583941604,
+    618,
+    126,
+    126,
+    null,
+    38
+   ],
+   [
+    4,
+    121,
+    21035.519999999993,
+    0.17664233576642335,
+    618,
+    121,
+    121,
+    null,
+    38
+   ],
+   [
+    5,
+    129,
+    26558.299999999996,
+    0.18832116788321168,
+    618,
+    129,
+    129,
+    null,
+    38
+   ],
+   [
+    6,
+    1,
+    24.72,
+    0.00145985401459854,
+    618,
+    1,
+    1,
+    null,
+    38
+   ]
+  ]
+ },
+ "filters-rankx-ties-allselected": {
+  "hash": "59ea553ce94d89cb724d0520bebfef4fdb44d5b9",
+  "columns": [
+   "Product[Product]",
+   "[Sales]",
+   "[Rank Selected]",
+   "[Rank Selected Dense]",
+   "[Rank All]",
+   "[Share Selected]"
+  ],
+  "rows": [
+   [
+    "Free Sample",
+    0.0,
+    4,
+    3,
+    15,
+    0.0
+   ],
+   [
+    "Gadget",
+    6860.0,
+    1,
+    1,
+    5,
+    0.985632183908046
+   ],
+   [
+    "Never Sold",
+    null,
+    4,
+    3,
+    15,
+    null
+   ],
+   [
+    "Twin A",
+    50.0,
+    2,
+    2,
+    12,
+    0.007183908045977011
+   ],
+   [
+    "Twin B",
+    50.0,
+    2,
+    2,
+    12,
+    0.007183908045977011
+   ]
+  ]
+ },
+ "filters-rls-europe-snowflake-tables": {
+  "hash": "e78ced9b9f7cca2fceed8fea2a4f2095bed6209b",
+  "columns": [
+   "[Regions]",
+   "[Countries]",
+   "[Stores]",
+   "[Store Keys]",
+   "[Profiles]",
+   "[Profile Keys]",
+   "[Lines]",
+   "[Lines ALL Store]",
+   "[Sales Rows ALL Sales]",
+   "[Lines Blank Store Region]",
+   "[Target]",
+   "[Target Stores]"
+  ],
+  "rows": [
+   [
+    1,
+    2,
+    4,
+    "AMS-01, LYS-01, PAR-01, PAR-02",
+    4,
+    "AMS-01, LYS-01, PAR-01, PAR-02",
+    303,
+    303,
+    303,
+    null,
+    231658.5359,
+    "AMS-01, PAR-01"
+   ]
+  ]
+ },
+ "filters-rls-retail-brand-reaches-customer": {
+  "hash": "480a2cf1895548137fb88e20c4760e9af189600d",
+  "columns": [
+   "Product[Brand]",
+   "[Lines]",
+   "[Sales]",
+   "[Customer Rows]",
+   "[Customer Rows One Way]",
+   "[Segments]",
+   "[Big Customers]"
+  ],
+  "rows": [
+   [
+    null,
+    23,
+    13415.5,
+    8,
+    10,
+    "Retail",
+    6
+   ],
+   [
+    "Contoso",
+    95,
+    3930.9699999999993,
+    9,
+    10,
+    "Retail",
+    null
+   ],
+   [
+    "Fabrikam",
+    128,
+    17258.550000000003,
+    9,
+    10,
+    "Retail",
+    9
+   ],
+   [
+    "Ünïcorn",
+    30,
+    476.25,
+    10,
+    10,
+    "Retail",
+    null
+   ]
+  ]
+ },
+ "filters-rls-retail-customer-blank-row": {
+  "hash": "6d9a333dea15f0c251e5d4b7706cdca32583f060",
+  "columns": [
+   "[Lines]",
+   "[Lines ALL Customer]",
+   "[Lines Crossfilter None]",
+   "[Unknown Customer Lines]",
+   "[Null Customer Lines]",
+   "[Customers]",
+   "[Customers No Blank]",
+   "[Customer Rows]",
+   "[Customer Keys]",
+   "[Customer Keys ALL]",
+   "[Avg Per Customer]"
+  ],
+  "rows": [
+   [
+    276,
+    276,
+    276,
+    null,
+    null,
+    10,
+    10,
+    10,
+    10,
+    10,
+    3508.1270000000004
+   ]
+  ]
+ },
+ "filters-segment-empty-both-directions-crossfilter": {
+  "hash": "80b0b87c226fdb5fefda0098818fa5d9e10ed9cb",
+  "columns": [
+   "Product[Brand]",
+   "[Lines]",
+   "[Segment Eq Empty]",
+   "[Segment Strict Empty]",
+   "[Segment Is Blank]",
+   "[Segment Eq Empty None]",
+   "[Customer Rows]",
+   "[Customer Rows One Way]"
+  ],
+  "rows": [
+   [
+    null,
+    45,
+    6,
+    4,
+    2,
+    45,
+    18,
+    24
+   ],
+   [
+    "Contoso",
+    233,
+    29,
+    18,
+    11,
+    233,
+    21,
+    24
+   ],
+   [
+    "Fabrikam",
+    313,
+    29,
+    18,
+    11,
+    313,
+    21,
+    24
+   ],
+   [
+    "Ünïcorn",
+    94,
+    8,
+    5,
+    3,
+    94,
+    23,
+    24
+   ]
+  ]
+ },
+ "filters-snowflake-blank-region-vs-store-region-column": {
+  "hash": "806eea13919d7181c664ad1472b47d0be2ef3350",
+  "columns": [
+   "Region[Region]",
+   "[Lines]",
+   "[Lines By Store Region Column]",
+   "[Lines Blank Store Region]",
+   "[Countries]",
+   "[Stores]"
+  ],
+  "rows": [
+   [
+    null,
+    4,
+    4,
+    4,
+    null,
+    null
+   ],
+   [
+    "Africa",
+    null,
+    null,
+    null,
+    1,
+    null
+   ],
+   [
+    "Americas",
+    176,
+    176,
+    null,
+    1,
+    2
+   ],
+   [
+    "Asia Pacific",
+    202,
+    202,
+    null,
+    2,
+    2
+   ],
+   [
+    "Europe",
+    303,
+    303,
+    null,
+    2,
+    4
+   ]
+  ]
+ },
+ "filters-store-key-empty-string-vs-blank": {
+  "hash": "f326fe7c5209864822fbb97d766bc2e1b17b1c3e",
+  "columns": [
+   "Store[StoreKey]",
+   "[Lines]",
+   "[Key Eq Empty]",
+   "[Key Strict Empty]",
+   "[Key Is Blank]",
+   "[Key Strict Blank]"
+  ],
+  "rows": [
+   [
+    null,
+    4,
+    3,
+    1,
+    2,
+    2
+   ],
+   [
+    "AMS-01",
+    73,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    "LYS-01",
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    "NYC-01",
+    86,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    "PAR-01",
+    99,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    "PAR-02",
+    131,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    "SFO-01",
+    90,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    "SYD-01",
+    107,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    "TYO-01",
+    95,
+    null,
+    null,
+    null,
+    null
+   ]
+  ]
+ },
+ "filters-table-vs-column-filter-red-by-brand": {
+  "hash": "695af0fbdd2b1fdf25a36eae240f262f8672b1b9",
+  "columns": [
+   "Product[Brand]",
+   "[Sales]",
+   "[Red Column]",
+   "[Red Keep]",
+   "[Red FILTER Product]",
+   "[Red FILTER ALL Product]",
+   "[Red FILTER Sales]",
+   "[Red FILTER ALL Sales]"
+  ],
+  "rows": [
+   [
+    null,
+    27300.489999999998,
+    null,
+    null,
+    null,
+    975.0799999999999,
+    null,
+    975.0799999999999
+   ],
+   [
+    "Contoso",
+    10999.479999999996,
+    975.0799999999999,
+    975.0799999999999,
+    975.0799999999999,
+    975.0799999999999,
+    975.0799999999999,
+    975.0799999999999
+   ],
+   [
+    "Fabrikam",
+    39272.420000000006,
+    null,
+    null,
+    null,
+    975.0799999999999,
+    null,
+    975.0799999999999
+   ],
+   [
+    "Ünïcorn",
+    1237856.64,
+    null,
+    null,
+    null,
+    975.0799999999999,
+    null,
+    975.0799999999999
+   ]
+  ]
+ },
+ "filters-target-month-gaps-allselected": {
+  "hash": "2857aaa59f930f6cb61c3544307ce99408eefe99",
+  "columns": [
+   "Date[Year Month]",
+   "[Sales]",
+   "[Target]",
+   "[Sales vs Target]",
+   "[Target ALLSELECTED Date]",
+   "[Target No Month Filter]",
+   "[Months With Target]",
+   "[Target On Last Day]"
+  ],
+  "rows": [
+   [
+    "2024-01",
+    3060.85,
+    22035.1377,
+    0.13890768651742985,
+    316626.2718,
+    316626.2718,
+    10,
+    null
+   ],
+   [
+    "2024-02",
+    2198.8799999999997,
+    36392.0737,
+    0.06042194842004839,
+    316626.2718,
+    316626.2718,
+    10,
+    null
+   ],
+   [
+    "2024-03",
+    1238579.6900000002,
+    28785.3001,
+    43.02820139783778,
+    316626.2718,
+    316626.2718,
+    10,
+    null
+   ],
+   [
+    "2024-04",
+    5595.42,
+    47862.2365,
+    0.11690678098588227,
+    316626.2718,
+    316626.2718,
+    10,
+    null
+   ],
+   [
+    "2024-05",
+    1237.1299999999999,
+    32662.2017,
+    0.03787650359161182,
+    316626.2718,
+    316626.2718,
+    10,
+    null
+   ],
+   [
+    "2024-06",
+    2539.1,
+    31341.2686,
+    0.08101458917971176,
+    316626.2718,
+    316626.2718,
+    10,
+    null
+   ],
+   [
+    "2024-07",
+    4781.94,
+    null,
+    null,
+    316626.2718,
+    316626.2718,
+    10,
+    null
+   ],
+   [
+    "2024-08",
+    6877.759999999999,
+    null,
+    null,
+    316626.2718,
+    316626.2718,
+    10,
+    null
+   ],
+   [
+    "2024-09",
+    1758.04,
+    27674.5431,
+    0.06352552935191909,
+    316626.2718,
+    316626.2718,
+    10,
+    null
+   ],
+   [
+    "2024-10",
+    1489.59,
+    20763.4721,
+    0.07174089154385696,
+    316626.2718,
+    316626.2718,
+    10,
+    null
+   ],
+   [
+    "2024-11",
+    4774.219999999999,
+    33655.671,
+    0.1418548452057307,
+    316626.2718,
+    316626.2718,
+    10,
+    null
+   ],
+   [
+    "2024-12",
+    1624.48,
+    35454.3673,
+    0.045818896900749376,
+    316626.2718,
+    316626.2718,
+    10,
+    null
+   ]
+  ]
+ },
+ "filters-treatas-store-key-empty-vs-blank": {
+  "hash": "1c5e095ead8dce80ea91d6d5abf42435d2306b20",
+  "columns": [
+   "[TREATAS Empty On Store]",
+   "[TREATAS Blank On Store]",
+   "[TREATAS Missing On Store]",
+   "[TREATAS Empty On Sales]",
+   "[TREATAS Blank On Sales]",
+   "[TREATAS Missing On Sales]",
+   "[IN Empty On Store]",
+   "[IN Empty On Sales]",
+   "[Target TREATAS Missing On Store]",
+   "[Target TREATAS Blank On Store]"
+  ],
+  "rows": [
+   [
+    null,
+    4,
+    null,
+    1,
+    2,
+    1,
+    null,
+    1,
+    null,
+    333.3333
+   ]
+  ]
+ }
+}

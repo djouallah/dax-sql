@@ -1,0 +1,11 @@
+// note: the RANK window function over products by quantity, DENSE with blanks LAST and SKIP with blanks FIRST, and ROWNUMBER with the key as tie-break: the Twin A/B tie, two other products tied on quantity, Never Sold's blank, and the blank row's quantity from the unknown and NULL product keys
+DEFINE
+    VAR products = ADDCOLUMNS(ALL(Product[ProductKey], Product[Product]), "Qty", [Total Quantity])
+EVALUATE
+ADDCOLUMNS(
+    products,
+    "Dense Blanks Last", RANK(DENSE, products, ORDERBY([Qty], DESC), LAST),
+    "Skip Blanks First", RANK(SKIP, products, ORDERBY([Qty], DESC), FIRST),
+    "Row Number", ROWNUMBER(products, ORDERBY([Qty], DESC, Product[ProductKey], ASC))
+)
+ORDER BY Product[ProductKey]

@@ -1,0 +1,2 @@
+// note: ALLSELECTED of a grouped column: a filter on another column of the table narrows the groups, not ALLSELECTED
+EVALUATE SUMMARIZECOLUMNS(Product[Name], TREATAS({"Red"}, Product[Color]), "n", COUNTROWS(ALLSELECTED(Product[Name])))

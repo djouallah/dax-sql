@@ -1,0 +1,10 @@
+// note: HASONEVALUE and SELECTEDVALUE (with and without an alternate) on year rows and on the grand total row
+EVALUATE
+SUMMARIZECOLUMNS(
+    ROLLUPADDISSUBTOTAL('Date'[Year], "Is Total"),
+    "Sales", [Sales Amount],
+    "One Year", HASONEVALUE('Date'[Year]),
+    "Selected Year", SELECTEDVALUE('Date'[Year], 0),
+    "Selected Quarter", SELECTEDVALUE('Date'[Quarter])
+)
+ORDER BY [Is Total], 'Date'[Year]

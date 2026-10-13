@@ -1,0 +1,11 @@
+// note: FIRSTNONBLANK and LASTNONBLANK over FILTER(ALL(dates)) for a sparsely sold product: the first sale on or after each month's start, the last one up to its end
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year Month],
+    TREATAS({2024}, 'Date'[Year]),
+    TREATAS({"Touring Bike C"}, Product[Product]),
+    "Sales", [Sales Amount],
+    "Next Sale Day", VAR lo = MIN('Date'[Date]) RETURN FIRSTNONBLANK(FILTER(ALL('Date'[Date]), 'Date'[Date] >= lo), [Sales Amount]),
+    "Last Sale Day", VAR hi = MAX('Date'[Date]) RETURN LASTNONBLANK(FILTER(ALL('Date'[Date]), 'Date'[Date] <= hi), [Sales Amount])
+)
+ORDER BY 'Date'[Year Month]

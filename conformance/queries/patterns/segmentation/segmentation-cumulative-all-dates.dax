@@ -1,0 +1,8 @@
+// note: running total over dates by month: FILTER(ALL('Date')) up to the last date of each month, never resetting
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year Month],
+    "Sales", [Sales Amount],
+    "Cumulative Sales", [Cumulative Sales All Dates]
+)
+ORDER BY 'Date'[Year Month]

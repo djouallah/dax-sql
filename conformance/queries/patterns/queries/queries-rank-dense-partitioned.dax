@@ -1,0 +1,9 @@
+// note: RANK(DENSE) of subcategories by sales within their category, evaluated row by row over the same table variable
+DEFINE
+	VAR t = SUMMARIZECOLUMNS('Category'[Category], 'Subcategory'[Subcategory], TREATAS({2024}, 'Date'[Year]), "Sales", [Sales Amount])
+EVALUATE
+ADDCOLUMNS(
+	t,
+	"Rank_In_Category", RANK(DENSE, t, ORDERBY([Sales], DESC), PARTITIONBY('Category'[Category]))
+)
+ORDER BY 'Category'[Category], 'Subcategory'[Subcategory]

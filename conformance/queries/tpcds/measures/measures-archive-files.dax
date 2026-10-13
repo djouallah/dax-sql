@@ -1,0 +1,2 @@
+// note: stg_tpcds_archive_log[Archive Files] per source type
+EVALUATE SUMMARIZECOLUMNS(stg_tpcds_archive_log[source_type], "Archive Files", [Archive Files])

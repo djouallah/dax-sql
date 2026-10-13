@@ -1,0 +1,8 @@
+// note: RELATED cannot follow a many-to-many relationship (rule: RELATED needs a regular many-to-one relationship from the row's table to the column's table), so Power BI rejects RELATED(Product[Weight]) from a Target row over the Target[Brand] <-> Product[Brand] many-to-many
+// expect: error
+EVALUATE
+ADDCOLUMNS(
+    FILTER(Target, Target[StoreKey] = "ZZZ-00"),
+    "Weight", RELATED(Product[Weight])
+)
+ORDER BY Target[Date], Target[Brand]

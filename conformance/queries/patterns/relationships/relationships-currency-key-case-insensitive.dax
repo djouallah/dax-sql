@@ -1,0 +1,11 @@
+// note: the text key of the Currency relationship compared without regard to case: TREATAS, =, IN and LOOKUPVALUE with lower or mixed case codes, and the code the model then shows
+EVALUATE
+ROW(
+    "Sales eur via Currency", CALCULATE([Sales Amount], TREATAS({ "eur" }, Currency[CurrencyCode])),
+    "Sales Eur via Sales", CALCULATE([Sales Amount], TREATAS({ "Eur" }, Sales[CurrencyCode])),
+    "Sales EUR", CALCULATE([Sales Amount], Currency[CurrencyCode] = "EUR"),
+    "Sales eUr IN", CALCULATE([Sales Amount], Currency[CurrencyCode] IN { "eUr" }),
+    "Code Seen", CALCULATE(SELECTEDVALUE(Currency[CurrencyCode]), TREATAS({ "eur" }, Currency[CurrencyCode])),
+    "Currency of aud", LOOKUPVALUE(Currency[Currency], Currency[CurrencyCode], "aud"),
+    "Rate Rows usd", CALCULATE(COUNTROWS(ExchangeRate), TREATAS({ "usd" }, Currency[CurrencyCode]))
+)

@@ -1,0 +1,11 @@
+// note: a NONVISUAL filter on a group-by column next to a visual filter, read back through ALLSELECTED in a share-of-selection measure
+EVALUATE
+SUMMARIZECOLUMNS(
+	'Date'[Year],
+	'Category'[Category],
+	NONVISUAL(TREATAS({2024}, 'Date'[Year])),
+	TREATAS({"Bikes", "Accessories", "Clothing"}, 'Category'[Category]),
+	"Sales_Amount", 'Sales'[Sales Amount],
+	"Share", 'Sales'[Visual Share of Selected]
+)
+ORDER BY 'Date'[Year], 'Category'[Category]

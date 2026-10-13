@@ -1,0 +1,17 @@
+// note: RANK and ROWNUMBER whose ORDERBY and PARTITIONBY use columns added by ADDCOLUMNS (a month's sales, its fiscal half), within each fiscal year (a DAX error: PARTITIONBY cannot use columns added by table functions)
+// expect: error
+DEFINE
+    VAR t =
+        ADDCOLUMNS(
+            SUMMARIZE('Date', 'Date'[Fiscal Year], 'Date'[Fiscal Month]),
+            "@Sales", [Sales Amount],
+            "@Half", IF('Date'[Fiscal Month] <= 6, "H1", "H2")
+        )
+EVALUATE
+ADDCOLUMNS(
+    t,
+    "Rank In FY", RANK(DENSE, t, ORDERBY([@Sales], DESC), PARTITIONBY('Date'[Fiscal Year])),
+    "Rank In Half", RANK(SKIP, t, ORDERBY([@Sales], DESC), PARTITIONBY('Date'[Fiscal Year], [@Half])),
+    "Row In Half", ROWNUMBER(t, ORDERBY([@Sales], ASC, 'Date'[Fiscal Month], ASC), PARTITIONBY('Date'[Fiscal Year], [@Half]))
+)
+ORDER BY 'Date'[Fiscal Year], 'Date'[Fiscal Month]

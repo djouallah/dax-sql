@@ -1,0 +1,2 @@
+// note: GENERATE with TOPN(1) by a measure: the outer color filters the inner customers, ties are all kept
+EVALUATE GENERATE(VALUES(Product[Color]), TOPN(1, VALUES(Customer[Customer]), [Sales Amount]))

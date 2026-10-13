@@ -1,0 +1,2 @@
+// note: a ratio of two facts by product; a product without returns is blank and left out
+EVALUATE SUMMARIZECOLUMNS(Product[Name], "rr", [Return Rate])

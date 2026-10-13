@@ -1,0 +1,24 @@
+// note: cumulative total over ranked items defined in the query: within each subcategory of Bikes, each product's sales plus those of the products ranked above it by a dense rank
+DEFINE
+    MEASURE Sales[Segmentation Local Product Rank] =
+        IF(HASONEVALUE(Product[Product]), RANKX(ALLSELECTED(Product[Product]), [Sales Amount], , DESC, DENSE))
+    MEASURE Sales[Segmentation Local Cumulative] =
+        VAR r = [Segmentation Local Product Rank]
+        RETURN
+            IF(
+                NOT ISBLANK(r),
+                SUMX(
+                    FILTER(ALLSELECTED(Product[Product]), [Segmentation Local Product Rank] <= r),
+                    [Sales Amount]
+                )
+            )
+EVALUATE
+SUMMARIZECOLUMNS(
+    Subcategory[Subcategory],
+    Product[Product],
+    TREATAS({ "Bikes" }, Category[Category]),
+    "Sales", [Sales Amount],
+    "Rank", [Segmentation Local Product Rank],
+    "Cumulative Sales", [Segmentation Local Cumulative]
+)
+ORDER BY Subcategory[Subcategory], [Rank], Product[Product]

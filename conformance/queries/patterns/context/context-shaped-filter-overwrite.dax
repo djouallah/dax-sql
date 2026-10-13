@@ -1,0 +1,13 @@
+// note: an arbitrarily shaped filter (2023 Bikes, 2024 Clothing): an inner year filter overwrites the year and loses the shape, KEEPFILTERS keeps it
+DEFINE
+    VAR shaped =
+        FILTER(
+            CROSSJOIN(ALL('Date'[Year]), ALL(Category[Category])),
+            ('Date'[Year] = 2023 && Category[Category] = "Bikes") || ('Date'[Year] = 2024 && Category[Category] = "Clothing")
+        )
+EVALUATE
+ROW(
+    "Shaped", CALCULATE([Sales Amount], shaped),
+    "Year Overwritten", CALCULATE(CALCULATE([Sales Amount], 'Date'[Year] = 2024), shaped),
+    "Year Kept", CALCULATE(CALCULATE([Sales Amount], KEEPFILTERS('Date'[Year] = 2024)), shaped)
+)

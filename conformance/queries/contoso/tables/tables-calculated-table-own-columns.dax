@@ -1,0 +1,2 @@
+// note: a filter on a calculated table's columns does not reach the table it was computed from
+EVALUATE CALCULATETABLE(ROW("n", COUNTROWS(Product), "b", COUNTROWS('Big Products')), 'Big Products'[Price] > 900)

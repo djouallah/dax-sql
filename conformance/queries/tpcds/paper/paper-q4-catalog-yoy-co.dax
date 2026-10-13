@@ -1,0 +1,45 @@
+// note: the paper's "Catalog Sales Quantity YoY combo" visual, round 2 (state CO, a store manager), as Power BI wrote it
+DEFINE
+	VAR __DS0FilterTable = 
+		TREATAS({"CO"}, 'customer_address'[ca_state])
+
+	VAR __DS0FilterTable2 = 
+		TREATAS({"Advanced Degree"}, 'customer_demographics'[cd_education_status])
+
+	VAR __DS0FilterTable3 = 
+		TREATAS({"Brian Moss"}, 'store'[s_manager])
+
+	VAR __DS0FilterTable4 = 
+		TREATAS({2026}, 'date_dim'[d_year])
+
+	VAR __DS0FilterTable5 = 
+		FILTER(
+			KEEPFILTERS(VALUES('catalog_sales'[cache_buster])),
+			'catalog_sales'[cache_buster] < 2
+		)
+
+	VAR __DS0FilterTable6 = 
+		FILTER(KEEPFILTERS(VALUES('store_sales'[cache_buster])), 'store_sales'[cache_buster] < 2)
+
+	VAR __DS0Core = 
+		SUMMARIZECOLUMNS(
+			'date_dim'[d_quarter_name],
+			__DS0FilterTable,
+			__DS0FilterTable2,
+			__DS0FilterTable3,
+			__DS0FilterTable4,
+			__DS0FilterTable5,
+			__DS0FilterTable6,
+			"Catalog_Sales_Quantity", 'catalog_sales'[Catalog Sales Quantity],
+			"Catalog_Sales_Same_Period_LY", 'catalog_sales'[Catalog Sales Same Period LY],
+			"Catalog_Sales_YoY", 'catalog_sales'[Catalog Sales YoY]
+		)
+
+	VAR __DS0PrimaryWindowed = 
+		TOPN(1001, __DS0Core, 'date_dim'[d_quarter_name], 0)
+
+EVALUATE
+	__DS0PrimaryWindowed
+
+ORDER BY
+	'date_dim'[d_quarter_name] DESC

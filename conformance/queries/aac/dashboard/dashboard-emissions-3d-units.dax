@@ -1,0 +1,2 @@
+// note: the dashboard's emissions query, emissions tonnes and intensity per interval, with the range's total (page state: 3 days to 2026-08-11, units HPR1 BALDHWF1)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS(ROLLUPADDISSUBTOTAL(ROLLUPGROUP(fct_summary[date], fct_summary[time]), "all"), "t", [Emissions t], "i", [Emissions intensity]), fct_summary[date] >= dt"2026-08-09", fct_summary[date] <= dt"2026-08-11", fct_summary[DUID] IN {"HPR1", "BALDHWF1"}) ORDER BY [date], [time], [all]

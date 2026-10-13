@@ -1,0 +1,13 @@
+// note: grouped by the Time Intelligence calculation group's name and ordinal in 2024, the Top band's sales, then with CALCULATE filtering the name column to PY while the row's ordinal filter stays, and with the ordinal filter removed too
+DEFINE
+    MEASURE Sales[Seg Top Band Sales] = CALCULATE([Segment Customer Sales], TREATAS({ "Top" }, Segments[Segment]))
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Time Intelligence'[Time Intelligence],
+    'Time Intelligence'[Ordinal],
+    TREATAS({ 2024 }, 'Date'[Year]),
+    "Top Band Sales", [Seg Top Band Sales],
+    "Name Set To PY", CALCULATE([Seg Top Band Sales], 'Time Intelligence'[Time Intelligence] = "PY"),
+    "Name Set To PY Any Ordinal", CALCULATE([Seg Top Band Sales], 'Time Intelligence'[Time Intelligence] = "PY", REMOVEFILTERS('Time Intelligence'[Ordinal]))
+)
+ORDER BY 'Time Intelligence'[Ordinal]

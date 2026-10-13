@@ -1,0 +1,13 @@
+// note: by Product[Brand], red sales six ways: a column filter on Product[Color] (replaces only the color), KEEPFILTERS of it, FILTER over Product and over ALL(Product) (a table filter that replaces the brand too), and FILTER over Sales and ALL(Sales) with RELATED (Sales' expanded table carries Product's columns)
+EVALUATE
+SUMMARIZECOLUMNS(
+    Product[Brand],
+    "Sales", [Sales Amount],
+    "Red Column", CALCULATE([Sales Amount], Product[Color] = "Red"),
+    "Red Keep", CALCULATE([Sales Amount], KEEPFILTERS(Product[Color] = "Red")),
+    "Red FILTER Product", CALCULATE([Sales Amount], FILTER(Product, Product[Color] = "Red")),
+    "Red FILTER ALL Product", CALCULATE([Sales Amount], FILTER(ALL(Product), Product[Color] = "Red")),
+    "Red FILTER Sales", CALCULATE([Sales Amount], FILTER(Sales, RELATED(Product[Color]) = "Red")),
+    "Red FILTER ALL Sales", CALCULATE([Sales Amount], FILTER(ALL(Sales), RELATED(Product[Color]) = "Red"))
+)
+ORDER BY Product[Brand]

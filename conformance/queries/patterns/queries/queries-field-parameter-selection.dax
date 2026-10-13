@@ -1,0 +1,9 @@
+// note: a field-parameter slicer set to Margin, read by a SWITCH measure in a category visual
+EVALUATE
+SUMMARIZECOLUMNS(
+	'Category'[Category],
+	TREATAS({"Margin"}, 'Metric'[Metric]),
+	TREATAS({2023}, 'Date'[Year]),
+	"Value", 'Sales'[Visual Metric Value]
+)
+ORDER BY 'Category'[Category]

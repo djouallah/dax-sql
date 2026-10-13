@@ -1,0 +1,2 @@
+// note: two items of one calculation group selected, with no selection expression: the measure as it is
+EVALUATE CALCULATETABLE(ROW("s", [Sales Amount]), 'Time Calc'[Time Calc] IN {"PY", "YTD"}, 'Date'[Year] = 2024)

@@ -1,0 +1,7 @@
+// note: USERELATIONSHIP as a CALCULATETABLE modifier around SUMMARIZECOLUMNS switches the grouping by year onto Delivery Date
+EVALUATE
+CALCULATETABLE(
+    SUMMARIZECOLUMNS('Date'[Year], "Lines", [Order Lines], "Sales", [Sales Amount]),
+    USERELATIONSHIP(Sales[Delivery Date], 'Date'[Date])
+)
+ORDER BY 'Date'[Year]

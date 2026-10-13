@@ -1,0 +1,14 @@
+// note: SUMMARIZE by year with ROLLUP(ROLLUPGROUP(category, subcategory)): one subtotal per year for the pair, both ISSUBTOTAL flags true on it, and the blank category kept apart from the subtotal
+EVALUATE
+CALCULATETABLE(
+	SUMMARIZE(
+		Sales,
+		'Date'[Year],
+		ROLLUP(ROLLUPGROUP('Category'[Category], 'Subcategory'[Subcategory])),
+		"Sales", [Sales Amount],
+		"Is_Category_Subtotal", ISSUBTOTAL('Category'[Category]),
+		"Is_Subcategory_Subtotal", ISSUBTOTAL('Subcategory'[Subcategory])
+	),
+	TREATAS({2023, 2024}, 'Date'[Year])
+)
+ORDER BY 'Date'[Year], [Is_Category_Subtotal], 'Category'[Category], 'Subcategory'[Subcategory]

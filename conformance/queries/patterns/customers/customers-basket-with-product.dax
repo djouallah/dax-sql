@@ -1,0 +1,11 @@
+// note: basket analysis: for every other product, the orders that also hold Road Bike A (a table of order numbers as a CALCULATE filter)
+EVALUATE
+VAR OrdersWithA = CALCULATETABLE(VALUES(Sales[Order Number]), Product[Product] = "Road Bike A")
+RETURN
+    FILTER(
+        ADDCOLUMNS(
+            FILTER(VALUES(Product[Product]), Product[Product] <> "Road Bike A"),
+            "Orders Together", CALCULATE([Orders], OrdersWithA)
+        ),
+        NOT ISBLANK([Orders Together])
+    )

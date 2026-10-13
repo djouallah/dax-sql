@@ -1,0 +1,2 @@
+// note: the dashboard's cutoff query, the newest interval of the units, on the newest day
+EVALUATE CALCULATETABLE(ROW("date", MAX(fct_summary[date]), "time", MAX(fct_summary[time])), fct_summary[date] = dt"2026-08-13")

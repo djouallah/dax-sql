@@ -1,0 +1,19 @@
+{
+  "name": "dax-conformance",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "description": "A black-box conformance suite for DAX engines: a model, its data and a DAX query in; rows out, compared with Power BI's",
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "node tools/patterns/build.mjs",
+    "build:contoso": "node tools/contoso/build.mjs",
+    "build:edges": "node tools/edges/build.mjs",
+    "build:aac": "node tools/aac/build.mjs",
+    "build:tpcds": "node tools/tpcds/build.mjs",
+    "oracle:export": "node oracle/export.mjs"
+  }
+}

@@ -1,0 +1,11 @@
+// note: the month's closing rate against the average of daily rates, an iterator over days calling a measure with context transition
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[YearMonth],
+    Currency[CurrencyCode],
+    TREATAS({ 2024 }, 'Date'[Year]),
+    TREATAS({ "EUR", "AUD" }, Currency[CurrencyCode]),
+    "Closing Rate", [Exchange Rate],
+    "Average Rate", [Avg Daily Rate Relationship]
+)
+ORDER BY 'Date'[YearMonth], Currency[CurrencyCode]

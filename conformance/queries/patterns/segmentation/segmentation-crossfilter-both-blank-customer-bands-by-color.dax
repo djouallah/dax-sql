@@ -1,0 +1,14 @@
+// note: CROSSFILTER BOTH from Sales back to Customer, by product colour in 2024: the 2024 lines whose customer is missing reach Customer's blank row (in the colour of the gloves sold and the blank colour of the product-less line), which VALUES and CONCATENATEX see and COUNTROWS of Customer and DISTINCTCOUNT do not, and the blank customer is banded by context transition like any other
+EVALUATE
+SUMMARIZECOLUMNS(
+    Product[Color],
+    TREATAS({ 2024 }, 'Date'[Year]),
+    "Sales", [Sales Amount],
+    "Customer Values", CALCULATE(COUNTROWS(VALUES(Customer[CustomerKey])), CROSSFILTER(Sales[CustomerKey], Customer[CustomerKey], BOTH)),
+    "Customer Rows", CALCULATE(COUNTROWS(Customer), CROSSFILTER(Sales[CustomerKey], Customer[CustomerKey], BOTH)),
+    "Distinct Customer Keys", CALCULATE(DISTINCTCOUNT(Customer[CustomerKey]), CROSSFILTER(Sales[CustomerKey], Customer[CustomerKey], BOTH)),
+    "Countries", CALCULATE(CONCATENATEX(VALUES(Customer[Country]), Customer[Country], "|", Customer[Country], ASC), CROSSFILTER(Sales[CustomerKey], Customer[CustomerKey], BOTH)),
+    "Low Band Customers", CALCULATE(COUNTROWS(FILTER(VALUES(Customer[CustomerKey]), [Customer Sales Band] = "Low")), CROSSFILTER(Sales[CustomerKey], Customer[CustomerKey], BOTH)),
+    "Higher Band Customers", CALCULATE(COUNTROWS(FILTER(VALUES(Customer[CustomerKey]), [Customer Sales Band] <> "Low")), CROSSFILTER(Sales[CustomerKey], Customer[CustomerKey], BOTH))
+)
+ORDER BY Product[Color]

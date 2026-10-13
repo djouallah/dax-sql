@@ -1,0 +1,2 @@
+// note: ORDER BY descending with START AT a value: the rows from it on
+EVALUATE SUMMARIZECOLUMNS(Product[Color], "s", [Sales Amount]) ORDER BY [s] DESC START AT 1600

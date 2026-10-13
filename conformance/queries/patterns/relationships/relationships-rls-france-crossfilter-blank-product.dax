@@ -1,0 +1,12 @@
+// note: under France, CROSSFILTER BOTH from Sales to Product reaches the blank Product row only where a visible (French) sale has a missing product: the 2023 one, not the 2024 one whose customer is missing too; VALUES and CONCATENATEX against COUNTROWS and DISTINCTCOUNT, by year
+// roles: France
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year],
+    "Sales", [Sales Amount],
+    "Values Product Keys", CALCULATE(COUNTROWS(VALUES(Product[ProductKey])), CROSSFILTER(Sales[ProductKey], Product[ProductKey], BOTH)),
+    "Product Rows", CALCULATE(COUNTROWS(Product), CROSSFILTER(Sales[ProductKey], Product[ProductKey], BOTH)),
+    "Distinct Product Keys", CALCULATE(DISTINCTCOUNT(Product[ProductKey]), CROSSFILTER(Sales[ProductKey], Product[ProductKey], BOTH)),
+    "Categories", CALCULATE(CONCATENATEX(VALUES(Product[Category]), Product[Category] & "|", ",", Product[Category], ASC), CROSSFILTER(Sales[ProductKey], Product[ProductKey], BOTH))
+)
+ORDER BY 'Date'[Year]

@@ -1,0 +1,8 @@
+// note: ADDCOLUMNS over SUMMARIZE(Sales, ...) evaluates measures for the year x country pairs that exist in Sales, the unmatched customers' blank country included
+EVALUATE
+ADDCOLUMNS(
+    SUMMARIZE(Sales, 'Date'[Year], Customer[Country]),
+    "Sales", [Sales Amount],
+    "Customers", [Customers]
+)
+ORDER BY 'Date'[Year], Customer[Country]

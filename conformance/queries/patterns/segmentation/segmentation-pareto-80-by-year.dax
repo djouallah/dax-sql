@@ -1,0 +1,8 @@
+// note: Pareto: how many customers make up the first 80% of each year's sales, a nested iterator over customers ranked by sales
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year],
+    "Customers", [Customers],
+    "Customers In First 80%", [Pareto 80 Customer Count]
+)
+ORDER BY 'Date'[Year]

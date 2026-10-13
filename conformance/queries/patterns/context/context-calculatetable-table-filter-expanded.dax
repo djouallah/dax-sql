@@ -1,0 +1,3 @@
+// note: a table filter FILTER(Sales, ...) in CALCULATETABLE filters the expanded Sales table, so it narrows Product to the colors of those sales
+EVALUATE
+CALCULATETABLE(VALUES(Product[Color]), FILTER(Sales, Sales[Quantity] >= 6), 'Date'[Year] = 2022)

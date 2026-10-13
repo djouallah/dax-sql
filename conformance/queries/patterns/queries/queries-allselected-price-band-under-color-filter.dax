@@ -1,0 +1,14 @@
+// note: ALLSELECTED of the grouped price band under a filter on another Product column (color Blue or Silver) in 2024: the restored selection, its share, its product count and the bands and colors it lets through
+EVALUATE
+SUMMARIZECOLUMNS(
+	Product[Price Band],
+	TREATAS({"Blue", "Silver"}, Product[Color]),
+	TREATAS({2024}, 'Date'[Year]),
+	"Sales", [Sales Amount],
+	"Sales Allselected", CALCULATE([Sales Amount], ALLSELECTED(Product[Price Band])),
+	"Share", DIVIDE([Sales Amount], CALCULATE([Sales Amount], ALLSELECTED(Product[Price Band]))),
+	"Products Allselected", CALCULATE(COUNTROWS(Product), ALLSELECTED(Product[Price Band])),
+	"Bands Allselected", CALCULATE(CONCATENATEX(VALUES(Product[Price Band]), Product[Price Band], ", ", Product[Price Band], ASC), ALLSELECTED(Product[Price Band])),
+	"Colors Allselected", CALCULATE(CONCATENATEX(VALUES(Product[Color]), Product[Color], ", ", Product[Color], ASC), ALLSELECTED(Product[Price Band]))
+)
+ORDER BY Product[Price Band]

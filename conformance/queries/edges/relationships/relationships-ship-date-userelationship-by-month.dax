@@ -1,0 +1,11 @@
+// note: the inactive role-playing Ship Date relationship turned on with USERELATIONSHIP: lines and amounts ordered against shipped per month; NULL ship dates and the 2025-01-03 ship date past the Date table fall to the blank row
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year Month],
+    "Ordered Lines", [Lines],
+    "Shipped Lines", CALCULATE([Lines], USERELATIONSHIP(Sales[Ship Date], 'Date'[Date])),
+    "Ordered Amount", [Sales Amount],
+    "Shipped Amount", [Shipped Amount],
+    "Unshipped Lines", [Unshipped Lines]
+)
+ORDER BY 'Date'[Year Month]

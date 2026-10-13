@@ -1,0 +1,9 @@
+// note: grand total and share of selection under the France role: the total and the ALLSELECTED denominator are France only
+// roles: France
+EVALUATE
+SUMMARIZECOLUMNS(
+	ROLLUPADDISSUBTOTAL('Category'[Category], "IsGrandTotalRowTotal"),
+	"Sales_Amount", 'Sales'[Sales Amount],
+	"Share", 'Sales'[Visual Share of Selected]
+)
+ORDER BY [IsGrandTotalRowTotal] DESC, 'Category'[Category]

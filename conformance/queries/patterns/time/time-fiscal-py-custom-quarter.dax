@@ -1,0 +1,8 @@
+// note: custom previous fiscal year (REMOVEFILTERS on Date, Fiscal Year - 1, VALUES of Fiscal Month) at fiscal quarter grain
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Fiscal Year], 'Date'[Fiscal Quarter],
+    "Sales", [Sales Amount],
+    "Fiscal PY", [Sales Fiscal PY Manual]
+)
+ORDER BY 'Date'[Fiscal Year], 'Date'[Fiscal Quarter]

@@ -1,0 +1,2 @@
+// note: ALLSELECTED(Product) while iterating ALL(Product[Color]): the shadow of every color replaces the color filter, the category filter stays
+EVALUATE CALCULATETABLE(ADDCOLUMNS(ALL(Product[Color]), "n", COUNTROWS(ALLSELECTED(Product))), Product[Color] IN {"Red", "Blue"}, Product[CategoryKey] IN {1, 2})

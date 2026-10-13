@@ -1,0 +1,9 @@
+// note: cumulative total over ranked items: each German customer's sales plus those of every customer selling more, within the country filter
+EVALUATE
+SUMMARIZECOLUMNS(
+    Customer[Customer],
+    TREATAS({ "Germany" }, Customer[Country]),
+    "Sales", [Sales Amount],
+    "Cumulative Sales", [Pareto Customer Cumulative Sales]
+)
+ORDER BY [Sales] DESC, Customer[Customer]

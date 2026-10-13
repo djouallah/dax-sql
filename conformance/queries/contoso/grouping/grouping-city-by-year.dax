@@ -1,0 +1,2 @@
+// note: two grouping columns of different tables: only the combinations with a non-blank value, the blank city included
+EVALUATE SUMMARIZECOLUMNS(Customer[City], 'Date'[Year], "s", [Sales Amount])

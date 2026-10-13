@@ -1,0 +1,2 @@
+// note: the dashboard's profileMonths query, the whole months an average day reads beyond 30 days (page state: 1 year to 2026-08-11, all)
+EVALUATE CALCULATETABLE(ROW("first", MIN(dim_month[month]), "last", MAX(dim_month[month])), dim_month[month] >= dt"2025-08-01", dim_month[month] <= dt"2026-08-11")

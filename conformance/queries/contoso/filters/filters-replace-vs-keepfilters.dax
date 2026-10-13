@@ -1,0 +1,2 @@
+// note: a CALCULATE filter on Color replaces the group's color; KEEPFILTERS intersects it
+EVALUATE SUMMARIZECOLUMNS(Product[Color], "red", [Red Sales], "kept", [Red Sales Kept])

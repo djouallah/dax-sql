@@ -1,0 +1,18 @@
+// note: SAMEPERIODLASTYEAR in a SUMMARIZE extension column by month of 2024 bike sales, where the group's Sales rows stay a filter while the dates move back a year; the PY calculation item there, and SAMEPERIODLASTYEAR in ADDCOLUMNS over the SUMMARIZE, alongside
+EVALUATE
+CALCULATETABLE(
+    ADDCOLUMNS(
+        SUMMARIZE(
+            Sales,
+            'Date'[Year],
+            'Date'[Month],
+            "Sales", [Sales Amount],
+            "PY In Summarize", CALCULATE([Sales Amount], SAMEPERIODLASTYEAR('Date'[Date])),
+            "PY Item In Summarize", CALCULATE([Sales Amount], 'Time Intelligence'[Time Intelligence] = "PY")
+        ),
+        "PY In Addcolumns", CALCULATE([Sales Amount], SAMEPERIODLASTYEAR('Date'[Date]))
+    ),
+    'Date'[Year] = 2024,
+    Category[Category] = "Bikes"
+)
+ORDER BY 'Date'[Year], 'Date'[Month]

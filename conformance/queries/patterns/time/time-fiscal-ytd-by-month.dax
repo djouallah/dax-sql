@@ -1,0 +1,9 @@
+// note: DATESYTD with a June 30 year end, by fiscal year and fiscal month
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Fiscal Year], 'Date'[Fiscal Month],
+    TREATAS({2023, 2024}, 'Date'[Fiscal Year]),
+    "Sales", [Sales Amount],
+    "Fiscal YTD", [Sales Fiscal YTD]
+)
+ORDER BY 'Date'[Fiscal Year], 'Date'[Fiscal Month]

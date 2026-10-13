@@ -1,0 +1,9 @@
+// note: the calendar YTD calculation item applied to a fiscal DATESYTD measure: two year-to-date filters stacked
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year Month],
+    TREATAS({2024}, 'Date'[Year]),
+    "Fiscal YTD", [Sales Fiscal YTD],
+    "YTD of Fiscal YTD", CALCULATE([Sales Fiscal YTD], 'Time Intelligence'[Time Intelligence] = "YTD")
+)
+ORDER BY 'Date'[Year Month]

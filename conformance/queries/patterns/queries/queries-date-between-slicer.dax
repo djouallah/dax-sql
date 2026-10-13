@@ -1,0 +1,12 @@
+// note: a between date slicer as Power BI writes it, a range FILTER over the date column, grouped by month across a year boundary
+DEFINE
+	VAR __DS0FilterTable =
+		FILTER(KEEPFILTERS(VALUES('Date'[Date])), AND('Date'[Date] >= DATE(2023, 11, 15), 'Date'[Date] < DATE(2024, 2, 1)))
+EVALUATE
+SUMMARIZECOLUMNS(
+	'Date'[YearMonth],
+	__DS0FilterTable,
+	"Sales_Amount", 'Sales'[Sales Amount],
+	"Budget_Amount", 'Budget'[Budget Amount]
+)
+ORDER BY 'Date'[YearMonth]

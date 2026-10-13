@@ -1,0 +1,4 @@
+// note: TOPNSKIP: the products ranked 6 to 10 by unit price, paging past the first five
+EVALUATE
+TOPNSKIP(5, 5, SELECTCOLUMNS(Product, "Product", Product[Product], "Unit Price", Product[Unit Price]), [Unit Price], DESC)
+ORDER BY [Unit Price] DESC, [Product]

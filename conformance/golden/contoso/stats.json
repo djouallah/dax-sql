@@ -1,0 +1,40 @@
+{
+ "stats-percentile-exc-interpolated": {
+  "hash": "4511a5a3dc9b2e261f2f25e4f4c481dc1c6af510",
+  "columns": [
+   "[p50]",
+   "[p25]",
+   "[p75]",
+   "[x25]"
+  ],
+  "rows": [
+   [
+    60.0,
+    35.0,
+    900.0,
+    70.0
+   ]
+  ]
+ },
+ "stats-percentilex-blanks-count-first": {
+  "hash": "ed123f2cf33ef11ca7d31217ac9f0f218adcf595",
+  "columns": [
+   "[e50]",
+   "[e75]",
+   "[e80]",
+   "[i50]",
+   "[i875]",
+   "[none]"
+  ],
+  "rows": [
+   [
+    null,
+    900.0,
+    960.0000000000001,
+    null,
+    900.0,
+    null
+   ]
+  ]
+ }
+}

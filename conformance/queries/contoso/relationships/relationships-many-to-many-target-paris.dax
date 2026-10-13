@@ -1,0 +1,2 @@
+// note: a filter on Customer reaches CityTarget over the many-to-many relationship
+EVALUATE CALCULATETABLE(ROW("t", [Target Total]), Customer[City] = "Paris")

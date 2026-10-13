@@ -1,0 +1,11 @@
+// note: the rate of a day without an ExchangeRate row (a weekend) is the last rate before it, per currency, through Date and Currency relationships
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Date],
+    'Date'[Day Name],
+    Currency[CurrencyCode],
+    DATESBETWEEN('Date'[Date], DATE(2024, 3, 1), DATE(2024, 3, 7)),
+    "Rate", [Exchange Rate],
+    "Rate Rows", COUNTROWS(ExchangeRate)
+)
+ORDER BY 'Date'[Date], Currency[CurrencyCode]

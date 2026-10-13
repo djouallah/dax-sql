@@ -1,0 +1,11 @@
+// note: RANK and OFFSET over SUMMARIZE(Sales) by category and year with a sales column added by ADDCOLUMNS: ordered by the added column, partitioned by category, the blank category (lines whose product is missing) its own partition
+EVALUATE
+VAR t = ADDCOLUMNS(SUMMARIZE(Sales, Category[Category], 'Date'[Year]), "@Sales", [Sales Amount])
+RETURN
+    ADDCOLUMNS(
+        t,
+        "Rank In Category", RANK(DENSE, t, ORDERBY([@Sales], DESC), , PARTITIONBY(Category[Category])),
+        "Next Lower Sales", SELECTCOLUMNS(OFFSET(1, t, ORDERBY([@Sales], DESC), , PARTITIONBY(Category[Category])), [@Sales]),
+        "Previous Year Sales", SELECTCOLUMNS(OFFSET(-1, t, ORDERBY('Date'[Year], ASC), , PARTITIONBY(Category[Category])), [@Sales])
+    )
+ORDER BY Category[Category], 'Date'[Year]

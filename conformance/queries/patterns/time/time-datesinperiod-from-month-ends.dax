@@ -1,0 +1,13 @@
+// note: DATESINPERIOD starting on each month's last day (Feb 29 included), back and forward by months, a quarter and a year, clipped to the Date table
+EVALUATE
+ADDCOLUMNS(
+    FILTER(ALL('Date'[Date]), 'Date'[Date] = EOMONTH('Date'[Date], 0)),
+    "Back 1M First", VAR d = 'Date'[Date] RETURN MINX(DATESINPERIOD('Date'[Date], d, -1, MONTH), 'Date'[Date]),
+    "Back 1M Days", VAR d = 'Date'[Date] RETURN COUNTROWS(DATESINPERIOD('Date'[Date], d, -1, MONTH)),
+    "Fwd 1M Last", VAR d = 'Date'[Date] RETURN MAXX(DATESINPERIOD('Date'[Date], d, 1, MONTH), 'Date'[Date]),
+    "Back 1Q First", VAR d = 'Date'[Date] RETURN MINX(DATESINPERIOD('Date'[Date], d, -1, QUARTER), 'Date'[Date]),
+    "Back 1Q Days", VAR d = 'Date'[Date] RETURN COUNTROWS(DATESINPERIOD('Date'[Date], d, -1, QUARTER)),
+    "Back 1Y First", VAR d = 'Date'[Date] RETURN MINX(DATESINPERIOD('Date'[Date], d, -1, YEAR), 'Date'[Date]),
+    "Back 1Y Days", VAR d = 'Date'[Date] RETURN COUNTROWS(DATESINPERIOD('Date'[Date], d, -1, YEAR))
+)
+ORDER BY 'Date'[Date]

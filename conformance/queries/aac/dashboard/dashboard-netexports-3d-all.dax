@@ -1,0 +1,2 @@
+// note: the dashboard's netExports query, net exports per region and interval (page state: 3 days to 2026-08-11, all)
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS(fct_region[date], fct_region[time], fct_region[REGIONID], "mw", [Net interchange MW]), fct_region[date] >= dt"2026-08-09", fct_region[date] <= dt"2026-08-11"), "date", [date], "time", [time], "region", [REGIONID], "mw", [mw]) ORDER BY [date], [time], [region]

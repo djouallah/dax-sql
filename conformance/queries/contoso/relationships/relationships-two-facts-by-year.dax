@@ -1,0 +1,2 @@
+// note: two fact tables (Sales, Returns) grouped by a shared Date dimension
+EVALUATE SUMMARIZECOLUMNS('Date'[Year], "q", [Quantity], "ret", [Returned])

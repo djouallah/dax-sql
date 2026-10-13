@@ -1,0 +1,5 @@
+// note: DEFINE COLUMN: a query-scoped calculated column, used to group by
+DEFINE
+    COLUMN Customer[Generation] = IF(Customer[Birth Year] < 1980, "Before 1980", "1980 or later")
+EVALUATE
+SUMMARIZECOLUMNS(Customer[Generation], "Customers", COUNTROWS(Customer), "Sales", [Sales Amount])

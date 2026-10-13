@@ -1,0 +1,2 @@
+// note: CONCATENATEX over DISTINCT(column), ordered ascending: no blank row
+EVALUATE ROW("c", CONCATENATEX(DISTINCT(Customer[City]), Customer[City], ", ", Customer[City], ASC))

@@ -1,0 +1,16 @@
+// note: iterators over Product by brand on extreme magnitudes: Currency list prices from 0.0001 to 1234567.8912, weights from 2.5e-8 to 2.2e11 and their product, loyalty points past 2^31, and COUNTROWS of the table (no blank row) against VALUES of it (blank row) in the blank brand (a DAX error: the arithmetic overflows)
+// expect: error
+EVALUATE
+SUMMARIZECOLUMNS(
+    Product[Brand],
+    "Products", COUNTROWS(Product),
+    "Product Values", COUNTROWS(VALUES(Product)),
+    "List Price Sum", SUMX(Product, Product[List Price]),
+    "List Price Avg", AVERAGEX(Product, Product[List Price]),
+    "Min Weight", MINX(Product, Product[Weight]),
+    "Max Weight", MAXX(Product, Product[Weight]),
+    "List Times Weight", SUMX(Product, Product[List Price] * Product[Weight]),
+    "Loyalty Points", SUM(Sales[Loyalty Points]),
+    "Total Weight", [Total Weight]
+)
+ORDER BY Product[Brand]

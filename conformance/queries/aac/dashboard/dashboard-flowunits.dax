@@ -1,0 +1,2 @@
+// note: the dashboard's flowUnits query, every unit's fuel, storage flag and position (Flows)
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS(dim_duid[DUID], dim_duid[FuelSourceDescriptor], dim_duid[Storage], dim_duid[latitude], dim_duid[longitude]), NOT ISBLANK(dim_duid[DUID])), "DUID", [DUID], "fuel", [FuelSourceDescriptor], "storage", [Storage], "lat", [latitude], "lon", [longitude])

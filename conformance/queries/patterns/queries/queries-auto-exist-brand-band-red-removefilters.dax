@@ -1,0 +1,13 @@
+// note: SUMMARIZECOLUMNS grouping by two Product columns, brand and price band, under a filter on a third, color = Red: auto-exist keeps only the combinations red products have, and CALCULATE removing the brand or the color still sees the other columns' existing combinations
+EVALUATE
+SUMMARIZECOLUMNS(
+	Product[Brand],
+	Product[Price Band],
+	TREATAS({"Red"}, Product[Color]),
+	"Products", COUNTROWS(Product),
+	"Sales", [Sales Amount],
+	"Products Brand Removed", CALCULATE(COUNTROWS(Product), REMOVEFILTERS(Product[Brand])),
+	"Sales Brand Removed", CALCULATE([Sales Amount], REMOVEFILTERS(Product[Brand])),
+	"Products Color Removed", CALCULATE(COUNTROWS(Product), REMOVEFILTERS(Product[Color]))
+)
+ORDER BY Product[Brand], Product[Price Band]

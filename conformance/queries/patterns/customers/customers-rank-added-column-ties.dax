@@ -1,0 +1,17 @@
+// note: each 2024 buyer's dense and skip rank by order count within the country, with RANK over an ADDCOLUMNS table ordered by the added column (many ties; the blank country of sales whose customer is missing is a partition of its own)
+EVALUATE
+VAR T =
+    CALCULATETABLE(
+        ADDCOLUMNS(
+            SUMMARIZE(Sales, Customer[Country], Customer[Customer]),
+            "@Orders", [Orders]
+        ),
+        'Date'[Year] = 2024
+    )
+RETURN
+    ADDCOLUMNS(
+        T,
+        "Dense", RANK(DENSE, T, ORDERBY([@Orders], DESC), PARTITIONBY(Customer[Country])),
+        "Skip", RANK(SKIP, T, ORDERBY([@Orders], DESC), PARTITIONBY(Customer[Country]))
+    )
+ORDER BY Customer[Country], [Dense], Customer[Customer]

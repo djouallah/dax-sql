@@ -1,0 +1,3 @@
+// note: ROLLUPADDISSUBTOTAL adds a total row with its flag; ISINSCOPE tells the color rows from the total
+DEFINE MEASURE Sales[Level] = IF(ISINSCOPE(Product[Color]), "color", "total")
+EVALUATE SUMMARIZECOLUMNS(ROLLUPADDISSUBTOTAL(Product[Color], "IsTotal"), "s", [Sales Amount], "lvl", [Level])

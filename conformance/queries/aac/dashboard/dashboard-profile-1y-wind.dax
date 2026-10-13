@@ -1,0 +1,2 @@
+// note: the dashboard's profile query, the average day by fuel: by time of day, or by hour from the monthly table (page state: 1 year to 2026-08-11, fuel Wind)
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS(dim_duid[FuelSourceDescriptor], fct_summary_hourly[hour], "mw", [Average MW at hour]), dim_month[month] >= dt"2025-08-01", dim_month[month] <= dt"2026-08-11", dim_duid[FuelSourceDescriptor] = "Wind", dim_duid[Storage] = FALSE()), "fuel", [FuelSourceDescriptor], "hour", [hour], "mw", [mw]) ORDER BY [hour], [fuel]

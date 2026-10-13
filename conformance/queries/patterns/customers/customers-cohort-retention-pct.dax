@@ -1,0 +1,24 @@
+// note: cohort retention: customers of a first-order year active in each later year over the cohort size (GENERATE with a filter on the outer row)
+EVALUATE
+VAR Cohorts =
+    DISTINCT(
+        SELECTCOLUMNS(
+            FILTER(Customer, NOT ISBLANK(Customer[First Order])),
+            "Cohort Year", YEAR(Customer[First Order])
+        )
+    )
+VAR WithSize =
+    ADDCOLUMNS(
+        Cohorts,
+        "Cohort Size",
+            VAR cy = [Cohort Year]
+            RETURN COUNTROWS(FILTER(Customer, NOT ISBLANK(Customer[First Order]) && YEAR(Customer[First Order]) = cy))
+    )
+RETURN
+    ADDCOLUMNS(
+        GENERATE(WithSize, FILTER(VALUES('Date'[Year]), 'Date'[Year] >= [Cohort Year])),
+        "Retention %",
+            VAR cy = [Cohort Year]
+            RETURN DIVIDE(CALCULATE([Customers], FILTER(Customer, YEAR(Customer[First Order]) = cy)), [Cohort Size])
+    )
+ORDER BY [Cohort Year], 'Date'[Year]

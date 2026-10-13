@@ -1,0 +1,15 @@
+// note: customers ranked by 2024 sales within their 2024 sales band, with RANK over an ADDCOLUMNS table partitioned by the band column it added (a DAX error: PARTITIONBY takes only model columns, not columns added to the table)
+// expect: error
+EVALUATE
+VAR t =
+    ADDCOLUMNS(
+        VALUES(Customer[CustomerKey]),
+        "@Band", CALCULATE([Customer Sales Band], 'Date'[Year] = 2024),
+        "@Sales", CALCULATE([Sales Amount], 'Date'[Year] = 2024)
+    )
+RETURN
+    ADDCOLUMNS(
+        t,
+        "Rank In Band", RANK(DENSE, t, ORDERBY([@Sales], DESC, Customer[CustomerKey], ASC), PARTITIONBY([@Band]))
+    )
+ORDER BY Customer[CustomerKey]

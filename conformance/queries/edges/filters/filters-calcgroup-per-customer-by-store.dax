@@ -1,0 +1,14 @@
+// note: the Per Customer item selected by a TREATAS filter, by Store[StoreKey] including the blank row (unknown, empty and NULL store keys, one with a NULL customer): Sales, Margin and Quantity divided by Customers No Blank, while Margin %, Lines, Customers and Customers No Blank pass through
+EVALUATE
+SUMMARIZECOLUMNS(
+    Store[StoreKey],
+    TREATAS({"Per Customer"}, Adjust[Adjust]),
+    "Sales", [Sales Amount],
+    "Margin", [Margin],
+    "Quantity", [Total Quantity],
+    "Margin %", [Margin %],
+    "Lines", [Lines],
+    "Customers", [Customers],
+    "Customers No Blank", [Customers No Blank]
+)
+ORDER BY Store[StoreKey]

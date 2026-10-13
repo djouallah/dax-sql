@@ -1,0 +1,5 @@
+// note: TOPN with ties on an integer measure: every customer tied with the fifth place by order count is returned
+EVALUATE
+VAR Top5 = TOPN(5, VALUES(Customer[Customer]), [Orders], DESC)
+RETURN
+    ADDCOLUMNS(Top5, "Orders", [Orders])

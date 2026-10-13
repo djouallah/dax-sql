@@ -1,0 +1,13 @@
+// note: grouped by the Time Intelligence calculation group's ordinal alone in 2024, the High band's sales, then with CALCULATE filtering the name column to YTD (the row's ordinal filter stays, so only the YTD row keeps an item), with KEEPFILTERS, and with the ordinal filter removed too
+DEFINE
+    MEASURE Sales[Seg High Band Sales] = CALCULATE([Segment Customer Sales], TREATAS({ "High" }, Segments[Segment]))
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Time Intelligence'[Ordinal],
+    TREATAS({ 2024 }, 'Date'[Year]),
+    "High Band", [Seg High Band Sales],
+    "Name Set To YTD", CALCULATE([Seg High Band Sales], 'Time Intelligence'[Time Intelligence] = "YTD"),
+    "Name Set To YTD Keepfilters", CALCULATE([Seg High Band Sales], KEEPFILTERS('Time Intelligence'[Time Intelligence] = "YTD")),
+    "Name Set To YTD Any Ordinal", CALCULATE([Seg High Band Sales], 'Time Intelligence'[Time Intelligence] = "YTD", REMOVEFILTERS('Time Intelligence'[Ordinal]))
+)
+ORDER BY 'Time Intelligence'[Ordinal]

@@ -1,0 +1,9 @@
+// note: dynamic segmentation of products by their monthly sales in 2024, the year applied as a SUMMARIZECOLUMNS filter table
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Month],
+    Segments[Segment],
+    TREATAS({ 2024 }, 'Date'[Year]),
+    "Products", [Segment Product Count]
+)
+ORDER BY 'Date'[Month], Segments[Segment]

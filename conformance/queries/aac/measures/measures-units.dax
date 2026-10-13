@@ -1,0 +1,2 @@
+// note: fct_summary[Units] per region, rooftop solar left out
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS(dim_region[Region], "Units", [Units]), dim_calendar[date] >= dt"2026-08-07", dim_calendar[date] <= dt"2026-08-13")

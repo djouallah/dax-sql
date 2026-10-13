@@ -1,0 +1,8 @@
+// note: a column predicate on Sales and FILTER(Sales) keep the category filter, FILTER(ALL(Sales)) removes it (the expanded Sales table holds Category)
+EVALUATE
+SUMMARIZECOLUMNS(
+    Category[Category],
+    "Column Predicate", CALCULATE([Sales Amount], Sales[Quantity] >= 3),
+    "Filter Sales", CALCULATE([Sales Amount], FILTER(Sales, Sales[Quantity] >= 3)),
+    "Filter All Sales", CALCULATE([Sales Amount], FILTER(ALL(Sales), Sales[Quantity] >= 3))
+)

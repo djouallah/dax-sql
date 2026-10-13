@@ -1,0 +1,8 @@
+// note: distinct customers and sales by account type through the bidirectional AccountCustomer bridge, with a total
+EVALUATE
+SUMMARIZECOLUMNS(
+    ROLLUPADDISSUBTOTAL(Account[Account Type], "Is Total"),
+    "Customers", [Customers],
+    "Sales", [Sales Amount]
+)
+ORDER BY [Is Total], Account[Account Type]

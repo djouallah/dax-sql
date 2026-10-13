@@ -1,0 +1,3 @@
+// note: names are case-insensitive, a table name may be quoted, and //, /* */ and -- comments are ignored
+// a comment
+EVALUATE /* another */ ROW("s", calculate([sales amount], 'PRODUCT'[color] = "Red")) -- and one more

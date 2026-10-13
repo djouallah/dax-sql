@@ -1,0 +1,9 @@
+// note: ROLLUP inside SUMMARIZE: category and subcategory rows plus their subtotals, flagged with ISSUBTOTAL
+EVALUATE
+SUMMARIZE(
+    Sales,
+    ROLLUP(Category[Category], Subcategory[Subcategory]),
+    "Sales", [Sales Amount],
+    "Category Total", ISSUBTOTAL(Subcategory[Subcategory]),
+    "Grand Total", ISSUBTOTAL(Category[Category])
+)

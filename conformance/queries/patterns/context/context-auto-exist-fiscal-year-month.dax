@@ -1,0 +1,11 @@
+// note: auto-exist across two Date filters, fiscal years 2024 and 2025 and month 3: fiscal 2025 has no March in the table, so removing the month filter leaves fiscal 2024 only
+EVALUATE
+SUMMARIZECOLUMNS(
+    Category[Category],
+    TREATAS({2024, 2025}, 'Date'[Fiscal Year]),
+    TREATAS({3}, 'Date'[Month]),
+    "Sales", [Sales Amount],
+    "Month Removed", CALCULATE([Sales Amount], REMOVEFILTERS('Date'[Month])),
+    "Fiscal Years Left", CALCULATE(CONCATENATEX(VALUES('Date'[Fiscal Year]), 'Date'[Fiscal Year], ",", 'Date'[Fiscal Year], ASC), REMOVEFILTERS('Date'[Month]))
+)
+ORDER BY Category[Category]

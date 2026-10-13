@@ -1,0 +1,3 @@
+// note: SUMMARIZE with ROLLUP of two levels: a subtotal per level, its rolled-up columns blank, ISSUBTOTAL per level
+EVALUATE SUMMARIZE(Sales, ROLLUP(Category[Category], Product[Name]), "s", [Sales Amount],
+    "byName", ISSUBTOTAL(Product[Name]), "byCategory", ISSUBTOTAL(Category[Category]))

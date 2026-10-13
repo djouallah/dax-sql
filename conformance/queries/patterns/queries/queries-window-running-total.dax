@@ -1,0 +1,10 @@
+// note: WINDOW(1, ABS, 0, REL) over ALLSELECTED months as a running total that starts at the visual's first month
+EVALUATE
+SUMMARIZECOLUMNS(
+	'Date'[YearMonth],
+	TREATAS({2023}, 'Date'[Year]),
+	TREATAS({"Bikes", "Components"}, 'Category'[Category]),
+	"Sales_Amount", 'Sales'[Sales Amount],
+	"Running", 'Sales'[Visual Running Sales]
+)
+ORDER BY 'Date'[YearMonth]

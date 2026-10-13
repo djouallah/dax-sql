@@ -1,0 +1,15 @@
+// note: three-month moving average with WINDOW over ALLSELECTED months, which stops at the selection's first month
+DEFINE
+    MEASURE Sales[Window Avg 3M] =
+        AVERAGEX(
+            WINDOW(-2, REL, 0, REL, ALLSELECTED('Date'[Year Month]), ORDERBY('Date'[Year Month], ASC)),
+            [Sales Amount]
+        )
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year Month],
+    TREATAS({2024}, 'Date'[Year]),
+    "Sales", [Sales Amount],
+    "Window Avg 3M", [Window Avg 3M]
+)
+ORDER BY 'Date'[Year Month]

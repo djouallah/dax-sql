@@ -1,0 +1,15 @@
+// note: previous month through OFFSET over ALLSELECTED months (blank before the selection) against DATEADD (which reaches outside it)
+DEFINE
+    MEASURE Sales[Offset PM] =
+        CALCULATE(
+            [Sales Amount],
+            OFFSET(-1, ALLSELECTED('Date'[Year], 'Date'[Month]), ORDERBY('Date'[Year], ASC, 'Date'[Month], ASC))
+        )
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year], 'Date'[Month],
+    TREATAS({2023}, 'Date'[Year]),
+    "Offset PM", [Offset PM],
+    "DateAdd PM", [Sales PM DateAdd]
+)
+ORDER BY 'Date'[Year], 'Date'[Month]

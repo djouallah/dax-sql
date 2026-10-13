@@ -1,0 +1,12 @@
+// note: AVERAGEX per customer segment skips customers whose quantity is blank but counts them once COALESCE makes it 0; VALUES of the key includes the blank row, the Customer table does not; segment "" and the blank segment (NULL segment plus the blank row) stay apart
+EVALUATE
+SUMMARIZECOLUMNS(
+    Customer[Segment],
+    "Segment Is Blank", ISBLANK(SELECTEDVALUE(Customer[Segment])),
+    "Avg Qty Blanks Skipped", AVERAGEX(VALUES(Customer[CustomerKey]), [Total Quantity]),
+    "Avg Qty Zero Filled", AVERAGEX(VALUES(Customer[CustomerKey]), [Quantity Or Zero]),
+    "Avg Qty Customer Table", AVERAGEX(Customer, [Total Quantity]),
+    "Avg Per Customer", [Avg Per Customer],
+    "Avg Line Quantity", AVERAGE(Sales[Quantity])
+)
+ORDER BY Customer[Segment], [Segment Is Blank]

@@ -1,0 +1,12 @@
+// note: RANKX over ALLSELECTED(Product[Product]) for six selected products: Twin A and Twin B tie exactly, the two products named "Gadget" are one value, "Free Sample" sells at zero and "Never Sold" has no sales; skip and dense ranks against a rank over ALL(Product[Product]) (with the blank row's unknown products) and a share of the selection
+EVALUATE
+SUMMARIZECOLUMNS(
+    Product[Product],
+    TREATAS({"Twin A", "Twin B", "Gadget", "Desk Fan ", "Free Sample", "Never Sold"}, Product[Product]),
+    "Sales", [Sales Amount],
+    "Rank Selected", RANKX(ALLSELECTED(Product[Product]), [Sales Amount]),
+    "Rank Selected Dense", RANKX(ALLSELECTED(Product[Product]), [Sales Amount], , DESC, DENSE),
+    "Rank All", RANKX(ALL(Product[Product]), [Sales Amount]),
+    "Share Selected", DIVIDE([Sales Amount], CALCULATE([Sales Amount], ALLSELECTED(Product[Product])))
+)
+ORDER BY Product[Product]

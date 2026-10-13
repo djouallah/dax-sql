@@ -1,0 +1,13 @@
+// note: LOOKUPVALUE ignores the filter context: by category in 2024, lookups of product 1's price and category, the EUR rate of 2023-01-02 and the customer of order 5, beside a CALCULATE lookup of product 1's price that the category filter reaches
+EVALUATE
+SUMMARIZECOLUMNS(
+    Category[Category],
+    TREATAS({2024}, 'Date'[Year]),
+    "Sales", [Sales Amount],
+    "Product 1 Price", LOOKUPVALUE(Product[Unit Price], Product[ProductKey], 1),
+    "Product 1 Category", LOOKUPVALUE(Product[Category], Product[ProductKey], 1),
+    "EUR Rate 2023-01-02", LOOKUPVALUE(ExchangeRate[Rate], ExchangeRate[Date], DATE(2023, 1, 2), ExchangeRate[CurrencyCode], "EUR"),
+    "Order 5 Customer", LOOKUPVALUE(Sales[CustomerKey], Sales[Order Number], 5, Sales[Line Number], 1),
+    "Product 1 Price Filtered", CALCULATE(MAX(Product[Unit Price]), Product[ProductKey] = 1)
+)
+ORDER BY Category[Category]

@@ -1,0 +1,2 @@
+// note: the dashboard's regionNewestTime query, the newest time of the regional table on a day
+EVALUATE CALCULATETABLE(ROW("time", MAX(fct_region[time])), fct_region[date] = dt"2026-08-13")

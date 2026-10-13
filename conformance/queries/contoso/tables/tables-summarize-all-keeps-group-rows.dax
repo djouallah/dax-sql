@@ -1,0 +1,2 @@
+// note: in SUMMARIZE's expressions, ALL on a grouping column keeps the group's rows of the table
+EVALUATE SUMMARIZE(Sales, Product[Color], "s", [Sales Amount], "all", CALCULATE([Sales Amount], ALL(Product[Color])))

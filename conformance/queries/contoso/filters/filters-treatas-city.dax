@@ -1,0 +1,2 @@
+// note: TREATAS of a constant table as a filter on a column
+EVALUATE CALCULATETABLE(ROW("s", [Sales Amount]), TREATAS({"Paris"}, Customer[City]))

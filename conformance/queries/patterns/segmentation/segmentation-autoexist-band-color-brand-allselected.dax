@@ -1,0 +1,14 @@
+// note: SUMMARIZECOLUMNS by price band and colour under a filter on Contoso, another column of Product: auto-exist keeps only the band-colour pairs Contoso products have, even for a measure that is never blank, and ALLSELECTED of the grouped colour gives the band's Contoso sales across the colours, with and without the brand filter removed too
+EVALUATE
+SUMMARIZECOLUMNS(
+    Product[Price Band],
+    Product[Color],
+    TREATAS({ "Contoso" }, Product[Brand]),
+    "Products", COUNTROWS(Product),
+    "Segments", COUNTROWS(ALL(Segments)),
+    "Sales", [Sales Amount],
+    "Band Sales Selected Colors", CALCULATE([Sales Amount], ALLSELECTED(Product[Color])),
+    "Colors Selected", CALCULATE(COUNTROWS(VALUES(Product[Color])), ALLSELECTED(Product[Color])),
+    "Band Sales Any Brand", CALCULATE([Sales Amount], ALLSELECTED(Product[Color]), REMOVEFILTERS(Product[Brand]))
+)
+ORDER BY Product[Price Band], Product[Color]

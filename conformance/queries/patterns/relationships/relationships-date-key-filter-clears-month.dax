@@ -1,0 +1,11 @@
+// note: on the marked date table a filter on 'Date'[Date] drops the year and month filters too, while the same filter on 'Date'[Day] keeps them, day by day in February 2024
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Date],
+    TREATAS({ 2024 }, 'Date'[Year]),
+    TREATAS({ 2 }, 'Date'[Month]),
+    "Sales", [Sales Amount],
+    "Sales from Date On", VAR d = MAX('Date'[Date]) RETURN CALCULATE([Sales Amount], 'Date'[Date] >= d),
+    "Sales from Day On", VAR n = MAX('Date'[Day]) RETURN CALCULATE([Sales Amount], 'Date'[Day] >= n)
+)
+ORDER BY 'Date'[Date]

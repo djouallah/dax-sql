@@ -1,0 +1,13 @@
+// note: under the Retail role on Customer, by Product[Brand]: the brand filter reaches Customer back through the both-directions Sales relationship, so Customer rows and segments vary by brand inside the role's rows; against CROSSFILTER ONEWAY, and Big Customers iterating the visible customers
+// roles: Retail
+EVALUATE
+SUMMARIZECOLUMNS(
+    Product[Brand],
+    "Lines", [Lines],
+    "Sales", [Sales Amount],
+    "Customer Rows", COUNTROWS(Customer),
+    "Customer Rows One Way", CALCULATE(COUNTROWS(Customer), CROSSFILTER(Sales[CustomerKey], Customer[CustomerKey], ONEWAY)),
+    "Segments", CONCATENATEX(VALUES(Customer[Segment]), Customer[Segment], ", ", Customer[Segment], ASC),
+    "Big Customers", [Big Customers]
+)
+ORDER BY Product[Brand]

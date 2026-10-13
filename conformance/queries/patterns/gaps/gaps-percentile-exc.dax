@@ -1,0 +1,7 @@
+// note: PERCENTILE.EXC and PERCENTILEX.EXC at the median, valid for any group size, by category
+EVALUATE
+SUMMARIZECOLUMNS(
+    Category[Category],
+    "P50", PERCENTILE.EXC(Sales[Line Amount], 0.5),
+    "P50 Qty", PERCENTILEX.EXC(Sales, Sales[Quantity], 0.5)
+)

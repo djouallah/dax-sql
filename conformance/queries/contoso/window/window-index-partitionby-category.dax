@@ -1,0 +1,2 @@
+// note: INDEX(1) with PARTITIONBY and no current row: the cheapest product of each category
+EVALUATE INDEX(1, ALL(Product[Name], Product[CategoryKey], Product[Price]), ORDERBY(Product[Price]), PARTITIONBY(Product[CategoryKey]))

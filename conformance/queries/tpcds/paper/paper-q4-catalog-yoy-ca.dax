@@ -1,0 +1,53 @@
+// note: the paper's "Catalog Sales Quantity YoY combo" visual, round 3 (state CA, a manager, a carrier, a page type), as Power BI wrote it
+DEFINE
+	VAR __DS0FilterTable = 
+		TREATAS({"CA"}, 'customer_address'[ca_state])
+
+	VAR __DS0FilterTable2 = 
+		TREATAS({"College"}, 'customer_demographics'[cd_education_status])
+
+	VAR __DS0FilterTable3 = 
+		TREATAS({"Brett Yates"}, 'store'[s_manager])
+
+	VAR __DS0FilterTable4 = 
+		TREATAS({"FEDEX"}, 'ship_mode'[sm_carrier])
+
+	VAR __DS0FilterTable5 = 
+		TREATAS({"quarterly"}, 'catalog_page'[cp_type])
+
+	VAR __DS0FilterTable6 = 
+		TREATAS({2026}, 'date_dim'[d_year])
+
+	VAR __DS0FilterTable7 = 
+		FILTER(
+			KEEPFILTERS(VALUES('catalog_sales'[cache_buster])),
+			'catalog_sales'[cache_buster] < 2
+		)
+
+	VAR __DS0FilterTable8 = 
+		FILTER(KEEPFILTERS(VALUES('store_sales'[cache_buster])), 'store_sales'[cache_buster] < 2)
+
+	VAR __DS0Core = 
+		SUMMARIZECOLUMNS(
+			'date_dim'[d_quarter_name],
+			__DS0FilterTable,
+			__DS0FilterTable2,
+			__DS0FilterTable3,
+			__DS0FilterTable4,
+			__DS0FilterTable5,
+			__DS0FilterTable6,
+			__DS0FilterTable7,
+			__DS0FilterTable8,
+			"Catalog_Sales_Quantity", 'catalog_sales'[Catalog Sales Quantity],
+			"Catalog_Sales_Same_Period_LY", 'catalog_sales'[Catalog Sales Same Period LY],
+			"Catalog_Sales_YoY", 'catalog_sales'[Catalog Sales YoY]
+		)
+
+	VAR __DS0PrimaryWindowed = 
+		TOPN(1001, __DS0Core, 'date_dim'[d_quarter_name], 0)
+
+EVALUATE
+	__DS0PrimaryWindowed
+
+ORDER BY
+	'date_dim'[d_quarter_name] DESC

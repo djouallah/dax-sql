@@ -1,0 +1,8 @@
+// note: dynamic segmentation under row-level security: only French customers can be classified
+// roles: France
+EVALUATE
+SUMMARIZECOLUMNS(
+    Segments[Segment],
+    "Customers", [Segment Customer Count],
+    "Sales", [Segment Customer Sales]
+)

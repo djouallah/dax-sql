@@ -1,0 +1,2 @@
+// note: TOPN(1) over a table constructor keeps the rows that tie
+EVALUATE TOPN(1, {("a", 1), ("b", 1), ("c", 0)}, [Value2])

@@ -1,0 +1,9 @@
+// note: running total by quarter in 2023 with a grand total row: at the total the running total reaches the last selected date
+EVALUATE
+SUMMARIZECOLUMNS(
+    ROLLUPADDISSUBTOTAL('Date'[Quarter], "IsTotal"),
+    TREATAS({ 2023 }, 'Date'[Year]),
+    "Sales", [Sales Amount],
+    "Cumulative Sales", [Cumulative Sales In Selection]
+)
+ORDER BY [IsTotal], 'Date'[Quarter]

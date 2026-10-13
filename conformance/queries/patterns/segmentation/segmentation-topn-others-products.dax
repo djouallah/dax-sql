@@ -1,0 +1,7 @@
+// note: TOPN plus an Others row: the five best-selling products, and the sales of every other product (the blank product included) in one row
+EVALUATE
+VAR Top5 = TOPN(5, ALL(Product[Product]), [Sales Amount], DESC)
+VAR TopRows = ADDCOLUMNS(Top5, "Sales", [Sales Amount])
+VAR OthersSales = CALCULATE([Sales Amount], EXCEPT(ALL(Product[Product]), Top5))
+RETURN
+    UNION(TopRows, ROW("Product", "Others", "Sales", OthersSales))

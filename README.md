@@ -211,9 +211,10 @@ and gives each aggregate the filters that reach its table.
   - `FIRSTNONBLANK`, `LASTNONBLANK`.
 - **Time intelligence:**
   - `DATESYTD/QTD/MTD`, `TOTALYTD/QTD/MTD`, `DATESBETWEEN`, `DATESINPERIOD`;
-  - `DATEADD` (from the last day of a month to the end of the moved month),
-    `SAMEPERIODLASTYEAR`, `PARALLELPERIOD`, `PREVIOUS/NEXT DAY/MONTH/QUARTER/YEAR`;
-  - `STARTOF…`, `ENDOF…`, `FIRSTDATE`, `LASTDATE`, `OPENING/CLOSINGBALANCE…`.
+  - `DATEADD` and `DATESINPERIOD` (from the last day of a month to the end of the moved
+    month), `SAMEPERIODLASTYEAR`, `PARALLELPERIOD`, `PREVIOUS/NEXT DAY/MONTH/QUARTER/YEAR`;
+  - `STARTOF…`, `ENDOF…`, `FIRSTDATE`, `LASTDATE`, `OPENING/CLOSINGBALANCE…`;
+  - a year end (`"6/30"`) on the functions of a year that take one.
 - **Values:** logic (`IF`, `SWITCH`, `COALESCE`, `DIVIDE`, …), math, text, dates, `CONVERT`,
   `NAMEOF`.
 - **FORMAT** writes numbers and dates as DAX does in en-US:

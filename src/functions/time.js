@@ -44,12 +44,20 @@ function fiscalShift(ast) {
 function startOfYear(d, months) {
   return months ? shift(startOf(shift(d, -months, 'month'), 'year'), months, 'month') : startOf(d, 'year');
 }
+function endOfYear(d, months) {
+  return months ? shift(shift(startOfYear(d, months), 12, 'month'), -1, 'day') : endOf(d, 'year');
+}
+// The first (last) day of the period of `d`; a year ends on the year-end argument.
+const periodStart = (d, unit, months) => unit === 'year' ? startOfYear(d, months) : startOf(d, unit);
+const periodEnd = (d, unit, months) => unit === 'year' ? endOfYear(d, months) : endOf(d, unit);
+// The months a function on a year shifts by, from its year-end argument; none for the others.
+const yearEndOf = (unit, ast) => unit === 'year' ? fiscalShift(ast) : 0;
 
 function toDate(unit) {
   return (c, args, env, ast) => {
     const { col, visible } = datesOf(c, args[0], env, ast.fn);
     const end = last(visible);
-    const start = unit === 'year' ? startOfYear(end, fiscalShift(args[1])) : startOf(end, unit);
+    const start = periodStart(end, unit, yearEndOf(unit, args[1]));
     return dates(c, col, env, v => between(v, start, end));
   };
 }
@@ -61,10 +69,14 @@ function datesBetween(c, args, env) {
   return dates(c, col, env, v => and(ir.op('or', blank(lo), ir.op('ge', v, lo)), ir.op('or', blank(hi), ir.op('le', v, hi))));
 }
 
+// DATESINPERIOD: the dates from the start date to the one `n` units away (that one left out).
+// By months, quarters or years, a start on the last day of a month moves to the end of the
+// moved month, as DATEADD does: from April 30, three months back is January 31, not 30.
 function datesInPeriod(c, args, env) {
   const { col } = datesOf(c, args[0], env, 'DATESINPERIOD');
   const start = c.scalar(args[1], env), n = c.scalar(args[2], env), unit = unitArg(args[3], 'DATESINPERIOD');
-  const end = shift(start, n, unit);
+  let end = shift(start, n, unit);
+  if (unit === 'month' || unit === 'quarter' || unit === 'year') end = ir.kase([[ir.op('eq', start, endOf(start, 'month')), endOf(end, 'month')]], end, 'datetime');
   const back = v => and(ir.op('gt', v, end), ir.op('le', v, start)), fwd = v => and(ir.op('ge', v, start), ir.op('lt', v, end));
   if (n.k === 'lit') return dates(c, col, env, n.v < 0 ? back : fwd);
   return dates(c, col, env, v => ir.kase([[ir.op('lt', n, ir.lit(0)), back(v)]], fwd(v), 'bool'));
@@ -96,17 +108,20 @@ function parallelPeriod(c, args, env) {
 
 // PREVIOUSMONTH and its kind: the whole period before the one of the first visible date;
 // NEXTMONTH and its kind, after the one of the last (as Microsoft's reference says).
+// PREVIOUSYEAR and NEXTYEAR take a year end: the fiscal year before (after).
 function period(unit, n, from) {
   return (c, args, env, ast) => {
     const { col, visible } = datesOf(c, args[0], env, ast.fn);
     const at = shift(from === 'first' ? first(visible) : last(visible), n, unit);
     if (unit === 'day') return dates(c, col, env, v => ir.op('eq', v, at));
-    return dates(c, col, env, v => between(v, startOf(at, unit), endOf(at, unit)));
+    const months = yearEndOf(unit, args[1]);
+    return dates(c, col, env, v => between(v, periodStart(at, unit, months), periodEnd(at, unit, months)));
   };
 }
 
 // STARTOFMONTH and ENDOFMONTH and their kind: the first (last) date the column holds in the
-// period of the first (last) visible date. FIRSTDATE, LASTDATE: the first (last) visible.
+// period of the first (last) visible date (STARTOFYEAR, ENDOFYEAR: of its year that ends on
+// the year-end argument). FIRSTDATE, LASTDATE: the first (last) visible.
 function edge(unit, side) {
   return (c, args, env, ast) => {
     const { col, visible } = datesOf(c, args[0], env, ast.fn);
@@ -114,8 +129,8 @@ function edge(unit, side) {
       const v = side === 'start' ? first(visible) : last(visible);
       return dates(c, col, env, x => ir.op('eq', x, v));
     }
-    const at = side === 'start' ? first(visible) : last(visible);
-    const inPeriod = dates(c, col, env, x => between(x, startOf(at, unit), endOf(at, unit)));
+    const at = side === 'start' ? first(visible) : last(visible), months = yearEndOf(unit, args[1]);
+    const inPeriod = dates(c, col, env, x => between(x, periodStart(at, unit, months), periodEnd(at, unit, months)));
     const v = side === 'start' ? first(inPeriod) : last(inPeriod);
     return dates(c, col, env, x => ir.op('eq', x, v));
   };
@@ -132,14 +147,21 @@ function total(fn) {
   };
 }
 
-// CLOSINGBALANCEMONTH(expr, dates): expr on the last date of the period; OPENING: on the day
-// before its first.
+// CLOSINGBALANCEMONTH(expr, dates): expr on ENDOFMONTH(dates), the last date the column
+// holds in the period of the last visible date (a period that runs past the date table
+// closes on its last date); OPENING: on the day before the period's first day. The year
+// ones take a year end, after the filter or in its place.
 function balance(unit, side) {
   return (c, args, env, ast) => {
     let filterArg = args[2];
     if (filterArg?.k === 'str') filterArg = null;
     const { col, visible } = datesOf(c, args[1], env, ast.fn);
-    const at = side === 'closing' ? endOf(last(visible), unit) : shift(startOf(first(visible), unit), -1, 'day');
+    const months = yearEndOf(unit, args[2]?.k === 'str' ? args[2] : args[3]);
+    let at;
+    if (side === 'closing') {
+      const end = last(visible);
+      at = last(dates(c, col, env, x => between(x, periodStart(end, unit, months), periodEnd(end, unit, months))));
+    } else at = shift(periodStart(first(visible), unit, months), -1, 'day');
     const t = dates(c, col, env, x => ir.op('eq', x, at));
     const f = c.tableFilter(t, env.ctx);
     // As CALCULATE(expr, t, filter): t is evaluated here, the rest as CALCULATE does.
@@ -161,7 +183,7 @@ function calendarAuto(c, args, env) {
   if (!cols.length) throw semantic('CALENDARAUTO: the model has no date column');
   const each = f => cols.map(x => { const s = c.scan(x.table, new Ctx([], env.ctx.mods)), r = ir.rowOf(s); return ir.agg(f, s, r, ir.col(r, x), 'datetime'); });
   const lo = startOfYear(ir.fn('least', each('min'), 'datetime'), months);
-  const hi = shift(shift(startOfYear(ir.fn('greatest', each('max'), 'datetime'), months), 12, 'month'), -1, 'day');
+  const hi = endOfYear(ir.fn('greatest', each('max'), 'datetime'), months);
   return { k: 'series', start: lo, end: hi, step: ir.lit(1), cols: [{ name: 'Date', lineage: null, t: 'datetime' }], base: null };
 }
 

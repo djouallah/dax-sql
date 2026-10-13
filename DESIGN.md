@@ -393,14 +393,16 @@ and gives each aggregate the filters that reach its table.
   - `1 / BLANK()` is infinity.
   - `RANKX` compares a blank as 0 (or ""): a blank and 0 tie, and `DENSE` counts them as one
     value.
-  - `PERCENTILE(X).INC/EXC` count the blanks among the values, first in the order; a rank on
-    a blank, or between a blank and a value, is blank. A `k` out of range (for EXC, outside
-    1/(n + 1)..n/(n + 1)) is an error.
+  - `PERCENTILEX.INC/EXC` and `MEDIANX` (`PERCENTILEX.INC` at 0.5) count the blanks among
+    the values, first in the order: a rank on a blank is blank, and between a blank and a
+    value the blank is 0. `PERCENTILE.INC/EXC` and `MEDIAN` of a column leave its blanks out.
+    A `k` out of range (for EXC, outside 1/(n + 1)..n/(n + 1)) is an error.
 - **Fixed decimal numbers** (currency) keep their type as DAX types them: `+` and `-` with a
   whole number or another fixed decimal; `*` by a whole or decimal number; `/` and `DIVIDE`
   by one. A product or quotient is rounded to four places, half away from zero, so an amount
   spread by shares sums the rounded shares. Two fixed decimals multiplied or divided, or one
-  plus a decimal number, are a decimal number.
+  plus a decimal number, are a decimal number. `AVERAGE(X)` of fixed decimals is one, rounded
+  the same way. A fixed decimal past its range (a 64-bit count of ten-thousandths) is an error.
 - **SUMMARIZECOLUMNS:**
   - Its groups are the key combinations that exist within each table, and every combination
     across tables.

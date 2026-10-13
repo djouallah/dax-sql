@@ -104,15 +104,16 @@ export function op(o, ...a) {
 }
 // A fixed decimal (currency) with a number, as DAX types it: + and - with a whole number or
 // another fixed decimal are one; * by a whole or decimal number (either side), and / by one,
-// are one too, rounded to its four places (half away from zero). Two of them multiplied or
-// divided, and one with a decimal number added, give a decimal number.
+// are one too, rounded to its four places (half away from zero; past a fixed decimal's range,
+// an error). Two of them multiplied or divided, and one with a decimal number added, give a
+// decimal number.
 const fixed = (o, a, b) => {
   const n = t => t === 'int' || t === 'double';
   if (o === 'add' || o === 'sub') return (a === 'decimal' || b === 'decimal') && [a, b].every(t => t === 'decimal' || t === 'int');
   if (o === 'mul') return (a === 'decimal' && n(b)) || (n(a) && b === 'decimal');
   return o === 'div' && a === 'decimal' && n(b);
 };
-export const currency = x => fn('round', [x, lit(4)], 'decimal', { strict: true });
+export const currency = x => fn('currency', [x], 'decimal', { strict: true });
 const boolOf = x => x.t === 'bool' && x.nn ? x : { k: 'op', op: 'bool', a: [x], t: 'bool', nn: true };
 
 // `strict`: the function gives a blank when its first argument is blank (and on a constant

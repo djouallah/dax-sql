@@ -849,7 +849,7 @@ export class Emitter {
       extra.order = (x.order ?? []).map(o => `${this.scalar(o.expr, scope)}${o.desc ? ' DESC NULLS LAST' : ' ASC NULLS FIRST'}`);
       return { fn: 'concat', arg: this.d.text(arg, x.arg.t), extra };
     }
-    if (x.fn === 'pct_inc' || x.fn === 'pct_exc') extra.k = this.scalar(x.a[0], scope);
+    if (/^pctx?_/.test(x.fn)) extra.k = this.scalar(x.a[0], scope);
     return { fn: x.fn, arg, extra };
   }
 

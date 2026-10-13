@@ -106,13 +106,26 @@ export function isDesc(ast, dflt) {
   throw semantic('expected ASC or DESC');
 }
 
+// PERCENTILE.INC/EXC rank a column's values, its blanks left out; PERCENTILEX.INC/EXC rank
+// the expression's value on every row, a blank among them (pctx_). MEDIANX is PERCENTILEX.INC
+// at 0.5, its blanks counted too; MEDIAN leaves a column's blanks out.
 function percentile(fn, x) {
   return (c, args, env) => {
     const o = x ? overTable(c, args, env) : overColumn(c, args[0], env);
     const k = c.scalar(args[x ? 2 : 1], env);
-    return ir.agg(fn, o.src, o.row, o.arg, 'double', [k]);
+    return ir.agg(x ? fn.replace('pct_', 'pctx_') : fn, o.src, o.row, o.arg, 'double', [k]);
   };
 }
+function medianX(c, args, env) {
+  const { src, row, arg } = overTable(c, args, env);
+  return ir.agg('pctx_inc', src, row, arg, 'double', [ir.lit(0.5)]);
+}
+
+// The average of fixed decimals (currency) is one, rounded to four places.
+const average = make => (c, args, env) => {
+  const x = make('avg', dbl)(c, args, env);
+  return x.arg.t === 'decimal' ? ir.currency(x) : x;
+};
 
 // --- the filter context ----------------------------------------------------------------
 
@@ -288,14 +301,14 @@ function nameOf(c, args) {
 export const scalar = {
   SELECTEDMEASURE: selectedMeasure, SELECTEDMEASURENAME: selectedMeasureName,
   SELECTEDMEASUREFORMATSTRING: selectedMeasureFormat, ISSELECTEDMEASURE: isSelectedMeasure, NAMEOF: nameOf,
-  SUM: column('sum', num), AVERAGE: column('avg', dbl), MIN: minMax('min'), MAX: minMax('max'),
+  SUM: column('sum', num), AVERAGE: average(column), MIN: minMax('min'), MAX: minMax('max'),
   COUNT: column('count', int), COUNTA: column('count', int), COUNTBLANK: column('countblank', int),
   DISTINCTCOUNT: distinctCount, DISTINCTCOUNTNOBLANK: column('dcountnb', int),
   PRODUCT: column('product', num), MEDIAN: column('median', dbl),
   'STDEV.S': column('stdev_s', dbl), 'STDEV.P': column('stdev_p', dbl), 'VAR.S': column('var_s', dbl), 'VAR.P': column('var_p', dbl),
-  MINA: minMax('min'), MAXA: minMax('max'), AVERAGEA: column('avg', dbl),
-  SUMX: iterator('sum', num), AVERAGEX: iterator('avg', dbl), MINX: iterator('min', same), MAXX: iterator('max', same),
-  COUNTX: iterator('count', int), COUNTAX: iterator('count', int), PRODUCTX: iterator('product', num), MEDIANX: iterator('median', dbl),
+  MINA: minMax('min'), MAXA: minMax('max'), AVERAGEA: average(column),
+  SUMX: iterator('sum', num), AVERAGEX: average(iterator), MINX: iterator('min', same), MAXX: iterator('max', same),
+  COUNTX: iterator('count', int), COUNTAX: iterator('count', int), PRODUCTX: iterator('product', num), MEDIANX: medianX,
   'STDEVX.S': iterator('stdev_s', dbl), 'STDEVX.P': iterator('stdev_p', dbl), 'VARX.S': iterator('var_s', dbl), 'VARX.P': iterator('var_p', dbl),
   'PERCENTILE.INC': percentile('pct_inc', false), 'PERCENTILE.EXC': percentile('pct_exc', false),
   'PERCENTILEX.INC': percentile('pct_inc', true), 'PERCENTILEX.EXC': percentile('pct_exc', true),

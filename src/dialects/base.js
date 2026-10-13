@@ -5,7 +5,7 @@
 // fn(name, args) receives the names below (the `fn` nodes of ir.js), with args as SQL text:
 //   logic     isblank coalesce greatest least divide iseven isodd error row
 //   math      abs sign sqrt exp ln log log10 power mod quotient round roundup rounddown int trunc
-//             ceiling floor mround rand randbetween gcd lcm fact even odd value cast
+//             ceiling floor mround rand randbetween gcd lcm fact even odd value cast currency
 //   text      left right mid len upper lower trim substitute replace search find rept exact
 //             unichar unicode containsstring containsstringexact combinevalues format_date
 //             format_number
@@ -13,7 +13,8 @@
 //             add_interval datediff start_of end_of today now utctoday utcnow
 //   paths     pathlength pathitem pathitemreverse pathcontains
 // agg(fn, arg, extra) the aggregates of ir.js: sum avg min max count countrows dcount dcountnb
-//   countblank product median pct_inc pct_exc stdev_s stdev_p var_s var_p concat hasone count0 dcount0
+//   countblank product median pct_inc pct_exc pctx_inc pctx_exc stdev_s stdev_p var_s var_p concat
+//   hasone count0 dcount0
 export class Dialect {
   name = 'ansi';
 

@@ -62,6 +62,9 @@ export class DuckDBDialect extends Dialect {
       case 'mod': return `(${x} - ${y} * floor(${x} / ${y}))`;
       case 'quotient': return `CAST(trunc(${x} / ${y}) AS BIGINT)`;
       case 'round': return `round(${x}, CAST(${y} AS INTEGER))`;
+      // A fixed decimal: four places, within a 64-bit count of ten-thousandths (bound once).
+      case 'currency': return `[CASE WHEN abs(dax_c) >= 922337203685477.5808 THEN error('DAX: the result of a conversion or arithmetic operation is too large or too small for a fixed decimal number')
+        ELSE round(dax_c, 4) END FOR dax_c IN [${x}]][1]`;
       case 'roundup': return `(sign(${x}) * ceil(abs(${x}) * power(10, ${y})) / power(10, ${y}))`;
       case 'rounddown': case 'trunc': return `(trunc(${x} * power(10, ${y})) / power(10, ${y}))`;
       case 'int': return `CAST(floor(${x}) AS BIGINT)`;
@@ -187,19 +190,23 @@ export class DuckDBDialect extends Dialect {
       case 'var_p': return `var_pop(${x})${f}`;
       case 'concat': return `string_agg(COALESCE(${x}, ''), ${extra.delim}${extra.order?.length ? ` ORDER BY ${extra.order.join(', ')}` : ''})${f}`;
       // The value at rank k(n - 1) + 1 (INC) or k(n + 1) (EXC) of the n values in order,
-      // between the two around it as that rank is between theirs. The blanks are values too:
-      // they count in n and come first, and a blank on either side of the rank gives blank.
-      // A rank outside 1..n is an error, as in DAX (for EXC, k outside 1/(n + 1)..n/(n + 1));
-      // no values give blank. The sorted values and the rank are bound once.
-      case 'pct_inc': case 'pct_exc': {
-        const i = 'CAST(floor(dax_r) AS BIGINT)', k = `COALESCE(${extra.k}, 0)`;
-        const r = fn === 'pct_inc' ? `${k} * (len(dax_l) - 1) + 1` : `${k} * (len(dax_l) + 1)`;
-        const range = fn === 'pct_inc' ? 'PERCENTILE.INC: k must lie in 0..1' : 'PERCENTILE.EXC: k must lie in 1/(n + 1)..n/(n + 1)';
+      // between the two around it as that rank is between theirs. A column's blanks are left
+      // out (pct_); an expression's are values too (pctx_): they count in n and come first. A
+      // rank on a blank is blank; between a blank and a value, the blank is 0 (between two
+      // blanks, blank). A rank outside 1..n is an error, as in DAX (for EXC, k outside
+      // 1/(n + 1)..n/(n + 1)); no values give blank. The sorted values and the rank are bound once.
+      case 'pct_inc': case 'pct_exc': case 'pctx_inc': case 'pctx_exc': {
+        const inc = fn.endsWith('_inc'), i = 'CAST(floor(dax_r) AS BIGINT)', k = `COALESCE(${extra.k}, 0)`;
+        const r = inc ? `${k} * (len(dax_l) - 1) + 1` : `${k} * (len(dax_l) + 1)`;
+        const range = inc ? 'PERCENTILE.INC: k must lie in 0..1' : 'PERCENTILE.EXC: k must lie in 1/(n + 1)..n/(n + 1)';
+        const lo = `COALESCE(dax_l[${i}], 0)`;
         const body = `CASE WHEN len(dax_l) = 0 THEN NULL
           WHEN dax_r < 1 OR dax_r > len(dax_l) THEN error('${range}')
           WHEN dax_r = ${i} THEN dax_l[${i}]
-          ELSE dax_l[${i}] + (dax_r - ${i}) * (dax_l[${i} + 1] - dax_l[${i}]) END`;
-        return `[[${body} FOR dax_r IN [${r}]][1] FOR dax_l IN [COALESCE(list(${x} ORDER BY ${x} ASC NULLS FIRST)${f}, [])]][1]`;
+          ELSE ${lo} + (dax_r - ${i}) * (dax_l[${i} + 1] - ${lo}) END`;
+        const keep = fn.startsWith('pctx_') ? f
+          : ` FILTER (WHERE ${x} IS NOT NULL${extra.filter ? ` AND ${extra.filter}` : ''})`;
+        return `[[${body} FOR dax_r IN [${r}]][1] FOR dax_l IN [COALESCE(list(${x} ORDER BY ${x} ASC NULLS FIRST)${keep}, [])]][1]`;
       }
     }
     return super.agg(fn, x);

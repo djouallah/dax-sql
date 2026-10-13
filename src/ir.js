@@ -100,13 +100,15 @@ export function op(o, ...a) {
   const nn = t === 'bool' || o === 'concat' || (o === 'add' || o === 'sub') && (l.nn || r.nn)
     || (o === 'mul' || o === 'neg') && a.every(x => x.nn);
   const x = { k: 'op', op: o, a, t, nn };
+  if (fx && o === 'div' && r.t === 'int') return currency(fn('cydiv', a, 'double', { strict: true }));
   return fx && t !== 'decimal' ? currency(x) : x;
 }
 // A fixed decimal (currency) with a number, as DAX types it: + and - with a whole number or
 // another fixed decimal are one; * by a whole or decimal number (either side), and / by one,
 // are one too, rounded to its four places (half away from zero; past a fixed decimal's range,
-// an error). Two of them multiplied or divided, and one with a decimal number added, give a
-// decimal number.
+// an error). Divided by a whole number, the quotient rounded is the exact one (`cydiv`, of
+// ten-thousandths), not a decimal number's that can fall just short of a half. Two of them
+// multiplied or divided, and one with a decimal number added, give a decimal number.
 const fixed = (o, a, b) => {
   const n = t => t === 'int' || t === 'double';
   if (o === 'add' || o === 'sub') return (a === 'decimal' || b === 'decimal') && [a, b].every(t => t === 'decimal' || t === 'int');
@@ -120,19 +122,33 @@ const boolOf = x => x.t === 'bool' && x.nn ? x : { k: 'op', op: 'bool', a: [x], 
 // blank, is one).
 export const fn = (name, a, t, { nn = false, strict = false } = {}) =>
   strict && a[0]?.k === 'lit' && a[0].v === null ? lit(null, t) : ({ k: 'fn', name, a, t, nn, strict });
-export function kase(w, e, t) {
+// IF and SWITCH: the type is that of all their branches (and of `others`, the types of branches
+// a condition known when compiling left out), as DAX types them before it evaluates anything.
+export function kase(w, e, t, others = []) {
+  const types = [...w.map(x => x[1].t), e?.t, ...others];
+  const one = v => (t ? v : widen(v, types));
   w = w.filter(([c]) => !isLit(c, false) && !(c.k === 'lit' && c.v === null));
   const first = w.findIndex(([c]) => isLit(c, true));
-  if (first === 0) return w[0][1];
+  if (first === 0) return one(w[0][1]);
   if (first > 0) { e = w[first][1]; w = w.slice(0, first); }
   e ??= BLANK;
-  if (!w.length) return e;
+  if (!w.length) return one(e);
   const all = [...w.map(x => x[1]), e];
-  t ??= unify(all.map(x => x.t));
+  t ??= wider(unify(all.map(x => x.t)), types);
   const x = { k: 'case', w, e, t, nn: all.every(x => x.nn) };
   // A branch's DAX type (`dax`) and the type a measure of it declares (`decl`) carry over.
   const typed = key => all.some(v => v[key]) ? { [key]: unify(all.map(v => v[key] ?? v.dax ?? v.t)) } : {};
   return { ...x, ...typed('dax'), ...typed('decl') };
+}
+// A number as the wider number type of `types` too, when they are all numbers: the branch an
+// IF keeps of a fixed decimal and a decimal number is a decimal number.
+const wider = (t, types) => {
+  const ts = types.filter(x => x && x !== 'blank');
+  return isNum(t) && ts.every(isNum) ? unify([t, ...ts]) : t;
+};
+export function widen(v, types) {
+  const u = wider(v.t, types);
+  return u === v.t ? v : fn('cast', [v, lit(u, 'string')], u, { strict: true, nn: v.nn });
 }
 export const agg = (f, src, row, arg, t, a = []) => ({ k: 'agg', fn: f, src, row, arg, a, t, nn: false });
 export const exists = src => ({ k: 'exists', src, t: 'bool', nn: true });

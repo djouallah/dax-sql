@@ -419,9 +419,18 @@ and gives each aggregate the filters that reach its table.
 - **Fixed decimal numbers** (currency) keep their type as DAX types them: `+` and `-` with a
   whole number or another fixed decimal; `*` by a whole or decimal number; `/` and `DIVIDE`
   by one. A product or quotient is rounded to four places, half away from zero, so an amount
-  spread by shares sums the rounded shares. Two fixed decimals multiplied or divided, or one
-  plus a decimal number, are a decimal number. `AVERAGE(X)` of fixed decimals is one, rounded
-  the same way. A fixed decimal past its range (a 64-bit count of ten-thousandths) is an error.
+  spread by shares sums the rounded shares. Divided by a whole number, the quotient rounded is
+  the exact one, worked in ten-thousandths: a decimal number's quotient can fall just short of
+  a half (1.0001 / 2 is 0.50005, which rounds to 0.5001, not 0.5000). Two fixed decimals
+  multiplied or divided, or one plus a decimal number, are a decimal number. `AVERAGE(X)` of
+  fixed decimals is one, rounded the same way. A fixed decimal past its range (a 64-bit count
+  of ten-thousandths) is an error.
+- **`IF` and `SWITCH` are typed by all their branches**, before anything is evaluated: a
+  fixed decimal in one branch and a decimal number in another make a decimal number, also
+  where the compiler knows the condition (`ISFILTERED`, `ISINSCOPE`) and keeps one branch. So
+  a measure `IF([Detailed], SUMX(T, T[Price] * T[Factor]), [Daily] + 0.5)` is a decimal
+  number, and `DIVIDE` of it by another number is not rounded to four places, though the
+  branch it takes is a fixed decimal. A branch left out is compiled for its type only.
 - **SUMMARIZECOLUMNS:**
   - Its groups are the key combinations that exist within each table, and every combination
     across tables.

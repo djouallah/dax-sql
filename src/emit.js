@@ -1284,7 +1284,7 @@ function support(x, fusedIn) {
       if (x.op === 'neg') return support(x.a[0], fusedIn);
       return null;
     case 'fn':
-      if (x.name === 'divide') return x.a.length === 2 || (x.a[2].k === 'lit' && x.a[2].v === null)
+      if (x.name === 'divide' || x.name === 'cydivide') return x.a.length === 2 || (x.a[2].k === 'lit' && x.a[2].v === null)
         ? support(x.a[0], fusedIn) ?? support(x.a[1], fusedIn) : null;
       if (x.name === 'coalesce') return all(x.a);
       if (x.strict || x.name === 'cast') return support(x.a[0], fusedIn);

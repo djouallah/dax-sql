@@ -50,6 +50,14 @@ export class DuckDBDialect extends Dialect {
       case 'least': return `least(${a.join(', ')})`;
       case 'divide': return a.length === 2 ? `(${x} / NULLIF(${y}, 0))`
         : `CASE WHEN COALESCE(${y}, 0) = 0 THEN ${z} ELSE ${x} / ${y} END`;
+      // A fixed decimal over a whole number: the exact quotient of ten-thousandths, rounded half
+      // away from zero. Over 0 (or, for /, a blank): as / and DIVIDE do with any number.
+      case 'cydiv': case 'cydivide': {
+        const zero = name === 'cydiv' ? 'CAST(sign(dax_q.n) AS DOUBLE) / 0' : z ?? 'NULL';
+        return `[CASE WHEN COALESCE(dax_q.d, 0) = 0 THEN ${zero}
+          ELSE sign(dax_q.n) * sign(dax_q.d) * ((2 * abs(dax_q.n) + abs(dax_q.d)) // (2 * abs(dax_q.d))) / 10000 END
+          FOR dax_q IN [{'n': CAST(round(${x} * 10000) AS HUGEINT), 'd': CAST(${y} AS HUGEINT)}]][1]`;
+      }
       case 'iseven': return `(CAST(trunc(${x}) AS BIGINT) % 2 = 0)`;
       case 'isodd': return `(CAST(trunc(${x}) AS BIGINT) % 2 <> 0)`;
       case 'error': return `error(${x})`;

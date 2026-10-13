@@ -17,15 +17,27 @@ const plain = (name, t, { arity, strict = true, nn = false } = {}) => (c, args, 
 const first = a => (ir.isNum(a[0].t) ? a[0].t : 'double');
 const both = a => (a.every(x => x.t === 'int') ? 'int' : 'double');
 
+// The type of a branch a condition known now leaves out (it still types IF and SWITCH, as in
+// DAX), or none when it does not compile here.
+const typeOf = (c, a, env) => {
+  if (!a || a.k === 'empty') return null;
+  try { return s(c, a, env).t; } catch { return null; }
+};
+
 function iff(c, args, env) {
   const cond = s(c, args[0], env);
-  // A condition known now (ISFILTERED, ISINSCOPE) keeps one side; the other is never compiled.
-  if (cond.k === 'lit') return cond.v === true || (typeof cond.v === 'number' && cond.v !== 0) ? s(c, args[1], env) : opt(c, args[2], env, ir.BLANK);
+  // A condition known now (ISFILTERED, ISINSCOPE) keeps one side; the other is compiled for
+  // its type only.
+  if (cond.k === 'lit') {
+    const yes = cond.v === true || (typeof cond.v === 'number' && cond.v !== 0);
+    const kept = yes ? s(c, args[1], env) : opt(c, args[2], env, ir.BLANK);
+    return ir.widen(kept, [typeOf(c, args[yes ? 2 : 1], env)]);
+  }
   return ir.kase([[cond, s(c, args[1], env)]], opt(c, args[2], env, ir.BLANK));
 }
 
 function switchFn(c, args, env) {
-  const e = s(c, args[0], env), w = [];
+  const e = s(c, args[0], env), w = [], left = [];
   const isTrue = e.k === 'lit' && e.v === true;
   let i = 1;
   for (; i + 1 < args.length; i += 2) {
@@ -33,12 +45,15 @@ function switchFn(c, args, env) {
     const cond = isTrue ? v : ir.op('eq', e, v);
     if (cond.k === 'lit') {
       if (cond.v === true) { w.push([ir.TRUE, s(c, args[i + 1], env)]); break; }
-      continue;   // never this branch
+      left.push(typeOf(c, args[i + 1], env));   // never this branch
+      continue;
     }
     w.push([cond, s(c, args[i + 1], env)]);
   }
-  const els = i < args.length && w.at(-1)?.[0] !== ir.TRUE ? s(c, args[i], env) : ir.BLANK;
-  return ir.kase(w, els);
+  const done = w.at(-1)?.[0] === ir.TRUE;
+  if (done) for (let j = i + 2; j < args.length; j += 2) left.push(typeOf(c, args[j + 1 < args.length ? j + 1 : j], env));
+  const els = i < args.length && !done ? s(c, args[i], env) : ir.BLANK;
+  return ir.kase(w, els, undefined, left);
 }
 
 function logical(o) {
@@ -58,9 +73,10 @@ function coalesce(c, args, env) {
 
 function divide(c, args, env) {
   const a = s(c, args[0], env), b = s(c, args[1], env), alt = opt(c, args[2], env, null);
-  const q = ir.fn('divide', alt ? [a, b, alt] : [a, b], 'double');
-  // A fixed decimal divided by a number is one, as with /.
+  // A fixed decimal divided by a number is one, as with /: by a whole number, the exact
+  // quotient rounded (cydivide).
   const fixed = a.t === 'decimal' && (b.t === 'int' || b.t === 'double') && (!alt || ['int', 'decimal', 'blank'].includes(alt.t));
+  const q = ir.fn(fixed && b.t === 'int' ? 'cydivide' : 'divide', alt ? [a, b, alt] : [a, b], 'double');
   return fixed ? ir.currency(q) : q;
 }
 

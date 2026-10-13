@@ -6,6 +6,7 @@
 //   logic     isblank coalesce greatest least divide iseven isodd error row
 //   math      abs sign sqrt exp ln log log10 power mod quotient round roundup rounddown int trunc
 //             ceiling floor mround rand randbetween gcd lcm fact even odd value cast currency
+//             cydiv cydivide
 //   text      left right mid len upper lower trim substitute replace search find rept exact
 //             unichar unicode containsstring containsstringexact combinevalues format_date
 //             format_number

@@ -37,6 +37,7 @@ const QUERIES = [
   'EVALUATE TOPN(2, SUMMARIZECOLUMNS(Product[Name], "s", [Sales Amount]), [s], DESC) ORDER BY [s] DESC',
   'EVALUATE SUMMARIZECOLUMNS(Product[Color], "p", PERCENTILEX.INC(VALUES(Customer[City]), [Sales Amount], 0.3), "m", MEDIANX(VALUES(Customer[City]), [Sales Amount]), "c", PERCENTILE.EXC(Sales[Amount], 0.5), "a", AVERAGEX(Sales, Sales[Amount] * 1.5))',
   'EVALUATE NATURALLEFTOUTERJOIN(SELECTCOLUMNS(Category, "n", CALCULATE(MAXX(Product, Product[Name]))), SELECTCOLUMNS(Product, "n", Product[Name] & ""))',
+  'EVALUATE SUMMARIZECOLUMNS(Product[Color], "q", [Sales Amount] / 7, "d", DIVIDE([Sales Amount], [Orders]), "z", DIVIDE([Sales Amount], 0, 1), "i", DIVIDE(IF(ISINSCOPE(Product[Color]), [Sales Amount] / 3, 0.5), 7), "w", SWITCH(TRUE(), ISINSCOPE(Product[Color]), [Sales Amount], 1.5) / 3)',
   'EVALUATE SUMMARIZECOLUMNS(Customer[City], "t", [Target], "n", CALCULATE([Sales Amount], ALLNOBLANKROW(Customer)), "b", CALCULATE([Sales Amount], TREATAS({BLANK()}, Sales[CustomerKey])))',
 ];
 

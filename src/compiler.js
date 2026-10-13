@@ -363,7 +363,7 @@ export class Compiler {
   // iterates (those with a lineage): their values as iterated, what ALLSELECTED restores.
   iter(env, row) {
     const cols = new Set(row.cols.map(c => c.lineage).filter(Boolean));
-    const shadows = cols.size && row.src ? [...env.shadows, { cols, src: row.src, ctx: env.ctx }] : env.shadows;
+    const shadows = cols.size && row.src ? [...env.shadows, { cols, src: row.src, ctx: env.ctx, row }] : env.shadows;
     return { ...env, rows: [...env.rows, row], shadows };
   }
 
@@ -667,6 +667,10 @@ export class Compiler {
       } else if (clear) drop.add(c);
     }
     if (drop.size) ctx = ctx.remove(c => drop.has(c));
+    // A SUMMARIZE group's rows (`group`, the filter its context transition adds besides its
+    // values) go with the iteration whose shadow is put back.
+    const back = new Set([...by.keys()].map(s => s.row).filter(Boolean));
+    if (ctx.filters.some(f => back.has(f.group))) ctx = new Ctx(ctx.filters.filter(f => !back.has(f.group)), ctx.mods);
     for (const [s, on] of by) ctx = this.shadowFilter(ctx, s, on);
     return ctx;
   }

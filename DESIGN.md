@@ -365,6 +365,10 @@ and gives each aggregate the filters that reach its table.
   - A measure is its expression under CALCULATE.
   - Context transition turns every row context into filters, one on each column of the row.
   - `EARLIER`, `RELATED` and `RELATEDTABLE` work.
+  - SUMMARIZE's expressions have their group as its rows of the table, a table filter (on the
+    expanded table, for a model table's rows), besides its values: a filter that removes or
+    replaces a grouping column's keeps the group's rows. `ALLSELECTED`, putting back the
+    groups' shadow, removes them.
 - **Blanks follow DAX's rules:**
   - `BLANK() + 1` is 1, `BLANK() * 2` is blank, `BLANK() = 0` is true and `BLANK() == 0` is
     false.

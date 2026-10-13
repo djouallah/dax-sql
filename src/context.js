@@ -10,6 +10,8 @@
 //   rel   { cols, src, idx, base }   the rows of table `src`: cols[i] is its column idx[i];
 //                                    with `base`, src holds rows of that model table and the
 //                                    filter is on its expanded table (cols are its columns)
+// A filter with `group` is the rows of a SUMMARIZE group (that group's RowRef), which
+// ALLSELECTED removes when it puts back the shadow of that iteration.
 // Removing columns from a filter (ALL, or a new filter on the same column) drops what it says
 // about them and keeps what it says about the others.
 import { distinct, project, filter as filterRows, scan, itemOf, rowOf, newRow } from './ir.js';
@@ -55,7 +57,7 @@ export function narrow(f, keep) {
     const row = rowOf(f.src, 'table');
     const idx = keep.map(c => f.idx[f.cols.indexOf(c)]);
     const src = distinct(project(f.src, row, idx.map(i => itemOf(row, i))));
-    return { kind: 'rel', cols: keep, src, idx: keep.map((_, i) => i), base: null };
+    return { kind: 'rel', cols: keep, src, idx: keep.map((_, i) => i), base: null, group: f.group };
   }
   // A predicate on two columns of a table, narrowed to one: the values of that one in the
   // rows of the whole table where the predicate holds.

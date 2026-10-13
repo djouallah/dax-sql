@@ -164,10 +164,20 @@ function summarize(c, args, env) {
       : ir.distinct(ir.project(src, row, []));
     if (!ext.length) return { grouped, on };
     // Its expressions, as ADDCOLUMNS over the groups, each with its group as the filter
-    // context (SUMMARIZE's own context transition) and its row.
+    // context (SUMMARIZE's own context transition) and its row. The group is its rows of the
+    // table, not only its values: those rows filter the table (its expanded table, for a
+    // model table's rows) as a table filter, so a filter that replaces or removes a grouping
+    // column's (ALL('Date'[Year]), a filter on a date table's date) still keeps the group's
+    // rows. A level with no column left has all the table's rows. ALLSELECTED, putting back
+    // the groups' shadow, takes them away with the group's values.
     const grow = ir.rowOf(grouped, 'table');
     const rolledUp = new Set(keys.filter((_, n) => roll[n] >= j).map(k => k.lineage).filter(Boolean));
-    const inner = { ...c.iter(env, grow), ctx: c.transitionRow(env.ctx, grow), rolledUp };
+    const frow = ir.rowOf(src);
+    const same = on.map((k, n) => ir.op('eqs', ir.col(frow, keyRef(frow, src, refs[keys.indexOf(k)])), ir.col(grow, n)));
+    const rows = ir.filter(src, frow, same.reduce((a, b) => ir.op('and', a, b), ir.TRUE));
+    let ctx = c.transitionRow(env.ctx, grow);
+    for (const f of [c.tableFilter(rows, env.ctx)].flat().filter(Boolean)) ctx = ctx.add({ ...f, group: grow });
+    const inner = { ...c.iter(env, grow), ctx, rolledUp };
     return { grouped, on, grow, items: ext.map(([n, x]) => item(c, n, x, inner)) };
   };
   if (!levels) {

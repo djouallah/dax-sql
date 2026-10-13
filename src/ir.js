@@ -346,3 +346,10 @@ export function rowRefs(x, rowId, out = new Set(), seen = new Set()) {
   }
   return out;
 }
+
+// A column a table function names like a column of a table ("'Table'[Column]", "Table[Column]"):
+// DAX calls it Table[Column], and a query can name it so. -> { table, name } or null.
+export function qualifiedName(name) {
+  const m = /^(?:'((?:[^']|'')+)'|([^'[\]]+))\[(.+)\]$/.exec(String(name));
+  return m ? { table: (m[1] ?? m[2]).replace(/''/g, "'"), name: m[3] } : null;
+}

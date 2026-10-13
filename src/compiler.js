@@ -24,6 +24,28 @@ import { dateLit, rowsTable } from './ir.js';
 import { SCALAR, TABLE, MODIFIERS } from './functions/index.js';
 
 const lc = s => String(s).toLowerCase();
+// A column a table function named Table[Column] (ir.qualifiedName), named so.
+const isNamed = (colName, table, name) => {
+  const q = ir.qualifiedName(colName);
+  return !!q && lc(q.table) === lc(table) && lc(q.name) === lc(name);
+};
+
+// A visual calculation's table, as DAX without one: the table WITH VISUAL SHAPE's rows, its
+// DENSIFY column (FALSE: one axis has no combinations to add), and each COLUMN on it added in
+// turn. In a column, RANK, ROWNUMBER, INDEX, OFFSET and WINDOW with no relation are over the
+// rows so far, those of the row's level (its TOTAL columns' values), in the axis's ORDER BY.
+function visualTable(d, columns) {
+  const { axes, densify } = d.shape;
+  if (axes.length > 1 || axes[0].groups.length > 1) throw unsupported('a visual shape with more than one axis or level');
+  const [axis] = axes, levels = axis.groups.map(g => g.total).filter(Boolean);
+  const order = axis.order.map(o => ({ col: o.col, desc: o.desc }));
+  const name = i => ({ k: 'name', name: ` visual ${i}` });
+  const add = (src, cols) => ({ k: 'call', fn: 'ADDCOLUMNS', args: [src, ...cols.flatMap(([n, e]) => [{ k: 'str', v: n }, e])] });
+  const defs = [{ name: name(0).name, e: densify ? add(d.e, [[densify, { k: 'bool', v: false }]]) : d.e }];
+  columns.forEach((c, i) => defs.push({ name: name(i + 1).name,
+    e: add(name(i), [[c.name, { k: 'visual', e: c.e, rel: name(i), levels, order }]]) }));
+  return { k: 'var', defs, body: name(columns.length), pos: d.pos };
+}
 
 export class Compiler {
   constructor(model, options = {}) {
@@ -38,8 +60,13 @@ export class Compiler {
     const model = this.model.fork(), c = new Compiler(model, this.options);
     const queryVars = new Map(), queryTables = new Map(), queryCols = [];
     const env0 = c.env({ vars: queryVars, queryTables, queryVarsTop: queryVars });
+    // A table WITH VISUAL SHAPE and the COLUMNs defined on it are a visual calculation's.
+    const visuals = new Map(q.defines.filter(d => d.kind === 'table' && d.shape).map(d => [lc(d.name), []]));
+    for (const d of q.defines) if (d.kind === 'column' && visuals.has(lc(d.table))) visuals.get(lc(d.table)).push(d);
     try {
-      for (const d of q.defines) {
+      for (let d of q.defines) {
+        if (d.kind === 'column' && visuals.has(lc(d.table))) continue;
+        if (d.kind === 'table' && d.shape) d = { ...d, e: visualTable(d, visuals.get(lc(d.name))) };
         if (d.kind === 'measure') {
           const table = model.table(d.table);
           model.measures.set(lc(d.name), { name: d.name, table, text: null, ast: d.e, query: true });
@@ -125,7 +152,7 @@ export class Compiler {
         return ir.col(row, c);
       }
       const idx = row.cols.findIndex(x => table
-        ? x.lineage && lc(x.lineage.table.name) === lc(table) && lc(x.lineage.name) === lc(name)
+        ? x.lineage && lc(x.lineage.table.name) === lc(table) && lc(x.lineage.name) === lc(name) || isNamed(x.name, table, name)
         : lc(x.name) === lc(name));
       if (idx >= 0) return (row.kind === 'scan' || row.kind === 'virtual') && row.cols[idx].lineage ? ir.col(row, row.cols[idx].lineage) : ir.col(row, idx);
     }
@@ -149,7 +176,7 @@ export class Compiler {
       const t = env.vars.get(lc(table)) || env.queryTables.get(lc(table));
       const m = this.model.measure(name);
       if (!t && m && !this.model.findColumn(table, name)) return this.measureRef(m, env);
-      const c = this.rowColumn(env, t ? null : table, name);
+      const c = this.rowColumn(env, t ? null : table, name) ?? (t ? this.rowColumn(env, table, name) : null);
       if (c) return c;
       if (!t && !this.model.findColumn(table, name)) throw semantic(`the model has no column or measure '${table}'[${name}]`);
       throw semantic(`a single value for column '${table}'[${name}] cannot be determined here: there is no row context on '${table}'`);
@@ -433,6 +460,8 @@ export class Compiler {
         throw semantic(`there is no variable ${ast.name}`);
       }
       case 'var': return this.scalar(ast.body, this.withVars(ast.defs, env));
+      // A visual calculation's column: its window functions with no relation take the visual's rows.
+      case 'visual': return this.scalar(ast.e, { ...env, visual: ast });
       case 'neg': return ir.op('neg', this.scalar(ast.e, env));
       case 'not': return ir.op('not', this.scalar(ast.e, env));
       case 'bin': {

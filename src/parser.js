@@ -14,6 +14,8 @@
 // A query: { defines: [...], evaluates: [{ e, order: [{ e, desc }], start: [value] }] } where a
 // define is
 //   { kind:'measure'|'column', table, name, e } | { kind:'var'|'table', name, e }
+// and a table WITH VISUAL SHAPE (a visual calculation's) also has
+//   shape: { axes: [{ name, groups: [{ cols, total }], order: [{ col, desc }] }], densify }
 import { lex } from './lexer.js';
 import { syntax } from './errors.js';
 
@@ -73,7 +75,9 @@ class Parser {
           if (name?.t !== 'id') throw this.err('expected a name');
           this.i++;
           this.need('=');
-          defines.push({ kind, name: name.v, e: this.expr(), pos });
+          const d = { kind, name: name.v, e: this.expr(), pos };
+          if (kind === 'table' && this.isKw('WITH')) d.shape = this.visualShape();
+          defines.push(d);
         } else break;
       }
     }
@@ -99,6 +103,43 @@ class Parser {
     }
     if (!evaluates.length) throw this.err('expected EVALUATE');
     return { defines, evaluates };
+  }
+
+  // WITH VISUAL SHAPE AXIS rows GROUP [a] TOTAL [IsTotal] ... ORDER BY [a] ASC ... DENSIFY "name"
+  visualShape() {
+    this.need('WITH'); this.need('VISUAL'); this.need('SHAPE');
+    const axes = [];
+    while (this.eat('AXIS')) {
+      if (this.tok?.t !== 'id') throw this.err('expected an axis name');
+      const axis = { name: this.tok.v, groups: [], order: [] };
+      this.i++;
+      while (this.eat('GROUP')) {
+        const cols = [];
+        do cols.push(this.columnName()); while (this.eat(','));
+        axis.groups.push({ cols, total: this.eat('TOTAL') ? this.columnName() : null });
+      }
+      if (this.eat('ORDER')) {
+        this.need('BY');
+        do {
+          const col = this.columnName(), desc = this.eat('DESC');
+          if (!desc) this.eat('ASC');
+          axis.order.push({ col, desc });
+        } while (this.eat(','));
+      }
+      axes.push(axis);
+    }
+    if (!axes.length) throw this.err('expected AXIS');
+    let densify = null;
+    if (this.eat('DENSIFY')) {
+      if (this.tok?.t !== 'str') throw this.err('expected a column name, as text');
+      densify = this.tok.v;
+      this.i++;
+    }
+    return { axes, densify };
+  }
+  columnName() {
+    if (this.tok?.t !== 'col') throw this.err('expected [Column]');
+    return this.toks[this.i++].v;
   }
 
   expr() {

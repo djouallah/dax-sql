@@ -44,9 +44,13 @@ function windowArgs(c, args, env, fn) {
     }
   }
   const part = partAst?.args ?? [], match = matchAst?.args ?? null;
+  // In a visual calculation's column, no relation is the visual's rows at the row's level.
+  const visual = relAst ? null : env.visual;
+  if (visual && !orderAst) for (const o of visual.order) order.push({ ast: { k: 'col', table: null, name: o.col }, desc: o.desc, blanks: null });
 
   let rel;
   if (relAst) rel = c.table(relAst, env);
+  else if (visual) rel = c.table(visual.rel, env);
   else {
     if (!orderAst) throw semantic(`${fn} needs a relation or an ORDERBY`);
     const cols = [...order.map(o => o.ast), ...part].map(a => {
@@ -74,6 +78,8 @@ function windowArgs(c, args, env, fn) {
     if (!rel.cols[i].lineage) throw semantic(`PARTITIONBY cannot be used with columns added by table functions ([${rel.cols[i].name}])`);
     return i;
   });
+  // The level: its TOTAL columns, which SUMMARIZECOLUMNS added.
+  if (visual) parts.push(...visual.levels.map(n => index({ k: 'col', table: null, name: n }, 'PARTITIONBY')));
   const partExprs = parts.map(i => ir.col(row, i));
   const orderBy = order.length
     ? order.map(o => { const expr = c.scalar(o.ast, inner); return { expr, desc: o.desc, blanks: o.blanks ?? blanks, t: expr.t }; })

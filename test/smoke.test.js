@@ -35,6 +35,7 @@ const QUERIES = [
   'DEFINE MEASURE Sales[Twice] = [Sales Amount] * 2 VAR x = 3 EVALUATE ROW("t", [Twice] + x)',
   'EVALUATE DATATABLE("a", INTEGER, "b", STRING, {{1, "x"}, {2, "y"}})',
   'EVALUATE TOPN(2, SUMMARIZECOLUMNS(Product[Name], "s", [Sales Amount]), [s], DESC) ORDER BY [s] DESC',
+  `DEFINE COLUMN V[r] = RANK(ORDERBY([s], DESC)) TABLE V = SELECTCOLUMNS(SUMMARIZECOLUMNS(ROLLUPADDISSUBTOTAL(Product[Color], "t"), "s", [Sales Amount]), "c", Product[Color], "t", [t], "s", [s]) WITH VISUAL SHAPE AXIS rows GROUP [c] TOTAL [t] ORDER BY [c] ASC DENSIFY "d" EVALUATE SELECTCOLUMNS(FILTER(V, NOT V[t]), "'V'[c]", V[c], "'V'[r]", V[r]) ORDER BY 'V'[r], 'V'[c]`,
   'EVALUATE SUMMARIZECOLUMNS(Product[Color], "p", PERCENTILEX.INC(VALUES(Customer[City]), [Sales Amount], 0.3), "m", MEDIANX(VALUES(Customer[City]), [Sales Amount]), "c", PERCENTILE.EXC(Sales[Amount], 0.5), "a", AVERAGEX(Sales, Sales[Amount] * 1.5))',
   'EVALUATE NATURALLEFTOUTERJOIN(SELECTCOLUMNS(Category, "n", CALCULATE(MAXX(Product, Product[Name]))), SELECTCOLUMNS(Product, "n", Product[Name] & ""))',
   'EVALUATE SUMMARIZECOLUMNS(Product[Color], "q", [Sales Amount] / 7, "d", DIVIDE([Sales Amount], [Orders]), "z", DIVIDE([Sales Amount], 0, 1), "i", DIVIDE(IF(ISINSCOPE(Product[Color]), [Sales Amount] / 3, 0.5), 7), "w", SWITCH(TRUE(), ISINSCOPE(Product[Color]), [Sales Amount], 1.5) / 3)',

@@ -1514,10 +1514,12 @@ function uniqNames(names) {
 }
 
 function daxName(c) {
-  return c.lineage ? `'${c.lineage.table.name}'[${c.lineage.name}]` : `[${c.name}]`;
+  const q = c.lineage ? null : ir.qualifiedName(c.name);
+  return c.lineage ? `'${c.lineage.table.name}'[${c.lineage.name}]` : q ? `'${q.table}'[${q.name}]` : `[${c.name}]`;
 }
 function outputNames(cols, style) {
-  if (style === 'dax') return uniqNames(cols.map(c => (c.lineage ? `${c.lineage.table.name}[${c.lineage.name}]` : `[${c.name}]`)));
+  const named = c => { const q = c.lineage ? null : ir.qualifiedName(c.name); return q ? `${q.table}[${q.name}]` : `[${c.name}]`; };
+  if (style === 'dax') return uniqNames(cols.map(c => (c.lineage ? `${c.lineage.table.name}[${c.lineage.name}]` : named(c))));
   // Short names; where two collide, the later ones say their table.
   const seen = new Set();
   return uniqNames(cols.map(c => {

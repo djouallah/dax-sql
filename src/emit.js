@@ -255,11 +255,11 @@ export class Emitter {
     });
   }
 
-  // A stored column of an imported table, on the row of `alias`: text without its trailing
-  // spaces, which the model drops as it loads the data ("a " is "a").
+  // A stored column, on the row of `alias`, as the data has it: text keeps its trailing spaces,
+  // which the model drops as it loads the data (by design: trimming every row of a scan costs
+  // more than the difference is worth).
   stored(alias, c) {
-    const sql = `${alias}.${this.ident(c.source)}`;
-    return c.type === 'string' && !c.table.calc && !c.table.calcGroup ? this.d.storedText(sql) : sql;
+    return `${alias}.${this.ident(c.source)}`;
   }
 
   source(table) {

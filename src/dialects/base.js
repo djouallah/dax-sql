@@ -68,9 +68,6 @@ export class Dialect {
     return `CAST(${sql} AS VARCHAR)`;
   }
 
-  // A text column of an imported table as the model holds it: without its trailing spaces.
-  storedText(sql) { return `RTRIM(${sql})`; }
-
   // PATH over a parent-child table: from `edges` (a SELECT of columns k, the key, of type t,
   // and p, its parent), a row (key, path) per key reached from a row with a blank parent, its
   // path the keys from there down joined by "|". A walk stops at as many steps as there are

@@ -675,9 +675,10 @@ and gives each aggregate the filters that reach its table.
 - **Text functions and blanks:** `LEN`, `TRIM` and `PATHLENGTH` of a blank are blank (of `""`,
   0, `""` and 0). `FIND` and `SEARCH` read a blank as `""`: nothing is found in it, so they
   return the NotFoundValue.
-- **Stored text has no trailing spaces:** the model drops them as it loads the data, so a text
-  column of an imported table is read without them (`"a "` is `"a"`, in its value, its length,
-  filters and relationships). Leading spaces stay.
+- **Stored text keeps its trailing spaces, by design:** the model drops them as it loads the
+  data (`"a "` is `"a"`, in its value, its length, filters and relationships); here a column is
+  read as the data has it. Trimming every row of every scan costs more than the difference is
+  worth (15-20% of a fact scan joined on a text key), as case-sensitive grouping does.
 
 ### SQL
 

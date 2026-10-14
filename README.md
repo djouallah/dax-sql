@@ -12,9 +12,7 @@
 - A column that mixes numbers and text comes back as text.
 - `IFERROR` returns its first argument: SQL has no error values.
 - `DATEDIFF` with `WEEK` counts Sunday week boundaries.
-- A text column of an imported table is read through `RTRIM`, as the model drops trailing
-  spaces on load. It runs on every row, keys included, whether the data has trailing spaces or
-  not: a fact joined to a dimension on a text key pays it on each fact row (about 15-20% of
-  such a scan in DuckDB).
+- Text keeps its trailing spaces (Power BI drops them on load): `"a "` and `"a"` are two
+  values, in grouping, filters, relationships and `LEN`. Trim them in the data if they matter.
 - Not supported: object-level security, dynamic format strings, the window functions' reset
   argument, and anything not listed in [DESIGN.md](DESIGN.md#what-it-does).

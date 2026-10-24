@@ -16,6 +16,16 @@ ATTACH 'contoso/model.bim' AS xx (TYPE model);
 SELECT Product.Color, AGG(Orders) AS orders FROM xx GROUP BY ALL;
 ```
 
+## Background
+
+Two earlier blog posts describe the idea behind this design:
+
+- ["Modern" BI tools are missing something like PowerBI Composable SQL Generator](https://datamonkeysite.com/2021/10/03/modern-bi-tools-are-missing-something-like-powerbi-composable-sql-generator/)
+  (2021): Power BI's DAX engine sends several SQL statements and assembles their results, and
+  other BI tools have no SQL generator like it.
+- [Why Datamart is a Big Deal](https://datamonkeysite.com/2022/06/03/why-datamart-is-a-big-deal/)
+  (2022): Power BI is the DAX engine, and the engine that computes the answers can be chosen.
+
 ## What a user writes
 
 ### Attaching

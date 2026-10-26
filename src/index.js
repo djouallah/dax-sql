@@ -39,6 +39,10 @@ export { Dialect } from './dialects/base.js';
 export { DuckDBDialect } from './dialects/duckdb.js';
 export { parseQuery, parseExpression } from './parser.js';
 export { parseSql, modelRelations } from './sql.js';
+
+// Semantic views (views.js): models named in SQL, and CREATE / DROP / SHOW SEMANTIC VIEW.
+import { makeViews } from './views.js';
+export const createViews = () => makeViews(createCompiler);
 export { Model } from './model.js';
 
 const DIALECTS = { duckdb: () => new DuckDBDialect() };

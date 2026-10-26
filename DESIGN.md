@@ -384,6 +384,38 @@ package: they are not exported and the compiler never imports them.
   it puts these columns or measures in the query where the parameter goes.
 - `model`: the model as read.
 
+`createViews()` keeps **semantic views**: models a SQL engine's users name in their SQL, with
+the statements that make, drop and list them. It is engine-neutral: where a view is stored and
+how its file is read are the host's (a DuckDB extension keeps them in a table, an editor in its
+settings), so every host speaks the same statements.
+
+```sql
+CREATE [OR REPLACE] SEMANTIC VIEW [IF NOT EXISTS] [db.][schema.]sales FROM '<path>';
+DROP SEMANTIC VIEW [IF EXISTS] sales;
+SHOW SEMANTIC VIEWS;
+SHOW SEMANTIC DIMENSIONS IN sales [FOR METRIC m];   -- FOR METRIC: the columns that filter m
+SHOW SEMANTIC METRICS IN sales;
+DESCRIBE sales;
+SELECT * FROM (SHOW SEMANTIC METRICS IN sales) WHERE ...;   -- each one reads as a subquery
+```
+
+- `define(name, model, { path, db, schema, mode, tablesFrom, ...options })`: a view of a model
+  (the readers in `formats/` make one), compiled with `createCompiler(model, options)`. `mode` is
+  `create` (an error if the name is taken), `replace` or `if_not_exists`.
+- `drop(name, { ifExists })`, `get(name)`, `list()`.
+- `rewrite(sql)`: `null` when nothing in the text is a view's; otherwise one entry per statement:
+  `{ create: { db, schema, name, path, mode } }` or `{ drop: { name, ifExists } }`, which the host
+  carries out (it reads the file and calls `define`, or forgets the view and calls `drop`), or
+  `{ sql }` to run. In `sql`, each model query is compiled in place (`compileStatement`) and each
+  `SHOW SEMANTIC …` or `DESCRIBE <view>` is its rows, as a `SELECT` over `VALUES`.
+- The `SHOW SEMANTIC DIMENSIONS` and `METRICS` columns are `database_name, schema_name,
+  view_name, table_name, name, data_type, expression, format_string, hidden, comment`;
+  `SHOW SEMANTIC VIEWS` gives `database_name, schema_name, view_name, path, tables_from`;
+  `DESCRIBE` gives DuckDB's `column_name, column_type, null, key, default, extra`, with `extra`
+  `column` or `measure`.
+- Errors are `DaxError`: `SYNTAX` for a statement that does not read, `CATALOG` for a view that
+  is missing or already there.
+
 | Option | |
 |---|---|
 | `tableSource` | `(table) => SQL` naming a model table's rows. Default: its partition's entity, `"schema"."entity"`. |

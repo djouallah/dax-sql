@@ -1,0 +1,45 @@
+name: Publish
+
+# Publishes dax-sql to npm when a v* tag is pushed: git tag v<version> && git push origin v<version>.
+# The tag must name the version in package.json, and the tests must pass first.
+#
+# NO TOKEN once the package exists: npm's trusted publishing trades this job's GitHub OIDC token
+# (id-token: write) for a one-time publish credential, and --provenance (publishConfig) signs
+# "built from djouallah/dax-sql at this commit by this workflow" onto the npm page. Set it up on
+# npmjs.com: the package's Settings -> Trusted Publisher -> GitHub Actions, repository
+# djouallah/dax-sql, workflow publish.yml.
+#
+# The very first version cannot use it — trusted publishing is configured on a package that
+# already exists — so that one publish takes the repository secret NPM_TOKEN (a granular token
+# that may publish). Delete the secret once the trusted publisher is set.
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          registry-url: https://registry.npmjs.org
+      # Trusted publishing needs npm 11.5.1 or later.
+      - run: npm install -g npm@11
+      - name: The tag must name the version being published
+        run: |
+          want="v$(node -p "require('./package.json').version")"
+          [ "$GITHUB_REF_NAME" = "$want" ] || { echo "tag $GITHUB_REF_NAME, but package.json says $want"; exit 1; }
+      - run: npm ci --no-audit --no-fund && npm test
+      - run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

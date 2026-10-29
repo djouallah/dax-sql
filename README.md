@@ -1,4 +1,27 @@
+# dax-sql
+
+A DAX to SQL compiler for Power BI / Tabular semantic models: a DAX query in, one SQL `SELECT`
+out, with DAX's semantics. Tested on DuckDB against Power BI's own answers. No dependencies.
+
 Initially written by [N.S. Devaraj](https://github.com/nsdevaraj).
+
+```sh
+npm install dax-sql
+```
+
+```js
+import { createCompiler } from 'dax-sql';
+import { tmslToModel } from 'dax-sql/formats/tmsl.js';   // or formats/ossie.js for Apache Ossie
+
+const model = tmslToModel(JSON.parse(bimText));           // a model.bim
+const dax = createCompiler(model, { tableSource: t => `read_parquet('data/${t.name}.parquet')` });
+
+const { sql, columns } = dax.compile(`
+  EVALUATE
+  SUMMARIZECOLUMNS('Date'[Year], "Sales", [Sales Amount])
+  ORDER BY 'Date'[Year]`);
+// sql: one SELECT for the engine; columns: [{ name: 'Year', type: 'int', ... }, { name: 'Sales', ... }]
+```
 
 - **In:** a semantic model as dax-sql's model object ([DESIGN.md](DESIGN.md#the-model); `formats/` reads one from a TMSL `model.bim` or an [Apache Ossie](https://github.com/apache/ossie) model whose metrics are DAX), a DAX query or a SQL `SELECT` over the model, options
   ([DESIGN.md](DESIGN.md#api)); or any SQL with `SELECT`s over the model as relations in it.

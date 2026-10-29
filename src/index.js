@@ -5,7 +5,8 @@
 //   const { sql, columns } = dax.compile('EVALUATE SUMMARIZECOLUMNS(...)');
 //
 // `model` is dax-sql's model object (model.js says its shape), which no file is: the readers
-// in formats/ (outside the package) make one from a TMSL model.bim or an Apache Ossie model.
+// in formats/ (dax-sql/formats/tmsl.js, dax-sql/formats/ossie.js) make one from a TMSL
+// model.bim or an Apache Ossie model.
 // Options:
 //   dialect        'duckdb' (the default) or a Dialect instance (see dialects/base.js)
 //   tableSource    (table) => SQL that names a model table's rows; by default its source's

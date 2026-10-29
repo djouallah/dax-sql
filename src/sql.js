@@ -131,7 +131,7 @@ class Parser {
     const from = this.name1();
     if (this.isKw('JOIN') || this.isOp(',') || this.isOp('.')) throw sqlUnsupported('a FROM other than the model');
     if (this.eatKw('AS')) this.name1();
-    let where = null, groupBy = null, having = null, limit = null, offset = null;
+    let where = null, groupBy = null, having = null, limit = null, offset = null, orderAll = null;
     const orderBy = [];
     if (this.eatKw('WHERE')) where = this.expr();
     if (this.eatKw('GROUP')) {
@@ -143,8 +143,7 @@ class Parser {
     if (this.isKw('QUALIFY') || this.isKw('WINDOW')) throw sqlUnsupported(this.tok.v.toUpperCase());
     if (this.eatKw('ORDER')) {
       this.needKw('BY');
-      do {
-        const e = this.expr();
+      const direction = () => {
         let desc = false, nulls = null;
         if (this.eatKw('DESC')) desc = true; else this.eatKw('ASC');
         if (this.eatKw('NULLS')) {
@@ -152,8 +151,11 @@ class Parser {
           else if (this.eatKw('LAST')) nulls = 'last';
           else throw this.err('expected FIRST or LAST after NULLS');
         }
-        orderBy.push({ e, desc, nulls });
-      } while (this.eat(','));
+        return { desc, nulls };
+      };
+      // ORDER BY ALL: every column of the SELECT, left to right, in one direction.
+      if (this.eatKw('ALL')) orderAll = direction();
+      else do orderBy.push({ e: this.expr(), ...direction() }); while (this.eat(','));
     }
     if (this.eatKw('LIMIT')) limit = this.count();
     if (this.eatKw('OFFSET')) {
@@ -178,7 +180,7 @@ class Parser {
     this.eat(';');
     if (this.isKw('UNION') || this.isKw('INTERSECT') || this.isKw('EXCEPT')) throw sqlUnsupported(this.tok.v.toUpperCase());
     if (this.tok) throw this.err('unexpected text after the query');
-    return { select, from, where, groupBy, having, orderBy, limit, offset, ties };
+    return { select, from, where, groupBy, having, orderBy, orderAll, limit, offset, ties };
   }
   count() {
     const t = this.tok;
@@ -420,6 +422,8 @@ function kids(e) {
   }
 }
 const hasAgg = e => isAggCall(e) || kids(e).some(hasAgg);
+// A constant: names no column, measure or aggregate (a literal, or an expression of them).
+const isConstant = e => e.k !== 'name' && e.k !== 'row' && !isAggCall(e) && !isGrouping(e) && kids(e).every(isConstant);
 
 export class SqlTranslator {
   constructor(model) { this.model = model; }
@@ -560,15 +564,17 @@ export class SqlTranslator {
   translate(src) {
     const q = parseSql(src);
     // The SELECT's items: a column (a group), GROUPING of a rolled-up column (its subtotal
-    // flag), or an expression of aggregates.
+    // flag), an expression of aggregates, or a constant (the same on every row; a column
+    // added to the result, never to SUMMARIZECOLUMNS, where it would keep rows no measure has).
     const names = new Set();
     const items = q.select.map(({ e, alias }) => {
       if (isGrouping(e)) {
         if (e.args.length !== 1 || e.args[0].k !== 'name') throw sqlUnsupported(`${e.src}: GROUPING of one column`);
         return { e, grouping: this.needColumn(e.args[0]), name: alias ?? e.src };
       }
+      if (isConstant(e)) return { e, constant: this.dax(e, { mode: 'agg' }), name: alias ?? e.src };
       if (!hasAgg(e)) {
-        if (e.k !== 'name') throw sqlUnsupported(`${e.src}: a SELECT item is a column or an expression of aggregates`);
+        if (e.k !== 'name') throw sqlUnsupported(`${e.src}: a SELECT item is a column, an expression of aggregates or a constant`);
         const c = this.needColumn(e);
         return { e, col: c, name: alias ?? c.name, renamed: alias != null && alias !== c.name };
       }
@@ -581,6 +587,7 @@ export class SqlTranslator {
       names.add(lc(it.name));
     }
     const dims = items.filter(it => it.col), flags = items.filter(it => it.grouping), aggs = items.filter(it => it.ast);
+    const constants = items.filter(it => it.constant);
 
     // The groups, and the ROLLUPs: each one ROLLUPADDISSUBTOTAL, whose levels are a column or
     // a parenthesised group of them (ROLLUPGROUP), each named by the SELECT's GROUPING of it.
@@ -631,7 +638,7 @@ export class SqlTranslator {
     for (const c of rolled) if (groups.includes(c)) throw sqlSemantic(`${c.name} is both grouped and rolled up`);
 
     // HAVING's names: the SELECT's, on the groups' rows.
-    const itemRef = it => it.col ? D.col(it.col) : D.ref(it.name);
+    const itemRef = it => it.col ? D.col(it.col) : it.constant ?? D.ref(it.name);
     const aliases = new Map(items.map(it => [lc(it.name), itemRef(it)]));
     const aggItems = new Map(aggs.map(it => [it.key, D.ref(it.name)]));
     const groupings = new Map(rollups.flat().flatMap(l => l.cols.map(c => [c, D.ref(l.flag.name)])));
@@ -640,9 +647,10 @@ export class SqlTranslator {
     const aggArgs = aggs.flatMap(it => [D.str(it.name), it.ast]);
     const rollupArgs = rollups.map(levels => D.call('ROLLUPADDISSUBTOTAL', ...levels.flatMap(l => [
       l.cols.length > 1 ? D.call('ROLLUPGROUP', ...l.cols.map(D.col)) : D.col(l.cols[0]), D.str(l.flag.name)])));
-    let table = grouped.length || (q.groupBy && !aggs.length)
+    let table = grouped.length || (q.groupBy && !aggs.length && !constants.length)
       ? D.call('SUMMARIZECOLUMNS', ...groups.map(D.col), ...rollupArgs, ...aggArgs)
-      : D.call('ROW', ...aggArgs);
+      // Nothing to group or aggregate: the one row is the constants'.
+      : D.call('ROW', ...(aggArgs.length ? aggArgs : constants.flatMap(it => [D.str(it.name), it.constant])));
     if (having) table = D.call('FILTER', table, having);
 
     // WHERE: one filter of CALCULATETABLE per condition joined by AND, each on the columns of
@@ -675,7 +683,11 @@ export class SqlTranslator {
     // ORDER BY: a SELECT item (its name, its position, or the same expression), or an
     // aggregate on the result's rows.
     const outRef = it => it.col && !it.renamed ? D.col(it.col) : D.ref(it.name);
-    const order = q.orderBy.map(({ e, desc, nulls }) => {
+    // ORDER BY ALL: by every item's position.
+    const orderBy = q.orderAll
+      ? items.map((_, i) => ({ e: { k: 'num', v: String(i + 1), src: String(i + 1) }, ...q.orderAll }))
+      : q.orderBy;
+    const order = orderBy.map(({ e, desc, nulls }) => {
       if (nulls && nulls !== (desc ? 'last' : 'first')) throw sqlUnsupported(`NULLS ${nulls.toUpperCase()} with ${desc ? 'DESC' : 'ASC'} (blanks sort first ascending, last descending)`);
       let it = null;
       if (e.k === 'num' && /^\d+$/.test(e.v)) {

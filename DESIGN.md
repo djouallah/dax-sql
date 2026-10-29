@@ -732,7 +732,9 @@ LIMIT 10
 
 - **SELECT:** columns to group by, and expressions of aggregates: `AGG(m)` or `MEASURE(m)` is
   measure `m`; `SUM`, `AVG`, `MIN`, `MAX`, `COUNT` and `COUNT(DISTINCT …)` aggregate a column.
-  An aggregate's column is named by its alias, else by its measure, else by its text.
+  An aggregate's column is named by its alias, else by its measure, else by its text. A
+  constant (`'orders' AS what`, an expression of literals) is a column of every row, added to
+  the result (`SELECTCOLUMNS`): it keeps no group the aggregates leave out.
 - **Names:** `table.column`, a measure as `AGG(Orders)` or
   `AGG(Sales.Orders)`, a column's name alone when one table has it. A name with spaces is
   quoted with double quotes (`AGG("Sales Amount")`), or `[brackets]`; single quotes are text, so
@@ -750,7 +752,7 @@ LIMIT 10
 - **HAVING** is a `FILTER` of the groups. It reads the SELECT's names and aggregates, the
   groups' columns, and measures the SELECT leaves out, on each group (context transition).
 - **ORDER BY** is DAX's, by the result's columns (names, positions) or aggregates, blanks first
-  ascending. **LIMIT** and **OFFSET** are the SQL's, and `FETCH FIRST n ROWS ONLY` is
+  ascending. **`ORDER BY ALL [ASC|DESC]`** is by every column, left to right. **LIMIT** and **OFFSET** are the SQL's, and `FETCH FIRST n ROWS ONLY` is
   `LIMIT n`. **`FETCH FIRST n ROWS WITH TIES`** is `TOPN(n, …)` on the ORDER BY's keys, which
   keeps the rows tied with the n-th.
 - Conditions: comparisons, `AND`, `OR`, `NOT`, `IN`, `BETWEEN`, `IS NULL` (`ISBLANK`), `LIKE`

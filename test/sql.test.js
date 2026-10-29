@@ -48,6 +48,11 @@ const PAIRS = [
     FROM m WHERE 'Date'[Date] >= DATE '2024-01-01' GROUP BY ALL`,
     `EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('Date'[Month], "n", SWITCH(TRUE(), [Orders] > 2, "many", "few"), "per", [Sales Amount] / [Orders]),
       'Date'[Date] >= DATE(2024, 1, 1))`],
+  // Constants: a column of every row, never a reason to keep a row no measure has.
+  [`SELECT 'orders' AS what, AGG(Orders) AS n FROM m`, `EVALUATE ROW("what", "orders", "n", [Orders])`],
+  [`SELECT Color, 'x' || 'y' AS tag, 2 * 3 six, AGG(Orders) o FROM m GROUP BY ALL HAVING tag = 'xy'`,
+    `EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS(Product[Color], "o", [Orders]), "Color", Product[Color], "tag", "xy", "six", 6, "o", [o])`],
+  [`SELECT 'only' AS a, 1 AS b FROM m`, `EVALUATE ROW("a", "only", "b", 1)`],
 ];
 
 test('a SELECT answers what its DAX answers', async () => {
@@ -61,6 +66,11 @@ test('ORDER BY, LIMIT and OFFSET', async () => {
   // By an aggregate the SELECT leaves out.
   const byQty = await h.run(`EVALUATE SUMMARIZECOLUMNS(Product[Name], "s", [Sales Amount]) ORDER BY [Quantity] DESC, Product[Name]`);
   assert.deepEqual(await h.run(`SELECT Product.Name, AGG("Sales Amount") s FROM m GROUP BY ALL ORDER BY AGG(Quantity) DESC, Name`), byQty);
+  // ORDER BY ALL: every column, left to right, in one direction.
+  assert.deepEqual(await h.run(`SELECT Color, AGG(Orders) AS orders FROM m GROUP BY ALL ORDER BY ALL`),
+    await h.run(`SELECT Color, AGG(Orders) AS orders FROM m GROUP BY ALL ORDER BY 1, 2`));
+  assert.deepEqual(await h.run(`SELECT Category.Category, Color, AGG(Orders) o FROM m GROUP BY ALL ORDER BY ALL DESC NULLS LAST`),
+    await h.run(`SELECT Category.Category, Color, AGG(Orders) o FROM m GROUP BY ALL ORDER BY 1 DESC, 2 DESC, 3 DESC`));
 });
 
 test('FETCH FIRST n ROWS WITH TIES keeps the ties, ONLY is LIMIT', async () => {
@@ -113,6 +123,7 @@ test('SQL errors carry their codes', async () => {
   await fails('SELECT UPPER(Color), AGG(Orders) FROM m GROUP BY ALL', 'UNSUPPORTED');
   await fails(`SELECT AGG(Orders) FROM m WHERE Product.Name LIKE 'a_c'`, 'UNSUPPORTED');
   await fails('SELECT Color, AGG(Orders) FROM m GROUP BY ALL ORDER BY Color NULLS LAST', 'UNSUPPORTED');
+  await fails('SELECT Color, AGG(Orders) FROM m GROUP BY ALL ORDER BY ALL NULLS LAST', 'UNSUPPORTED');
   await fails('SELECT Color, AGG(Orders) FROM m GROUP BY ROLLUP(Color)', 'SEMANTIC');
   await fails('SELECT Color, AGG(Orders), GROUPING(Color) g FROM m GROUP BY ALL', 'SEMANTIC');
   await fails('SELECT Color, AGG(Orders), GROUPING(Color) g FROM m GROUP BY Color, ROLLUP(Color)', 'SEMANTIC');
@@ -142,6 +153,10 @@ test('a SELECT over the model is a relation of any SQL', async () => {
   const both = await run(`(SELECT Color AS k, AGG(Orders) v FROM model GROUP BY ALL)
     UNION ALL (SELECT Category.Category, AGG(Orders) FROM model GROUP BY ALL)`);
   assert.equal(both.length, byColor.length + (await h.run(`SELECT Category.Category, AGG(Orders) FROM model GROUP BY ALL`)).length);
+  // Arms that label their row with a constant.
+  const [o] = await h.run(`SELECT AGG(Orders) n FROM model`), [q] = await h.run(`SELECT AGG(Quantity) n FROM model`);
+  assert.deepEqual(sorted(await run(`(SELECT 'orders' AS what, AGG(Orders) n FROM model) UNION ALL (SELECT 'quantity', AGG(Quantity) FROM model)`)),
+    sorted([{ what: 'orders', n: o.n }, { what: 'quantity', n: q.n }]));
   assert.deepEqual(sorted(await run(`SELECT * FROM (SELECT Color, AGG(Orders) o FROM model GROUP BY ALL) WHERE o > 0`)),
     sorted(byColor.filter(r => r.o > 0)));
   const top = await run(`SELECT "Name" FROM "Product" WHERE "Color" IN

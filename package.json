@@ -2,44 +2,16 @@
   "name": "dax-sql",
   "version": "0.1.0",
   "license": "MIT",
+  "private": true,
   "author": "N.S. Devaraj (https://github.com/nsdevaraj)",
   "description": "A DAX to SQL compiler for Tabular (TMSL) semantic models, with DAX semantics; tested on DuckDB",
-  "keywords": [
-    "dax",
-    "sql",
-    "power-bi",
-    "semantic-model",
-    "tabular",
-    "tmsl",
-    "duckdb",
-    "compiler"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/djouallah/dax-sql.git"
-  },
-  "homepage": "https://github.com/djouallah/dax-sql#readme",
-  "bugs": "https://github.com/djouallah/dax-sql/issues",
   "type": "module",
   "main": "src/index.js",
   "exports": {
-    ".": "./src/index.js",
-    "./formats/tmsl.js": "./formats/tmsl.js",
-    "./formats/ossie.js": "./formats/ossie.js"
+    ".": "./src/index.js"
   },
-  "files": [
-    "src/",
-    "formats/tmsl.js",
-    "formats/ossie.js",
-    "DESIGN.md"
-  ],
-  "sideEffects": false,
   "engines": {
     "node": ">=18"
-  },
-  "publishConfig": {
-    "access": "public",
-    "provenance": true
   },
   "scripts": {
     "test": "node --test test/*.test.js formats/test/*.test.js"

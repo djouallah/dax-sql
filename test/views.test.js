@@ -102,3 +102,41 @@ test('a text naming no view is left alone, statement by statement', () => {
   assert.equal(out.length, 2);
   assert.equal(out[0].sql, 'SELECT 1');
 });
+
+// Two models of one name in two workspaces are two views: each named in full as ws.model, and
+// by its name alone only while that name is the one view's.
+test('views of one name in two schemas: named in full, or in part while that is unique', async () => {
+  const two = createViews();
+  two.define('contoso', tmslToModel(bim), { schema: 'prod', path: 'p.bim' });
+  assert.equal(two.get('contoso').sqlName, 'prod.contoso');
+  const alone = await (async () => { const [{ sql }] = two.rewrite('SELECT Color, AGG(Orders) AS o FROM contoso GROUP BY ALL'); return h.sql(sql); })();
+  two.define('contoso', tmslToModel(bim), { schema: 'Test WS', path: 't.bim' });
+  assert.equal(two.list().length, 2);
+  assert.equal(two.get('"Test WS".contoso').sqlName, '"Test WS".contoso');
+  // In full, quoted or not, in any case; and in a subquery.
+  for (const text of ['SELECT Color, AGG(Orders) AS o FROM prod.contoso GROUP BY ALL',
+                      'SELECT Color, AGG(Orders) AS o FROM PROD.Contoso GROUP BY ALL',
+                      'SELECT * FROM (SELECT Color, AGG(Orders) AS o FROM "Test WS".contoso GROUP BY ALL) t']) {
+    const [{ sql }] = two.rewrite(text);
+    assert.deepEqual(sorted((await h.sql(sql)).map(r => [r.Color, r.o])), sorted(alone.map(r => [r.Color, r.o])), text);
+  }
+  // In part, now that it fits two: an error naming both.
+  assert.throws(() => two.rewrite('SELECT Color FROM contoso GROUP BY ALL'),
+    e => e.code === 'CATALOG' && /ambiguous/.test(e.message) && /prod\.contoso/.test(e.message) && /"Test WS"\.contoso/.test(e.message));
+  // SHOW / DESCRIBE / DROP by the full name.
+  assert.ok((await h.sql(two.rewrite('SHOW SEMANTIC METRICS IN prod.contoso')[0].sql)).length > 0);
+  assert.deepEqual(two.rewrite('DROP SEMANTIC VIEW prod.contoso'), [{ drop: { name: 'prod.contoso', ifExists: false } }]);
+  assert.equal(two.drop('prod.contoso'), true);
+  assert.equal(two.get('contoso').sqlName, '"Test WS".contoso', 'the other is the only contoso now');
+  // CREATE in a schema reports it, and one of that full name exists already.
+  assert.throws(() => two.rewrite(`CREATE SEMANTIC VIEW "Test WS".contoso FROM 'x.bim'`), /already exists/);
+});
+
+test('compileStatement takes a qualified model name, as text or as parts', () => {
+  const c = views.get('contoso').compiler;
+  const text = 'SELECT Color, AGG(Orders) AS o FROM ws.contoso GROUP BY ALL';
+  assert.equal(c.compileStatement(text, 'ws.contoso').sql, c.compileStatement(text, ['ws', 'contoso']).sql);
+  assert.notEqual(c.compileStatement(text, 'ws.contoso').sql, text);
+  // Only the whole name is the model: a longer or shorter one is not.
+  assert.equal(c.compileStatement('SELECT 1 FROM x.ws.contoso', 'ws.contoso').sql, 'SELECT 1 FROM x.ws.contoso');
+});

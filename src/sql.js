@@ -128,8 +128,10 @@ class Parser {
       select.push({ e, alias, pos: at });
     } while (this.eat(','));
     this.needKw('FROM');
-    const from = this.name1();
-    if (this.isKw('JOIN') || this.isOp(',') || this.isOp('.')) throw sqlUnsupported('a FROM other than the model');
+    // The model, by its name: one part, or qualified (ws.model).
+    let from = this.name1();
+    while (this.eat('.')) from += `.${this.name1()}`;
+    if (this.isKw('JOIN') || this.isOp(',')) throw sqlUnsupported('a FROM other than the model');
     if (this.eatKw('AS')) this.name1();
     let where = null, groupBy = null, having = null, limit = null, offset = null, orderAll = null;
     const orderBy = [];
@@ -782,17 +784,53 @@ function scan(src) {
   return toks;
 }
 
+// A model's name as its parts: an array as it is, or SQL text — `model`, `ws.model`,
+// `"Sales WS".model` — split at the dots outside quotes, the quotes undone.
+export function nameParts(name) {
+  if (Array.isArray(name)) return name.map(String);
+  const parts = [];
+  const s = String(name);
+  let cur = '', i = 0;
+  while (i < s.length) {
+    const c = s[i];
+    if (c === '"') {
+      i++;
+      while (i < s.length) {
+        if (s[i] === '"') { if (s[i + 1] === '"') { cur += '"'; i += 2; continue; } i++; break; }
+        cur += s[i++];
+      }
+      continue;
+    }
+    if (c === '.') { parts.push(cur.trim()); cur = ''; i++; continue; }
+    cur += c;
+    i++;
+  }
+  parts.push(cur.trim());
+  return parts;
+}
+
 // The SELECTs over the model in a statement: `whole` when the statement is one, else
 // `relations`, each the text between its parentheses ({ start, end, text }). `name` is the
-// model's name in FROM.
+// model's name in FROM: one part, or qualified (`ws.model`, or its parts as an array).
 export function modelRelations(src, name = 'model') {
   const toks = scan(src);
   const kw = (t, w) => t?.t === 'word' && t.v.toUpperCase() === w;
-  const isModel = t => (t?.t === 'word' || t?.t === 'name') && lc(t.v) === lc(name);
+  const parts = nameParts(name).map(lc);
+  const dot = t => t?.t === 'op' && t.v === '.';
+  // Whether the model's name, all its parts and nothing more, starts at toks[k].
+  const isModelAt = k => {
+    if (dot(toks[k - 1])) return false;
+    for (let p = 0; p < parts.length; p++) {
+      const t = toks[k + 2 * p];
+      if (!(t?.t === 'word' || t?.t === 'name') || lc(t.v) !== parts[p]) return false;
+      if (p < parts.length - 1 && !dot(toks[k + 2 * p + 1])) return false;
+    }
+    return !dot(toks[k + 2 * parts.length - 1]);
+  };
   // Whether the SELECT at toks[s] reads the model: its own FROM, at its own depth.
   const readsModel = s => {
     const d = toks[s].depth;
-    for (let k = s + 1; k < toks.length && toks[k].depth >= d; k++) if (toks[k].depth === d && kw(toks[k], 'FROM')) return isModel(toks[k + 1]);
+    for (let k = s + 1; k < toks.length && toks[k].depth >= d; k++) if (toks[k].depth === d && kw(toks[k], 'FROM')) return isModelAt(k + 1);
     return false;
   };
   const setOp = toks.some(t => t.depth === 0 && ['UNION', 'INTERSECT', 'EXCEPT'].some(w => kw(t, w)));
@@ -807,8 +845,8 @@ export function modelRelations(src, name = 'model') {
       k = e;
       continue;
     }
-    if ((kw(t, 'FROM') || kw(t, 'JOIN')) && isModel(toks[k + 1]))
-      throw new DaxError(`SQL: the model is not a table: ask it in a SELECT ... FROM ${name} in parentheses (a subquery, or a WITH's query)`,
+    if ((kw(t, 'FROM') || kw(t, 'JOIN')) && isModelAt(k + 1))
+      throw new DaxError(`SQL: the model is not a table: ask it in a SELECT ... FROM ${nameParts(name).join('.')} in parentheses (a subquery, or a WITH's query)`,
         { code: 'SEMANTIC', pos: toks[k + 1].at, src });
   }
   return { whole: false, relations };

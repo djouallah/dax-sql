@@ -5,6 +5,10 @@
 //
 //   CREATE [OR REPLACE] SEMANTIC VIEW [IF NOT EXISTS] [db.][schema.]v FROM '<path>'
 //   DROP SEMANTIC VIEW [IF EXISTS] v
+//
+// A view in a schema of its own (not 'main') is named in full as schema.v, so two models of one
+// name in two schemas (two workspaces' sales) are two views. SQL names one in full, or by v alone
+// while only one view is called v; a name that fits several is an error that lists them.
 //   SHOW SEMANTIC VIEWS
 //   SHOW SEMANTIC DIMENSIONS IN v [FOR METRIC m]
 //   SHOW SEMANTIC METRICS IN v
@@ -25,6 +29,7 @@
 // Errors are DaxError: SYNTAX for a statement that does not read, CATALOG for a view that is
 // missing or already there.
 import { DaxError } from './errors.js';
+import { nameParts } from './sql.js';
 
 const lc = s => String(s).toLowerCase();
 const str = s => (s == null ? 'NULL' : `'${String(s).replace(/'/g, "''")}'`);
@@ -228,31 +233,58 @@ function queryStart(toks) {
 
 // ---------------------------------------------------------------------------------------------
 
+// A part of a view's name as SQL writes it: bare when it can be, quoted when it must.
+const part = s => (/^[A-Za-z_][A-Za-z0-9_]*$/.test(s) ? s : ident(s));
+
 export function makeViews(createCompiler) {
-  // The views, by lower-cased name: { db, schema, name, path, tablesFrom, compiler }.
+  // The views, by their full name, lower-cased: `name`, or `schema.name` for a view defined in
+  // a schema of its own (one other than 'main') — two models of one name are two views, as
+  // long as their schemas differ. Each { db, schema, name, parts, sqlName, path, tablesFrom,
+  // compiler }; `sqlName` is how SQL names it in full.
   const views = new Map();
+  const partsOf = (name, schema) => (schema && lc(schema) !== 'main' ? [String(schema), String(name)] : [String(name)]);
+  const keyOf = parts => parts.map(lc).join('\u0000');
+
+  // The view a name means, written whole (`ws.model`) or in part (`model`): null when none,
+  // and an error when the part fits more than one, naming them.
+  function resolve(name) {
+    const ref = nameParts(name).map(lc);
+    const exact = views.get(ref.join('\u0000'));
+    if (exact) return exact;
+    const fits = [...views.values()].filter(v => {
+      const full = [lc(v.db ?? ''), ...v.parts.map(lc)];
+      return ref.length <= full.length && ref.every((p, i) => p === full[full.length - ref.length + i]);
+    });
+    if (fits.length > 1) {
+      throw fail(`semantic view ${ref.join('.')} is ambiguous: name it in full — ${fits.map(v => v.sqlName).join(', ')}`, 'CATALOG');
+    }
+    return fits[0] ?? null;
+  }
 
   function view(name) {
-    const v = views.get(lc(name));
-    if (!v) throw fail(`semantic view ${name} does not exist`, 'CATALOG');
+    const v = resolve(name);
+    if (!v) throw fail(`semantic view ${nameParts(name).join('.')} does not exist`, 'CATALOG');
     return v;
   }
 
   function define(name, model, { path = null, db = 'memory', schema = 'main', mode = 'create', tablesFrom = 'search path', ...options } = {}) {
-    const old = views.get(lc(name));
-    if (old && mode === 'create') throw fail(`semantic view ${name} already exists`, 'CATALOG');
+    const parts = partsOf(name, schema);
+    const key = keyOf(parts);
+    const old = views.get(key);
+    if (old && mode === 'create') throw fail(`semantic view ${old.sqlName} already exists`, 'CATALOG');
     if (old && mode === 'if_not_exists') return 'exists';
     const compiler = createCompiler(model, options);
-    views.set(lc(name), { db, schema, name, path, tablesFrom, compiler });
+    views.set(key, { db, schema, name, parts, sqlName: parts.map(part).join('.'), path, tablesFrom, compiler });
     return 'created';
   }
 
   function drop(name, { ifExists = false } = {}) {
-    if (!views.has(lc(name))) {
+    const v = resolve(name);
+    if (!v) {
       if (ifExists) return false;
-      throw fail(`semantic view ${name} does not exist`, 'CATALOG');
+      throw fail(`semantic view ${nameParts(name).join('.')} does not exist`, 'CATALOG');
     }
-    views.delete(lc(name));
+    views.delete(keyOf(v.parts));
     return true;
   }
 
@@ -268,22 +300,21 @@ export function makeViews(createCompiler) {
       const path = r.string();
       r.end();
       const name = parts[parts.length - 1];
+      const schema = parts.length > 1 ? parts[parts.length - 2] : null;
       const mode = replace ? 'replace' : ifNotExists ? 'if_not_exists' : 'create';
-      if (mode === 'create' && views.has(lc(name))) throw fail(`semantic view ${name} already exists`, 'CATALOG');
-      return { create: {
-        db: parts.length === 3 ? parts[0] : null,
-        schema: parts.length > 1 ? parts[parts.length - 2] : null,
-        name, path, mode,
-      } };
+      const old = views.get(keyOf(partsOf(name, schema)));
+      if (mode === 'create' && old) throw fail(`semantic view ${old.sqlName} already exists`, 'CATALOG');
+      return { create: { db: parts.length === 3 ? parts[0] : null, schema, name, path, mode } };
     }
     if (r.word('DROP')) {
       if (!r.words('SEMANTIC', 'VIEW')) return null;
       const ifExists = r.words('IF', 'EXISTS');
       const parts = r.qualified();
       r.end();
-      const name = parts[parts.length - 1];
-      if (!ifExists && !views.has(lc(name))) throw fail(`semantic view ${name} does not exist`, 'CATALOG');
-      return { drop: { name, ifExists } };
+      const v = resolve(parts);
+      if (!v && !ifExists) throw fail(`semantic view ${parts.join('.')} does not exist`, 'CATALOG');
+      // The name in full, so the host drops this view and no other of its name.
+      return { drop: { name: v ? v.sqlName : parts.map(part).join('.'), ifExists } };
     }
     if (r.word('SHOW')) {
       if (!r.word('SEMANTIC')) return null;
@@ -294,7 +325,7 @@ export function makeViews(createCompiler) {
       const dims = r.word('DIMENSIONS');
       if (!dims) r.expect('METRICS');
       r.expect('IN');
-      const v = view(r.qualified().pop());
+      const v = view(r.qualified());
       if (!dims) {
         r.end();
         return { sql: rows(ITEM_COLUMNS, metrics(v)) };
@@ -319,7 +350,7 @@ export function makeViews(createCompiler) {
       } catch {
         return null;
       }
-      const v = views.get(lc(parts[parts.length - 1]));
+      const v = resolve(parts);
       if (!v) return null;
       return { sql: describe(v) };
     }
@@ -327,13 +358,23 @@ export function makeViews(createCompiler) {
   }
 
   // A query's text, its model queries compiled in place; the same text when it names no view.
+  // A view is named after FROM or JOIN, in full or in part (`ws.model`, `model`); each way it
+  // is written is compiled as written, so the compiled text matches the query's own.
   function compiled(text, toks) {
-    let out = text;
-    for (const key of views.keys()) {
-      if (!toks.some(t => (t.t === 'word' || t.t === 'name') && lc(t.v) === key)) continue;
-      const v = view(key);
-      out = v.compiler.compileStatement(out, v.name).sql;
+    const named = new Map();   // the name as written (lower-cased) -> [view, its parts]
+    const isName = t => t?.t === 'word' || t?.t === 'name';
+    const isDot = t => t?.t === 'sym' && t.v === '.';
+    for (let k = 0; k < toks.length; k++) {
+      if (toks[k].t !== 'word' || !/^(FROM|JOIN)$/i.test(toks[k].v) || !isName(toks[k + 1])) continue;
+      const parts = [toks[k + 1].v];
+      let e = k + 1;
+      while (isDot(toks[e + 1]) && isName(toks[e + 2])) { parts.push(toks[e + 2].v); e += 2; }
+      if (parts.length > 3) continue;
+      const v = resolve(parts);
+      if (v) named.set(parts.map(lc).join('\u0000'), [v, parts]);
     }
+    let out = text;
+    for (const [v, parts] of named.values()) out = v.compiler.compileStatement(out, parts).sql;
     return out;
   }
 
@@ -398,7 +439,8 @@ export function makeViews(createCompiler) {
   return {
     define,
     drop,
-    get: name => views.get(lc(name)) ?? null,
+    // A view by its name, in full or in part (an error when the part fits more than one).
+    get: name => resolve(name),
     list: () => [...views.values()],
     rewrite,
   };

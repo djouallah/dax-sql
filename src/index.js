@@ -43,7 +43,7 @@ export { parseSql, modelRelations } from './sql.js';
 
 // Semantic views (views.js): models named in SQL, and CREATE / DROP / SHOW SEMANTIC VIEW.
 import { makeViews } from './views.js';
-export const createViews = () => makeViews(createCompiler);
+export const createViews = options => makeViews(createCompiler, options);
 export { Model } from './model.js';
 
 const DIALECTS = { duckdb: () => new DuckDBDialect() };

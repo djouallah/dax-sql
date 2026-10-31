@@ -389,6 +389,10 @@ the statements that make, drop and list them. It is engine-neutral: where a view
 how its file is read are the host's (a DuckDB extension keeps them in a table, an editor in its
 settings), so every host speaks the same statements.
 
+A view is named in full or in part: `sales` reaches `db.schema.sales` while it's the only one of that name.
+`createViews({ fullNames: true })` is for a host whose names are a contract: a statement reaches a view only
+by `db.schema.name`, and a shorter name goes to the engine as written.
+
 ```sql
 CREATE [OR REPLACE] SEMANTIC VIEW [IF NOT EXISTS] [db.][schema.]sales FROM '<path>';
 DROP SEMANTIC VIEW [IF EXISTS] sales;

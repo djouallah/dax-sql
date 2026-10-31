@@ -236,7 +236,10 @@ function queryStart(toks) {
 // A part of a view's name as SQL writes it: bare when it can be, quoted when it must.
 const part = s => (/^[A-Za-z_][A-Za-z0-9_]*$/.test(s) ? s : ident(s));
 
-export function makeViews(createCompiler) {
+// `fullNames`: a statement reaches a view only by its whole name, db.schema.name. A host whose
+// names are a contract takes this, so a shorter name can't read a view by accident; a shorter one
+// is then not a view's, and goes to the engine as written. Its own calls (get, drop) are unchanged.
+export function makeViews(createCompiler, { fullNames = false } = {}) {
   // The views, by their full name, lower-cased: `name`, or `schema.name` for a view defined in
   // a schema of its own (one other than 'main') — two models of one name are two views, as
   // long as their schemas differ. Each { db, schema, name, parts, sqlName, path, tablesFrom,
@@ -261,8 +264,18 @@ export function makeViews(createCompiler) {
     return fits[0] ?? null;
   }
 
+  // The view a statement's name means.
+  function named(name) {
+    if (!fullNames) return resolve(name);
+    const ref = nameParts(name).map(lc);
+    return [...views.values()].find(v => {
+      const full = [lc(v.db ?? ''), ...v.parts.map(lc)];
+      return ref.length === full.length && ref.every((p, i) => p === full[i]);
+    }) ?? null;
+  }
+
   function view(name) {
-    const v = resolve(name);
+    const v = named(name);
     if (!v) throw fail(`semantic view ${nameParts(name).join('.')} does not exist`, 'CATALOG');
     return v;
   }
@@ -311,7 +324,7 @@ export function makeViews(createCompiler) {
       const ifExists = r.words('IF', 'EXISTS');
       const parts = r.qualified();
       r.end();
-      const v = resolve(parts);
+      const v = named(parts);
       if (!v && !ifExists) throw fail(`semantic view ${parts.join('.')} does not exist`, 'CATALOG');
       // The name in full, so the host drops this view and no other of its name.
       return { drop: { name: v ? v.sqlName : parts.map(part).join('.'), ifExists } };
@@ -350,7 +363,7 @@ export function makeViews(createCompiler) {
       } catch {
         return null;
       }
-      const v = resolve(parts);
+      const v = named(parts);
       if (!v) return null;
       return { sql: describe(v) };
     }
@@ -361,7 +374,7 @@ export function makeViews(createCompiler) {
   // A view is named after FROM or JOIN, in full or in part (`ws.model`, `model`); each way it
   // is written is compiled as written, so the compiled text matches the query's own.
   function compiled(text, toks) {
-    const named = new Map();   // the name as written (lower-cased) -> [view, its parts]
+    const found = new Map();   // the name as written (lower-cased) -> [view, its parts]
     const isName = t => t?.t === 'word' || t?.t === 'name';
     const isDot = t => t?.t === 'sym' && t.v === '.';
     for (let k = 0; k < toks.length; k++) {
@@ -370,11 +383,11 @@ export function makeViews(createCompiler) {
       let e = k + 1;
       while (isDot(toks[e + 1]) && isName(toks[e + 2])) { parts.push(toks[e + 2].v); e += 2; }
       if (parts.length > 3) continue;
-      const v = resolve(parts);
-      if (v) named.set(parts.map(lc).join('\u0000'), [v, parts]);
+      const v = named(parts);
+      if (v) found.set(parts.map(lc).join('\u0000'), [v, parts]);
     }
     let out = text;
-    for (const [v, parts] of named.values()) out = v.compiler.compileStatement(out, parts).sql;
+    for (const [v, parts] of found.values()) out = v.compiler.compileStatement(out, parts).sql;
     return out;
   }
 

@@ -132,6 +132,28 @@ test('views of one name in two schemas: named in full, or in part while that is 
   assert.throws(() => two.rewrite(`CREATE SEMANTIC VIEW "Test WS".contoso FROM 'x.bim'`), /already exists/);
 });
 
+test('fullNames: a statement reaches a view by its whole name and no other', async () => {
+  const strict = createViews({ fullNames: true });
+  strict.define('contoso', tmslToModel(bim), { db: 'semanticmodel', schema: 'prod', path: 'p.bim' });
+  const query = name => `SELECT Color, AGG(Orders) AS o FROM ${name} GROUP BY ALL`;
+  for (const name of ['semanticmodel.prod.contoso', 'SemanticModel.PROD.Contoso']) {
+    const [{ sql }] = strict.rewrite(query(name));
+    assert.ok((await h.sql(sql)).length > 0, name);
+  }
+  // Shorter is not this view's: nothing compiled, and left for the engine to answer.
+  for (const name of ['contoso', 'prod.contoso', 'other.prod.contoso']) {
+    assert.equal(strict.rewrite(query(name)), null, name);
+    assert.equal(strict.rewrite(`DESCRIBE ${name}`), null, name);
+    assert.throws(() => strict.rewrite(`SHOW SEMANTIC METRICS IN ${name}`), /does not exist/, name);
+  }
+  assert.ok((await h.sql(strict.rewrite('SHOW SEMANTIC METRICS IN semanticmodel.prod.contoso')[0].sql)).length > 0);
+  // Two of a name are no longer ambiguous: neither is reached by it.
+  strict.define('contoso', tmslToModel(bim), { db: 'semanticmodel', schema: 'dev', path: 'd.bim' });
+  assert.equal(strict.rewrite(query('contoso')), null);
+  // The host's own calls still take a part of the name.
+  assert.equal(strict.get('prod.contoso').sqlName, 'prod.contoso');
+});
+
 test('compileStatement takes a qualified model name, as text or as parts', () => {
   const c = views.get('contoso').compiler;
   const text = 'SELECT Color, AGG(Orders) AS o FROM ws.contoso GROUP BY ALL';

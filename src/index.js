@@ -19,7 +19,8 @@
 //                  dimension's key is read off the fact's foreign key with no join (by
 //                  default only those whose assumeIntegrity says so)
 //   blankRows      false: no blank row for a dimension whose keys some fact rows miss (VALUES,
-//                  ALL and SUMMARIZECOLUMNS list it otherwise; this saves a check per table)
+//                  ALL and SUMMARIZECOLUMNS list it otherwise; this saves a check per table).
+//                  A statement that reads that table alone never has one
 //   user           the value of USERNAME() and USERPRINCIPALNAME()
 //   roles          the names of the model's roles to query as (row-level security): every
 //                  table's rows are those some role keeps
@@ -119,11 +120,24 @@ export function createCompiler(input, options = {}) {
   }));
 
   const cache = new Map();
-  // `dax`: the query's text, or its tree (keyed by `key`, the text it was built from).
+  let plain = null;
+  const emit = opts => statements => statements.map(s => {
+    const em = new Emitter(model, dialect, { ...opts, calcColumn, calcTable, security });
+    return { out: em.query(s), one: em.readsOneTable() };
+  });
+  // `dax`: the query's text, or its tree (keyed by `key`, the text it was built from). A
+  // statement that reads one table only lists that table's rows, with no blank row: the check
+  // for one reads the tables related to it, which the statement does not (DESIGN.md).
   function compileAll(dax, key = dax) {
     let out = cache.get(key);
     if (out) return out;
-    out = base.query(dax, statements => statements.map(s => new Emitter(model, dialect, { ...options, calcColumn, calcTable, security }).query(s)));
+    let res = base.query(dax, emit(options));
+    if (res.some(r => r.one)) {
+      plain ??= new Compiler(model, { ...options, blankRows: false });
+      const again = plain.query(dax, emit({ ...options, blankRows: false }));
+      res = res.map((r, n) => r.one ? again[n] : r);
+    }
+    out = res.map(r => r.out);
     if (cache.size >= 500) cache.clear();
     cache.set(key, out);
     return out;

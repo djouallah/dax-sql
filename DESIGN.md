@@ -169,6 +169,10 @@ relationship that does not rely on referential integrity, either side of a one-t
 - Under a bind, `VALUES` is `onerow`, whose condition gains "or the value is blank and the
   row is there" (`blankexists`).
 - `DISTINCT`, `ALLNOBLANKROW`, the table's name and `COUNTROWS` of the table do not add it.
+- A statement that reads no table but the one with the row does not add it either (a
+  departure from DAX): the check would read the other side's tables, which the statement
+  does not. The emitter records the tables it reads outside the check (`readsOneTable`), and
+  `compileAll` compiles such a statement again with `blankRows: false`.
   `ALLNOBLANKROW` as a CALCULATE modifier is `ALL`'s removal and its table as a filter, which
   leaves out the rows that belong to the blank row.
 
@@ -427,7 +431,7 @@ SELECT * FROM (SHOW SEMANTIC METRICS IN sales) WHERE ...;   -- each one reads as
 | `columnNames` | `'short'` (default): the column's or the expression's name. `'dax'`: `Table[Column]`, `[Measure]`. |
 | `castOutput` | `true` (default): whole numbers as `BIGINT`, other numbers as `DOUBLE`. Or an object, by the column's type (`int`, `double`, `decimal`, `datetime`, `string`, `bool`), of a function of its SQL: `{ int: s => \`CAST(${s} AS INTEGER)\` }`; a type it leaves out is not cast. |
 | `assumeIntegrity` | `true`: every relationship relies on referential integrity, so a dimension key is read off the fact's foreign key without a join. By default only relationships whose `relyOnReferentialIntegrity` is set are treated this way. |
-| `blankRows` | `false`: no blank row for dimensions (see below), which saves a check per dimension. |
+| `blankRows` | `false`: no blank row for dimensions (see below), which saves a check per dimension. A statement that reads the dimension alone never has one. |
 | `user` | The value of `USERNAME()` and `USERPRINCIPALNAME()`. |
 | `roles` | A role name, or several: row-level security. Each table keeps the rows that at least one of the roles keeps. |
 | `params` | The values of the query's parameters (`@name`), by name: numbers, text, booleans, `Date`s or `null` (blank). |
@@ -568,6 +572,10 @@ and gives each aggregate the filters that reach its table.
   - The compiler adds a check for such fact rows wherever a dimension's values are listed. A
     relationship that relies on referential integrity, the `assumeIntegrity` option, or
     `blankRows: false` means there are none, and the check is left out.
+  - **Departure from DAX:** a query that reads the dimension alone (`VALUES(Customer[City])`,
+    `SUMMARIZECOLUMNS(Customer[City])`, or with expressions over Customer only) has no blank
+    row: it is the dimension's distinct values, with no scan of the fact tables. Once the
+    query reads a fact table (a measure, a filter), the blank row is there as in DAX.
 - **TOPN** keeps rows tied with the last one. **ORDER BY** puts blanks first when ascending.
 - `DEFINE MEASURE`, `DEFINE VAR`, `DEFINE TABLE` and `DEFINE COLUMN` are supported, as are
   several `EVALUATE`s and lazy `VAR`s. Calculated columns are evaluated per row in an empty

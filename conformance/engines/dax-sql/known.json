@@ -18,5 +18,10 @@
   {"id":"edges/relationships/relationships-calcgroup-items-by-year","reason":"by design: text sorts by code point, not by the culture (Power BI orders case- and punctuation-insensitively)"},
   {"id":"edges/relationships/relationships-rls-retail-calcgroup-per-customer","reason":"by design: text sorts by code point, not by the culture (Power BI orders case- and punctuation-insensitively)"},
   {"id":"edges/relationships/relationships-twin-products-rank-customers","reason":"by design: text keeps its trailing spaces (Power BI drops them on load)"},
-  {"id":"patterns/segmentation/segmentation-rankx-hierarchy-isinscope","reason":"fail: Power BI ranks the Clothing subtotal by a differently ordered float sum (266314.7899999999 vs ...79000000003); Microsoft documents RANKX on decimals as unstable, not a DAX rule to copy"}
+  {"id":"patterns/segmentation/segmentation-rankx-hierarchy-isinscope","reason":"fail: Power BI ranks the Clothing subtotal by a differently ordered float sum (266314.7899999999 vs ...79000000003); Microsoft documents RANKX on decimals as unstable, not a DAX rule to copy"},
+  {"id":"aac/measures/measures-reads-5-minutes-regional","reason":"by design: a query that reads one table only has no blank row (a plain SELECT DISTINCT, no scan of the facts for keys it lacks); Power BI lists it"},
+  {"id":"contoso/blankrow/blankrow-concatenatex-values-cities","reason":"by design: a query that reads one table only has no blank row (a plain SELECT DISTINCT, no scan of the facts for keys it lacks); Power BI lists it"},
+  {"id":"contoso/blankrow/blankrow-filtered-column-no-blank-row","reason":"by design: a query that reads one table only has no blank row (a plain SELECT DISTINCT, no scan of the facts for keys it lacks); Power BI lists it"},
+  {"id":"contoso/window/window-rank-no-relation-blank-row","reason":"by design: a query that reads one table only has no blank row (a plain SELECT DISTINCT, no scan of the facts for keys it lacks); Power BI lists it"},
+  {"id":"patterns/context/context-calculatetable-column-filter-no-crossfilter","reason":"by design: a query that reads one table only has no blank row (a plain SELECT DISTINCT, no scan of the facts for keys it lacks); Power BI lists it"}
 ]

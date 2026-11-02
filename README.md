@@ -29,15 +29,20 @@ const { sql, columns } = dax.compile(`
 - **Errors:** `SYNTAX`, `SEMANTIC`, `UNSUPPORTED`.
 - **Tested:** against Power BI's own answers, in [conformance/](conformance/README.md).
 
-## Known limitations
+## Not implemented
 
-- Grouping, `DISTINCT`, sorting and relationships on text are case-sensitive (comparisons,
-  `IN` and table filters are not, as in DAX).
+- Object-level security, dynamic format strings, the window functions' reset argument, and
+  anything not listed in [DESIGN.md](DESIGN.md#what-it-does).
 - `FORMAT` is en-US only, with a constant pattern; model format strings are not applied.
-- A column that mixes numbers and text comes back as text.
-- `IFERROR` returns its first argument: SQL has no error values.
 - `DATEDIFF` with `WEEK` counts Sunday week boundaries.
+
+## Departures from DAX, by design
+
+- Text is case-sensitive in grouping, `DISTINCT`, sorting (by code point, not culture) and
+  relationships; comparisons, `IN` and table filters are not, as in DAX.
 - Text keeps its trailing spaces (Power BI drops them on load): `"a "` and `"a"` are two
   values, in grouping, filters, relationships and `LEN`. Trim them in the data if they matter.
-- Not supported: object-level security, dynamic format strings, the window functions' reset
-  argument, and anything not listed in [DESIGN.md](DESIGN.md#what-it-does).
+- A column that mixes numbers and text comes back as text.
+- `IFERROR` returns its first argument: SQL has no error values.
+- A query that reads one table only (`VALUES(Customer[City])`, a slicer's list) has no blank
+  row, though fact rows have keys the table lacks: it is a plain `SELECT DISTINCT`.

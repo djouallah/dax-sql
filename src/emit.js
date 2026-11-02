@@ -33,7 +33,14 @@ export class Emitter {
     // too, SQL -> { base: the comparison alone, col: the value }.
     this.rejects = new Map();
     this.nullArms = new Map();
+    this.reads = new Set();       // the tables the statement reads, the blank row's check aside
+    this.checks = 0;              // > 0 while writing that check (orphans, lacking)
+    this.blanks = false;          // whether a table got a blank row
   }
+
+  // Whether the statement reads one table only, and gave it a blank row: index.js compiles
+  // it again without one.
+  readsOneTable() { return this.blanks && this.reads.size === 1; }
 
   alias(p) { return `${p}${++this.n}`; }
   ident(n) { return this.d.ident(n); }
@@ -263,6 +270,7 @@ export class Emitter {
   }
 
   source(table) {
+    if (!this.checks) this.reads.add(table);
     if (table.calc) return this.calcTableSource(table);
     if (table.calcGroup) return this.calcGroupSource(table);
     if (this.options.tableSource) return this.options.tableSource(table);
@@ -1028,6 +1036,7 @@ export class Emitter {
     const nulls = table.columns.filter(c => !c.expr).map(c => `${c.type === 'variant' ? 'NULL' : this.d.cast('NULL', c.type)} AS ${this.ident(c.source)}`);
     const b = this.isolated(() => this.scanBlock(table, ctx, scope, excluded, null, `(SELECT ${nulls.join(', ')})`, unmatched));
     b.where.push(`(${this.orphans(table, this.model.state(ctx.mods))})`);
+    this.blanks = true;
     return out(b);
   }
 
@@ -1042,7 +1051,10 @@ export class Emitter {
   // a relationship) lacks: those rows belong to its table's blank row.
   lacking(one, keys) {
     const f = this.alias('o'), d = this.alias('o'), k = this.stored(d, one);
-    return `EXISTS (SELECT 1 FROM ${keys} AS ${f} LEFT JOIN ${this.source(one.table)} AS ${d} ON ${k} = ${f}.k WHERE ${d}.${this.ident(one.source)} IS NULL)`;
+    this.checks++;
+    try {
+      return `EXISTS (SELECT 1 FROM ${keys} AS ${f} LEFT JOIN ${this.source(one.table)} AS ${d} ON ${k} = ${f}.k WHERE ${d}.${this.ident(one.source)} IS NULL)`;
+    } finally { this.checks--; }
   }
 
   // Whether the table has a blank row: some row on the other side of a relationship it is the
@@ -1053,6 +1065,11 @@ export class Emitter {
   // both ways, CROSSFILTER), the row is reached through that side's rows, so there the rows
   // are those security keeps: a row it removes puts no blank row in the table.
   orphans(table, state, seen = new Set()) {
+    this.checks++;
+    try { return this.orphanChecks(table, state, seen); } finally { this.checks--; }
+  }
+
+  orphanChecks(table, state, seen) {
     seen.add(table);
     const parts = [];
     const back = rel => state.some(s => s.rel === rel && s.active && (s.cross === 'both' || s.cross === 'reverse'));
@@ -1066,7 +1083,7 @@ export class Emitter {
       }
       parts.push(this.lacking(one, keys));
       if (!seen.has(many.table)) {
-        const inner = this.orphans(many.table, state, seen);
+        const inner = this.orphanChecks(many.table, state, seen);
         if (inner) parts.push(inner);
       }
     }

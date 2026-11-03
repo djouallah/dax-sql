@@ -23,7 +23,7 @@ const { sql, columns } = dax.compile(`
 // sql: one SELECT for the engine; columns: [{ name: 'Year', type: 'int', ... }, { name: 'Sales', ... }]
 ```
 
-- **In:** a semantic model as dax-sql's model object ([DESIGN.md](DESIGN.md#the-model); `formats/` reads one from a TMSL `model.bim` or an [Apache Ossie](https://github.com/apache/ossie) model whose metrics are DAX), a DAX query or a SQL `SELECT` over the model, options
+- **In:** a semantic model as dax-sql's model object ([DESIGN.md](DESIGN.md#the-model); `formats/` reads one from a TMSL `model.bim` or an [Apache Ossie](https://github.com/apache/ossie) model whose metrics are DAX or SQL), a DAX query or a SQL `SELECT` over the model, options
   ([DESIGN.md](DESIGN.md#api)); or any SQL with `SELECT`s over the model as relations in it.
 - **Out:** one SQL `SELECT` and its columns; for a statement, its SQL with each of them compiled in place.
 - **Errors:** `SYNTAX`, `SEMANTIC`, `UNSUPPORTED`.

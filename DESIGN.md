@@ -360,12 +360,17 @@ package: they are not exported and the compiler never imports them.
 
 - `formats/tmsl.js`: `tmslToModel(bim)` reads a TMSL model (`model.bim`, the JSON of Power BI
   and Analysis Services).
-- `formats/ossie.js` reads an [Apache Ossie](https://github.com/apache/ossie) model whose
-  metrics are DAX, and goes both ways between it and TMSL. `ossieToModel(doc)`,
-  `tmslToOssie(bim)` and `ossieToTmsl(doc)` take parsed objects, so the YAML is the caller's
-  to parse. Every TMSL property Ossie has no place for (a relationship's cross-filter
-  direction, a measure's table, the partitions, the roles, ...) is kept in a `POWER_BI`
-  custom extension on its object, so `ossieToTmsl(tmslToOssie(bim))` is the bim.
+- `formats/ossie.js` reads an [Apache Ossie](https://github.com/apache/ossie) model and goes
+  both ways between it and TMSL. `ossieToModel(doc)`, `tmslToOssie(bim)` and `ossieToTmsl(doc)`
+  take parsed objects, so the YAML is the caller's to parse. A column is a field whose `sql` is
+  its source column; a measure is a metric of the dataset it reads, in Ossie's portable SQL
+  when it says the same there (`formats/ossie-sql.js`: SUM, AVERAGE, COUNTROWS, DIVIDE, ... over
+  one table, BLANK as NULL), and in the DAX dialect when not. Back, a metric or a field in that
+  SQL reads as DAX, so a model another tool wrote in SQL opens too. The `POWER_BI` custom
+  extension keeps only what Ossie has no place for and something needs: what changes an answer
+  (a relationship's filter direction, a date table, a calculation group, roles, ...), the
+  Direct Lake expression, and what a user sees (hidden, format strings, folders, hierarchies).
+  `ossieToTmsl(tmslToOssie(bim))` answers every query as the bim does; it is not the bim.
 
 ### API
 
@@ -838,9 +843,10 @@ npm test
 
 - `test/sql.test.js`: each SQL query answers what its DAX query answers; its errors carry their
   codes.
-- `formats/test/formats.test.js`: TMSL to Ossie and back is the model, for contoso and aac
-  (`conformance/models/aac`, whose `ossie.yaml` is its `model.bim` as Ossie). The compiler
-  gives the same SQL from either reading.
+- `formats/test/formats.test.js`: TMSL to Ossie and back answers every measure as the TMSL
+  does, on DuckDB, for contoso and aac (`conformance/models/aac`, whose `ossie.yaml` is its
+  `model.bim` as Ossie); which measures are SQL and which DAX; what the extension may hold; a
+  file of the earlier shape reads as it did; an Ossie model in SQL reads as DAX.
 - `test/smoke.test.js`, on a small sales model (`test/fixtures/contoso.js`): representative
   queries compile and run on DuckDB, with and without roles; errors carry their codes; the SQL
   keeps its shape (a filter inline on the fact, a selected total read off the groups).

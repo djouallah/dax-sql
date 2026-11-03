@@ -18,7 +18,7 @@
 // the bim. Files written with every TMSL property in the extension read as they always did.
 //
 // A dataset's `source` is schema.table, its partition's, unless the caller names its table in
-// full (tmslToOssie's `source`, a catalog's name such as lakehouse.ws.item.schema.table): then
+// full (tmslToOssie's `source`, a catalog's name such as lakehouse.schema.table): then
 // that name says where the data is, and the partition and the expression it read are not kept.
 // Back, such a source is the partition's schema (all of it but the table) and entity.
 import { tmslToModel } from './tmsl.js';

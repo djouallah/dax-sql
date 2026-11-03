@@ -151,24 +151,29 @@ test('the POWER_BI extension holds only what something needs', () => {
   }
 });
 
-test('a Direct Lake model: one partition and its expression for the model, nothing per table', () => {
+// A Direct Lake model of two tables, as Fabric gives one: lineage tags, annotations, a role's members.
+const URL_ = 'Sql.Database("x", "y") // https://onelake.dfs.fabric.microsoft.com/00000000-0000-0000-0000-000000000001/00000000-0000-0000-0000-000000000002';
+const directLake = () => {
   const table = name => ({
     name, lineageTag: 'x', annotations: [{ name: 'a', value: 'b' }],
     columns: [{ name: 'id', dataType: 'int64', sourceColumn: 'id', lineageTag: 'y', summarizeBy: 'none', isKey: true }],
     partitions: [{ name, mode: 'directLake', source: { type: 'entity', entityName: name, schemaName: 'dbo', expressionSource: 'DatabaseQuery' } }],
   });
-  const url = 'Sql.Database("x", "y") // https://onelake.dfs.fabric.microsoft.com/00000000-0000-0000-0000-000000000001/00000000-0000-0000-0000-000000000002';
-  const bim = { name: 'dl', compatibilityLevel: 1604, model: {
-    culture: 'en-US', annotations: [{ name: 'PBI', value: '1' }],
+  return { name: 'dl', compatibilityLevel: 1604, model: {
+    culture: 'en-US', defaultMode: 'directLake', annotations: [{ name: 'PBI', value: '1' }],
     tables: [table('a'), table('b')],
-    expressions: [{ name: 'DatabaseQuery', kind: 'm', expression: url, lineageTag: 'z' }, { name: 'Unused', kind: 'm', expression: '1' }],
+    expressions: [{ name: 'DatabaseQuery', kind: 'm', expression: URL_, lineageTag: 'z' }, { name: 'Unused', kind: 'm', expression: '1' }],
     roles: [{ name: 'r', modelPermission: 'read', members: [{ memberName: 'someone@example.com' }], tablePermissions: [{ name: 'a', filterExpression: 'a[id] = 1' }] }],
   } };
-  const doc = tmslToOssie(bim);
+};
+
+test('a Direct Lake model: one partition and its expression for the model, nothing per table', () => {
+  const url = URL_;
+  const doc = tmslToOssie(directLake());
   for (const d of doc.datasets) assert.equal(d.custom_extensions, undefined, d.name);
   for (const d of doc.datasets) for (const f of d.fields) assert.equal(f.custom_extensions, undefined, f.name);
   assert.deepEqual(extOf(doc), {
-    model: { expressions: [{ name: 'DatabaseQuery', kind: 'm', expression: url }],
+    model: { defaultMode: 'directLake', expressions: [{ name: 'DatabaseQuery', kind: 'm', expression: url }],
       roles: [{ name: 'r', tablePermissions: [{ name: 'a', filterExpression: 'a[id] = 1' }] }] },
     partition: { mode: 'directLake', expressionSource: 'DatabaseQuery' },
   });
@@ -176,6 +181,24 @@ test('a Direct Lake model: one partition and its expression for the model, nothi
   assert.deepEqual(back.model.tables[0].partitions, [{ name: 'a', mode: 'directLake', source: { type: 'entity', entityName: 'a', schemaName: 'dbo', expressionSource: 'DatabaseQuery' } }]);
   assert.deepEqual(back.model.expressions, [{ name: 'DatabaseQuery', kind: 'm', expression: url }]);
   assert.deepEqual(back.model.tables[1].columns, [{ name: 'id', dataType: 'int64', sourceColumn: 'id', isKey: true }]);
+});
+
+test('a table named in full: the name is its source, with no partition or expression kept', () => {
+  const name = t => `lakehouse."my ws".nem.dbo.${t.name}`;
+  const doc = tmslToOssie(directLake(), 'dl', { source: name });
+  assert.deepEqual(doc.datasets.map(d => d.source), ['lakehouse."my ws".nem.dbo.a', 'lakehouse."my ws".nem.dbo.b']);
+  for (const d of doc.datasets) assert.equal(d.custom_extensions, undefined, d.name);
+  // Left: the role alone. No expression, no partition, no storage mode.
+  assert.deepEqual(extOf(doc), { model: { roles: [{ name: 'r', tablePermissions: [{ name: 'a', filterExpression: 'a[id] = 1' }] }] } });
+  const back = ossieToTmsl(doc);
+  assert.deepEqual(back.model.tables[0].partitions, [{ name: 'a', source: { type: 'entity', entityName: 'a', schemaName: 'lakehouse."my ws".nem.dbo' } }]);
+  assert.equal(back.model.expressions, undefined);
+  // One named, one not: the other keeps the model's partition, the named one does not take it.
+  const mixed = tmslToOssie(directLake(), 'dl', { source: t => (t.name === 'a' ? name(t) : null) });
+  assert.deepEqual(extOf(mixed).partition, { mode: 'directLake', expressionSource: 'DatabaseQuery' });
+  const [a, b] = ossieToTmsl(mixed).model.tables.map(t => t.partitions[0]);
+  assert.deepEqual(a, { name: 'a', source: { type: 'entity', entityName: 'a', schemaName: 'lakehouse."my ws".nem.dbo' } });
+  assert.deepEqual(b, { name: 'b', mode: 'directLake', source: { type: 'entity', entityName: 'b', schemaName: 'dbo', expressionSource: 'DatabaseQuery' } });
 });
 
 test('aac: ossie.yaml is its model.bim as Ossie', () => {

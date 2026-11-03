@@ -371,6 +371,9 @@ package: they are not exported and the compiler never imports them.
   (a relationship's filter direction, a date table, a calculation group, roles, ...), the
   Direct Lake expression, and what a user sees (hidden, format strings, folders, hierarchies).
   `ossieToTmsl(tmslToOssie(bim))` answers every query as the bim does; it is not the bim.
+  `tmslToOssie(bim, name, { source })` takes a table's full name from the caller (a catalog's,
+  such as `lakehouse.ws.item.schema.table`): it is the dataset's `source`, and the partition
+  and the expression it read are not kept.
 
 ### API
 

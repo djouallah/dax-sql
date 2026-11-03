@@ -16,6 +16,11 @@
 // strings, display folders, hierarchies, sort-by columns). Lineage tags, annotations,
 // summarizeBy and the like go: ossieToTmsl(tmslToOssie(bim)) answers as the bim does, it is not
 // the bim. Files written with every TMSL property in the extension read as they always did.
+//
+// A dataset's `source` is schema.table, its partition's, unless the caller names its table in
+// full (tmslToOssie's `source`, a catalog's name such as lakehouse.ws.item.schema.table): then
+// that name says where the data is, and the partition and the expression it read are not kept.
+// Back, such a source is the partition's schema (all of it but the table) and entity.
 import { tmslToModel } from './tmsl.js';
 import { measureSql, columnSql, parseDax, metricDax, fieldDax, sourceColumnOf, sqlName } from './ossie-sql.js';
 
@@ -90,8 +95,10 @@ function metric(ms, home, sql, modelScoped = false) {
   };
 }
 
-export function tmslToOssie(bim, name = 'model') {
+export function tmslToOssie(bim, name = 'model', { source = () => null } = {}) {
   const m = bim.model;
+  // A table the caller names in full, by its single entity partition: name -> its name.
+  const named = new Map(m.tables.map(t => [t, entity(t) ? source(t) ?? null : null]).filter(([, n]) => n));
   // What the translator knows of each table, and every measure (a measure it inlines).
   const tables = new Map(m.tables.map(t => [lc(t.name), {
     name: t.name,
@@ -103,7 +110,7 @@ export function tmslToOssie(bim, name = 'model') {
   // The partition most tables have, which a dataset with none of its own reads back as.
   const counts = new Map();
   for (const t of m.tables) {
-    const p = entity(t);
+    const p = !named.has(t) && entity(t);
     if (p) { const k = JSON.stringify(partitionDefault(p)); counts.set(k, (counts.get(k) ?? 0) + 1); }
   }
   const defaultKey = [...counts].sort((a, b) => b[1] - a[1])[0]?.[0] ?? '{}';
@@ -139,14 +146,14 @@ export function tmslToOssie(bim, name = 'model') {
     if (t.dataCategory === 'Time') left.dataCategory = 'Time';
     if (t.calculationGroup) left.calculationGroup = clean(t.calculationGroup);
     if (t.hierarchies?.length) left.hierarchies = clean(t.hierarchies);
-    if (t.partitions && !rebuilt(t)) {
+    if (t.partitions && !named.has(t) && !rebuilt(t)) {
       left.partitions = clean(t.partitions);
       for (const p of t.partitions) if (p.source?.expressionSource) expressionsUsed.add(p.source.expressionSource);
     }
     const metrics = metricsOf.get(lc(t.name));
     return {
       name: t.name,
-      source: s?.entityName ? (s.schemaName ? `${s.schemaName}.${s.entityName}` : s.entityName) : t.name,
+      source: named.get(t) ?? (s?.entityName ? (s.schemaName ? `${s.schemaName}.${s.entityName}` : s.entityName) : t.name),
       ...(keys.length ? { primary_key: keys } : {}),
       ...optional('description', text(t.description)),
       fields: (t.columns ?? []).filter(c => c.type !== 'rowNumber').map(c => field(c, tables.get(lc(t.name)))),
@@ -170,7 +177,8 @@ export function tmslToOssie(bim, name = 'model') {
   // The model's own: how its tables are stored and where (the Direct Lake expression a
   // partition names), and its roles, without their members.
   const model = {};
-  if (m.defaultMode) model.defaultMode = m.defaultMode;
+  // A storage mode is a partition's: with every table named in full, none is kept.
+  if (m.defaultMode && m.tables.some(t => t.partitions && !named.has(t))) model.defaultMode = m.defaultMode;
   const expressions = (m.expressions ?? []).filter(e => expressionsUsed.has(e.name));
   if (expressions.length) model.expressions = clean(expressions).map(e => pick(e, ['name', 'kind', 'expression']));
   const roles = (m.roles ?? []).map(r => ({
@@ -198,6 +206,15 @@ const sqlOf = o => o.expression?.sql
 // Back: what the core says, and the extension over it; a property it holds as null is one
 // the TMSL did not have.
 const tmsl = (core, extra) => Object.fromEntries(Object.entries({ ...core, ...extra }).filter(([, v]) => v !== null && v !== undefined));
+// The last dot of a dotted name that is not inside "quotes", or -1.
+function lastDot(name) {
+  let at = -1, q = false;
+  for (let i = 0; i < name.length; i++) {
+    if (name[i] === '"') q = !q;
+    else if (name[i] === '.' && !q) at = i;
+  }
+  return at;
+}
 const measureDax = (m, dataset, datasets) => {
   const code = dax(m);
   if (code != null) return { dax: code, table: null };
@@ -213,7 +230,10 @@ export function ossieToTmsl(doc) {
   const tables = doc.datasets.map(d => {
     const keys = new Set(d.primary_key ?? []);
     const extra = powerBi(d);
-    const [schema, entityName] = d.source.includes('.') ? [d.source.slice(0, d.source.lastIndexOf('.')), d.source.slice(d.source.lastIndexOf('.') + 1)] : [null, d.source];
+    const dot = lastDot(d.source);
+    const [schema, entityName] = dot < 0 ? [null, d.source] : [d.source.slice(0, dot), d.source.slice(dot + 1)];
+    // A source named in full says where it is: the model's partition is for schema.table.
+    const own = dot < 0 || lastDot(schema) < 0 ? defaults : {};
     // A field is a source column when its SQL is one (a file of an earlier draft wrote it as
     // it was, in ANSI_SQL), and a calculated column when its SQL is more.
     const fields = (d.fields ?? []).map(f => {
@@ -238,8 +258,8 @@ export function ossieToTmsl(doc) {
         ...(keys.has(f.name) ? { isKey: true } : {}),
       }, e);
     });
-    const partition = { name: d.name, ...(defaults.mode ? { mode: defaults.mode } : {}),
-      source: tmsl({ type: 'entity', entityName, schemaName: schema, expressionSource: defaults.expressionSource }, {}) };
+    const partition = { name: d.name, ...(own.mode ? { mode: own.mode } : {}),
+      source: tmsl({ type: 'entity', entityName, schemaName: schema, expressionSource: own.expressionSource }, {}) };
     return tmsl({
       name: d.name,
       description: d.description,

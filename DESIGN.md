@@ -366,7 +366,11 @@ package: they are not exported and the compiler never imports them.
   its source column; a measure is a metric of the dataset it reads, in Ossie's portable SQL
   when it says the same there (`formats/ossie-sql.js`: SUM, AVERAGE, COUNTROWS, DIVIDE, ... over
   one table, BLANK as NULL), and in the DAX dialect when not. Back, a metric or a field in that
-  SQL reads as DAX, so a model another tool wrote in SQL opens too. The `POWER_BI` custom
+  SQL reads as DAX, so a model another tool wrote in SQL opens too. Such a measure keeps, in an
+  `Ossie` annotation, its SQL, the DAX it read as and where it was (a dataset, or the model's
+  own `metrics`): `tmslToOssie` puts it back there, as that SQL while its DAX is unchanged (SQL's
+  `COUNT` is 0 over no rows, DAX's `COUNTA` blank: the DAX is close, the SQL is what was
+  written). A measure changed in Power BI since is translated afresh. The `POWER_BI` custom
   extension keeps only what Ossie has no place for and something needs: what changes an answer
   (a relationship's filter direction, a date table, a calculation group, roles, ...), the
   Direct Lake expression, and what a user sees (hidden, format strings, folders, hierarchies).

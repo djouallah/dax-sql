@@ -26,10 +26,15 @@ import { measureSql, columnSql, parseDax, metricDax, fieldDax, sourceColumnOf, s
 
 const VERSION = '0.2.0.dev0';
 const VENDOR = 'POWER_BI';
-// A measure that was one of the model's own metrics (the root's, not a dataset's): back, it is
-// one again.
-const MODEL_METRIC = { name: 'OssieScope', value: 'model' };
-const modelMetric = ms => (ms.annotations ?? []).some(a => a.name === MODEL_METRIC.name && a.value === MODEL_METRIC.value);
+// A measure read from Ossie keeps, in an annotation, where it was (its dataset, or null for the
+// model's own; `home`, the table it was put on) and, when it was SQL, that SQL, its datatype and
+// the DAX it was read as. Back, it is where it was, and while its DAX is still that DAX it is its
+// SQL as written: COUNT stays COUNT, a CASE stays a CASE. A measure changed since is translated.
+const OSSIE = 'Ossie';
+function fromOssie(ms) {
+  const a = (ms.annotations ?? []).find(x => x.name === OSSIE);
+  try { return a ? JSON.parse(a.value) : null; } catch { return null; }
+}
 const text = e => (Array.isArray(e) ? e.join('\n') : e);
 const lc = s => String(s).toLowerCase();
 const TO_OSSIE = { string: 'String', int64: 'Integer', decimal: 'Decimal', double: 'Float', boolean: 'Boolean' };
@@ -134,7 +139,14 @@ export function tmslToOssie(bim, name = 'model', { source = () => null } = {}) {
     for (const ms of t.measures ?? []) {
       const ast = measures.get(lc(ms.name)).ast;
       let sql = ast && measureSql(ast, tables, measures);
-      if (modelMetric(ms)) { modelMetrics.push(metric(ms, t.name, sql, !sql)); continue; }
+      const was = fromOssie(ms);
+      if (was && (was.dataset == null || tables.has(lc(was.dataset)))) {
+        const kept = was.sql != null && was.dax === text(ms.expression);
+        if (kept) sql = { sql: was.sql, table: was.home, type: was.datatype };
+        const at = was.dataset == null ? (kept ? was.home : sql?.table) : was.dataset;
+        (was.dataset == null ? modelMetrics : metricsOf.get(lc(was.dataset))).push(metric(ms, t.name, sql, lc(at ?? '') !== lc(t.name)));
+        continue;
+      }
       if (sql && tables.get(lc(sql.table)).columns.has(lc(ms.name))) sql = null;
       if (sql || !tables.get(lc(t.name)).columns.has(lc(ms.name))) metricsOf.get(lc(sql ? sql.table : t.name)).push(metric(ms, t.name, sql));
       else modelMetrics.push(metric(ms, t.name, null, true));
@@ -273,22 +285,24 @@ export function ossieToTmsl(doc) {
     }, extra);
   });
   const byName = new Map(tables.map(t => [t.name.toLowerCase(), t]));
-  const place = (m, table, code, model = false) => {
+  const place = (m, table, code, dataset) => {
     const home = table == null ? tables[0] : byName.get(String(table).toLowerCase());
     if (!home) throw new Error(`metric '${m.name}': the model has no table '${table}'`);
     const { table: _, ...extra } = powerBi(m);
-    if (model) extra.annotations = [...(extra.annotations ?? []), MODEL_METRIC];
+    const sql = dax(m) == null ? sqlOf(m) : null;
+    const was = { dataset, home: home.name, ...(sql != null ? { sql, dax: code, ...optional('datatype', m.datatype) } : {}) };
+    extra.annotations = [...(extra.annotations ?? []).filter(a => a.name !== OSSIE), { name: OSSIE, value: JSON.stringify(was) }];
     (home.measures ??= []).push(tmsl({ name: m.name, description: m.description, expression: code }, extra));
   };
   for (const d of doc.datasets) {
     for (const m of d.metrics ?? []) {
       const { dax: code } = measureDax(m, d, doc.datasets);
-      place(m, powerBi(m).table ?? d.name, code);
+      place(m, powerBi(m).table ?? d.name, code, d.name);
     }
   }
   for (const m of doc.metrics ?? []) {
     const { dax: code, table } = measureDax(m, null, doc.datasets);
-    place(m, powerBi(m).table ?? table, code, true);
+    place(m, powerBi(m).table ?? table, code, null);
   }
   const relationships = doc.relationships?.map(r => {
     if (r.from_columns.length !== 1 || r.to_columns.length !== 1) throw new Error(`relationship '${r.name}': TMSL joins one column`);

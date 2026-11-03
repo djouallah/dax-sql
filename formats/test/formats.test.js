@@ -7,7 +7,7 @@
 //   - conformance/models/aac/ossie.yaml is its model.bim as Ossie;
 //   - a file written before (every TMSL property in the extension) reads as it did;
 //   - an Ossie file whose metrics and fields are SQL reads as DAX;
-//   - a model's own metric stays the model's, back and forth.
+//   - an Ossie metric comes back where it was, as the SQL it was written in while unchanged.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
@@ -255,19 +255,34 @@ test('an Ossie file whose metrics and fields are SQL reads as DAX', () => {
   assert.ok(createCompiler(tmslToModel(bim)).compile('EVALUATE SUMMARIZECOLUMNS(customers[id], "r", [revenue], "a", [avg_order])').sql);
 });
 
-test("a model's own metric comes back the model's; a bare name in it is the field one dataset has", () => {
+test("an Ossie metric comes back where it was, as its SQL while its DAX is what that SQL read as", () => {
   const doc = {
     version: '0.2.0.dev0',
     name: 'm0',
-    datasets: [{ name: 'sales', source: 'samples.sales.orders', fields: [{ name: 'amount', expression: { sql: 'amount' }, datatype: 'Decimal' }] }],
-    metrics: [{ name: 'total_amount', expression: { sql: 'SUM(amount)' } }],
+    datasets: [{ name: 'sales', source: 'samples.sales.orders', fields: [
+      { name: 'amount', expression: { sql: 'amount' }, datatype: 'Decimal' },
+      { name: 'status', expression: { sql: 'status' }, datatype: 'String' },
+    ], metrics: [{ name: 'orders', expression: { sql: 'COUNT(sales.amount)' }, datatype: 'Integer' }] }],
+    metrics: [
+      { name: 'total_amount', expression: { sql: 'SUM(amount)' }, datatype: 'Decimal' },
+      { name: 'completed', expression: { sql: "SUM(CASE WHEN sales.status = 'completed' THEN sales.amount ELSE 0 END)" } },
+    ],
   };
   const bim = ossieToTmsl(doc);
-  assert.equal(bim.model.tables[0].measures[0].expression, "SUM('sales'[amount])");
-  const back = tmslToOssie(bim, 'm0');
-  assert.deepEqual(back.metrics.map(m => m.name), ['total_amount']);
-  assert.equal(back.datasets[0].metrics, undefined);
-  assert.ok(back.metrics[0].expression.sql);
+  const measure = n => bim.model.tables[0].measures.find(m => m.name === n);
+  // A bare name in a model's own metric: the field one dataset has.
+  assert.equal(measure('total_amount').expression, "SUM('sales'[amount])");
+  let back = tmslToOssie(bim, 'm0');
+  assert.deepEqual(back.metrics.map(m => [m.name, m.expression.sql, m.datatype]), [
+    ['total_amount', 'SUM(amount)', 'Decimal'],
+    ['completed', "SUM(CASE WHEN sales.status = 'completed' THEN sales.amount ELSE 0 END)", undefined],
+  ]);
+  assert.deepEqual(back.datasets[0].metrics.map(m => [m.name, m.expression.sql, m.datatype]), [['orders', 'COUNT(sales.amount)', 'Integer']]);
+  // Changed in Power BI: translated, no longer the SQL it was read from.
+  measure('total_amount').expression = "SUM('sales'[amount]) * 2";
+  back = tmslToOssie(bim, 'm0');
+  assert.notEqual(back.metrics[0].expression.sql, 'SUM(amount)');
+  assert.deepEqual(back.metrics.map(m => m.name), ['total_amount', 'completed']);
 });
 
 test('a metric with neither DAX nor SQL dax-sql reads is refused, saying why', () => {

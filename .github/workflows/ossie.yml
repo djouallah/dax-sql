@@ -1,0 +1,79 @@
+name: Ossie
+
+# The Apache Ossie dax-sql writes, checked with Ossie's own tools (https://github.com/apache/ossie,
+# at OSSIE_REF), by formats/test/ossie-docs.mjs's documents:
+#   - validation/validate.py: Ossie's JSON Schema, unique names, relationships that resolve, SQL
+#     that parses, on every model here written as Ossie, and the ossie.yaml files kept here;
+#   - the portability ladder (compliance/portability): each fixture read and written back, graded
+#     by grader/grade.py. Only PORTABLE, RELABELED (ANSI_SQL in, Ossie's SQL out) and a REWRITTEN
+#     the grader proves cosmetic pass; a metric or field lost, refused, added, or turned into DAX fails.
+#
+# A release needs it green: publish.yml runs it first, and OneLake Studio's build runs it on the
+# dax-sql it pins (`version`, a published one: its formats/ against this repo's models).
+#
+# OSSIE_REF is a commit, not main: Ossie changes every day, and its schema takes one version
+# (formats/ossie.js VERSION). Move it on purpose, with VERSION when the spec's changes.
+
+on:
+  push:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      version:
+        description: "A published dax-sql to check instead of this checkout"
+        type: string
+        default: ""
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  OSSIE_REF: f505f0a9ce835bf1b52d0b0ceb3872e6c724d15f
+
+permissions:
+  contents: read
+
+jobs:
+  ossie:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      # Named, so that called from another repository it still checks out this one.
+      - uses: actions/checkout@v4
+        with:
+          repository: djouallah/dax-sql
+      - uses: actions/checkout@v4
+        with:
+          repository: apache/ossie
+          ref: ${{ env.OSSIE_REF }}
+          path: .ossie
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - run: npm ci --no-audit --no-fund
+      - uses: astral-sh/setup-uv@v6
+      - name: The published dax-sql
+        if: inputs.version
+        run: |
+          set -euo pipefail
+          npm pack "dax-sql@${{ inputs.version }}" --pack-destination "$RUNNER_TEMP"
+          mkdir "$RUNNER_TEMP/published"
+          tar -xzf "$RUNNER_TEMP"/dax-sql-*.tgz -C "$RUNNER_TEMP/published"
+          echo "FORMATS=--formats $RUNNER_TEMP/published/package/formats" >> "$GITHUB_ENV"
+      - name: What dax-sql writes
+        run: node formats/test/ossie-docs.mjs "$RUNNER_TEMP/ossie" .ossie $FORMATS
+      - name: Valid Ossie
+        run: uv run .ossie/validation/validate.py "$RUNNER_TEMP"/ossie/models/*.yaml
+      - name: The portability ladder
+        run: |
+          set -euo pipefail
+          grade=.ossie/compliance/portability/grader/grade.py
+          { echo "### Ossie portability ladder, read and written back"; echo; echo "| fixture | element | outcome |"; echo "|---|---|---|"; } >> "$GITHUB_STEP_SUMMARY"
+          failed=0
+          while IFS=$'\t' read -r input returned; do
+            uv run --quiet --no-project --with pyyaml --with sqlglot "$grade" \
+              --input "$input" --returned "$returned" --converter dax-sql --json > "$returned.json"
+            jq -r --arg f "$(basename "$input")" '.findings[] | "| \($f) | \(.kind) \(.name) | \(.outcome) \(.detail // "") |"' "$returned.json" | tee -a "$GITHUB_STEP_SUMMARY"
+            bad=$(jq '[.findings[] | select(.outcome != "PORTABLE" and .outcome != "RELABELED"
+                       and (.outcome != "REWRITTEN" or ((.detail // "") | startswith("cosmetic") | not)))] | length' "$returned.json")
+            [ "$bad" -eq 0 ] || { echo "::error::$(basename "$input"): $bad element(s) not portable through dax-sql"; failed=1; }
+          done < "$RUNNER_TEMP/ossie/portability/list"
+          exit $failed

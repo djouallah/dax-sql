@@ -1,7 +1,8 @@
 name: Publish
 
 # Publishes dax-sql to npm when a v* tag is pushed: git tag v<version> && git push origin v<version>.
-# The tag must name the version in package.json, and the tests must pass first.
+# The tag must name the version in package.json, and the tests and the Ossie checks (ossie.yml) must
+# pass first.
 #
 # NO TOKEN: npm's trusted publishing trades this job's GitHub OIDC token (id-token: write) for a
 # one-time publish credential, and --provenance (publishConfig) signs "built from
@@ -20,7 +21,11 @@ permissions:
   contents: read
 
 jobs:
+  ossie:
+    uses: ./.github/workflows/ossie.yml
+
   publish:
+    needs: ossie
     runs-on: ubuntu-latest
     permissions:
       contents: read

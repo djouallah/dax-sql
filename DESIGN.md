@@ -850,6 +850,10 @@ npm test
   does, on DuckDB, for contoso and aac (`conformance/models/aac`, whose `ossie.yaml` is its
   `model.bim` as Ossie); which measures are SQL and which DAX; what the extension may hold; a
   file of the earlier shape reads as it did; an Ossie model in SQL reads as DAX.
+- `.github/workflows/ossie.yml`, in CI only (it needs Python and an Ossie checkout): what
+  `formats/ossie.js` writes for every model here passes Ossie's own validator
+  (`validation/validate.py`), and Ossie's portability ladder (`compliance/portability`) comes
+  back from dax-sql portable, as its grader scores it. A release waits for it.
 - `test/smoke.test.js`, on a small sales model (`test/fixtures/contoso.js`): representative
   queries compile and run on DuckDB, with and without roles; errors carry their codes; the SQL
   keeps its shape (a filter inline on the fact, a selected total read off the groups).

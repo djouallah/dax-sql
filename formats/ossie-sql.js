@@ -405,6 +405,11 @@ export function metricDax(sql, dataset, datasets) {
       const f = fieldIn(dataset, parts[0]);
       return f ? { table: dataset.name, column: f.name } : null;
     }
+    // A model-scoped metric's bare name: the field of that name, when one dataset has it.
+    if (parts.length === 1) {
+      const has = datasets.filter(d => fieldIn(d, parts[0]));
+      return has.length === 1 ? { table: has[0].name, column: fieldIn(has[0], parts[0]).name } : null;
+    }
     if (parts.length === 2) {
       const d = byName.get(lc(parts[0]));
       const f = d && fieldIn(d, parts[1]);

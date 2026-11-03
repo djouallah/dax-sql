@@ -6,7 +6,8 @@
 //   - the POWER_BI extension holds only what something needs;
 //   - conformance/models/aac/ossie.yaml is its model.bim as Ossie;
 //   - a file written before (every TMSL property in the extension) reads as it did;
-//   - an Ossie file whose metrics and fields are SQL reads as DAX.
+//   - an Ossie file whose metrics and fields are SQL reads as DAX;
+//   - a model's own metric stays the model's, back and forth.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
@@ -252,6 +253,21 @@ test('an Ossie file whose metrics and fields are SQL reads as DAX', () => {
   assert.equal(col('order_id').sourceColumn, 'o_id');
   assert.deepEqual([col('double_amount').type, col('double_amount').expression], ['calculated', "'orders'[amount] * 2"]);
   assert.ok(createCompiler(tmslToModel(bim)).compile('EVALUATE SUMMARIZECOLUMNS(customers[id], "r", [revenue], "a", [avg_order])').sql);
+});
+
+test("a model's own metric comes back the model's; a bare name in it is the field one dataset has", () => {
+  const doc = {
+    version: '0.2.0.dev0',
+    name: 'm0',
+    datasets: [{ name: 'sales', source: 'samples.sales.orders', fields: [{ name: 'amount', expression: { sql: 'amount' }, datatype: 'Decimal' }] }],
+    metrics: [{ name: 'total_amount', expression: { sql: 'SUM(amount)' } }],
+  };
+  const bim = ossieToTmsl(doc);
+  assert.equal(bim.model.tables[0].measures[0].expression, "SUM('sales'[amount])");
+  const back = tmslToOssie(bim, 'm0');
+  assert.deepEqual(back.metrics.map(m => m.name), ['total_amount']);
+  assert.equal(back.datasets[0].metrics, undefined);
+  assert.ok(back.metrics[0].expression.sql);
 });
 
 test('a metric with neither DAX nor SQL dax-sql reads is refused, saying why', () => {

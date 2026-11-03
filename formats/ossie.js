@@ -26,6 +26,10 @@ import { measureSql, columnSql, parseDax, metricDax, fieldDax, sourceColumnOf, s
 
 const VERSION = '0.2.0.dev0';
 const VENDOR = 'POWER_BI';
+// A measure that was one of the model's own metrics (the root's, not a dataset's): back, it is
+// one again.
+const MODEL_METRIC = { name: 'OssieScope', value: 'model' };
+const modelMetric = ms => (ms.annotations ?? []).some(a => a.name === MODEL_METRIC.name && a.value === MODEL_METRIC.value);
 const text = e => (Array.isArray(e) ? e.join('\n') : e);
 const lc = s => String(s).toLowerCase();
 const TO_OSSIE = { string: 'String', int64: 'Integer', decimal: 'Decimal', double: 'Float', boolean: 'Boolean' };
@@ -130,6 +134,7 @@ export function tmslToOssie(bim, name = 'model', { source = () => null } = {}) {
     for (const ms of t.measures ?? []) {
       const ast = measures.get(lc(ms.name)).ast;
       let sql = ast && measureSql(ast, tables, measures);
+      if (modelMetric(ms)) { modelMetrics.push(metric(ms, t.name, sql, !sql)); continue; }
       if (sql && tables.get(lc(sql.table)).columns.has(lc(ms.name))) sql = null;
       if (sql || !tables.get(lc(t.name)).columns.has(lc(ms.name))) metricsOf.get(lc(sql ? sql.table : t.name)).push(metric(ms, t.name, sql));
       else modelMetrics.push(metric(ms, t.name, null, true));
@@ -268,10 +273,11 @@ export function ossieToTmsl(doc) {
     }, extra);
   });
   const byName = new Map(tables.map(t => [t.name.toLowerCase(), t]));
-  const place = (m, table, code) => {
+  const place = (m, table, code, model = false) => {
     const home = table == null ? tables[0] : byName.get(String(table).toLowerCase());
     if (!home) throw new Error(`metric '${m.name}': the model has no table '${table}'`);
     const { table: _, ...extra } = powerBi(m);
+    if (model) extra.annotations = [...(extra.annotations ?? []), MODEL_METRIC];
     (home.measures ??= []).push(tmsl({ name: m.name, description: m.description, expression: code }, extra));
   };
   for (const d of doc.datasets) {
@@ -282,7 +288,7 @@ export function ossieToTmsl(doc) {
   }
   for (const m of doc.metrics ?? []) {
     const { dax: code, table } = measureDax(m, null, doc.datasets);
-    place(m, powerBi(m).table ?? table, code);
+    place(m, powerBi(m).table ?? table, code, true);
   }
   const relationships = doc.relationships?.map(r => {
     if (r.from_columns.length !== 1 || r.to_columns.length !== 1) throw new Error(`relationship '${r.name}': TMSL joins one column`);

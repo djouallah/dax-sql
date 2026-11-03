@@ -3,7 +3,8 @@ name: Ossie
 # The Apache Ossie dax-sql writes, checked with Ossie's own tools (https://github.com/apache/ossie,
 # at OSSIE_REF), by formats/test/ossie-docs.mjs's documents:
 #   - validation/validate.py: Ossie's JSON Schema, unique names, relationships that resolve, SQL
-#     that parses, on every model here written as Ossie, and the ossie.yaml files kept here;
+#     that parses, on every model here written as Ossie, the ossie.yaml files kept here, and what
+#     the ladder below comes back as;
 #   - the portability ladder (compliance/portability): each fixture read and written back, graded
 #     by grader/grade.py. Only PORTABLE, RELABELED (ANSI_SQL in, Ossie's SQL out) and a REWRITTEN
 #     the grader proves cosmetic pass; a metric or field lost, refused, added, or turned into DAX fails.
@@ -61,7 +62,7 @@ jobs:
       - name: What dax-sql writes
         run: node formats/test/ossie-docs.mjs "$RUNNER_TEMP/ossie" .ossie $FORMATS
       - name: Valid Ossie
-        run: uv run .ossie/validation/validate.py "$RUNNER_TEMP"/ossie/models/*.yaml
+        run: uv run .ossie/validation/validate.py "$RUNNER_TEMP"/ossie/models/*.yaml "$RUNNER_TEMP"/ossie/portability/*.ossie.yaml
       - name: The portability ladder
         run: |
           set -euo pipefail

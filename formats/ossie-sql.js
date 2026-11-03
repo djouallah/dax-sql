@@ -432,6 +432,18 @@ export function fieldDax(sql, table, columns) {
   return toDax(parseSql(sql), resolve).run(table).dax;
 }
 
+// A field's SQL in a dialect, where a file of an earlier draft wrote its source column as it was,
+// unquoted: the column when it is one, or when it is no SQL at all (a name with a space, say);
+// null when it is an expression, a calculated column.
+export function dialectSourceOf(sql) {
+  try {
+    const e = parseSql(String(sql));
+    return e.k === 'id' && e.parts.length === 1 ? e.parts[0] : null;
+  } catch {
+    return String(sql);
+  }
+}
+
 // Whether a field's SQL is a column of its source, and which: a bare or quoted identifier.
 export function sourceColumnOf(sql) {
   try {

@@ -262,7 +262,12 @@ test("an Ossie metric comes back where it was, as its SQL while its DAX is what 
     datasets: [{ name: 'sales', source: 'samples.sales.orders', fields: [
       { name: 'amount', expression: { sql: 'amount' }, datatype: 'Decimal' },
       { name: 'status', expression: { sql: 'status' }, datatype: 'String' },
-    ], metrics: [{ name: 'orders', expression: { sql: 'COUNT(sales.amount)' }, datatype: 'Integer' }] }],
+      { name: 'qty', expression: { dialects: [{ dialect: 'ANSI_SQL', expression: 'qty' }] }, datatype: 'Integer' },
+      { name: 'with_tax', expression: { dialects: [{ dialect: 'ANSI_SQL', expression: 'amount * 1.1' }] }, datatype: 'Decimal' },
+    ], metrics: [
+      { name: 'orders', expression: { sql: 'COUNT(sales.amount)' }, datatype: 'Integer' },
+      { name: 'items', expression: { dialects: [{ dialect: 'ANSI_SQL', expression: 'SUM(qty)' }] } },
+    ] }],
     metrics: [
       { name: 'total_amount', expression: { sql: 'SUM(amount)' }, datatype: 'Decimal' },
       { name: 'completed', expression: { sql: "SUM(CASE WHEN sales.status = 'completed' THEN sales.amount ELSE 0 END)" } },
@@ -272,16 +277,24 @@ test("an Ossie metric comes back where it was, as its SQL while its DAX is what 
   const measure = n => bim.model.tables[0].measures.find(m => m.name === n);
   // A bare name in a model's own metric: the field one dataset has.
   assert.equal(measure('total_amount').expression, "SUM('sales'[amount])");
+  // An ANSI_SQL expression is a calculated column, not a source column of that name.
+  const withTax = bim.model.tables[0].columns.find(c => c.name === 'with_tax');
+  assert.deepEqual([withTax.type, withTax.expression, withTax.sourceColumn], ['calculated', "'sales'[amount] * 1.1", undefined]);
   let back = tmslToOssie(bim, 'm0');
   assert.deepEqual(back.metrics.map(m => [m.name, m.expression.sql, m.datatype]), [
     ['total_amount', 'SUM(amount)', 'Decimal'],
     ['completed', "SUM(CASE WHEN sales.status = 'completed' THEN sales.amount ELSE 0 END)", undefined],
   ]);
-  assert.deepEqual(back.datasets[0].metrics.map(m => [m.name, m.expression.sql, m.datatype]), [['orders', 'COUNT(sales.amount)', 'Integer']]);
-  // Changed in Power BI: translated, no longer the SQL it was read from.
+  // Every expression as it was written, in its dialect.
+  assert.deepEqual(back.datasets[0].metrics.map(m => [m.name, m.expression, m.datatype]),
+    doc.datasets[0].metrics.map(m => [m.name, m.expression, m.datatype]));
+  assert.deepEqual(back.datasets[0].fields.map(f => [f.name, f.expression]), doc.datasets[0].fields.map(f => [f.name, f.expression]));
+  // Changed in Power BI: translated, no longer what it was read from.
   measure('total_amount').expression = "SUM('sales'[amount]) * 2";
+  bim.model.tables[0].columns.find(c => c.name === 'with_tax').expression = "'sales'[amount] * 2";
   back = tmslToOssie(bim, 'm0');
   assert.notEqual(back.metrics[0].expression.sql, 'SUM(amount)');
+  assert.notDeepEqual(back.datasets[0].fields.find(f => f.name === 'with_tax').expression, doc.datasets[0].fields[3].expression);
   assert.deepEqual(back.metrics.map(m => m.name), ['total_amount', 'completed']);
 });
 

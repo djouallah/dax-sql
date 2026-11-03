@@ -6,8 +6,9 @@ name: Ossie
 #     that parses, on every model here written as Ossie, the ossie.yaml files kept here, and what
 #     the ladder below comes back as;
 #   - the portability ladder (compliance/portability): each fixture read and written back, graded
-#     by grader/grade.py. Only PORTABLE, RELABELED (ANSI_SQL in, Ossie's SQL out) and a REWRITTEN
-#     the grader proves cosmetic pass; a metric or field lost, refused, added, or turned into DAX fails.
+#     by grader/grade.py. Every element must come back PORTABLE: the expression it was given, in
+#     the dialect it was given, word for word. Anything else fails (rewritten, relabeled, lost,
+#     refused, added, turned into DAX).
 #
 # A release needs it green: publish.yml runs it first, and OneLake Studio's build runs it on the
 # dax-sql it pins (`version`, a published one: its formats/ against this repo's models).
@@ -73,8 +74,7 @@ jobs:
             uv run --quiet --no-project --with pyyaml --with sqlglot "$grade" \
               --input "$input" --returned "$returned" --converter dax-sql --json > "$returned.json"
             jq -r --arg f "$(basename "$input")" '.findings[] | "| \($f) | \(.kind) \(.name) | \(.outcome) \(.detail // "") |"' "$returned.json" | tee -a "$GITHUB_STEP_SUMMARY"
-            bad=$(jq '[.findings[] | select(.outcome != "PORTABLE" and .outcome != "RELABELED"
-                       and (.outcome != "REWRITTEN" or ((.detail // "") | startswith("cosmetic") | not)))] | length' "$returned.json")
+            bad=$(jq '[.findings[] | select(.outcome != "PORTABLE")] | length' "$returned.json")
             [ "$bad" -eq 0 ] || { echo "::error::$(basename "$input"): $bad element(s) not portable through dax-sql"; failed=1; }
           done < "$RUNNER_TEMP/ossie/portability/list"
           exit $failed

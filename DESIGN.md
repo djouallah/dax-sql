@@ -439,7 +439,7 @@ SELECT * FROM (SHOW SEMANTIC METRICS IN sales) WHERE ...;   -- each one reads as
 | Option | |
 |---|---|
 | `tableSource` | `(table) => SQL` naming a model table's rows. Default: its partition's entity, `"schema"."entity"`. |
-| `dialect` | `'duckdb'` (default), or an instance of a `Dialect` subclass. |
+| `dialect` | `'duckdb'` (default), `'tsql'` (the Fabric SQL endpoint and Warehouse; see T-SQL below), or an instance of a `Dialect` subclass. |
 | `columnNames` | `'short'` (default): the column's or the expression's name. `'dax'`: `Table[Column]`, `[Measure]`. |
 | `castOutput` | `true` (default): whole numbers as `BIGINT`, other numbers as `DOUBLE`. Or an object, by the column's type (`int`, `double`, `decimal`, `datetime`, `string`, `bool`), of a function of its SQL: `{ int: s => \`CAST(${s} AS INTEGER)\` }`; a type it leaves out is not cast. |
 | `assumeIntegrity` | `true`: every relationship relies on referential integrity, so a dimension key is read off the fact's foreign key without a join. By default only relationships whose `relyOnReferentialIntegrity` is set are treated this way. |
@@ -816,7 +816,7 @@ SELECT m.*, p.n FROM m JOIN (SELECT "Color", COUNT(*) AS n FROM "Product" GROUP 
 | `ir.js` | the intermediate form: scalars, tables, rows, aggregates over scans |
 | `emit.js` | the intermediate form into SQL |
 | `format.js` | FORMAT's patterns, read into what a dialect writes |
-| `dialects/` | what differs between SQL engines: `base.js` (the interface), `duckdb.js`, `duckdb-format.js` |
+| `dialects/` | what differs between SQL engines: `base.js` (the interface), `duckdb.js`, `duckdb-format.js`, `tsql.js` |
 
 The SQL it writes:
 
@@ -840,6 +840,52 @@ The SQL it writes:
 
 To add an engine, extend `Dialect` in `src/dialects/base.js` (it lists the functions and
 aggregates to write) and pass an instance as `dialect`.
+
+### T-SQL
+
+`dialect: 'tsql'` writes T-SQL as Microsoft Fabric's SQL analytics endpoint and Warehouse run
+it, tested there. The DuckDB SQL is the same with or without it: the emitter asks the dialect for
+what it wrote itself (conditions and boolean values, `NULLS FIRST/LAST`, `LATERAL`, `||`, a
+window's `ORDER BY`), and DuckDB's answers are what the emitter wrote before.
+
+**What it writes differently**
+
+- **No boolean type:** a boolean value is a `BIT`, a condition is `(x = 1)`, and FALSE where
+  unknown is `(CASE WHEN c THEN 1 ELSE 0 END = 1)`.
+- **Text:** compared without regard to case with `COLLATE Latin1_General_100_CI_AS_KS_WS_SC_UTF8`
+  (a lakehouse's text is binary UTF-8), and exactly (FIND, SUBSTITUTE, EXACT) with
+  `Latin1_General_100_BIN2_UTF8`. A literal with trailing spaces is cast: Fabric drops them
+  otherwise, in a query over a table.
+- **The rest:** `OUTER`/`CROSS APPLY` for `LATERAL`; a CASE inside an aggregate for `FILTER`;
+  `OFFSET … FETCH` for `LIMIT`; typed blanks (`IN` over an untyped NULL keeps nothing on Fabric).
+
+**Fabric runs some correlated subqueries as loops**, where DuckDB decorrelates them all. For
+T-SQL the emitter avoids those shapes (a RANKX of 121 rows took over 300 s, and under 1 s so):
+
+- `COALESCE((SELECT …), <a blank>)` is `ISNULL`, which Fabric decorrelates.
+- A subquery in a CASE's branch is a row the CASE reads.
+- An aggregate's argument is computed a row at a time first: T-SQL aggregates no subquery and
+  no outer column beside its own.
+- A table filter of a table's own rows is their conditions, when the columns it keeps
+  determine the others (a related table's by its key or the foreign key; a calculated column by
+  its table's stored ones): a SUMMARIZE's extension columns.
+- The measures an iterator's rows take over their own values are fused into a GROUP BY joined
+  to the rows, as SUMMARIZECOLUMNS' are, for a row of a few columns that reads no outer row.
+
+**By design**, where T-SQL can't do what DAX does:
+
+- `1 / BLANK()` is blank: T-SQL has no infinity.
+- A sum (and an average) of floating-point values is an exact decimal sum, the same in any
+  order: Fabric adds FLOATs in an order of its own each time, so one measure written twice (a
+  RANKX's row and the rows it ranks) could differ in its last digit. 0.1 + 0.2 is 0.3 here.
+- PATH and the PATH functions are refused: they need a recursive CTE, which Fabric lacks.
+
+**Not yet**, refused by name: FORMAT with a pattern, SUBSTITUTE with an instance number,
+PERCENTILE.EXC and PERCENTILEX.
+
+`conformance/engines/dax-sql-tsql` runs the suite on a Fabric SQL endpoint, with its known list
+(those above, and DuckDB's that T-SQL shares). It has its own driver, so the package depends on
+nothing new; it needs an endpoint and a token, so it runs by hand, not in CI.
 
 ### Tests
 

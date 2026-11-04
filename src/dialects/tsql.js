@@ -145,7 +145,11 @@ export class TSqlDialect extends Dialect {
       case 'mod': return `(${x} - ${y} * FLOOR(${fl(x)} / ${y}))`;
       case 'quotient': return `CAST(ROUND(${fl(x)} / ${y}, 0, 1) AS BIGINT)`;
       case 'round': return `ROUND(${x}, ${int(y)})`;
-      case 'currency': return `ROUND(${x}, 4)`;
+      // A fixed decimal: four places, rounded from the value's decimal digits (a FLOAT's ROUND sees
+      // 0.50005 as 0.50004999...), within a 64-bit count of ten-thousandths.
+      case 'currency': return `CASE WHEN ABS(${x}) >= 922337203685477.5808
+        THEN ${this.fn('error', [this.str('DAX: the result of a conversion or arithmetic operation is too large or too small for a fixed decimal number')])}
+        ELSE CAST(ROUND(CAST(${x} AS DECIMAL(38,12)), 4) AS DECIMAL(19,4)) END`;
       case 'roundup': return `(SIGN(${x}) * CEILING(ABS(${x}) * POWER(10e0, ${y})) / POWER(10e0, ${y}))`;
       case 'rounddown': case 'trunc': return `(ROUND(${x} * POWER(10e0, ${y}), 0, 1) / POWER(10e0, ${y}))`;
       case 'int': return `CAST(FLOOR(${x}) AS BIGINT)`;
@@ -162,8 +166,9 @@ export class TSqlDialect extends Dialect {
       case 'left': return `LEFT(${x}, ${y ?? 1})`;
       case 'right': return `RIGHT(${x}, ${y ?? 1})`;
       case 'mid': return `SUBSTRING(${x}, ${y}, ${z})`;
-      // LEN leaves out trailing spaces.
-      case 'len': return `(LEN(${x} + 'x') - 1)`;
+      // LEN leaves out trailing spaces, so they are counted as dots; a blank stays blank (NULL + 'x'
+      // is 'x' on Fabric's connection).
+      case 'len': return `LEN(REPLACE(${x}, ' ', '.'))`;
       case 'upper': return `UPPER(${x})`;
       case 'lower': return `LOWER(${x})`;
       case 'trim': return `REGEXP_REPLACE(TRIM(${x}), ' {2,}', ' ')`;
@@ -257,9 +262,13 @@ export class TSqlDialect extends Dialect {
   agg(fn, x, extra = {}) {
     const f = extra.filter;
     const only = v => (f ? `CASE WHEN ${f} THEN ${v} END` : v);
+    // Fabric adds up FLOATs in parallel, in an order of its own each time, so one measure written
+    // twice (a RANKX's row and the rows it ranks) can differ in its last digit: 186445.7199999998
+    // and 186445.72, and the row ranks below itself. A DECIMAL's sum is the same in any order.
+    const exact = v => `CAST(${v} AS DECIMAL(38,15))`;
     switch (fn) {
-      case 'sum': return `SUM(${only(x)})`;
-      case 'avg': return `AVG(${fl(only(x))})`;
+      case 'sum': return extra.t === 'double' ? `CAST(SUM(${exact(only(x))}) AS FLOAT)` : `SUM(${only(x)})`;
+      case 'avg': return extra.t === 'double' ? `CAST(AVG(${exact(only(x))}) AS FLOAT)` : `AVG(${fl(only(x))})`;
       case 'min': return `MIN(${only(x)})`;
       case 'max': return `MAX(${only(x)})`;
       case 'count': return `NULLIF(COUNT_BIG(${only(x)}), 0)`;

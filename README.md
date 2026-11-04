@@ -26,6 +26,7 @@ const { sql, columns } = dax.compile(`
 - **In:** a semantic model as dax-sql's model object ([DESIGN.md](DESIGN.md#the-model); `formats/` reads one from a TMSL `model.bim` or an [Apache Ossie](https://github.com/apache/ossie) model whose metrics are DAX or SQL), a DAX query or a SQL `SELECT` over the model, options
   ([DESIGN.md](DESIGN.md#api)); or any SQL with `SELECT`s over the model as relations in it.
 - **Out:** one SQL `SELECT` and its columns; for a statement, its SQL with each of them compiled in place.
+- **SQL:** DuckDB's by default; `dialect: 'tsql'` writes T-SQL for Microsoft Fabric's SQL analytics endpoint and Warehouse, with what it can't do listed in [DESIGN.md](DESIGN.md#t-sql).
 - **Errors:** `SYNTAX`, `SEMANTIC`, `UNSUPPORTED`.
 - **Tested:** against Power BI's own answers, in [conformance/](conformance/README.md).
 

@@ -989,7 +989,8 @@ export class Emitter {
     if (x.fn === 'sum' && x.arg?.k === 'fn' && x.arg.name === 'currency' && this.d.sumCurrency)
       return { fn: 'sum_currency', arg: this.scalar(x.arg.a[0], scope), extra: {} };
     const arg = x.arg ? this.scalar(x.arg, scope) : null;
-    const extra = {};
+    // `t`, its argument's type: an engine adds up floating-point values its own way (tsql.js).
+    const extra = { t: x.arg?.t };
     if (x.fn === 'concat') {
       extra.delim = this.scalar(x.a[0], scope);
       const keys = (x.order ?? []).map(o => ({ sql: this.scalar(o.expr, scope), desc: o.desc }));

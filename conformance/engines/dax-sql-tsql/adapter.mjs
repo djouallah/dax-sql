@@ -56,7 +56,10 @@ async function session() {
 
 // --- the data, as #temp tables ---
 
-const TSQL_TYPE = { int64: 'BIGINT', double: 'FLOAT', decimal: 'DECIMAL(18,4)', string: 'VARCHAR(8000)', boolean: 'BIT' };
+// Text as a lakehouse's SQL endpoint holds it: UTF-8, compared by code point (tempdb's own collation drops what
+// its code page lacks: 佐藤 is ??).
+const TEXT = 'VARCHAR(8000) COLLATE Latin1_General_100_BIN2_UTF8';
+const TSQL_TYPE = { int64: 'BIGINT', double: 'FLOAT', decimal: 'DECIMAL(18,4)', string: TEXT, boolean: 'BIT' };
 const str = s => `${/[^\x00-\x7f]/.test(s) ? 'N' : ''}'${String(s).replace(/'/g, "''")}'`;
 const ident = s => `"${String(s).replace(/"/g, '""')}"`;
 const temp = entity => ident(`#${entity}`);
@@ -96,7 +99,7 @@ async function database({ run }, modelPath, dataDir) {
     const text = readFileSync(file, 'utf8');
     const [, ...rows] = parseCsv(text).filter(r => r.length > 1 || r[0] !== null);
     const cols = t.columns.filter(c => !c.type || c.type === 'data');
-    const types = cols.map(c => (c.dataType !== 'dateTime' ? TSQL_TYPE[c.dataType] ?? 'VARCHAR(8000)'
+    const types = cols.map(c => (c.dataType !== 'dateTime' ? TSQL_TYPE[c.dataType] ?? TEXT
       : /\d{4}-\d\d-\d\d[ T]\d/.test(text) ? 'DATETIME2(6)' : 'DATE'));
     const name = temp(prefix + s.entityName);
     await run(`CREATE TABLE ${name} (${cols.map((c, i) => `${ident(c.sourceColumn ?? c.name)} ${types[i]} NULL`).join(', ')})`);

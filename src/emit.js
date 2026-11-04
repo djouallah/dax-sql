@@ -44,6 +44,8 @@ export class Emitter {
 
   alias(p) { return `${p}${++this.n}`; }
   ident(n) { return this.d.ident(n); }
+  // An ORDER BY term as DAX orders: a blank first ascending, last descending.
+  orderBy(v, desc) { return desc ? this.d.order(v, 'DESC', 'LAST') : this.d.order(v, 'ASC', 'FIRST'); }
 
   // --- the query -------------------------------------------------------------------------
 
@@ -66,11 +68,12 @@ export class Emitter {
       const scope = new Map([[row.id, res]]);
       const keys = order.map(o => this.scalar(o.expr, scope));
       if (start.length) sql += ` WHERE ${this.startAt(keys, order, start.map(v => this.scalar(v, scope)), start)}`;
-      sql += ` ORDER BY ${keys.map((k, i) => `${k} ${order[i].desc ? 'DESC NULLS LAST' : 'ASC NULLS FIRST'}`).join(', ')}`;
+      sql += ` ORDER BY ${keys.map((k, i) => this.orderBy(k, order[i].desc)).join(', ')}`;
     }
     if (this.ctes.length) sql = `WITH ${this.ctes.join(',\n')}\n${sql}`;
     return {
-      sql,
+      sql: this.d.finish(sql),
+      ordered: order.length > 0,
       columns: table.cols.map((c, i) => ({ name: outNames[i], dax: daxName(c), type: c.t, lineage: c.lineage ? `'${c.lineage.table.name}'[${c.lineage.name}]` : null })),
     };
   }
@@ -81,7 +84,7 @@ export class Emitter {
   startAt(keys, order, vals, lits) {
     const after = i => {
       const k = keys[i], v = vals[i], blank = lits[i].v === null;
-      if (order[i].desc) return blank ? 'FALSE' : `(${k} < ${v} OR ${k} IS NULL)`;
+      if (order[i].desc) return blank ? this.d.never : `(${k} < ${v} OR ${k} IS NULL)`;
       return blank ? `${k} IS NOT NULL` : `${k} > ${v}`;
     };
     const same = i => this.d.isNotDistinct(keys[i], vals[i]);
@@ -97,14 +100,14 @@ export class Emitter {
       case 'scan': return this.scanBlock(x.table, x.ctx, scope);
       case 'filter': {
         const b = this.open(this.table(x.src, scope));
-        b.where.push(this.scalar(x.pred, withRow(scope, x.row, b.res), true));
+        b.where.push(this.rowFused(b, x.src, x.row, () => this.scalar(x.pred, withRow(scope, x.row, b.res), true)));
         return b;
       }
       case 'project': {
         const b = this.open(this.table(x.src, scope));
         const s2 = withRow(scope, x.row, b.res);
         const kept = x.keep ? b.outList() : [];
-        const items = x.items.map(i => ({ sql: this.scalar(i.expr, s2) }));
+        const items = this.rowFused(b, x.src, x.row, () => x.items.map(i => ({ sql: this.scalar(i.expr, s2) })));
         b.setOut(x.cols, [...kept.map(k => k.sql), ...items.map(i => i.sql)]);
         return b;
       }
@@ -168,7 +171,7 @@ export class Emitter {
         const l = this.wrap(this.table(x.left, scope));
         const r = this.table(x.right, withRow(scope, x.lrow, l.res));
         const a = this.alias('l'), rn = r.names();
-        l.from += x.outer ? ` LEFT JOIN LATERAL (${r.render()}) AS ${a} ON TRUE` : `, LATERAL (${r.render()}) AS ${a}`;
+        l.from += this.d.lateral(r.render(), a, x.outer);
         const cols = [...l.res.list, ...rn.map((n, i) => ({ sql: `${a}.${this.ident(n)}`, lineage: x.right.cols[i].lineage }))];
         l.res = new WrapRes(this, l, cols, l.res.state);
         l.cols = x.cols;
@@ -323,7 +326,7 @@ export class Emitter {
     const g = table.calcGroup;
     const cols = [g.column, g.ordinal].filter(Boolean);
     const rows = g.items.map(it => `(${this.d.str(it.name)}${g.ordinal ? `, ${this.d.num(it.ordinal)}` : ''})`);
-    if (!rows.length) return `(SELECT ${cols.map(c => `NULL AS ${this.ident(c.source)}`).join(', ')} WHERE FALSE)`;
+    if (!rows.length) return `(SELECT ${cols.map(c => `NULL AS ${this.ident(c.source)}`).join(', ')} WHERE ${this.d.never})`;
     return `(SELECT * FROM (VALUES ${rows.join(', ')}) AS v(${cols.map(c => this.ident(c.source)).join(', ')}))`;
   }
 
@@ -377,12 +380,12 @@ export class Emitter {
       const cols = [...x.src.cols, ...order.map((_, i) => ({ name: `__order${i}`, lineage: null, t: 'variant' }))];
       b.setOut(cols, [...base.map(o => o.sql), ...order.map(o => o.sql)]);
       const w = this.wrap(b);
-      w.qualify = `RANK() OVER (ORDER BY ${order.map((o, i) => `${w.res.col(base.length + i)} ${o.desc ? 'DESC NULLS LAST' : 'ASC NULLS FIRST'}`).join(', ')}) <= ${n}`;
+      w.qualify = { win: `RANK() OVER (ORDER BY ${order.map((o, i) => this.orderBy(w.res.col(base.length + i), o.desc)).join(', ')})`, test: `<= ${n}` };
       w.setOut(x.cols, x.cols.map((_, i) => w.res.col(i)));
       w.open = false;
       return w;
     }
-    b.qualify = `RANK() OVER (ORDER BY ${order.map(o => `${o.sql} ${o.desc ? 'DESC NULLS LAST' : 'ASC NULLS FIRST'}`).join(', ')}) <= ${n}`;
+    b.qualify = { win: `RANK() OVER (ORDER BY ${order.map(o => this.orderBy(o.sql, o.desc)).join(', ')})`, test: `<= ${n}` };
     b.open = false;
     return b;
   }
@@ -397,8 +400,8 @@ export class Emitter {
     const os = order.map(o => this.scalar(o.expr, s2));
     b.setOut([...src.cols, ...os.map((_, i) => ({ name: `__o${i}` }))], [...base.map(o => o.sql), ...os]);
     const names = b.names(), n = this.alias('w'), q = v => `${n}.${this.ident(v)}`;
-    const terms = [...order.map((o, i) => orderTerm(q(names[base.length + i]), o)), ...src.cols.map((_, i) => `${q(names[i])} ASC NULLS FIRST`)];
-    return { sql: `SELECT ${n}.*, ${fn}() OVER (${terms.length ? `ORDER BY ${terms.join(', ')}` : ''}) AS "__rn" FROM (${b.render()}) AS ${n}`, names };
+    const terms = [...order.map((o, i) => orderTerm(this.d, q(names[base.length + i]), o)), ...src.cols.map((_, i) => this.d.order(q(names[i]), 'ASC', 'FIRST'))];
+    return { sql: `SELECT ${n}.*, ${fn}() OVER (${this.d.windowOrder(terms)}) AS ${this.ident('__rn')} FROM (${b.render()}) AS ${n}`, names };
   }
 
   // TOPNSKIP: the rows whose place is after `skip`, n of them. Rows equal in every column
@@ -407,7 +410,7 @@ export class Emitter {
     const { sql, names } = this.ranked(x.src, x.row, x.order, scope, 'DENSE_RANK');
     const r = this.alias('x'), n = this.scalar(x.n, scope), k = `COALESCE(${this.scalar(x.skip, scope)}, 0)`;
     const sel = x.cols.map((_, i) => `${r}.${this.ident(names[i])}`).join(', ');
-    return this.fromSql(`(SELECT ${sel || '1 AS one'} FROM (${sql}) AS ${r} WHERE ${r}."__rn" > ${k} AND ${r}."__rn" <= ${k} + ${n})`, x.cols, names.slice(0, x.cols.length));
+    return this.fromSql(`(SELECT ${sel || '1 AS one'} FROM (${sql}) AS ${r} WHERE ${r}.${this.ident('__rn')} > ${k} AND ${r}.${this.ident('__rn')} <= ${k} + ${n})`, x.cols, names.slice(0, x.cols.length));
   }
 
   // SUBSTITUTEWITHINDEX: the rows of the table joined to the index table's rows on the common
@@ -417,7 +420,7 @@ export class Emitter {
     const { sql, names } = this.ranked(x.idx, x.row, x.order, scope, 'ROW_NUMBER');
     const w = this.alias('x'), g = this.alias('n');
     const keys = x.on.map(([, j]) => `${w}.${this.ident(names[j])}`);
-    const idx = `SELECT ${keys.map((k, j) => `${k} AS ${this.ident(`k${j}`)}`).join(', ')}, MIN(${w}."__rn") - 1 AS ${this.ident('i')} FROM (${sql}) AS ${w} GROUP BY ${keys.join(', ')}`;
+    const idx = `SELECT ${keys.map((k, j) => `${k} AS ${this.ident(`k${j}`)}`).join(', ')}, MIN(${w}.${this.ident('__rn')}) - 1 AS ${this.ident('i')} FROM (${sql}) AS ${w} GROUP BY ${keys.join(', ')}`;
     const b = this.wrap(this.table(x.src, scope));
     b.from += ` JOIN (${idx}) AS ${g} ON ${x.on.map(([i], j) => this.d.isNotDistinct(b.res.col(i), `${g}.${this.ident(`k${j}`)}`)).join(' AND ')}`;
     b.setOut(x.cols, [...x.rest.map(i => b.res.col(i)), `${g}.${this.ident('i')}`]);
@@ -431,7 +434,7 @@ export class Emitter {
     if (!x.rows.length) {
       const b = new Block(this, null, x.cols);
       b.setOut(x.cols, x.cols.map(() => 'NULL'));
-      b.where.push('FALSE');
+      b.where.push(this.d.never);
       b.open = false;
       return b;
     }
@@ -459,11 +462,11 @@ export class Emitter {
       [...base.map(o => o.sql), ...os, ...ps]);
     const names = b.names(), n = this.alias('w'), q = v => `${n}.${this.ident(v)}`;
     const part = ps.length ? `PARTITION BY ${ps.map((_, i) => q(`__p${i}`)).join(', ')} ` : '';
-    const order = x.order.map((o, i) => orderTerm(q(`__o${i}`), o)).join(', ');
-    const ties = x.rel.cols.map((_, i) => `${q(names[i])} ASC NULLS FIRST`).join(', ');
-    const num = `SELECT ${n}.*, ROW_NUMBER() OVER (${part}ORDER BY ${[order, ties].filter(Boolean).join(', ')}) AS "__rn",
-      COUNT(*) OVER (${part.trim()}) AS "__n", RANK() OVER (${part}ORDER BY ${order || ties}) AS "__rank",
-      DENSE_RANK() OVER (${part}ORDER BY ${order || ties}) AS "__drank" FROM (${b.render()}) AS ${n}`;
+    const order = x.order.map((o, i) => orderTerm(this.d, q(`__o${i}`), o)).join(', ');
+    const ties = x.rel.cols.map((_, i) => this.d.order(q(names[i]), 'ASC', 'FIRST')).join(', ');
+    const num = `SELECT ${n}.*, ROW_NUMBER() OVER (${part}ORDER BY ${[order, ties].filter(Boolean).join(', ')}) AS ${this.ident('__rn')},
+      COUNT(*) OVER (${part.trim()}) AS ${this.ident('__n')}, RANK() OVER (${part}ORDER BY ${order || ties}) AS ${this.ident('__rank')},
+      DENSE_RANK() OVER (${part}ORDER BY ${order || ties}) AS ${this.ident('__drank')} FROM (${b.render()}) AS ${n}`;
     return { num, names };
   }
 
@@ -504,7 +507,7 @@ export class Emitter {
       // of it (only the partition counts).
       if (x.fn === 'index' || x.fn === 'window' && x.fromAbs && x.toAbs) {
         const k = this.alias('k');
-        cur = `SELECT DISTINCT ${x.parts.length ? x.parts.map((_, i) => `${k}."__p${i}"`).join(', ') : '1 AS one'} FROM (${cur}) AS ${k}`;
+        cur = `SELECT DISTINCT ${x.parts.length ? x.parts.map((_, i) => `${k}.${this.ident(`__p${i}`)}`).join(', ') : '1 AS one'} FROM (${cur}) AS ${k}`;
       }
       sql = `SELECT ${sel} FROM (${num}) AS ${r} JOIN (${cur}) AS ${c} ON ${[...same, cond].join(' AND ')}`;
     } else sql = `SELECT ${sel} FROM (${num}) AS ${r} WHERE ${cond}`;
@@ -602,11 +605,23 @@ export class Emitter {
     // Rows of a model table, as the scan's own rows: its conditions, inline.
     const chain = filterChain(f.src);
     const full = this.model.expand(f.base, state);
-    const whole = [...full.keys()].every(n => this.model.table(n).columns.every(c => f.cols.includes(c)));
+    // The filter holds every column, or (an engine that runs a correlated semi-join row by row:
+    // a SUMMARIZE's extension columns took minutes on Fabric) every column but those its others
+    // determine: a column of a table whose key it holds, and a calculated one of a table whose
+    // stored columns it holds. A column a later filter replaced (the group's year) is one, so
+    // the rows that agree with the filter's on its columns are the rows its conditions keep.
+    // A related table's are, too, when its relationship's column on the table's side is: the
+    // one row it names is fixed.
+    const has = c => f.cols.includes(c), paths = this.model.expand(f.base, state, null, true);
+    const fixedBy = c => c.table !== f.base && paths.get(c.table.name)?.length > 0 && stored(paths.get(c.table.name)[0].from);
+    const stored = c => has(c) || c.expr && c.table.columns.every(x => x.expr || has(x));
+    const determined = c => has(c) || !this.d.correlatedSemiJoin
+      && (c.table.key && c.table.key !== c && has(c.table.key) || stored(c) || fixedBy(c));
+    const whole = [...full.keys()].every(n => this.model.table(n).columns.every(determined));
     if (chain && table === f.base && whole) {
       const parts = [...this.conds(table, chain.scan.ctx, res, scope)];
       for (const p of chain.preds) parts.push(paren(this.scalar(p.pred, withRow(scope, p.row, res), true)));
-      return parts.length ? parts.join(' AND ') : 'TRUE';
+      return parts.length ? parts.join(' AND ') : this.d.always;
     }
     // Otherwise matched on the keys of the tables both expanded tables hold whole, and on the
     // columns of the others.
@@ -676,7 +691,16 @@ export class Emitter {
 
   // --- scalars ---------------------------------------------------------------------------
 
+  // A value, or with `pred` a condition. Where a condition is no value (T-SQL has no boolean
+  // type), a boolean is converted to what is asked for: scalarOf writes a condition for the
+  // kinds of node isCond names, and a value for the others.
   scalar(x, scope, pred = false) {
+    const s = this.scalarOf(x, scope, pred);
+    if (this.d.boolValues || x.t !== 'bool') return s;
+    return pred === isCond(x, this) ? s : pred ? this.d.cond(s) : this.d.value(s);
+  }
+
+  scalarOf(x, scope, pred) {
     if (x.shared && !this.inCte && !ir.freeRows(x).size) return this.sharedScalar(x);
     switch (x.k) {
       case 'lit': return this.d.literal(x.v, x.t);
@@ -693,9 +717,21 @@ export class Emitter {
       }
       case 'case': {
         const val = v => (x.t === 'variant' ? this.variant(v, scope) : this.scalar(v, scope));
-        const w = x.w.map(([c, v]) => `WHEN ${this.scalar(c, scope, true)} THEN ${val(v)}`).join(' ');
-        const e = x.e.k === 'lit' && x.e.v === null ? '' : ` ELSE ${val(x.e)}`;
-        return `CASE ${w}${e} END`;
+        // In this order, which numbers their aliases.
+        const conds = [], vals = [];
+        for (const [c, v] of x.w) { conds.push(this.scalar(c, scope, true)); vals.push(val(v)); }
+        if (!(x.e.k === 'lit' && x.e.v === null)) vals.push(val(x.e));
+        // An engine that leaves a subquery in a branch correlated (Fabric: a RANKX took 24 s,
+        // and 0.5 s so): the branches' values are a row of their own, which the CASE reads.
+        let from = '';
+        if (!this.d.subqueryInCase && vals.some(isQuery)) {
+          const h = this.alias('h'), hoisted = vals.map((v, i) => (isQuery(v) ? i : -1)).filter(i => i >= 0);
+          from = ` FROM (SELECT ${hoisted.map(i => `${vals[i]} AS ${this.ident(`v${i}`)}`).join(', ')}) AS ${h}`;
+          for (const i of hoisted) vals[i] = `${h}.${this.ident(`v${i}`)}`;
+        }
+        const w = conds.map((c, i) => `WHEN ${c} THEN ${vals[i]}`).join(' ');
+        const e = vals.length > conds.length ? ` ELSE ${vals.at(-1)}` : '';
+        return from ? `(SELECT CASE ${w}${e} END${from})` : `CASE ${w}${e} END`;
       }
       case 'agg': return this.agg(x, scope);
       case 'exists': return `EXISTS (${this.isolated(() => this.table(x.src, scope).render())})`;
@@ -711,14 +747,14 @@ export class Emitter {
       }
       case 'blankexists': {
         const sql = this.blankRow(x.table, x.ctx, scope, b => { b.setOut([{ name: 'one', lineage: null }], ['1']); return b.render(); }, null, x.unmatched !== false);
-        return sql ? `EXISTS (${sql})` : 'FALSE';
+        return sql ? `EXISTS (${sql})` : this.d.never;
       }
       case 'insub': {
         const b = this.isolated(() => this.table(x.src, scope)), names = b.names(), a = this.alias('i');
         const blanks = x.e.some((e, j) => !e.nn && mayBeBlank(x.src, j));
         const text = x.e.map((e, j) => isText(e) && textOrBlank(x.src.cols[j]));
         const s = this.member(x.e.map(e => this.scalar(e, scope)), names.map(n => `${a}.${this.ident(n)}`), `(${b.render()}) AS ${a}`, blanks, ir.freeRows(x.src).size > 0, text);
-        return pred ? `(${s})` : `COALESCE(${s}, FALSE)`;
+        return pred ? `(${s})` : this.d.orFalse(s);
       }
     }
     throw new Error(`emit: scalar ${x.k}`);
@@ -798,15 +834,15 @@ export class Emitter {
       case 'bool': return this.bool(l, scope, pred);
       case 'concat': {
         const t = v => (v.nn ? d.text(S(v), v.t) : `COALESCE(${d.text(S(v), v.t)}, '')`);
-        return `(${t(l)} || ${t(r)})`;
+        return d.concat(t(l), t(r));
       }
       case 'in': {
         const vals = x.a.slice(1), blank = vals.some(v => v.k === 'lit' && v.v === null);
         const listed = vals.filter(v => !(v.k === 'lit' && v.v === null));
         const [L, ...list] = this.nocase([l, ...listed], [S(l), ...listed.map(v => S(v))]);
-        let s = list.length ? `${L} IN (${list.join(', ')})` : 'FALSE';
+        let s = list.length ? `${L} IN (${list.join(', ')})` : d.never;
         if (blank) s = `(${s} OR ${L} IS NULL)`;
-        return pred || blank ? `(${s})` : `COALESCE(${s}, FALSE)`;
+        return pred || blank ? `(${s})` : d.orFalse(s);
       }
     }
     throw new Error(`emit: op ${x.op}`);
@@ -814,10 +850,15 @@ export class Emitter {
 
   // A value as a condition: blank is FALSE, a number is its being other than 0.
   bool(v, scope, pred) {
+    // Where a condition is no value: the condition, FALSE where it is unknown.
+    if (v.t === 'bool' && !this.d.boolValues) {
+      const c = this.scalar(v, scope, true);
+      return v.nn || pred ? c : this.d.orFalse(c);
+    }
     const s = this.scalar(v, scope, pred);
-    if (v.t === 'bool' || v.t === 'blank') return v.nn || pred ? s : `COALESCE(${s}, FALSE)`;
+    if (v.t === 'bool' || v.t === 'blank') return v.nn || pred ? s : this.d.orFalse(s);
     if (ir.isNum(v.t)) return `(COALESCE(${s}, 0) <> 0)`;
-    if (v.t === 'variant') return v.nn || pred ? s : `COALESCE(${s}, FALSE)`;
+    if (v.t === 'variant') return v.nn || pred ? s : this.d.orFalse(s);
     throw semantic(`a ${v.t} cannot be used as TRUE/FALSE`);
   }
 
@@ -844,7 +885,7 @@ export class Emitter {
         this.nullArms.set(s, { base: `(${c})`, col: colSql });
         return s;
       }
-      if (!pred) return `COALESCE(${c}, FALSE)`;
+      if (!pred) return this.d.orFalse(c);
       this.rejects.set(`(${c})`, colSql);
       return `(${c})`;
     }
@@ -879,10 +920,49 @@ export class Emitter {
     const sql = this.isolated(() => {
       const b = this.open(this.table(x.src, scope));
       const s2 = withRow(scope, x.row, b.res);
-      b.setOut([{ name: 'v', lineage: null }], [x.fn === 'single' ? this.scalar(x.arg, s2) : this.aggExpr(x, s2)]);
-      return b.render();
+      if (x.fn === 'single') {
+        b.setOut([{ name: 'v', lineage: null }], [this.scalar(x.arg, s2)]);
+        return b.render();
+      }
+      const p = this.rowFused(b, x.src, x.row, () => this.aggParts(x, s2));
+      // T-SQL takes neither a subquery in an aggregate, nor a column of the outer query beside
+      // its own: anything but a column is computed a row at a time first.
+      if (this.d.aggOverSubquery || !partsQuery(p) && [p.arg, ...(p.keys ?? []).map(k => k.sql)].every(plainCol)) {
+        b.setOut([{ name: 'v', lineage: null }], [this.d.agg(p.fn, p.arg, p.extra)]);
+        return b.render();
+      }
+      // An engine that aggregates no subquery (T-SQL): the argument a column of the rows, and
+      // the aggregate over a SELECT of them.
+      const cols = [p.arg ?? '1', ...(p.keys ?? []).map(k => k.sql)];
+      b.setOut(cols.map((_, i) => ({ name: `x${i}`, lineage: null })), cols);
+      const w = this.wrap(b);
+      w.setOut([{ name: 'v', lineage: null }], [this.d.agg(p.fn, p.arg == null ? null : w.res.col(0), aroundExtra(this, p, i => w.res.col(i)))]);
+      return w.render();
     });
     return ir.freeRows(x).size ? `(${sql})` : this.once(sql);
+  }
+
+  // What f writes for each row of block b (row `row`, of table `src`): on an engine that leaves a correlated
+  // subquery a loop (Fabric's optimizer gives up on a few RANKX: 0.5 s with two, 20 s with
+  // three), the aggregates a row's expressions take over its own values (a measure in a context
+  // transition) are fused as SUMMARIZECOLUMNS' are, one GROUP BY each, joined to the rows.
+  // Only rows that read no outer row: their GROUP BY is then written once, where one inside a
+  // correlated subquery is written again for each outer row (a CTE is not kept).
+  rowFused(b, src, row, f) {
+    // A row of a few columns (VALUES, ALL, SUMMARIZE of some): a whole fact row is a GROUP BY by
+    // every column, slower than the loop (8 s, and over a minute so).
+    if (!this.d.fuseRows || !row?.cols.length || row.cols.length > 4 || row.cols.some(c => !c.lineage) || ir.freeRows(src).size) return f();
+    const keyCols = row.cols.map(c => c.lineage);
+    const fusion = new Fusion(this, row, keyCols.map((_, i) => i), keyCols);
+    fusion.ofRows = true;
+    this.fusions.push(fusion);
+    let out;
+    try { out = f(); } finally { this.fusions.pop(); }
+    for (const g of fusion.finish()) {
+      const on = g.keys.map((ki, j) => this.d.isNotDistinct(`${g.alias}.g${j}`, b.res.col(ki)));
+      b.joins.push(`LEFT JOIN ${g.alias} ON ${on.length ? on.join(' AND ') : this.d.always}`);
+    }
+    return out;
   }
 
   // A subquery that reads nothing of the query around it, written once: the same SQL (up to
@@ -912,8 +992,9 @@ export class Emitter {
     const extra = {};
     if (x.fn === 'concat') {
       extra.delim = this.scalar(x.a[0], scope);
-      extra.order = (x.order ?? []).map(o => `${this.scalar(o.expr, scope)}${o.desc ? ' DESC NULLS LAST' : ' ASC NULLS FIRST'}`);
-      return { fn: 'concat', arg: this.d.text(arg, x.arg.t), extra };
+      const keys = (x.order ?? []).map(o => ({ sql: this.scalar(o.expr, scope), desc: o.desc }));
+      extra.order = keys.map(k => this.orderBy(k.sql, k.desc));
+      return { fn: 'concat', arg: this.d.text(arg, x.arg.t), extra, keys };
     }
     if (/^pctx?_/.test(x.fn)) extra.k = this.scalar(x.a[0], scope);
     return { fn: x.fn, arg, extra };
@@ -961,14 +1042,14 @@ export class Emitter {
       const gs = [...new Set(supports.flatMap(s => [...s]))];
       keys = gs.length
         ? gs.map(g => `SELECT ${active.map((ki, j) => `${g.alias}.g${g.keys.indexOf(ki)} AS ${this.ident(keyNames[ki])}`).join(', ')} FROM ${g.alias}`).join(' UNION ')
-        : `SELECT ${active.map(ki => `NULL AS ${this.ident(keyNames[ki])}`).join(', ')} WHERE FALSE`;
+        : `SELECT ${active.map(ki => `NULL AS ${this.ident(keyNames[ki])}`).join(', ')} WHERE ${this.d.never}`;
     } else if (active.length) {
       keys = this.keyCombinations(x, L, keyNames, scope);
     } else keys = 'SELECT 1 AS one';
 
     const sel = [
       ...x.keyCols.map((_, i) => `${active.includes(i) ? `${k}.${this.ident(keyNames[i])}` : 'NULL'} AS ${this.ident(names[i])}`),
-      ...L.flags.map((f, i) => `${f ? 'TRUE' : 'FALSE'} AS ${this.ident(names[x.keyCols.length + i])}`),
+      ...L.flags.map((f, i) => `${this.d.bool(f)} AS ${this.ident(names[x.keyCols.length + i])}`),
       ...items.map((s, i) => `${s} AS ${this.ident(names[x.keyCols.length + L.flags.length + i])}`),
     ];
     let sql = `SELECT ${sel.join(', ')} FROM (${keys}) AS ${k}${groupsSql.map(g => ` LEFT JOIN ${g.alias} ON ${g.on(k, keyNames)}`).join('')}`;
@@ -1139,10 +1220,13 @@ class Fusion {
     for (const f of S.ctx.filters) {
       if (f.kind === 'bind' && f.val.k === 'col' && f.val.row === this.keyRow) {
         const c = f.cols[0];
-        if (exp.has(c.table.name)) keys.add(f.val.ref);
+        // A scan's row names a column by the model's (rowFused), a group's by its place.
+        const ref = typeof f.val.ref === 'number' ? f.val.ref : this.keyRow.cols.findIndex(k => k.lineage === f.val.ref);
+        if (ref < 0) return null;
+        if (exp.has(c.table.name)) keys.add(ref);
         // A key on a table whose filter reaches the scan over a relationship that filters
         // back (both ways, many-to-many): kept for the mapping below.
-        else if (em.model.reaches(c.table, S.table, state)) via.push({ ref: f.val.ref, col: c });
+        else if (em.model.reaches(c.table, S.table, state)) via.push({ ref, col: c });
         else continue;
         // A guarded key (a value of the group, when a condition on the group holds): the
         // condition is the group's, read where the group is.
@@ -1242,7 +1326,12 @@ class Fusion {
     if (!g) {
       g = { sig, rows, tables: `${S.table.name}|${state.key}`, edge: !!edge, readsKeys, alias: em.alias('f'), block, keys: keyList, aggs: [], nullEmpty: true,
         merge: !readsKeys && !edge ? `${S.table.name}|${state.key}|${keyList.join(',')}` : null };
-      g.keyExprs = keyList.map(i => keyExpr.get(i) ?? block.res.meta(this.keyCols[i]));
+      // An iterator's row (rowFused) can bind a column its scan does not reach (a key of the
+      // other side of a relationship): that aggregate is not fused.
+      try { g.keyExprs = keyList.map(i => keyExpr.get(i) ?? block.res.meta(this.keyCols[i])); } catch (e) {
+        if (this.ofRows && e.code === 'SEMANTIC') return null;
+        throw e;
+      }
       g.on = onKeys(em, g, keyList);
       this.groups.push(g);
     }
@@ -1260,7 +1349,7 @@ class Fusion {
     const make = filter => em.d.agg(p.fn, p.arg, filter ? { ...p.extra, filter } : p.extra);
     const key = `${make(null)}|${[...conds].sort().join(' AND ')}`;
     let i = g.aggs.findIndex(a => a.key === key);
-    if (i < 0) { g.aggs.push({ key, conds, make }); i = g.aggs.length - 1; }
+    if (i < 0) { g.aggs.push({ key, conds, make, parts: p }); i = g.aggs.length - 1; }
     em.fusedIn.set(x, g);
     if (!guards.length) return `${g.alias}.a${i}`;
     const when = em.isolated(() => guards.map(c => paren(em.scalar(c, scope, true))).join(' AND '));
@@ -1281,10 +1370,10 @@ class Fusion {
       const make = filter => em.d.agg(fn, parts.arg, filter ? { ...parts.extra, filter } : parts.extra);
       const key = `${make(null)}|${[...conds].sort().join(' AND ')}`;
       let i = h.aggs.findIndex(a => a.key === key);
-      if (i < 0) { h.aggs.push({ key, conds, make }); i = h.aggs.length - 1; }
+      if (i < 0) { h.aggs.push({ key, conds, make, parts: { ...parts, fn } }); i = h.aggs.length - 1; }
       return `${h.alias}.a${i}`;
     };
-    const sql = x.fn === 'avg' ? `(CAST(SUM(${add('sum')}) AS DOUBLE) / SUM(${add('count0')}))` : OVER[x.fn](add(parts.fn));
+    const sql = x.fn === 'avg' ? `(CAST(SUM(${add('sum')}) AS ${em.d.type('double')}) / SUM(${add('count0')}))` : OVER[x.fn](add(parts.fn));
     if (!NULL_EMPTY.has(x.fn)) h.nullEmpty = false;
     h.reread = true;
     let d = this.groups.find(y => y.over === h && y.keys.join(',') === keys.join(','));
@@ -1333,18 +1422,56 @@ class Fusion {
       // The scan keeps the conditions every aggregate has; an aggregate's others are its FILTER.
       const common = b.where.filter(c => g.aggs.every(a => a.conds.includes(c)));
       b.where = common;
-      const aggs = g.aggs.map(a => {
-        const own = a.conds.filter(c => !common.includes(c));
-        return a.make(own.length ? own.map(paren).join(' AND ') : null);
-      });
-      b.setOut([...g.keyExprs.map((_, j) => ({ name: `g${j}` })), ...aggs.map((_, i) => ({ name: `a${i}` }))], [...g.keyExprs, ...aggs]);
-      b._names = [...g.keyExprs.map((_, j) => `g${j}`), ...aggs.map((_, i) => `a${i}`)];
-      if (g.keyExprs.length) b.group = g.keyExprs;
+      const owns = g.aggs.map(a => a.conds.filter(c => !common.includes(c)).map(paren).join(' AND ') || null);
+      const names = [...g.keyExprs.map((_, j) => `g${j}`), ...g.aggs.map((_, i) => `a${i}`)];
       // Read again by a group over it: written once.
-      this.em.ctes.push(`${g.alias} AS ${g.reread ? this.em.d.materialized : ''}(${b.render()})`);
+      const cte = sql => this.em.ctes.push(`${g.alias} AS ${g.reread ? this.em.d.materialized : ''}(${sql})`);
+      if (this.em.d.aggOverSubquery || ![...g.keyExprs, ...owns].some(isQuery) && !g.aggs.some(a => partsQuery(a.parts))) {
+        const aggs = g.aggs.map((a, i) => a.make(owns[i]));
+        b.setOut(names.map(name => ({ name })), [...g.keyExprs, ...aggs]);
+        b._names = names;
+        if (g.keyExprs.length) b.group = g.keyExprs;
+        cte(b.render());
+        continue;
+      }
+      // An engine that aggregates no subquery, nor groups by one (T-SQL): the keys, each
+      // argument and each condition columns of the rows, and the GROUP BY over a SELECT of them.
+      const em = this.em, cols = [...g.keyExprs], at = [];
+      g.aggs.forEach((a, i) => {
+        const p = a.parts, start = cols.length;
+        cols.push(p.arg ?? '1', ...(p.keys ?? []).map(k => k.sql));
+        if (owns[i]) cols.push(em.d.value(owns[i]));
+        at.push({ start, keys: (p.keys ?? []).length });
+      });
+      b.setOut(cols.map((_, i) => ({ name: `c${i}` })), cols);
+      const w = em.wrap(b), col = i => w.res.col(i);
+      const aggs = g.aggs.map((a, i) => {
+        const p = a.parts, { start, keys } = at[i];
+        const extra = aroundExtra(em, p, j => col(start + j));
+        if (owns[i]) extra.filter = em.d.cond(col(start + 1 + keys));
+        return em.d.agg(p.fn, p.arg == null ? null : col(start), extra);
+      });
+      const keyCols = g.keyExprs.map((_, j) => col(j));
+      w.setOut(names.map(name => ({ name })), [...keyCols, ...aggs]);
+      w._names = names;
+      if (keyCols.length) w.group = keyCols;
+      cte(w.render());
     }
     return this.groups;
   }
+}
+
+// Whether SQL holds a subquery; whether an aggregate's parts do (aggParts).
+const isQuery = s => /\bSELECT\b/i.test(s ?? '');
+const partsQuery = p => isQuery(p.arg) || (p.keys ?? []).some(k => isQuery(k.sql));
+// SQL that is no more than a column of a row (t1."Amount"), or none.
+const plainCol = s => s == null || /^\w+\."(?:[^"]|"")*"$/.test(s);
+// An aggregate's extra parts over the columns of a SELECT around its rows: column i (from 1) is
+// its i-th ORDER BY key.
+function aroundExtra(em, p, col) {
+  const extra = { ...p.extra };
+  if (p.keys?.length) extra.order = p.keys.map((k, i) => em.orderBy(col(i + 1), k.desc));
+  return extra;
 }
 
 // The alias of a group's scanned table, and its conditions on that table's own columns (as
@@ -1359,7 +1486,7 @@ const ownConds = (cs, base) => cs.filter(c => c.split(/('(?:[^']|'')*')/).some((
 function onKeys(em, g, keys) {
   return (k, keyNames) => keys.length
     ? keys.map((ki, j) => em.d.isNotDistinct(`${g.alias}.g${j}`, `${k}.${em.ident(keyNames[ki])}`)).join(' AND ')
-    : 'TRUE';
+    : em.d.always;
 }
 
 // The aggregates that are blank over no rows (the dialect's NULL): fused by keys with others
@@ -1441,13 +1568,19 @@ class Block {
   }
   render() {
     const id = n => this.em.ident(n);
-    const out = this.outList().map(o => (o.sql.endsWith(`.${id(o.name)}`) ? o.sql : `${o.sql} AS ${id(o.name)}`));
+    const list = this.outList();
+    const out = list.map(o => (o.sql.endsWith(`.${id(o.name)}`) ? o.sql : `${o.sql} AS ${id(o.name)}`));
+    // Without QUALIFY, the window is a column, and a SELECT around it keeps the rows it passes.
+    const q = this.qualify, wrapped = !!q && !this.em.d.supportsQualify;
+    if (wrapped) out.push(`${q.win} AS ${id('__q')}`);
     const parts = [`SELECT ${this.distinct ? 'DISTINCT ' : ''}${out.length ? out.join(', ') : '1 AS one'}`];
     if (this.from) parts.push(`FROM ${this.from}${this.joins.length ? ' ' + this.joins.join(' ') : ''}`);
     if (this.where.length) parts.push(`WHERE ${this.where.join(' AND ')}`);
     if (this.group?.length) parts.push(`GROUP BY ${this.group.join(', ')}`);
-    if (this.qualify) parts.push(`QUALIFY ${this.qualify}`);
-    return parts.join(' ');
+    if (q && !wrapped) parts.push(`QUALIFY ${q.win} ${q.test}`);
+    if (!wrapped) return parts.join(' ');
+    const a = this.em.alias('q'), names = list.length ? list.map(o => o.name) : ['one'];
+    return `SELECT ${names.map(n => `${a}.${id(n)}`).join(', ')} FROM (${parts.join(' ')}) AS ${a} WHERE ${a}.${id('__q')} ${q.test}`;
   }
 }
 
@@ -1548,12 +1681,23 @@ const paren = s => `(${s})`;
 
 // An ORDER BY term with DAX's blanks: DEFAULT puts a numeric blank between the negative
 // numbers and zero, and a text blank before every text; FIRST and LAST say.
-function orderTerm(v, o) {
+function orderTerm(d, v, o) {
   const dir = o.desc ? 'DESC' : 'ASC';
-  if (o.blanks === 'first') return `${v} ${dir} NULLS FIRST`;
-  if (o.blanks === 'last') return `${v} ${dir} NULLS LAST`;
-  if (ir.isNum(o.t)) return `COALESCE(${v}, 0) ${dir}, (${v} IS NULL) ${o.desc ? 'ASC' : 'DESC'}`;
-  return `${v} ${dir} NULLS ${o.desc ? 'LAST' : 'FIRST'}`;
+  if (o.blanks === 'first') return d.order(v, dir, 'FIRST');
+  if (o.blanks === 'last') return d.order(v, dir, 'LAST');
+  if (ir.isNum(o.t)) return `COALESCE(${v}, 0) ${dir}, ${d.value(`(${v} IS NULL)`)} ${o.desc ? 'ASC' : 'DESC'}`;
+  return d.order(v, dir, o.desc ? 'LAST' : 'FIRST');
+}
+
+// Whether scalarOf writes node x as a condition, not a value (scalar): a comparison, a test,
+// EXISTS. A variable is read as the value its CTE holds.
+const COND_OPS = new Set(['eq', 'ne', 'lt', 'le', 'gt', 'ge', 'eqs', 'and', 'or', 'not', 'bool', 'in']);
+const COND_FNS = new Set(['isblank', 'iseven', 'isodd', 'exact', 'containsstring', 'containsstringexact', 'pathcontains']);
+function isCond(x, em) {
+  if (x.shared && !em.inCte && !ir.freeRows(x).size) return false;
+  if (x.k === 'op') return COND_OPS.has(x.op);
+  if (x.k === 'fn') return COND_FNS.has(x.name);
+  return x.k === 'exists' || x.k === 'insub' || x.k === 'blankexists';
 }
 
 // Whether a model column may hold a NULL, a blank that a blank in a table filter matches: any

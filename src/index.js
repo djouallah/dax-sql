@@ -8,7 +8,8 @@
 // in formats/ (dax-sql/formats/tmsl.js, dax-sql/formats/ossie.js) make one from a TMSL
 // model.bim or an Apache Ossie model.
 // Options:
-//   dialect        'duckdb' (the default) or a Dialect instance (see dialects/base.js)
+//   dialect        'duckdb' (the default), 'tsql' (the Fabric SQL endpoint and Warehouse), or a
+//                  Dialect instance (see dialects/base.js)
 //   tableSource    (table) => SQL that names a model table's rows; by default its source's
 //                  entity ("schema"."entity"), else its name
 //   columnNames    'short' (the default: the column or the expression's name) or 'dax'
@@ -30,6 +31,7 @@ import { Compiler } from './compiler.js';
 import { Emitter } from './emit.js';
 import { parseExpression } from './parser.js';
 import { DuckDBDialect } from './dialects/duckdb.js';
+import { TSqlDialect } from './dialects/tsql.js';
 import { Dialect } from './dialects/base.js';
 import { newRow } from './ir.js';
 import { DaxError, semantic } from './errors.js';
@@ -39,6 +41,7 @@ import { SqlTranslator, isSql, printDaxQuery, modelRelations } from './sql.js';
 export { DaxError } from './errors.js';
 export { Dialect } from './dialects/base.js';
 export { DuckDBDialect } from './dialects/duckdb.js';
+export { TSqlDialect } from './dialects/tsql.js';
 export { parseQuery, parseExpression } from './parser.js';
 export { parseSql, modelRelations } from './sql.js';
 
@@ -47,7 +50,7 @@ import { makeViews } from './views.js';
 export const createViews = options => makeViews(createCompiler, options);
 export { Model } from './model.js';
 
-const DIALECTS = { duckdb: () => new DuckDBDialect() };
+const DIALECTS = { duckdb: () => new DuckDBDialect(), tsql: () => new TSqlDialect() };
 
 export function createCompiler(input, options = {}) {
   const model = input instanceof Model ? input : new Model(input);
@@ -148,7 +151,7 @@ export function createCompiler(input, options = {}) {
   function translateSql(text) {
     const t = sqlTranslator.translate(text);
     const [out] = compileAll(t.query, `SQL ${text}`);
-    return { ...t, out: t.limit == null && t.offset == null ? out : { ...out, sql: out.sql + dialect.limit(t.limit, t.offset) } };
+    return { ...t, out: t.limit == null && t.offset == null ? out : { ...out, sql: out.sql + dialect.limit(t.limit, t.offset, out.ordered) } };
   }
   const compileSql = text => translateSql(text).out;
   // Any SQL with SELECTs over the model in it: each one's SQL in its place, the rest as written.

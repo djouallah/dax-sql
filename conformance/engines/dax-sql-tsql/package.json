@@ -1,0 +1,10 @@
+{
+  "name": "dax-conformance-tsql",
+  "private": true,
+  "license": "MIT",
+  "description": "The conformance suite's adapter for dax-sql's T-SQL, run on a Microsoft Fabric SQL endpoint",
+  "type": "module",
+  "dependencies": {
+    "tedious": "19.2.2"
+  }
+}

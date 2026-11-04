@@ -93,7 +93,41 @@ export class Dialect {
   }
 
   materialized = '';   // what follows AS in a CTE written once (DuckDB: MATERIALIZED)
-  supportsQualify = false;
+  supportsQualify = false;   // without it, a SELECT around the window keeps the rows (emit.js Block)
+
+  // Conditions and boolean values. Where a condition is a value as it is (a BOOLEAN), these are
+  // nothing; an engine with no boolean type (T-SQL) converts between the two, and the emitter
+  // asks for each where it needs it.
+  boolValues = true;
+  // Whether an aggregate can take a subquery (SUM((SELECT ...))) and GROUP BY can group by one;
+  // without, the emitter makes them columns of a SELECT the aggregate is over.
+  aggOverSubquery = true;
+  // Whether a subquery in a CASE's branch is decorrelated as one elsewhere is; without, the
+  // emitter makes the branches' values a row the CASE reads.
+  subqueryInCase = true;
+  // Whether a correlated semi-join over many columns runs as a join (DuckDB); without, a filter
+  // of a table's own rows is written as their conditions where it can be.
+  correlatedSemiJoin = true;
+  // Whether the aggregates an iterator's rows take over their own values are fused into a GROUP BY
+  // joined to the rows (emit.js rowFused), for an engine that runs the subqueries as loops.
+  fuseRows = false;
+  // The statement as the engine is to run it, from the SQL the emitter wrote.
+  finish(sql) { return sql; }
+  cond(v) { return v; }      // a boolean value as a condition
+  value(c) { return c; }     // a condition as a boolean value, blank where it is unknown
+  orFalse(c) { return `COALESCE(${c}, FALSE)`; }   // a condition that is FALSE where it is unknown
+  get always() { return 'TRUE'; }                  // conditions that always, never hold
+  get never() { return 'FALSE'; }
+
+  // a and b, text, joined (neither blank).
+  concat(a, b) { return `(${a} || ${b})`; }
+  // An ORDER BY term: `dir` ASC or DESC, a blank FIRST or LAST.
+  order(v, dir, nulls) { return `${v} ${dir} NULLS ${nulls}`; }
+  // A window's ORDER BY from its terms, which can be none.
+  windowOrder(terms) { return terms.length ? `ORDER BY ${terms.join(', ')}` : ''; }
+  // The rows of `sql`, a subquery that reads each row of the FROM before it, as `alias`: with
+  // `outer`, a row with none of them is kept, blank in their columns.
+  lateral(sql, alias, outer) { return outer ? ` LEFT JOIN LATERAL (${sql}) AS ${alias} ON TRUE` : `, LATERAL (${sql}) AS ${alias}`; }
 
   fn(name) { throw new Error(`${this.name}: function ${name} is not implemented`); }
   agg(name) { throw new Error(`${this.name}: aggregate ${name} is not implemented`); }

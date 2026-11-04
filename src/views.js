@@ -159,14 +159,18 @@ function reader(toks) {
 const DUCK_TYPES = { int: 'BIGINT', double: 'DOUBLE', decimal: 'DOUBLE', string: 'VARCHAR', datetime: 'TIMESTAMP', bool: 'BOOLEAN', variant: 'VARCHAR' };
 const duckType = t => DUCK_TYPES[t] ?? 'VARCHAR';
 
-// Rows as a SELECT over VALUES; with none, the columns typed and no row.
-function rows(columns, list) {
+// Rows as a SELECT over VALUES; with none, the columns typed and no row. In T-SQL (`tsql`), which
+// has no ::, no BOOLEAN and no FALSE, and drops a literal's trailing spaces unless it is N'...'.
+function rows(columns, list, tsql = false) {
   const names = columns.map(([n]) => ident(n)).join(', ');
+  const type = t => (!tsql ? t : t === 'BOOLEAN' ? 'BIT' : t === 'VARCHAR' ? 'VARCHAR(8000)' : t);
+  const blank = t => (tsql ? `CAST(NULL AS ${type(t)})` : `NULL::${t}`);
   if (!list.length) {
-    const nulls = columns.map(([, t]) => `NULL::${t}`).join(', ');
-    return `SELECT * FROM (VALUES (${nulls})) t(${names}) WHERE false`;
+    const nulls = columns.map(([, t]) => blank(t)).join(', ');
+    return `SELECT * FROM (VALUES (${nulls})) t(${names}) WHERE ${tsql ? '1 = 0' : 'false'}`;
   }
-  const cell = (x, t) => (x == null ? `NULL::${t}` : t === 'BOOLEAN' ? (x ? 'true' : 'false') : str(x));
+  const bool = x => (tsql ? `CAST(${x ? 1 : 0} AS BIT)` : x ? 'true' : 'false');
+  const cell = (x, t) => (x == null ? blank(t) : t === 'BOOLEAN' ? bool(x) : tsql ? `N${str(x)}` : str(x));
   const values = list.map(r => `(${r.map((x, i) => cell(x, columns[i][1])).join(', ')})`).join(',\n  ');
   return `SELECT * FROM (VALUES\n  ${values}) t(${names})`;
 }
@@ -208,13 +212,13 @@ function metrics(v) {
     [v.db, v.schema, v.name, m.table.name, m.name, duckType(measureType(v, m)), m.text, m.formatString, false, null]);
 }
 
-function describe(v) {
+function describe(v, tsql) {
   const list = [];
   for (const t of v.compiler.model.tables.values()) {
     for (const c of t.columns) list.push([`${t.name}.${c.name}`, duckType(c.type), c.nullable ? 'YES' : 'NO', c.unique ? 'PRI' : null, null, 'column']);
   }
   for (const m of v.compiler.model.measures.values()) list.push([m.name, duckType(measureType(v, m)), 'YES', null, null, 'measure']);
-  return rows(DESCRIBE_COLUMNS, list);
+  return rows(DESCRIBE_COLUMNS, list, tsql);
 }
 
 // Where a statement's query starts when something comes before it (EXPLAIN, DESCRIBE,
@@ -239,7 +243,10 @@ const part = s => (/^[A-Za-z_][A-Za-z0-9_]*$/.test(s) ? s : ident(s));
 // `fullNames`: a statement reaches a view only by its whole name, db.schema.name. A host whose
 // names are a contract takes this, so a shorter name can't read a view by accident; a shorter one
 // is then not a view's, and goes to the engine as written. Its own calls (get, drop) are unchanged.
-export function makeViews(createCompiler, { fullNames = false } = {}) {
+// `dialect`: the SQL the views' queries and the inspecting statements are written in, as
+// createCompiler takes it ('duckdb' by default).
+export function makeViews(createCompiler, { fullNames = false, dialect = 'duckdb' } = {}) {
+  const tsql = (typeof dialect === 'string' ? dialect : dialect?.name) === 'tsql';
   // The views, by their full name, lower-cased: `name`, or `schema.name` for a view defined in
   // a schema of its own (one other than 'main') — two models of one name are two views, as
   // long as their schemas differ. Each { db, schema, name, parts, sqlName, path, tablesFrom,
@@ -286,7 +293,7 @@ export function makeViews(createCompiler, { fullNames = false } = {}) {
     const old = views.get(key);
     if (old && mode === 'create') throw fail(`semantic view ${old.sqlName} already exists`, 'CATALOG');
     if (old && mode === 'if_not_exists') return 'exists';
-    const compiler = createCompiler(model, options);
+    const compiler = createCompiler(model, { dialect, ...options });
     views.set(key, { db, schema, name, parts, sqlName: parts.map(part).join('.'), path, tablesFrom, compiler });
     return 'created';
   }
@@ -333,7 +340,7 @@ export function makeViews(createCompiler, { fullNames = false } = {}) {
       if (!r.word('SEMANTIC')) return null;
       if (r.word('VIEWS')) {
         r.end();
-        return { sql: rows(VIEW_COLUMNS, [...views.values()].map(v => [v.db, v.schema, v.name, v.path, v.tablesFrom])) };
+        return { sql: rows(VIEW_COLUMNS, [...views.values()].map(v => [v.db, v.schema, v.name, v.path, v.tablesFrom]), tsql) };
       }
       const dims = r.word('DIMENSIONS');
       if (!dims) r.expect('METRICS');
@@ -341,7 +348,7 @@ export function makeViews(createCompiler, { fullNames = false } = {}) {
       const v = view(r.qualified());
       if (!dims) {
         r.end();
-        return { sql: rows(ITEM_COLUMNS, metrics(v)) };
+        return { sql: rows(ITEM_COLUMNS, metrics(v), tsql) };
       }
       if (r.words('FOR', 'METRIC')) {
         const name = r.name();
@@ -349,10 +356,10 @@ export function makeViews(createCompiler, { fullNames = false } = {}) {
         const m = v.compiler.model.measures.get(lc(name));
         if (!m) throw fail(`semantic view ${v.name} has no metric ${name}`, 'CATALOG');
         const model = v.compiler.model, state = model.state();
-        return { sql: rows(ITEM_COLUMNS, dimensions(v, t => model.reaches(t, m.table, state))) };
+        return { sql: rows(ITEM_COLUMNS, dimensions(v, t => model.reaches(t, m.table, state)), tsql) };
       }
       r.end();
-      return { sql: rows(ITEM_COLUMNS, dimensions(v)) };
+      return { sql: rows(ITEM_COLUMNS, dimensions(v), tsql) };
     }
     if (r.word('DESCRIBE') || r.word('DESC')) {
       if (r.done()) return null;
@@ -365,7 +372,7 @@ export function makeViews(createCompiler, { fullNames = false } = {}) {
       }
       const v = named(parts);
       if (!v) return null;
-      return { sql: describe(v) };
+      return { sql: describe(v, tsql) };
     }
     return null;
   }

@@ -788,7 +788,10 @@ export class Emitter {
   // it stays.
   hoistRepeats(sqls) {
     const count = new Map();
-    for (const s of sqls) for (const q of subqueries(s)) if (hoistable(s, q)) count.set(q.key, (count.get(q.key) ?? 0) + 1);
+    for (const s of sqls) {
+      const all = subqueries(s);
+      for (const q of all) if (hoistable(s, q, all)) count.set(q.key, (count.get(q.key) ?? 0) + 1);
+    }
     const keys = [...count].filter(([key, n]) => n > 1 && /\bFROM "/.test(key)).map(([key]) => key);
     if (!keys.length) return '';
     // The longest first: one inside another goes with it.
@@ -797,7 +800,7 @@ export class Emitter {
     for (const key of keys) {
       let first = null;
       for (let i = 0; i < sqls.length; i++) {
-        const qs = subqueries(sqls[i]).filter(q => q.key === key && hoistable(sqls[i], q));
+        const all = subqueries(sqls[i]), qs = all.filter(q => q.key === key && hoistable(sqls[i], q, all));
         if (!qs.length) continue;
         first ??= qs[0].sql;
         let s = sqls[i];
@@ -1540,11 +1543,21 @@ function subqueries(sql) {
   }
   return out;
 }
-// Whether subquery q of SQL s reads no alias that s declares around it.
-function hoistable(s, q) {
+// Whether subquery q of SQL s (whose subqueries are `all`) is a value (not a table: after FROM,
+// JOIN, IN, EXISTS, …) of the row itself: inside no subquery but the rows that bind() and a
+// CASE's branches read (… FROM (SELECT x AS "v0") AS b1), and reading no alias s declares
+// around it. One inside a measure's conditions stays there: Fabric decorrelates it with them,
+// and loops on it as a column of the row (a rolling 30 days went from 0.5 s to 15 s).
+function hoistable(s, q, all) {
+  // Innermost first, each is such a row, or the subquery that reads the row just inside it.
+  const row = e => /^\s*AS [bh]\d+\)/.exec(s.slice(e.end))?.[0].length;
+  const outer = all.filter(e => e.start < q.start && e.end > q.end).sort((a, b) => a.sql.length - b.sql.length);
+  if (!outer.every((e, i) => row(e) || i > 0 && row(outer[i - 1]) && e.end === outer[i - 1].end + row(outer[i - 1]))) return false;
+  if (/\b(?:FROM|JOIN|APPLY|IN|EXISTS|ANY|ALL|SOME|UNION|INTERSECT|EXCEPT)\s*$/i.test(s.slice(0, q.start))
+    || /^\s*(?:UNION|INTERSECT|EXCEPT)\b/i.test(s.slice(q.end))) return false;
   const own = new Set([...q.sql.matchAll(/\bAS ([a-z]\d+)\b/g)].map(m => m[1]));
-  const around = new Set([...(s.slice(0, q.start) + s.slice(q.end)).matchAll(/\bAS ([a-z]\d+)\b/g)].map(m => m[1]));
-  return [...q.sql.matchAll(/\b([a-z]\d+)\./g)].every(m => own.has(m[1]) || !around.has(m[1]));
+  const declared = new Set([...(s.slice(0, q.start) + s.slice(q.end)).matchAll(/\bAS ([a-z]\d+)\b/g)].map(m => m[1]));
+  return [...q.sql.matchAll(/\b([a-z]\d+)\./g)].every(m => own.has(m[1]) || !declared.has(m[1]));
 }
 
 // Whether SQL holds a subquery; whether an aggregate's parts do (aggParts).

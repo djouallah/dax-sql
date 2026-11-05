@@ -21,7 +21,8 @@ const lc = s => String(s).toLowerCase();
 export class Emitter {
   constructor(model, dialect, options = {}) {
     this.model = model;
-    this.d = dialect;
+    // The dialect, with this statement's aliases for what it declares itself (bind).
+    this.d = Object.create(dialect, { alias: { value: p => this.alias(p) } });
     this.options = options;
     this.n = 0;
     this.ctes = [];
@@ -594,7 +595,7 @@ export class Emitter {
   // A filter that is a table, on the columns D of the scan's expanded table.
   relCond(f, D, table, res, scope, state) {
     if (!f.base) {
-      const inline = this.inlineValues(f, D, table, res, scope, state);
+      const inline = this.inlineValues(f, D, table, res, scope, state) ?? this.listedValues(f, D, res);
       if (inline) return inline;
       const b = this.table(f.src, scope), names = b.names(), a = this.alias('r');
       const sel = D.map(c => `${a}.${this.ident(names[f.idx[f.cols.indexOf(c)]])}`);
@@ -660,6 +661,26 @@ export class Emitter {
     // The scan's own column holds one of its values on every row, a NULL stored in it too.
     for (const c of D) if (c.table !== table) parts.push(`${res.meta(c)} IS NOT NULL`);
     return parts.join(' AND ');
+  }
+
+  // A table of constants on one column of the scan (TREATAS({"AR", "CA"}, T[c]), each slicer
+  // of a Power BI visual) as a list: c IN ('AR', 'CA'), which the engine can read as it scans,
+  // where IN (SELECT ...) is a semi-join. A BLANK() among them keeps the blank. Null when the
+  // filter is not of that kind, or a constant is of another type than the column's.
+  listedValues(f, D, res) {
+    if (D.length !== 1) return null;
+    let src = f.src;
+    while (src.k === 'shared' || src.k === 'distinct') src = src.src;
+    if (src.k !== 'rows') return null;
+    const c = D[0], i = f.idx[f.cols.indexOf(c)];
+    const vals = src.rows.map(r => r[i]);
+    const kind = t => (ir.isNum(t) ? 'num' : t);
+    if (!vals.every(v => v?.k === 'lit' && (v.v === null || kind(v.t) === kind(c.type)))) return null;
+    const listed = vals.filter(v => v.v !== null), L = res.meta(c);
+    const sqls = listed.map(v => this.d.literal(v.v, v.t));
+    const [l, ...list] = c.type === 'string' && listed.length ? this.d.nocase(L, ...sqls) : [L, ...sqls];
+    const s = list.length ? `${l} IN (${list.join(', ')})` : this.d.never;
+    return listed.length < vals.length ? `(${s} OR ${L} IS NULL)` : s;
   }
 
   // Whether a scan of `table` can read a blank in column c: on its blank row, or through a
@@ -758,6 +779,34 @@ export class Emitter {
       }
     }
     throw new Error(`emit: scalar ${x.k}`);
+  }
+
+  // The subqueries of a row's values (`sqls`, changed in place) that read a table and are
+  // written more than once, as the same SQL up to the aliases they declare (a measure in a
+  // column and again in another's DIVIDE): each one once, a column of a row the values read,
+  // returned as the APPLY that is that row. One that reads an alias the value declares around
+  // it stays.
+  hoistRepeats(sqls) {
+    const count = new Map();
+    for (const s of sqls) for (const q of subqueries(s)) if (hoistable(s, q)) count.set(q.key, (count.get(q.key) ?? 0) + 1);
+    const keys = [...count].filter(([key, n]) => n > 1 && /\bFROM "/.test(key)).map(([key]) => key);
+    if (!keys.length) return '';
+    // The longest first: one inside another goes with it.
+    keys.sort((a, b) => b.length - a.length);
+    const u = this.alias('u'), cols = [];
+    for (const key of keys) {
+      let first = null;
+      for (let i = 0; i < sqls.length; i++) {
+        const qs = subqueries(sqls[i]).filter(q => q.key === key && hoistable(sqls[i], q));
+        if (!qs.length) continue;
+        first ??= qs[0].sql;
+        let s = sqls[i];
+        for (const q of qs.reverse()) s = `${s.slice(0, q.start)}${u}.${this.ident(`m${cols.length}`)}${s.slice(q.end)}`;
+        sqls[i] = s;
+      }
+      if (first) cols.push(`${first} AS ${this.ident(`m${cols.length}`)}`);
+    }
+    return this.d.lateral(`SELECT ${cols.join(', ')}`, u, true);
   }
 
   // A value among values of other kinds, as text.
@@ -1036,24 +1085,30 @@ export class Emitter {
     // expression that removed one, REMOVEFILTERS in a CALCULATE, has rows of groups that
     // SUMMARIZECOLUMNS does not have); else every combination of the keys' values.
     const counted = L.items.filter(i => !i.ignore);
-    let keys;
+    let keys, from = null;
     const supports = counted.map(i => support(i.expr, this.fusedIn));
     const full = g => g.keys.length === active.length && !g.outside;
     if (active.length && counted.length && supports.every(s => s && [...s].every(full))) {
       const gs = [...new Set(supports.flatMap(s => [...s]))];
+      const cols = g => active.map(ki => `${g.alias}.g${g.keys.indexOf(ki)} AS ${this.ident(keyNames[ki])}`).join(', ');
       keys = gs.length
-        ? gs.map(g => `SELECT ${active.map((ki, j) => `${g.alias}.g${g.keys.indexOf(ki)} AS ${this.ident(keyNames[ki])}`).join(', ')} FROM ${g.alias}`).join(' UNION ')
+        ? gs.map(g => `SELECT ${cols(g)} FROM ${g.alias}`).join(' UNION ')
         : `SELECT ${active.map(ki => `NULL AS ${this.ident(keyNames[ki])}`).join(', ')} WHERE ${this.d.never}`;
+      // One group, whose keys are distinct (its GROUP BY): its rows are the groups, read once
+      // where the engine reads a CTE again at each name (T-SQL), not joined to themselves.
+      if (gs.length === 1 && this.d.repeats) from = { g: gs[0], sql: `${gs[0].alias}${this.d.lateral(`SELECT ${cols(gs[0])}`, k, false)}` };
     } else if (active.length) {
       keys = this.keyCombinations(x, L, keyNames, scope);
     } else keys = 'SELECT 1 AS one';
 
+    const apply = this.d.repeats ? this.hoistRepeats(items) : '';
     const sel = [
       ...x.keyCols.map((_, i) => `${active.includes(i) ? `${k}.${this.ident(keyNames[i])}` : 'NULL'} AS ${this.ident(names[i])}`),
       ...L.flags.map((f, i) => `${this.d.bool(f)} AS ${this.ident(names[x.keyCols.length + i])}`),
       ...items.map((s, i) => `${s} AS ${this.ident(names[x.keyCols.length + L.flags.length + i])}`),
     ];
-    let sql = `SELECT ${sel.join(', ')} FROM (${keys}) AS ${k}${groupsSql.map(g => ` LEFT JOIN ${g.alias} ON ${g.on(k, keyNames)}`).join('')}`;
+    const joins = groupsSql.filter(g => g !== from?.g).map(g => ` LEFT JOIN ${g.alias} ON ${g.on(k, keyNames)}`).join('');
+    let sql = `SELECT ${sel.join(', ')} FROM ${from ? from.sql : `(${keys}) AS ${k}`}${joins}${apply}`;
     if (counted.length) {
       const z = this.alias('z');
       const test = L.items.map((it, i) => it.ignore ? null : `${z}.${this.ident(names[x.keyCols.length + L.flags.length + i])} IS NOT NULL`).filter(Boolean);
@@ -1462,6 +1517,36 @@ class Fusion {
   }
 }
 
+// The scalar subqueries of SQL, outermost first, that do not overlap: { start, end, sql, key },
+// key the same for two that are the same up to the aliases they declare. Not one that varies
+// between copies (NEWID).
+function subqueries(sql) {
+  const out = [];
+  for (let i = 0; i < sql.length; i++) {
+    const c = sql[i];
+    if (c === "'" || c === '"') { i = sql.indexOf(c, i + 1); if (i < 0) break; continue; }
+    if (c !== '(' || !/^\(SELECT\b/.test(sql.slice(i, i + 8))) continue;
+    let depth = 0, j = i;
+    for (; j < sql.length; j++) {
+      const d = sql[j];
+      if (d === "'" || d === '"') { j = sql.indexOf(d, j + 1); if (j < 0) return out; } else if (d === '(') depth++;
+      else if (d === ')' && !--depth) break;
+    }
+    const q = sql.slice(i, j + 1);
+    if (!/\bNEWID\(/.test(q)) out.push({ start: i, end: j + 1, sql: q, key: canonical(q) });
+    // The ones inside it too, as later entries: overlapping, they are taken when it is not.
+    out.push(...subqueries(q.slice(1, -1)).map(x => ({ ...x, start: x.start + i + 1, end: x.end + i + 1 })));
+    i = j;
+  }
+  return out;
+}
+// Whether subquery q of SQL s reads no alias that s declares around it.
+function hoistable(s, q) {
+  const own = new Set([...q.sql.matchAll(/\bAS ([a-z]\d+)\b/g)].map(m => m[1]));
+  const around = new Set([...(s.slice(0, q.start) + s.slice(q.end)).matchAll(/\bAS ([a-z]\d+)\b/g)].map(m => m[1]));
+  return [...q.sql.matchAll(/\b([a-z]\d+)\./g)].every(m => own.has(m[1]) || !around.has(m[1]));
+}
+
 // Whether SQL holds a subquery; whether an aggregate's parts do (aggParts).
 const isQuery = s => /\bSELECT\b/i.test(s ?? '');
 const partsQuery = p => isQuery(p.arg) || (p.keys ?? []).some(k => isQuery(k.sql));
@@ -1729,22 +1814,23 @@ function mayBeBlank(x, i) {
   return true;
 }
 
-// A filter's table as FILTER(..FILTER(scan)..): the scan and the predicates.
+// A filter's table as FILTER(..FILTER(scan)..), through table VARs: the scan and the predicates.
 function filterChain(x) {
   const preds = [];
-  while (x.k === 'filter' || x.k === 'distinct') {
+  while (x.k === 'filter' || x.k === 'distinct' || x.k === 'shared') {
     if (x.k === 'filter') preds.push({ pred: x.pred, row: x.row });
     x = x.src;
   }
   return x.k === 'scan' ? { scan: x, preds } : null;
 }
 
-// A filter's table as FILTER(..DISTINCT(SELECTCOLUMNS(scan, its own columns))..): the scan,
-// the predicates on the columns kept, and those columns; or null.
+// A filter's table as FILTER(..DISTINCT(SELECTCOLUMNS(scan, its own columns))..), through table
+// VARs (Power BI names each filter table of a visual): the scan, the predicates on the columns
+// kept, and those columns; or null.
 function valuesChain(x) {
   const preds = [];
   for (;;) {
-    if (x.k === 'filter') { preds.push({ pred: x.pred, row: x.row }); x = x.src; } else if (x.k === 'distinct') x = x.src;
+    if (x.k === 'filter') { preds.push({ pred: x.pred, row: x.row }); x = x.src; } else if (x.k === 'distinct' || x.k === 'shared') x = x.src;
     else break;
   }
   if (x.k !== 'project' || x.keep || x.src.k !== 'scan' || !x.items.every(i => i.expr.k === 'col' && i.expr.row === x.row)) return null;

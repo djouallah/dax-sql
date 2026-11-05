@@ -58,3 +58,40 @@ test('the default is DuckDB', () => {
   assert.equal(createCompiler(tmslToModel(bim)).dialect.name, 'duckdb');
   assert.equal(createCompiler(tmslToModel(bim), { dialect: 'tsql' }).dialect.name, 'tsql');
 });
+
+// What Fabric computes again at each copy (a CTE at each name, a subquery written twice) is
+// written once.
+const compileAs = (model, dax, dialect = 'tsql') => {
+  const bim = JSON.parse(readFileSync(`${modelDir(model)}/model.bim`, 'utf8'));
+  return createCompiler(tmslToModel(bim), dialect ? { dialect } : {}).compile(dax).sql;
+};
+const query = id => loadQueries({}).find(q => q.id === id);
+const reads = (sql, table) => sql.split(`FROM "${table}"`).length - 1;
+
+test('SUMMARIZECOLUMNS reads its one fused group once, not joined to itself', () => {
+  const q = query('bench-narrow-one-measure');
+  assert.equal(reads(compileAs(q.model, q.dax), 'store_sales'), 1);
+});
+
+test("a VAR's filter table of a column's values is its conditions, constants a list", () => {
+  const dax = `DEFINE VAR F = FILTER(KEEPFILTERS(VALUES(catalog_sales[cache_buster])), catalog_sales[cache_buster] < 2)
+    VAR S = TREATAS({"AR", "CA"}, customer_address[ca_state])
+    EVALUATE SUMMARIZECOLUMNS(date_dim[d_year], F, S, "q", [Catalog Sales Quantity])`;
+  for (const dialect of ['tsql', null]) {
+    const sql = compileAs('tpcds', dax, dialect);
+    assert.equal(reads(sql, 'catalog_sales'), 1, sql);
+    assert.match(sql, /"cache_buster" < 2 OR \w+\."cache_buster" IS NULL/);
+    assert.match(sql, /IN \('AR', 'CA'\)/);
+  }
+});
+
+test('a value that a function names twice is written once: fixed decimals nested stay small', () => {
+  const q = query('check-measure-average-price-change');
+  assert.ok(compileAs(q.model, q.dax).length < 2 * compileAs(q.model, q.dax, null).length);
+});
+
+test("a measure in a column and in another's DIVIDE is one subquery of the row", () => {
+  const q = query('paper-q4-catalog-yoy-ar');
+  // The quantity's group, and last year's quantity once (it was in three places).
+  assert.equal(reads(compileAs(q.model, q.dax), 'catalog_sales'), 2);
+});

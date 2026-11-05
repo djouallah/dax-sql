@@ -56,9 +56,14 @@ export class Dialect {
   nocase(a, ...others) { return [a, ...others].map(s => `lower(${s})`); }
   isDistinct(a, b) { return `${a} IS DISTINCT FROM ${b}`; }
 
+  // body(...vals): SQL that names each of `vals` more than once. An engine that has no way to
+  // name a value once (T-SQL) writes the ones that are more than a column or a constant once,
+  // in a row the body reads; nested, they would grow the SQL at each level.
+  bind(vals, body) { return body(...vals); }
+
   // a + b where either can be blank: blank only when both are.
   blankAdd(a, b, sub) {
-    return `CASE WHEN ${a} IS NULL AND ${b} IS NULL THEN NULL ELSE COALESCE(${a}, 0) ${sub ? '-' : '+'} COALESCE(${b}, 0) END`;
+    return this.bind([a, b], (a, b) => `CASE WHEN ${a} IS NULL AND ${b} IS NULL THEN NULL ELSE COALESCE(${a}, 0) ${sub ? '-' : '+'} COALESCE(${b}, 0) END`);
   }
 
   // A value as text, the way & joins it.
@@ -111,6 +116,9 @@ export class Dialect {
   // Whether the aggregates an iterator's rows take over their own values are fused into a GROUP BY
   // joined to the rows (emit.js rowFused), for an engine that runs the subqueries as loops.
   fuseRows = false;
+  // Whether the engine computes again what the SQL writes again (T-SQL): a CTE at each name, a
+  // subquery at each copy. The emitter then writes a value once where it can.
+  repeats = false;
   // The statement as the engine is to run it, from the SQL the emitter wrote.
   finish(sql) { return sql; }
   cond(v) { return v; }      // a boolean value as a condition

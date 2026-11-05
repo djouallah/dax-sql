@@ -872,6 +872,22 @@ T-SQL the emitter avoids those shapes (a RANKX of 121 rows took over 300 s, and 
 - The measures an iterator's rows take over their own values are fused into a GROUP BY joined
   to the rows, as SUMMARIZECOLUMNS' are, for a row of a few columns that reads no outer row.
 
+**Fabric computes again what the SQL writes again**: a CTE at each name, a subquery at each
+copy. DuckDB names a value once (`[… FOR x IN [v]][1]`) and reads a CTE once; for T-SQL:
+
+- A value a function names more than once (a fixed decimal's rounding, a blank-aware sum, a
+  date as text) is written once, in a row the function reads: nested, it grew the SQL at each
+  level (a price change was 434 KB, 30 KB so).
+- SUMMARIZECOLUMNS whose groups are one fused group's reads that group, not the group joined to
+  its own keys.
+- A table-reading subquery that a row's values write more than once (a measure in a column and
+  again in another's DIVIDE) is a column of an `OUTER APPLY`, computed once a row.
+
+In both dialects, a filter table that is a VAR (as Power BI names each filter of a visual) is
+read as the same table written in place: `FILTER(KEEPFILTERS(VALUES(T[c])), …)` is its
+conditions on the scan, and `TREATAS({"AR", "CA"}, T[c])` is `c IN ('AR', 'CA')`, which the
+engine can apply as it scans.
+
 **By design**, where T-SQL can't do what DAX does:
 
 - `1 / BLANK()` is blank: T-SQL has no infinity.

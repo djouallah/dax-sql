@@ -27,6 +27,7 @@ export class TSqlDialect extends Dialect {
   subqueryInCase = false;
   correlatedSemiJoin = false;
   fuseRows = true;
+  repeats = true;
 
   // Fabric drops a varchar literal's trailing spaces in a query over a table (', ' || x is ",x"),
   // but not a cast one's.
@@ -53,6 +54,17 @@ export class TSqlDialect extends Dialect {
   }
   // COLLATE can't follow a subquery; it can follow a CAST of one.
   nocase(a, ...others) { return [`(${/^\(\s*SELECT\b/i.test(a) ? `CAST(${a} AS VARCHAR(8000))` : a} COLLATE ${CI})`, ...others]; }
+
+  // A value more than a column or a constant, written once in a row the body reads, as the
+  // CASE's branches are (emit.js): (SELECT body FROM (SELECT x AS "v0") AS b1). An aggregate
+  // over the rows around it can't be in a subquery: as it is.
+  bind(vals, body) {
+    const at = vals.map((v, i) => (v == null || plain(v) ? -1 : i)).filter(i => i >= 0);
+    if (!at.length || !this.alias || vals.some(v => v != null && aggregates(v))) return body(...vals);
+    const b = this.alias('b');
+    const refs = vals.map((v, i) => (at.includes(i) ? `${b}.${this.ident(`v${i}`)}` : v));
+    return `(SELECT ${body(...refs)} FROM (SELECT ${at.map(i => `${vals[i]} AS ${this.ident(`v${i}`)}`).join(', ')}) AS ${b})`;
+  }
 
   cond(v) { return `(${v} = 1)`; }
   value(c) { return `CASE WHEN ${c} THEN CAST(1 AS BIT) WHEN NOT (${c}) THEN CAST(0 AS BIT) END`; }
@@ -94,12 +106,12 @@ export class TSqlDialect extends Dialect {
   // the time when it is not midnight; TRUE as "TRUE".
   text(sql, t) {
     if (t === 'double' || t === 'decimal') return `FORMAT(${fl(sql)}, 'G15')`;
-    if (t === 'datetime' || t === 'date') {
+    if (t === 'datetime' || t === 'date') return this.bind([sql], sql => {
       const ts = `CAST(${sql} AS DATETIME2(6))`;
       return `CASE WHEN ${ts} = CAST(CAST(${sql} AS DATE) AS DATETIME2(6)) THEN FORMAT(${ts}, 'M/d/yyyy', 'en-US')
         WHEN CAST(${sql} AS DATE) = CAST('1899-12-30' AS DATE) THEN FORMAT(${ts}, 'h:mm:ss tt', 'en-US')
         ELSE FORMAT(${ts}, 'M/d/yyyy h:mm:ss tt', 'en-US') END`;
-    }
+    });
     if (t === 'bool') return `CASE ${sql} WHEN 1 THEN 'TRUE' WHEN 0 THEN 'FALSE' END`;
     return `CAST(${sql} AS VARCHAR(8000))`;
   }
@@ -128,7 +140,7 @@ export class TSqlDialect extends Dialect {
       case 'greatest': return `GREATEST(${a.join(', ')})`;
       case 'least': return `LEAST(${a.join(', ')})`;
       case 'divide': return a.length === 2 ? `(${fl(x)} / NULLIF(${y}, 0))`
-        : `CASE WHEN COALESCE(${y}, 0) = 0 THEN ${z} ELSE ${fl(x)} / ${y} END`;
+        : this.bind([x, y, z], (x, y, z) => `CASE WHEN COALESCE(${y}, 0) = 0 THEN ${z} ELSE ${fl(x)} / ${y} END`);
       case 'iseven': return `(CAST(ROUND(${x}, 0, 1) AS BIGINT) % 2 = 0)`;
       case 'isodd': return `(CAST(ROUND(${x}, 0, 1) AS BIGINT) % 2 <> 0)`;
       // An error that has the type of the branch it is in: text is the lowest of the types.
@@ -142,16 +154,16 @@ export class TSqlDialect extends Dialect {
       case 'log10': return `LOG10(${x})`;
       case 'log': return `(LOG(${x}) / LOG(${y}))`;
       case 'power': return `POWER(${fl(x)}, ${y})`;
-      case 'mod': return `(${x} - ${y} * FLOOR(${fl(x)} / ${y}))`;
+      case 'mod': return this.bind([x, y], (x, y) => `(${x} - ${y} * FLOOR(${fl(x)} / ${y}))`);
       case 'quotient': return `CAST(ROUND(${fl(x)} / ${y}, 0, 1) AS BIGINT)`;
       case 'round': return `ROUND(${x}, ${int(y)})`;
       // A fixed decimal: four places, rounded from the value's decimal digits (a FLOAT's ROUND sees
       // 0.50005 as 0.50004999...), within a 64-bit count of ten-thousandths.
-      case 'currency': return `CASE WHEN ABS(${x}) >= 922337203685477.5808
+      case 'currency': return this.bind([x], x => `CASE WHEN ABS(${x}) >= 922337203685477.5808
         THEN ${this.fn('error', [this.str('DAX: the result of a conversion or arithmetic operation is too large or too small for a fixed decimal number')])}
-        ELSE CAST(ROUND(CAST(${x} AS DECIMAL(38,12)), 4) AS DECIMAL(19,4)) END`;
-      case 'roundup': return `(SIGN(${x}) * CEILING(ABS(${x}) * POWER(10e0, ${y})) / POWER(10e0, ${y}))`;
-      case 'rounddown': case 'trunc': return `(ROUND(${x} * POWER(10e0, ${y}), 0, 1) / POWER(10e0, ${y}))`;
+        ELSE CAST(ROUND(CAST(${x} AS DECIMAL(38,12)), 4) AS DECIMAL(19,4)) END`);
+      case 'roundup': return this.bind([x, y], (x, y) => `(SIGN(${x}) * CEILING(ABS(${x}) * POWER(10e0, ${y})) / POWER(10e0, ${y}))`);
+      case 'rounddown': case 'trunc': return this.bind([x, y], (x, y) => `(ROUND(${x} * POWER(10e0, ${y}), 0, 1) / POWER(10e0, ${y}))`);
       case 'int': return `CAST(FLOOR(${x}) AS BIGINT)`;
       case 'ceiling': return y ? `(CEILING(${fl(x)} / ${y}) * ${y})` : `CEILING(${x})`;
       case 'floor': return y ? `(FLOOR(${fl(x)} / ${y}) * ${y})` : `FLOOR(${x})`;
@@ -176,13 +188,13 @@ export class TSqlDialect extends Dialect {
         if (w === undefined) return `REPLACE(${x} COLLATE ${BIN}, ${y}, ${z})`;
         throw unsupported('SUBSTITUTE with an instance number on the SQL endpoint');
       case 'replace': return `(LEFT(${x}, ${y} - 1) || ${w} || SUBSTRING(${x}, ${y} + ${z}, 2147483647))`;
-      case 'search': case 'find': {
+      case 'search': case 'find': return this.bind([x, y, z, w], (x, y, z, w) => {
         const s = v => (name === 'search' ? `LOWER(${v})` : `${v} COLLATE ${BIN}`);
         const pos = `CHARINDEX(${s(`COALESCE(${x}, '')`)}, ${s(`COALESCE(${y}, '')`)}, ${z})`;
         return `CASE WHEN COALESCE(${x}, '') = '' THEN ${z} WHEN ${pos} = 0 THEN ${w} ELSE ${pos} END`;
-      }
+      });
       case 'rept': return `REPLICATE(${x}, ${int(y)})`;
-      case 'exact': return `(COALESCE(${x}, '') COLLATE ${BIN} = COALESCE(${y}, '') AND DATALENGTH(COALESCE(${x}, '')) = DATALENGTH(COALESCE(${y}, '')))`;
+      case 'exact': return this.bind([x, y], (x, y) => `(COALESCE(${x}, '') COLLATE ${BIN} = COALESCE(${y}, '') AND DATALENGTH(COALESCE(${x}, '')) = DATALENGTH(COALESCE(${y}, '')))`);
       case 'unichar': return `NCHAR(${int(x)})`;
       case 'unicode': return `UNICODE(${x})`;
       case 'containsstring': return `(COALESCE(${y}, '') = '' OR CHARINDEX(LOWER(COALESCE(${y}, '')), LOWER(COALESCE(${x}, ''))) > 0)`;
@@ -202,20 +214,20 @@ export class TSqlDialect extends Dialect {
       // A time is a date and time on day zero (1899-12-30), as in DAX.
       case 'time': return `DATEADD(MILLISECOND, CAST(ROUND((${x} * 3600 + ${y} * 60 + ${fl(z)}) * 1000, 0) AS INT), ${DAY0})`;
       // A date and time plus another: the second's time since day zero added to the first.
-      case 'add_datetimes': {
+      case 'add_datetimes': return this.bind([x, y], (x, y) => {
         const T = v => `COALESCE(CAST(${v} AS DATETIME2(6)), ${DAY0})`;
         return `CASE WHEN ${x} IS NULL AND ${y} IS NULL THEN NULL ELSE DATEADD(MILLISECOND, DATEDIFF(MILLISECOND, CAST(CAST(${T(y)} AS DATE) AS DATETIME2(6)), ${T(y)}),
           DATEADD(DAY, DATEDIFF(DAY, ${DAY0}, ${T(y)}), ${T(x)})) END`;
-      }
+      });
       case 'year': case 'month': case 'day': return `${name.toUpperCase()}(${x})`;
       case 'hour': case 'minute': case 'second': case 'quarter': return `DATEPART(${name.toUpperCase()}, ${x})`;
-      case 'weekday': return `CASE ${int(y)} WHEN 2 THEN ${isodow(x)} WHEN 3 THEN ${isodow(x)} - 1 ELSE ${dow(x)} + 1 END`;
-      case 'weeknum': {
+      case 'weekday': return this.bind([x, y], (x, y) => `CASE ${int(y)} WHEN 2 THEN ${isodow(x)} WHEN 3 THEN ${isodow(x)} - 1 ELSE ${dow(x)} + 1 END`);
+      case 'weeknum': return this.bind([x, y], (x, y) => {
         const jan1 = `DATEFROMPARTS(YEAR(${x}), 1, 1)`;
         return `CASE WHEN ${int(y)} = 21 THEN DATEPART(ISO_WEEK, ${x})
         WHEN ${int(y)} = 2 THEN CAST(FLOOR((DATEPART(DAYOFYEAR, ${x}) - 1 + ${isodow(jan1)} - 1) / 7.0) + 1 AS BIGINT)
         ELSE CAST(FLOOR((DATEPART(DAYOFYEAR, ${x}) - 1 + ${dow(jan1)}) / 7.0) + 1 AS BIGINT) END`;
-      }
+      });
       case 'eomonth': return `EOMONTH(${x}, ${int(y)})`;
       case 'add_interval': {
         const u = unit(z);
@@ -246,12 +258,12 @@ export class TSqlDialect extends Dialect {
       // A fixed decimal over a whole number: the exact quotient of ten-thousandths, rounded half
       // away from zero. Over 0 (or, for /, a blank): DIVIDE's alternate, or blank for / (T-SQL
       // has no infinity).
-      case 'cydiv': case 'cydivide': {
+      case 'cydiv': case 'cydivide': return this.bind([x, y, z], (x, y, z) => {
         const n = `CAST(ROUND(${x} * 10000, 0) AS DECIMAL(38,0))`, d = `CAST(${y} AS DECIMAL(38,0))`;
         const zero = name === 'cydiv' ? 'NULL' : z ?? 'NULL';
         return `CASE WHEN COALESCE(${y}, 0) = 0 THEN ${zero}
           ELSE CAST(SIGN(${n}) * SIGN(${d}) * FLOOR((2 * ABS(${n}) + ABS(${d})) / (2 * ABS(${d}))) / 10000 AS DECIMAL(19,4)) END`;
-      }
+      });
       case 'fact': case 'gcd': case 'lcm':
         throw unsupported(`${name.toUpperCase()} on the SQL endpoint`);
     }
@@ -314,6 +326,28 @@ function callArgs(sql, i) {
     } else if (c === ',' && !depth) { args.push(sql.slice(start, i).trim()); start = i + 1; }
   }
   return null;
+}
+
+// SQL that is a column of a row or a constant, which bind() names as it is.
+const plain = v => /^\w+\.(?:"(?:[^"]|"")*"|\w+)$/.test(v) || /^-?\d+(?:\.\d+)?(?:e[-+]?\d+)?$/i.test(v) || /^N?'(?:[^']|'')*'$/.test(v)
+  || /^\(?CAST\((?:NULL|-?\d+(?:\.\d+)?|N?'(?:[^']|'')*') AS [\w(), ]+\)\)?$/i.test(v) || v === 'NULL';
+// Whether SQL aggregates (or windows) the rows of the query it is in: outside its subqueries.
+const AGG = /\b(?:SUM|COUNT|COUNT_BIG|MIN|MAX|AVG|STRING_AGG|STDEV|STDEVP|VAR|VARP|PRODUCT|MEDIAN|PERCENTILE_CONT|GROUPING)\s*\(|\bOVER\s*\(/i;
+function aggregates(sql) {
+  let out = '', depth = 0;
+  for (let i = 0; i < sql.length; i++) {
+    const c = sql[i];
+    if (c === "'" || c === '"') {
+      const end = sql.indexOf(c, i + 1);
+      if (end < 0) break;
+      i = end;   // a string or a quoted name: neither aggregates
+    } else if (depth) {
+      if (c === '(') depth++;
+      else if (c === ')') depth--;
+    } else if (c === '(' && /^\(\s*SELECT\b/i.test(sql.slice(i, i + 12))) depth = 1;
+    else out += c;
+  }
+  return AGG.test(out);
 }
 
 // Whether SQL that starts with ( is that one parenthesis and what it holds.

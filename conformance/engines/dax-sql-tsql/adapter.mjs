@@ -9,7 +9,7 @@
 //
 // The token is TSQL_TOKEN, or else the Azure CLI's (az account get-access-token). The driver,
 // tedious, is this folder's own dependency: dax-sql only writes SQL.
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { join, resolve } from 'node:path';
@@ -136,13 +136,18 @@ async function answer(ses, q) {
     }
     const { sql, columns } = db.compilers.get(roles).compile(q.dax);
     if (process.env.TSQL_SHOW) console.error(`${q.id}\n${sql}\n`);
+    const t0 = performance.now();
     const r = await ses.run(sql);
+    times.push({ id: q.id, ms: Math.round(performance.now() - t0), bytes: sql.length });
     return { id: q.id, columns: columns.map(c => c.name), rows: r.rows.map(row => row.map((v, i) => value(v, r.cols[i]))) };
   } catch (e) {
     const said = e.message || (e.errors ?? []).map(x => x.message).join('; ') || String(e);
     return { id: q.id, error: `${e.code ? `${e.code}: ` : ''}${said.split('\n')[0]}`, ...(e.code === 'UNSUPPORTED' ? { unsupported: true } : {}) };
   }
 }
+
+// With TSQL_TIMES, each query's time to answer (ms) and its SQL's length, written to that file.
+const times = [];
 
 // The queries of a model together, so a session loads few models.
 const request = JSON.parse(readFileSync(process.argv[3], 'utf8'));
@@ -152,3 +157,4 @@ await Promise.all(sessions.map(async ses => {
   for (let q; (q = queue.shift());) process.stdout.write(`${JSON.stringify(await answer(ses, q))}\n`);
 }));
 sessions.forEach(s => s.close());
+if (process.env.TSQL_TIMES) writeFileSync(process.env.TSQL_TIMES, JSON.stringify(times.sort((a, b) => b.ms - a.ms), null, 1));

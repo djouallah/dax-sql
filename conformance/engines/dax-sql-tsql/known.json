@@ -25,7 +25,6 @@
   {"id":"edges/filters/filters-calcgroup-items-by-year","reason":"by design: text sorts by code point, not by the culture (Power BI orders case- and punctuation-insensitively)"},
   {"id":"edges/filters/filters-m2m-target-by-product-name","reason":"by design: text sorts by code point, not by the culture (Power BI orders case- and punctuation-insensitively)"},
   {"id":"edges/filters/filters-rankx-ties-allselected","reason":"by design: text keeps its trailing spaces (Power BI drops them on load)"},
-  {"id":"edges/iterators/iterators-averagex-months-target-gaps","reason":"by design: text keeps its trailing spaces (Power BI drops them on load)"},
   {"id":"edges/iterators/iterators-calc-group-maxx-over-items","reason":"not yet: FORMAT with a pattern (Fabric has FORMAT; DAX patterns are not translated to it yet)"},
   {"id":"edges/iterators/iterators-concatenatex-names-blank-empty-spaces","reason":"by design: text keeps its trailing spaces (Power BI drops them on load)"},
   {"id":"edges/iterators/iterators-concatenatex-numeric-looking-codes","reason":"by design: text sorts by code point, not by the culture (Power BI orders case- and punctuation-insensitively)"},

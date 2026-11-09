@@ -119,6 +119,9 @@ export class Dialect {
   // Whether the engine computes again what the SQL writes again (T-SQL): a CTE at each name, a
   // subquery at each copy. The emitter then writes a value once where it can.
   repeats = false;
+  // Whether a fused group's rows are aggregated before its joins to the one side (emit.js
+  // Fusion.belowJoins), for an engine that joins every row first.
+  aggBelowJoins = false;
   // The statement as the engine is to run it, from the SQL the emitter wrote.
   finish(sql) { return sql; }
   cond(v) { return v; }      // a boolean value as a condition

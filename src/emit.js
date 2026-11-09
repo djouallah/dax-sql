@@ -1468,6 +1468,38 @@ class Fusion {
     return null;
   }
 
+  // Group g's SQL with its scan's rows aggregated before the joins, or null to write it as it is: the
+  // scan grouped by the columns of its own the keys and the joins read, those groups joined to the
+  // other tables, and aggregated again by the keys. An engine that joins every row before a GROUP BY
+  // above the join (DuckDB cannot know the other side's key is unique; the model can) joined 592
+  // million rows to a 265-row table in 10 s, where their 265 groups take 0.5 s. Only for sums,
+  // counts, mins and maxes of the scan's own columns, under conditions on its own columns, over
+  // joins to the one side of its expanded table (Res.join): each row then meets at most one row of
+  // each, so it is counted once, and a row that meets none is in the blank group as before.
+  belowJoins(g, owns) {
+    const em = this.em, b = g.block, base = scanAlias(g);
+    if (!em.d.aggBelowJoins || !base || g.edge || g.readsKeys || !g.keyExprs.length || !b.joins.length) return null;
+    if (!b.joins.every(j => b.hops?.has(j)) || owns.some(Boolean)) return null;
+    if (!g.aggs.every(a => OVER[a.parts.fn] && !partsQuery(a.parts) && !a.parts.keys?.length)) return null;
+    if ([...g.keyExprs, ...b.joins, ...b.where].some(isQuery)) return null;
+    const joined = [...b.joins.join(' ').matchAll(/\bAS (\w+) ON\b/g)].map(m => m[1]);
+    const readsJoined = s => joined.some(a => new RegExp(`\\b${a}\\.`).test(s ?? ''));
+    if (b.where.some(readsJoined) || g.aggs.some(a => readsJoined(a.parts.arg))) return null;
+    // The scan's columns the keys and the joins read: the inner GROUP BY.
+    const own = new RegExp(`\\b${base}\\.(?:"(?:[^"]|"")*"|\\[(?:[^\\]]|\\]\\])*\\])`, 'g');
+    const cols = [...new Set([...g.keyExprs, ...b.joins].flatMap(s => s.match(own) ?? []))];
+    if (!cols.length) return null;
+    const p = em.alias('p'), id = n => em.ident(n);
+    const swap = s => s.replace(own, m => `${p}.${id(`c${cols.indexOf(m)}`)}`);
+    const keys = g.keyExprs.map(swap), joins = b.joins.map(swap);
+    // Anything else of the scan's row they read (a calculated column's expression): written as it is.
+    if ([...keys, ...joins].some(s => new RegExp(`\\b${base}\\.`).test(s))) return null;
+    const inner = `SELECT ${[...cols.map((c, i) => `${c} AS ${id(`c${i}`)}`), ...g.aggs.map((a, i) => `${a.make(null)} AS ${id(`a${i}`)}`)].join(', ')}`
+      + ` FROM ${b.from}${b.where.length ? ` WHERE ${b.where.join(' AND ')}` : ''} GROUP BY ${cols.join(', ')}`;
+    const out = [...keys.map((k, j) => `${k} AS ${id(`g${j}`)}`), ...g.aggs.map((a, i) => `${OVER[a.parts.fn](`${p}.${id(`a${i}`)}`)} AS ${id(`a${i}`)}`)];
+    return `SELECT ${out.join(', ')} FROM (${inner}) AS ${p} ${joins.join(' ')} GROUP BY ${keys.join(', ')}`;
+  }
+
   // The CTEs, written once every aggregate is known (a level's after those of the levels
   // before it, whose groups it can read).
   finish() {
@@ -1485,6 +1517,8 @@ class Fusion {
       const names = [...g.keyExprs.map((_, j) => `g${j}`), ...g.aggs.map((_, i) => `a${i}`)];
       // Read again by a group over it: written once.
       const cte = sql => this.em.ctes.push(`${g.alias} AS ${g.reread ? this.em.d.materialized : ''}(${sql})`);
+      const below = this.belowJoins(g, owns);
+      if (below) { cte(below); continue; }
       if (this.em.d.aggOverSubquery || ![...g.keyExprs, ...owns].some(isQuery) && !g.aggs.some(a => partsQuery(a.parts))) {
         const aggs = g.aggs.map((a, i) => a.make(owns[i]));
         b.setOut(names.map(name => ({ name })), [...g.keyExprs, ...aggs]);
@@ -1716,7 +1750,10 @@ class Res {
     const hop = path.at(-1);
     a = this.em.alias('j');
     if (!this.block) throw semantic(`'${hop.to.table.name}' cannot be joined here`);
-    this.block.joins.push(`LEFT JOIN ${this.em.source(hop.to.table)} AS ${a} ON ${this.em.stored(a, hop.to)} = ${from}`);
+    const sql = `LEFT JOIN ${this.em.source(hop.to.table)} AS ${a} ON ${this.em.stored(a, hop.to)} = ${from}`;
+    this.block.joins.push(sql);
+    // A join to the one side of the row's table's expanded table: at most one row each (Fusion.belowJoins).
+    (this.block.hops ??= new Set()).add(sql);
     this.joinAlias.set(key, a);
     (this.joinKey ??= new Map()).set(a, `${a}.${this.em.ident(hop.to.source)}`);
     return a;

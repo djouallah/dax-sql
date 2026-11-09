@@ -8,6 +8,7 @@ export class DuckDBDialect extends Dialect {
   name = 'duckdb';
   materialized = 'MATERIALIZED ';
   supportsQualify = true;
+  aggBelowJoins = true;
 
   type(t) { return t === 'double' ? 'DOUBLE' : super.type(t); }
 

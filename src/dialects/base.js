@@ -141,6 +141,9 @@ export class Dialect {
   agg(name) { throw new Error(`${this.name}: aggregate ${name} is not implemented`); }
   // Whether agg() takes extra.filter: the aggregate over the rows a condition keeps.
   get aggFilter() { return false; }
+  // The sum of floating-point sums (a table's groups, emit.js groupedFirst), the same whatever
+  // order the engine reads them in.
+  sumOfGroups(v) { return `CAST(SUM(CAST(${v} AS DECIMAL(38,15))) AS ${this.type('double')})`; }
   // Whether agg() takes 'sum_currency': SUM of currency(x), written from x.
   get sumCurrency() { return false; }
 }

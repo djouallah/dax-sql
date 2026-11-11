@@ -509,7 +509,10 @@ export class Emitter {
         if (f.kind === 'bind') {
           if (f.implied && ctx.filters.includes(f.implied)) continue;
           const sides = [res.meta(D[0]), this.scalar(f.val, scope)];
-          out.push(this.d.isNotDistinct(...sides));
+          // Where one side can't be blank, = says the same as IS NOT DISTINCT FROM, and an engine
+          // turns a subquery correlated by = into a join (Fabric loops on the other: 26 s, 2.5 s so).
+          const sure = nonBlankValue(f.val) || !mayHoldNull(D[0]) && !this.blankSide(table, D[0], res, res.state);
+          out.push(sure ? `${sides[0]} = ${sides[1]}` : this.d.isNotDistinct(...sides));
           if (f.guard) out.push(paren(this.scalar(f.guard, scope, true)));
         }
         else if (f.kind === 'pred' && D.length === f.cols.length) out.push(paren(this.scalar(f.pred, withRow(scope, f.row, res), true)));
@@ -1008,9 +1011,9 @@ export class Emitter {
     // A sum of floating-point groups in their own order: the same to the last digit wherever
     // the measure is written again (a RANKX's row and the rows it ranks), whatever order the
     // engine's threads read the groups in.
-    if (exactly) return `CAST(SUM(${base}.${v}) AS DOUBLE)`;
+    if (exactly) return this.d.cast(`SUM(${base}.${v})`, 'double');
     const exact = p.fn === 'sum' && p.extra?.t !== 'int' && p.extra?.t !== 'decimal';
-    return exact ? `SUM(${base}.${v} ORDER BY ${base}.${v})` : OVER[p.fn](`${base}.${v}`);
+    return exact ? this.d.sumOfGroups(`${base}.${v}`) : OVER[p.fn](`${base}.${v}`);
   }
 
   // A subquery that reads nothing of the query around it, written once: the same SQL (up to
@@ -1759,6 +1762,20 @@ function isCond(x, em) {
 // but a key (a column marked as one, or the one side of a relationship) and one the model
 // says is not nullable.
 const mayHoldNull = c => !c.unique && c.nullable !== false;
+// Whether a value can't be blank: one that never is, or a column that holds none, read on a row
+// of its own table (not through a join that can find no row).
+function nonBlankValue(v) {
+  if (v.nn) return true;
+  if (v.k !== 'col' || !v.row) return false;
+  const c = typeof v.ref === 'object' ? v.ref : v.row.cols?.[v.ref]?.lineage;
+  if (!c || mayHoldNull(c)) return false;
+  if (v.row.kind === 'scan' && v.row.base === c.table) return true;
+  // VALUES of it: the distinct values of a column of its table's rows.
+  let s = v.row.src;
+  if (s?.k === 'distinct') s = s.src;
+  const item = s?.k === 'project' ? s.items.find(i => i.lineage === c) : null;
+  return !!item && item.expr.k === 'col' && item.expr.row?.kind === 'scan' && item.expr.row.base === c.table;
+}
 
 // Whether column i of table x can hold a blank, as far as the compiler can tell: a constant
 // is one or not; a model table's own column is not (a NULL stored in it aside); anything else

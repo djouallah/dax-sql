@@ -194,6 +194,8 @@ export class DuckDBDialect extends Dialect {
 
   // extra.filter: the aggregate over the rows that condition keeps (FILTER on each call).
   get aggFilter() { return true; }
+  // The groups added in their values' order (a DECIMAL's sum would round them to 15 places).
+  sumOfGroups(v) { return `SUM(${v} ORDER BY ${v})`; }
   // agg('sum_currency'): a sum of fixed decimals, the range checked once.
   get sumCurrency() { return true; }
   agg(fn, x, extra = {}) {

@@ -1046,6 +1046,10 @@ export class Emitter {
     const own = new RegExp(`\\b${base}\\.(?:"(?:[^"]|"")*"|\\[(?:[^\\]]|\\]\\])*\\])`, 'g');
     const cols = [...new Set(around.flatMap(sql => sql.match(own) ?? []))];
     if (!cols.length || cols.length > 3 || around.some(sql => aliases(sql.replace(own, '')).includes(base))) return null;
+    // By more than one column only where a condition is a set of values (the dates of last
+    // year): rows that each name one value of every column (a customer and a day) find their
+    // few rows faster in the table itself (0.6 s; 7 s in its groups).
+    if (cols.length > 1 && !outer.some(isQuery)) return null;
     const v = this.ident('dax_a'), inner = b.where.filter(ownOnly);
     const sql = `SELECT ${cols.join(', ')}, ${this.d.agg(p.fn, p.arg, p.extra)} AS ${v} FROM ${b.from}${inner.length ? ` WHERE ${inner.join(' AND ')}` : ''} GROUP BY ${cols.join(', ')}`;
     const key = `grouped|${canonical(sql)}`;

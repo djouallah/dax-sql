@@ -24,6 +24,10 @@
   "hash": "a22d86bd2549f4c5bfa929a3b99edd5dac617dcb",
   "error": "Query (3, 39) Column '<oii>Price</oii>' in table '<oii>Product</oii>' cannot be found or may not be used in this expression."
  },
+ "ols-hidden-column-in-row-context": {
+  "hash": "f69a65e5f4f836045e9874762bcbe8b83569aef3",
+  "error": "Query (3, 33) Column '<oii>Price</oii>' in table '<oii>Product</oii>' cannot be found or may not be used in this expression."
+ },
  "ols-hidden-column-named": {
   "hash": "48bc0ce24d5ace139791097f969a15b13b3e0c6b",
   "error": "Query (3, 23) Column '<oii>Price</oii>' in table '<oii>Product</oii>' cannot be found or may not be used in this expression."
@@ -79,6 +83,19 @@
     "Road Bike",
     2024,
     3000.0
+   ]
+  ]
+ },
+ "ols-iterate-table-with-hidden-column": {
+  "hash": "c7f87ddab702b36d3e96d7b07e91f580181b4314",
+  "columns": [
+   "[n]",
+   "[x]"
+  ],
+  "rows": [
+   [
+    2,
+    9
    ]
   ]
  },
@@ -182,6 +199,32 @@
     "Red",
     4350.0,
     2
+   ]
+  ]
+ },
+ "ols-whole-table-with-hidden-column": {
+  "hash": "a7c3ab4068f674f8f905efdab898ccac689a6067",
+  "columns": [
+   "Product[ProductKey]",
+   "Product[Name]",
+   "Product[Color]",
+   "Product[CategoryKey]",
+   "Product[PriceBand]"
+  ],
+  "rows": [
+   [
+    1,
+    "Road Bike",
+    "Red",
+    1,
+    "High"
+   ],
+   [
+    2,
+    "Mountain Bike",
+    "Black",
+    1,
+    "High"
    ]
   ]
  }

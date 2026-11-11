@@ -1,0 +1,3 @@
+// note: TIME with hours past 23, minutes and seconds past 59: the parts carry, and what passes a day
+EVALUATE ROW("a", TIME(27, 0, 0), "b", TIME(10, 75, 0), "c", TIME(1, 0, 61), "d", TIME(23, 59, 60), "e", HOUR(TIME(25, 30, 0)),
+    "f", TIME(0, 1500, 0), "g", MINUTE(TIME(10, 75, 0)))

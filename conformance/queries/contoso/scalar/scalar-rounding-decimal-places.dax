@@ -1,0 +1,3 @@
+// note: ROUNDDOWN, TRUNC, ROUNDUP and ROUND at decimal places where the binary value sits just under or over the decimal one (0.29 * 100 is 28.999...)
+EVALUATE ROW("a", ROUNDDOWN(0.29, 2), "b", TRUNC(0.29, 2), "c", ROUNDUP(0.55, 2), "d", ROUNDDOWN(4.35, 2), "e", ROUNDUP(1.1, 1),
+    "f", ROUND(2.675, 2), "g", ROUNDDOWN(-0.29, 2), "h", ROUNDUP(-0.55, 2), "i", TRUNC(1.15, 1), "j", ROUND(1.005, 2))

@@ -1,0 +1,2 @@
+// note: text given where a date is expected, in en-US forms: a month's name, and slashes
+EVALUATE ROW("a", YEAR("March 5, 2024"), "b", MONTH("March 5, 2024"), "c", DAY("3/5/2024"), "d", MONTH("3/5/2024"))

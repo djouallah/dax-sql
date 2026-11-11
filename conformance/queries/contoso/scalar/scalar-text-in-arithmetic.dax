@@ -1,0 +1,2 @@
+// note: text in arithmetic is the number it reads as: a product, a sum of two texts, a quotient, a negation, text plus a number
+EVALUATE ROW("a", "3" * 2, "b", "1" + "2", "c", 10 / "4", "d", -"4", "e", "3" + 1, "f", "2.5" * "2")

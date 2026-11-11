@@ -55,5 +55,9 @@
   {"id":"edges/relationships/relationships-one-to-one-format-filters-store","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"},
   {"id":"edges/relationships/relationships-ship-date-blank-row","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"},
   {"id":"edges/relationships/relationships-snowflake-related-column-vs-filter","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"},
-  {"id":"edges/relationships/relationships-twin-products-rank-customers","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"}
+  {"id":"edges/relationships/relationships-twin-products-rank-customers","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"},
+  {"id":"edges/iterators/iterators-rankx-skip-dense-twin-ties","reason":"by design: text keeps its trailing spaces (Power BI drops them on load)"},
+  {"id":"edges/iterators/iterators-rls-retail-averagex-customers","reason":"by design: text keeps its trailing spaces (Power BI drops them on load)"},
+  {"id":"edges/iterators/iterators-text-functions-spaces-unicode","reason":"by design: text keeps its trailing spaces (Power BI drops them on load)"},
+  {"id":"edges/iterators/iterators-topn-text-blank-equals-empty","reason":"by design: text keeps its trailing spaces (Power BI drops them on load)"}
 ]

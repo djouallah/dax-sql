@@ -893,9 +893,11 @@ What T-SQL has no function for is written with what it has:
   the two around the rank interpolated. Not an ordered aggregate: Fabric takes no two of them
   with different orders in one SELECT.
 
-`conformance/engines/dax-sql-tsql` runs the suite on a Fabric SQL endpoint, with its known list
-(those above, and DuckDB's that T-SQL shares). It has its own driver, so the package depends on
-nothing new; it needs an endpoint and a token, so it runs by hand, not in CI.
+`conformance/engines/dax-sql-tsql` runs the suite on a Fabric lakehouse's SQL endpoint, with its
+known list (those above, and DuckDB's that T-SQL shares), over the suite's data as the
+lakehouse's own Delta tables (`lakehouse.py` writes them with delta-rs, in schema `daxconf`):
+the tables a model reads, run by Fabric's distributed engine. It has its own driver, so the
+package depends on nothing new; it needs a lakehouse and a token, so it runs by hand, not in CI.
 
 ### Tests
 

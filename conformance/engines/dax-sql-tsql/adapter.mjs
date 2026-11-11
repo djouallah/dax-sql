@@ -1,18 +1,24 @@
 // dax-sql's adapter for T-SQL: as engines/dax-sql/adapter.mjs, but each query is compiled with
-// the `tsql` dialect and run on a Microsoft Fabric SQL endpoint (a lakehouse's SQL analytics
-// endpoint or a warehouse), its data loaded into the session's #temp tables, so nothing is
-// written to the item.
+// the `tsql` dialect and run on a Microsoft Fabric lakehouse's SQL analytics endpoint, over the
+// suite's data as the lakehouse's own Delta tables (schema daxconf), which lakehouse.py writes:
+// the tables a model's queries read, run by Fabric's distributed engine.
 //
 //   cd conformance/engines/dax-sql-tsql && npm install
-//   TSQL_HOST=<x>.datawarehouse.fabric.microsoft.com TSQL_DB=<item> \
+//   LAKEHOUSE_WS=<workspace id> LAKEHOUSE_ID=<lakehouse id> LAKEHOUSE_SQL_ENDPOINT=<its SQL endpoint id> \
+//     python engines/dax-sql-tsql/lakehouse.py          (once, and again when the data changes)
+//   TSQL_HOST=<x>.datawarehouse.fabric.microsoft.com TSQL_DB=<lakehouse> \
 //     node runner/run.mjs --adapter "node engines/dax-sql-tsql/adapter.mjs .." --known engines/dax-sql-tsql/known.json
+//
+// A model whose tables were written from other data than the checkout's (lakehouse.py's hash of
+// its model.bim and data/) is refused: write them again.
 //
 // The token is TSQL_TOKEN, or else the Azure CLI's (az account get-access-token). The driver,
 // tedious, is this folder's own dependency: dax-sql only writes SQL.
-import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, readdirSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 import { createRequire } from 'node:module';
-import { join, resolve } from 'node:path';
+import { join, resolve, dirname, basename } from 'node:path';
+import { createHash } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
 
 const here = createRequire(import.meta.url);
@@ -33,8 +39,7 @@ if (!HOST || !DB) { console.error('TSQL_HOST and TSQL_DB name the SQL endpoint a
 const token = process.env.TSQL_TOKEN
   || execSync('az account get-access-token --resource https://database.windows.net --query accessToken -o tsv', { encoding: 'utf8' }).trim();
 
-// Sessions side by side (TSQL_SESSIONS, 8 by default), each with the data in its own #temp
-// tables; a query has TSQL_TIMEOUT_MS (30 s) to answer.
+// Sessions side by side (TSQL_SESSIONS, 8 by default); a query has TSQL_TIMEOUT_MS (30 s) to answer.
 const SESSIONS = Number(process.env.TSQL_SESSIONS || 8), TIMEOUT_MS = Number(process.env.TSQL_TIMEOUT_MS || 30000);
 async function session() {
   const conn = new Connection({
@@ -54,63 +59,34 @@ async function session() {
   return { run, dbs: new Map(), close: () => conn.close() };
 }
 
-// --- the data, as #temp tables ---
+// --- the data: the lakehouse's tables (lakehouse.py) ---
 
-// Text as a lakehouse's SQL endpoint holds it: UTF-8, compared by code point (tempdb's own collation drops what
-// its code page lacks: 佐藤 is ??).
-const TEXT = 'VARCHAR(8000) COLLATE Latin1_General_100_BIN2_UTF8';
-const TSQL_TYPE = { int64: 'BIGINT', double: 'FLOAT', decimal: 'DECIMAL(18,4)', string: TEXT, boolean: 'BIT' };
-const str = s => `${/[^\x00-\x7f]/.test(s) ? 'N' : ''}'${String(s).replace(/'/g, "''")}'`;
+const SCHEMA = 'daxconf';
 const ident = s => `"${String(s).replace(/"/g, '""')}"`;
-const temp = entity => ident(`#${entity}`);
-
-// RFC 4180, as the DuckDB adapter reads it: an empty field unquoted is NULL, "" is ''.
-function parseCsv(text) {
-  const rows = [];
-  let row = [], field = '', quoted = false, inQuotes = false, i = 0;
-  const end = () => { row.push(quoted || field !== '' ? field : null); field = ''; quoted = false; };
-  for (; i < text.length; i++) {
-    const c = text[i];
-    if (inQuotes) {
-      if (c === '"' && text[i + 1] === '"') { field += '"'; i++; } else if (c === '"') inQuotes = false; else field += c;
-    } else if (c === '"') { inQuotes = true; quoted = true; } else if (c === ',') end();
-    else if (c === '\n' || c === '\r') {
-      if (c === '\r' && text[i + 1] === '\n') i++;
-      end(); rows.push(row); row = [];
-    } else field += c;
-  }
-  if (field !== '' || quoted || row.length) { end(); rows.push(row); }
-  return rows;
+// A column's name in its Delta table, as lakehouse.py's safe() writes it.
+const safe = (i, name) => `c${i}_${name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 40)}`;
+// lakehouse.py's data_hash: the CSVs by name in code point order, then model.bim; each its name and bytes.
+function dataHash(modelPath, dataDir) {
+  const h = createHash('sha256');
+  const files = readdirSync(dataDir).filter(f => f.endsWith('.csv')).sort((a, b) => (a < b ? -1 : a > b ? 1 : 0)).map(f => join(dataDir, f));
+  for (const f of [...files, modelPath]) { h.update(basename(f)); h.update(readFileSync(f)); }
+  return h.digest('hex');
 }
 
-// A model's tables in a session, under a prefix of the model's own, so two models' tables of
-// one name differ.
-const prefixes = new Map();
+// A model's tables, read in a session: each the Delta table's columns under the model's names.
 async function database({ run }, modelPath, dataDir) {
   const bim = await readModel(modelPath);
-  const key = `${modelPath}|${dataDir}`;
-  if (!prefixes.has(key)) prefixes.set(key, `m${prefixes.size + 1}_`);
-  const prefix = prefixes.get(key);
+  const name = basename(dirname(modelPath));
+  const stored = (await run(`SELECT hash FROM ${ident(SCHEMA)}.${ident(`${name}__data`)}`)).rows[0]?.[0];
+  if (stored !== dataHash(modelPath, dataDir)) throw new Error(`the lakehouse's tables of ${name} are not this checkout's data: run engines/dax-sql-tsql/lakehouse.py ${name}`);
+  const sources = new Map();
   for (const t of bim.model.tables) {
     const s = t.partitions?.[0]?.source;
     if (s?.type !== 'entity') continue;
-    const file = join(dataDir, `${s.entityName}.csv`);
-    if (!existsSync(file)) throw new Error(`no data for ${t.name}: ${file}`);
-    const text = readFileSync(file, 'utf8');
-    const [, ...rows] = parseCsv(text).filter(r => r.length > 1 || r[0] !== null);
-    const cols = t.columns.filter(c => !c.type || c.type === 'data');
-    const types = cols.map(c => (c.dataType !== 'dateTime' ? TSQL_TYPE[c.dataType] ?? TEXT
-      : /\d{4}-\d\d-\d\d[ T]\d/.test(text) ? 'DATETIME2(6)' : 'DATE'));
-    const name = temp(prefix + s.entityName);
-    await run(`CREATE TABLE ${name} (${cols.map((c, i) => `${ident(c.sourceColumn ?? c.name)} ${types[i]} NULL`).join(', ')})`);
-    const lit = (v, ty) => (v === null ? 'NULL' : ty === 'BIT' ? (/^(true|1)$/i.test(v) ? '1' : '0')
-      : /^(BIGINT|FLOAT|DECIMAL)/.test(ty) ? (v === '' ? 'NULL' : v) : str(v));
-    for (let i = 0; i < rows.length; i += 1000) {
-      const part = rows.slice(i, i + 1000).map(r => `(${cols.map((_, j) => lit(r[j] ?? null, types[j])).join(', ')})`);
-      await run(`INSERT INTO ${name} VALUES ${part.join(', ')}`);
-    }
+    const cols = t.columns.filter(c => !c.type || c.type === 'data').map(c => c.sourceColumn ?? c.name);
+    sources.set(s.entityName, `(SELECT ${cols.map((c, i) => `${ident(safe(i, c))} AS ${ident(c)}`).join(', ')} FROM ${ident(SCHEMA)}.${ident(`${name}_${s.entityName.toLowerCase()}`)})`);
   }
-  const tableSource = t => temp(prefix + (t.source?.entity ?? t.name));
+  const tableSource = t => sources.get(t.source?.entity ?? t.name);
   return { model: tmslToModel(bim), tableSource, compilers: new Map() };
 }
 

@@ -25,17 +25,14 @@ on the known lists, by design (no blank row).
   repeated subqueries are no longer written once.
 - **T-SQL:** aggregates by the same keys with different filters on joined tables as one scan
   with `CASE` (DuckDB's `FILTER`); a table grouped before its joins.
-- **T-SQL: six `patterns` queries go past Fabric's 30 s on 3,768 sales** (under 2.5 s on
-  DuckDB), not on the known list:
-  - `relationships-currency-usd-by-country`, `relationships-currency-usd-at-delivery`: the
-    exchange rate (a LASTNONBLANK lookup) is a subquery for each date and currency of each group;
-  - `relationships-summarize-sply-product-category`: SAMEPERIODLASTYEAR inside SUMMARIZE;
-  - `queries-calcgroup-x-field-parameter`: a calculation group crossed with a field parameter;
-  - `segmentation-calc-group-name-ordinal-filter`: 339 KB of SQL, which Fabric cannot plan;
-  - `segmentation-cumulative-ranked-products`: a ranked cumulative total.
-
-  Fabric runs a correlated subquery once per outer row. It turns one into a join only when it is
-  correlated by `=`, and it does not do that through an EXISTS or a nested aggregate. Check first
-  whether the suite's `#temp` tables, which run single-node, are part of it: real lakehouse tables
-  run in the distributed engine (`CREATE TABLE … WITH (DISTRIBUTION = ROUND_ROBIN)` makes a
-  distributed temp table).
+- **T-SQL on lakehouse tables: 13 queries fail on Fabric**, not on the known list (the suite reads
+  the lakehouse's Delta tables since it read session #temp tables, which ran single-node; the
+  currency, SAMEPERIODLASTYEAR-in-SUMMARIZE and ranked cumulative queries that timed out there
+  answer now):
+  - 10 get "Internal Query Processor Error: could not produce a query plan": calculation groups
+    (`time-calc-group-items-by-year`, `segmentation-cumulative-calc-group`, …), DATEADD and
+    PARALLELPERIOD (`time-parallelperiod-vs-dateadd-quarter`, `time-yoy-mixed-grain-rollup`),
+    `context-summarize-sameperiodlastyear`;
+  - 3 go past 30 s: `queries-calcgroup-x-field-parameter`,
+    `segmentation-calc-group-name-ordinal-filter` (339 KB of SQL), and aac's
+    `check-measure-*-change` (2 to 4 s on #temp tables).

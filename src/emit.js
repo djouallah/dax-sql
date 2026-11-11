@@ -1261,16 +1261,24 @@ class Fusion {
     }
     // The other filters read no row, or only keys the scan is filtered to: those are its own
     // columns, row by row.
+    // A table filter on one column of the scan's that reads keys the scan is not filtered to
+    // (time intelligence: the dates of the group's period, its dates a year before) is a mapping
+    // of (key, value) instead, joined to the scan (`mapped`, below).
     let readsKeys = false;
+    const mapped = [];
     for (const f of rest) {
       const free = ir.freeRows({ k: 'scan', ctx: new Ctx([f]) });
       for (const id of free) if (id !== kid) return null;
       if (free.size) {
-        for (const i of ir.rowRefs(f, kid)) if (!keys.has(i)) return null;
-        readsKeys = true;
+        const refs = [...ir.rowRefs(f, kid)];
+        if (refs.every(i => keys.has(i))) { readsKeys = true; continue; }
+        if (f.kind !== 'rel' || f.cols.length !== 1 || mapped.length || via.length || !NULL_EMPTY.has(x.fn)
+          || !exp.has(f.cols[0].table.name) || refs.some(i => !this.keyCols[i]?.table)) return null;
+        mapped.push({ f, refs });
       }
     }
-    const block = em.isolated(() => em.scanBlock(S.table, new Ctx(rest, S.ctx.mods), new Map(), null, readsKeys ? [this.keyRow, this.keyCols] : null));
+    const kept = rest.filter(f => !mapped.some(m => m.f === f));
+    const block = em.isolated(() => em.scanBlock(S.table, new Ctx(kept, S.ctx.mods), new Map(), null, readsKeys ? [this.keyRow, this.keyCols] : null));
     const keyExpr = new Map();
     if (edge) {
       const m = em.isolated(() => em.scanBlock(edge.there.table, new Ctx(rest, S.ctx.mods), new Map(), new Set(exp.keys())));
@@ -1284,6 +1292,21 @@ class Fusion {
       const on = mm ? em.d.isNotDistinct(block.res.meta(edge.here), `${ma}.y`) : `${block.res.meta(edge.here)} = ${ma}.y`;
       block.joins.push(`JOIN (${pairs}) AS ${ma} ON ${on}`);
       via.forEach((v, j) => { keys.add(v.ref); keyExpr.set(v.ref, `${ma}.g${j}`); });
+    }
+    if (mapped.length) {
+      const { f, refs } = mapped[0], c = f.cols[0];
+      let mp;
+      try { mp = this.mapping(f, refs, state); } catch (e) { if (e.code === 'SEMANTIC') return null; throw e; }
+      const here = block.res.meta(c);
+      // A key the scan is grouped by already (its own row's, the group's category) is the
+      // mapping's too: the same value. One it is not grouped by is the mapping's.
+      const on = [mayHoldNull(c) ? em.d.isNotDistinct(`${mp}.v`, here) : `${mp}.v = ${here}`];
+      for (const i of refs) {
+        const k = `${mp}.${em.ident(`k${i}`)}`;
+        if (keys.has(i)) on.push(em.d.isNotDistinct(k, keyExpr.get(i) ?? block.res.meta(this.keyCols[i])));
+        else { keys.add(i); keyExpr.set(i, k); }
+      }
+      block.joins.push(`JOIN ${mp} ON ${on.join(' AND ')}`);
     }
     const keyList = [...keys].sort((a, b) => a - b);
     const body = canonical(`${block.from} ${block.joins.join(' ')} ${block.where.join(' AND ')}`);
@@ -1299,15 +1322,15 @@ class Fusion {
     // group can have rows for keys this one has none of (it is mixed).
     // Its scan can also keep fewer rows than the group's, by conditions on the tables it
     // joins: those are the aggregate's FILTER in the group.
-    if (!g && !readsKeys && !edge && !outer.length && !guards.length && (OVER[x.fn] || x.fn === 'avg') && (!keyed || nullEmpty)) {
+    if (!g && !readsKeys && !edge && !outer.length && !mapped.length && !guards.length && (OVER[x.fn] || x.fn === 'avg') && (!keyed || nullEmpty)) {
       for (const h of [...this.groups, ...this.prior.flatMap(f => f.groups)]) {
-        if (h.over || h.edge || h.readsKeys || h.outer?.length || h.tables !== `${S.table.name}|${state.key}`) continue;
+        if (h.over || h.edge || h.readsKeys || h.outer?.length || h.mapped || h.tables !== `${S.table.name}|${state.key}`) continue;
         if (h.keys.length <= keyList.length || !keyList.every(i => h.keys.includes(i))) continue;
         const conds = h.rows === rows ? [...h.block.where] : this.condsOn(h, S, rest);
         if (conds) return this.over(x, h, keyList, S, conds);
       }
     }
-    if (!g && !readsKeys && !edge && !outer.length && em.d.aggFilter && (!keyed || nullEmpty)) {
+    if (!g && !readsKeys && !edge && !outer.length && !mapped.length && em.d.aggFilter && (!keyed || nullEmpty)) {
       // An aggregate over another scan of the same tables by the same keys is that scan's,
       // over the rows its own conditions on the joined tables keep: one scan for both, its
       // conditions (written on the group's rows, which join what they need) the group's or
@@ -1328,7 +1351,7 @@ class Fusion {
     }
     if (!g) {
       g = { sig, rows, tables: `${S.table.name}|${state.key}`, edge: !!edge, readsKeys, alias: em.alias('f'), block, keys: keyList, aggs: [], nullEmpty: true, outer,
-        merge: !readsKeys && !edge && !outer.length ? `${S.table.name}|${state.key}|${keyList.join(',')}` : null };
+        merge: !readsKeys && !edge && !outer.length && !mapped.length ? `${S.table.name}|${state.key}|${keyList.join(',')}` : null, mapped: mapped.length > 0 };
       // An iterator's row (rowFused) can bind a column its scan does not reach (a key of the
       // other side of a relationship): that aggregate is not fused.
       try { g.keyExprs = [...keyList.map(i => keyExpr.get(i) ?? block.res.meta(this.keyCols[i])), ...outer.map(o => block.res.meta(o.col))]; } catch (e) {
@@ -1348,6 +1371,8 @@ class Fusion {
     // A group with an aggregate whose scan lacks one of the filters that decide the
     // combinations of the keys can hold keys that are not one of them.
     if (!this.domain.every(f => S.ctx.filters.includes(f))) g.outside = true;
+    // A mapping's keys are those of every value of the key columns, not the level's combinations.
+    if (mapped.length) g.outside = true;
     const p = parts;
     const make = filter => em.d.agg(p.fn, p.arg, filter ? { ...p.extra, filter } : p.extra);
     const key = `${make(null)}|${[...conds].sort().join(' AND ')}`;
@@ -1357,6 +1382,39 @@ class Fusion {
     if (!guards.length) return `${g.alias}.a${i}`;
     const when = em.isolated(() => guards.map(c => paren(em.scalar(c, scope, true))).join(' AND '));
     return `CASE WHEN ${when} THEN ${g.alias}.a${i}${x.fn === 'count0' || x.fn === 'dcount0' ? ' ELSE 0' : ''} END`;
+  }
+
+  // The mapping of filter f (a table filter on one column, reading keys `refs` of the key row):
+  // a CTE of every value of those key columns (k<i>) beside each value f's table holds for them
+  // (v), computed once: f's table under each key's values (a LATERAL join). Its name.
+  mapping(f, refs, state) {
+    const em = this.em;
+    const byTable = new Map();
+    for (const i of refs) {
+      const t = this.keyCols[i].table;
+      if (!byTable.has(t)) byTable.set(t, []);
+      byTable.get(t).push(i);
+    }
+    const parts = [...byTable].map(([t, is]) => {
+      const b = em.isolated(() => em.scanBlock(t, EMPTY, new Map()));
+      b.setOut(is.map(i => ({ name: `k${i}`, lineage: null })), is.map(i => b.res.meta(this.keyCols[i])));
+      b.distinct = true;
+      return `(${b.render()}) AS ${em.alias('c')}`;
+    });
+    const dm = em.alias('d'), r = em.alias('r');
+    const domRes = new WrapRes(em, null, this.keyCols.map((c, i) => ({ sql: refs.includes(i) ? `${dm}.${em.ident(`k${i}`)}` : 'NULL', lineage: c })), state);
+    const sb = em.isolated(() => em.table(f.src, withRow(new Map(), this.keyRow, domRes)));
+    const v = sb.names()[f.idx[0]];
+    const sql = `SELECT DISTINCT ${refs.map(i => `${dm}.${em.ident(`k${i}`)}`).join(', ')}, ${r}.${em.ident(v)} AS v`
+      + ` FROM (SELECT * FROM ${parts.join(' CROSS JOIN ')}) AS ${dm}${em.d.lateral(sb.render(), r, false)}`;
+    const key = `mapping|${canonical(sql)}`;
+    let name = em.memo.get(key);
+    if (!name) {
+      name = em.alias('m');
+      em.ctes.push(`${name} AS ${em.d.materialized}(${sql})`);
+      em.memo.set(key, name);
+    }
+    return name;
   }
 
   // Aggregate x over the rows of keyed group h, by `keys`, some of h's (or none): h's

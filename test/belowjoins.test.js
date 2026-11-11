@@ -43,14 +43,15 @@ test("a distinct count is not added up from groups: written as it was", async ()
   assert.deepEqual(got.map(Object.values), want.map(Object.values));
 });
 
-// An aggregate that stays a subquery of each row reads the table grouped once, in a CTE.
-const groupedOnce = sql => (sql.match(/p\d+ AS MATERIALIZED \(SELECT \w+\."OrderDate", SUM\(\w+\."Amount"\) AS "dax_a" FROM "Sales" AS \w+ GROUP BY \w+\."OrderDate"\)/g) ?? []).length;
+// A time-intelligence filter that reads the group's keys is a mapping of (key, date) joined to the
+// scan, which is grouped by the key: no subquery of each group.
+const mappedJoins = sql => (sql.match(/JOIN m\d+ ON m\d+\.v = /g) ?? []).length;
 
-test("last year's and the year to date's sales by month: Sales grouped by its date once, for both", async () => {
+test("last year's and the year to date's sales by month: each a GROUP BY over a mapping of (month, date)", async () => {
   const q = `EVALUATE SUMMARIZECOLUMNS('Date'[Year], 'Date'[Month], "ly", CALCULATE([Sales Amount], SAMEPERIODLASTYEAR('Date'[Date])), "ytd", TOTALYTD([Sales Amount], 'Date'[Date]))`;
   const { sql } = h.dax.compile(q);
-  assert.equal(groupedOnce(sql), 1, sql);
-  assert.equal(sql.split('FROM "Sales" AS t').length - 1, 1, sql);
+  assert.equal(mappedJoins(sql), 2, sql);
+  assert.doesNotMatch(sql, /\(SELECT SUM\([^()]*\) AS "v" FROM "Sales"/, sql);
   const got = sorted(await h.run(q));
   const want = sorted(await h.sql(`SELECT d."Year", d."Month",
       (SELECT SUM(s."Amount") FROM "Sales" s JOIN "Date" x ON x."Date" = s."OrderDate" WHERE x."Year" = d."Year" - 1 AND x."Month" = d."Month") AS ly,

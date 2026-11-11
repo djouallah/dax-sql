@@ -94,10 +94,10 @@ test("a measure in a column and in another's DIVIDE is one subquery of the row",
   const q = query('paper-q4-catalog-yoy-ar');
   // The quantity's group, and last year's quantity once (it was in three places).
   assert.equal(reads(compileAs(q.model, q.dax), 'catalog_sales'), 2);
-  // On DuckDB too, as a LATERAL join.
+  // On DuckDB too: last year's quantity is a GROUP BY over a mapping of (quarter, date).
   const duck = compileAs(q.model, q.dax, null);
   assert.equal(reads(duck, 'catalog_sales'), 2);
-  assert.match(duck, /LEFT JOIN LATERAL/);
+  assert.match(duck, /JOIN m\d+ ON m\d+\.v = /);
 });
 
 test('T-SQL = takes " " for "": an empty search text is told by its length, and EXACT by lengths of one type', () => {

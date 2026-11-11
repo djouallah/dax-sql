@@ -10,12 +10,6 @@ other than by design), then the speed of the SQL.
 - **RANKX on a floating-point measure** can rank a row below itself when DuckDB adds the same
   values in two orders (several threads, millions of rows). Fixed where the measure reads a
   table grouped first; elsewhere RANKX should compute each value once.
-- **Text as a date** is read in ISO form (`YEAR("2024-03-05")`); `"March 5, 2024"` and other
-  en-US forms are not.
-- **To probe on Power BI first** (new conformance queries, an Oracle run):
-  - `ROUNDDOWN(0.29, 2)`, `TRUNC`, `ROUNDUP`, `FLOOR(0.3, 0.1)`, `CEILING`, `MROUND` scale in
-    binary floating point here (0.28, 0.2); no query covers them.
-  - `TIME` with minutes or seconds that carry past a day; text in arithmetic (`"3" * 2`).
 
 ## Not implemented
 

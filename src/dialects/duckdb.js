@@ -4,6 +4,13 @@ import { formatNumber, formatDate, generalNumber, generalDate, dateSerial, seria
 
 const UNIT_SQL = { day: 'DAY', week: 'WEEK', month: 'MONTH', quarter: 'QUARTER', year: 'YEAR', hour: 'HOUR', minute: 'MINUTE', second: 'SECOND' };
 
+// A value to 15 significant digits.
+const g15 = v => `CAST(printf('%.15g', CAST(${v} AS DOUBLE)) AS DOUBLE)`;
+// The forms of a date as text, after ISO's (strptime takes a month or a day of one digit).
+const EN_US_DATES = ['%m/%d/%Y', '%m/%d/%Y %I:%M:%S %p', '%m/%d/%Y %I:%M %p', '%m/%d/%Y %H:%M:%S', '%m/%d/%Y %H:%M',
+  '%B %d, %Y', '%b %d, %Y', '%B %d, %Y %I:%M:%S %p', '%B %d, %Y %I:%M %p', '%B %d, %Y %H:%M:%S', '%B %d, %Y %H:%M',
+  '%d %B %Y', '%d %b %Y', '%B %Y', '%b %Y'];
+
 export class DuckDBDialect extends Dialect {
   name = 'duckdb';
   materialized = 'MATERIALIZED ';
@@ -75,19 +82,28 @@ export class DuckDBDialect extends Dialect {
       // A fixed decimal: four places, within a 64-bit count of ten-thousandths (bound once).
       case 'currency': return `[CASE WHEN abs(dax_c) >= 922337203685477.5808 THEN error('DAX: the result of a conversion or arithmetic operation is too large or too small for a fixed decimal number')
         ELSE round(dax_c, 4) END FOR dax_c IN [${x}]][1]`;
-      case 'roundup': return `(sign(${x}) * ceil(abs(${x}) * power(10, ${y})) / power(10, ${y}))`;
-      case 'rounddown': case 'trunc': return `(trunc(${x} * power(10, ${y})) / power(10, ${y}))`;
+      // The value scaled to the digit that is kept is read to 15 significant digits before it is
+      // cut, as Power BI does: 0.29 * 100 is 28.999999999999996 in binary, and ROUNDDOWN(0.29, 2)
+      // is 0.29, not 0.28. The same for a multiple: 0.3 / 0.1 is 2.9999999999999996.
+      case 'roundup': return `(sign(${x}) * ceil(${g15(`abs(${x}) * power(10, ${y})`)}) / power(10, ${y}))`;
+      case 'rounddown': case 'trunc': return `(trunc(${g15(`${x} * power(10, ${y})`)}) / power(10, ${y}))`;
       case 'int': return `CAST(floor(${x}) AS BIGINT)`;
-      case 'ceiling': return y ? `(ceil(${x} / ${y}) * ${y})` : `ceil(${x})`;
-      case 'floor': return y ? `(floor(${x} / ${y}) * ${y})` : `floor(${x})`;
-      case 'mround': return `(round(${x} / ${y}) * ${y})`;
+      case 'ceiling': return y ? `(ceil(${g15(`${x} / ${y}`)}) * ${y})` : `ceil(${x})`;
+      case 'floor': return y ? `(floor(${g15(`${x} / ${y}`)}) * ${y})` : `floor(${x})`;
+      case 'mround': return `(round(${g15(`${x} / ${y}`)}) * ${y})`;
       case 'rand': return 'random()';
       case 'randbetween': return `CAST(floor(random() * (${y} - ${x} + 1)) + ${x} AS BIGINT)`;
       case 'fact': return `factorial(CAST(${x} AS INTEGER))`;
       case 'even': return `CAST(sign(${x}) * ceil(abs(${x}) / 2) * 2 AS BIGINT)`;
       case 'odd': return `CAST(sign(${x}) * (ceil((abs(${x}) + 1) / 2) * 2 - 1) AS BIGINT)`;
       case 'value': return `CAST(${x} AS DOUBLE)`;
-      case 'cast': return this.cast(x, JSON.parse(y.replace(/^'|'$/g, '"')));
+      case 'cast': {
+        const t = JSON.parse(y.replace(/^'|'$/g, '"'));
+        // Text as a date: ISO, or as en-US writes one (3/5/2024, March 5, 2024, with a time).
+        if (t === 'datetime' && nodes[0]?.t === 'string')
+          return `[COALESCE(TRY_CAST(dax_d AS TIMESTAMP), try_strptime(dax_d, [${EN_US_DATES.map(f => `'${f}'`).join(', ')}]), CAST(dax_d AS TIMESTAMP)) FOR dax_d IN [${x}]][1]`;
+        return this.cast(x, t);
+      }
       // text
       case 'left': return `left(${x}, ${y ?? 1})`;
       case 'right': return `right(${x}, ${y ?? 1})`;

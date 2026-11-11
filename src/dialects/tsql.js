@@ -17,6 +17,8 @@ const int = v => `CAST(ROUND(${v}, 0) AS INT)`;
 const isodow = x => `(DATEDIFF(DAY, CAST('1900-01-01' AS DATE), ${x}) % 7 + 1)`;
 const dow = x => `(DATEDIFF(DAY, CAST('1899-12-31' AS DATE), ${x}) % 7)`;
 const fl = x => `CAST(${x} AS FLOAT)`;
+// A value to 15 significant digits.
+const g15 = v => `CAST(FORMAT(CAST(${v} AS FLOAT), 'G15') AS FLOAT)`;
 
 export class TSqlDialect extends Dialect {
   name = 'tsql';
@@ -178,12 +180,14 @@ export class TSqlDialect extends Dialect {
       case 'currency': return this.bind([x], x => `CASE WHEN ABS(${x}) >= 922337203685477.5808
         THEN ${this.fn('error', [this.str('DAX: the result of a conversion or arithmetic operation is too large or too small for a fixed decimal number')])}
         ELSE CAST(ROUND(CAST(${x} AS DECIMAL(38,12)), 4) AS DECIMAL(19,4)) END`);
-      case 'roundup': return this.bind([x, y], (x, y) => `(SIGN(${x}) * CEILING(ABS(${x}) * POWER(10e0, ${y})) / POWER(10e0, ${y}))`);
-      case 'rounddown': case 'trunc': return this.bind([x, y], (x, y) => `(ROUND(${x} * POWER(10e0, ${y}), 0, 1) / POWER(10e0, ${y}))`);
+      // The value scaled to the digit that is kept is read to 15 significant digits before it is
+      // cut, as Power BI does (duckdb.js).
+      case 'roundup': return this.bind([x, y], (x, y) => `(SIGN(${x}) * CEILING(${g15(`ABS(${x}) * POWER(10e0, ${y})`)}) / POWER(10e0, ${y}))`);
+      case 'rounddown': case 'trunc': return this.bind([x, y], (x, y) => `(ROUND(${g15(`${x} * POWER(10e0, ${y})`)}, 0, 1) / POWER(10e0, ${y}))`);
       case 'int': return `CAST(FLOOR(${x}) AS BIGINT)`;
-      case 'ceiling': return y ? `(CEILING(${fl(x)} / ${y}) * ${y})` : `CEILING(${x})`;
-      case 'floor': return y ? `(FLOOR(${fl(x)} / ${y}) * ${y})` : `FLOOR(${x})`;
-      case 'mround': return `(ROUND(${fl(x)} / ${y}, 0) * ${y})`;
+      case 'ceiling': return y ? this.bind([y], y => `(CEILING(${g15(`${fl(x)} / ${y}`)}) * ${y})`) : `CEILING(${x})`;
+      case 'floor': return y ? this.bind([y], y => `(FLOOR(${g15(`${fl(x)} / ${y}`)}) * ${y})`) : `FLOOR(${x})`;
+      case 'mround': return this.bind([y], y => `(ROUND(${g15(`${fl(x)} / ${y}`)}, 0) * ${y})`);
       case 'rand': return 'RAND(CHECKSUM(NEWID()))';
       case 'randbetween': return `CAST(FLOOR(RAND(CHECKSUM(NEWID())) * (${y} - ${x} + 1)) + ${x} AS BIGINT)`;
       case 'even': return `CAST(SIGN(${x}) * CEILING(ABS(${fl(x)}) / 2) * 2 AS BIGINT)`;

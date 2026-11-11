@@ -32,10 +32,8 @@ const { sql, columns } = dax.compile(`
 
 ## Not implemented
 
-- Object-level security, dynamic format strings, the window functions' reset argument, and
-  anything not listed in [DESIGN.md](DESIGN.md#what-it-does).
-- `FORMAT` is en-US only, with a constant pattern; model format strings are not applied.
-- `DATEDIFF` with `WEEK` counts Sunday week boundaries.
+- Object-level security: a role that hides tables or columns is refused (`UNSUPPORTED`).
+- Anything not listed in [DESIGN.md](DESIGN.md#what-it-does).
 
 ## Departures from DAX, by design
 
@@ -45,5 +43,7 @@ const { sql, columns } = dax.compile(`
   values, in grouping, filters, relationships and `LEN`. Trim them in the data if they matter.
 - A column that mixes numbers and text comes back as text.
 - `IFERROR` returns its first argument: SQL has no error values.
+- Values come back unformatted, as a DAX query's do: a measure's format string, fixed or
+  dynamic, is the caller's to apply. `FORMAT` is en-US, with a constant pattern.
 - No blank row: a dimension is expected to hold every key its facts use. `VALUES` and `ALL`
   list its own rows; fact rows with a key it lacks still count in totals.

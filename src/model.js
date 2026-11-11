@@ -21,7 +21,7 @@
 //     relationships: [{ name, from: { table, column }, to: { table, column } (required),
 //       active (true), crossFilter: single|both (single), fromCardinality: many|one (many),
 //       toCardinality: many|one (one), assumeIntegrity, securityFilter: single|both|none }],
-//     roles: [{ name, filters: [{ table, dax }] }] }
+//     roles: [{ name, filters: [{ table, dax }], hidden: ["'Table'" | "'Table'[Column]"] }] }
 // A table is one of the lakehouse (`source`, else its name), calculated (`dax`: `calc` here)
 // or a calculation group (`calcGroup`: its items); `roles` hold the row-level security
 // filters of each role.
@@ -44,6 +44,7 @@ export class Model {
     this.roles = (model.roles ?? []).map(r => ({
       name: r.name,
       filters: (r.filters ?? []).filter(f => f.dax?.trim()).map(f => ({ table: this.table(f.table), text: f.dax })),
+      hidden: r.hidden ?? [],
     }));
     // A column is unique when it is a key, or the one side of a relationship.
     for (const r of this.relationships) {

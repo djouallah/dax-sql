@@ -31,7 +31,7 @@ import { DuckDBDialect } from './dialects/duckdb.js';
 import { TSqlDialect } from './dialects/tsql.js';
 import { Dialect } from './dialects/base.js';
 import { newRow } from './ir.js';
-import { DaxError, semantic } from './errors.js';
+import { DaxError, semantic, unsupported } from './errors.js';
 import { Ctx } from './context.js';
 import { SqlTranslator, isSql, printDaxQuery, modelRelations } from './sql.js';
 
@@ -99,6 +99,9 @@ export function createCompiler(input, options = {}) {
   const security = roleNames.map(name => {
     const role = model.roles.find(r => r.name.toLowerCase() === String(name).toLowerCase());
     if (!role) throw semantic(`the model has no role ${name}`);
+    // Object-level security is not implemented: a role that hides tables or columns is refused,
+    // where reading the model without it would show them.
+    if (role.hidden.length) throw unsupported(`object-level security (role ${role.name} hides ${role.hidden[0]}${role.hidden.length > 1 ? ` and ${role.hidden.length - 1} more` : ''})`);
     return {
       name: role.name,
       filters: role.filters.map(f => {

@@ -60,6 +60,11 @@ export function tmslToModel(bim) {
     roles: (m.roles ?? []).map(r => ({
       name: r.name,
       filters: (r.tablePermissions ?? []).map(p => ({ table: p.name, dax: text(p.filterExpression) })),
+      // Object-level security: the tables and the columns the role hides.
+      hidden: (r.tablePermissions ?? []).flatMap(p => [
+        ...(p.metadataPermission === 'none' ? [`'${p.name}'`] : []),
+        ...(p.columnPermissions ?? []).filter(c => c.metadataPermission === 'none').map(c => `'${p.name}'[${c.name}]`),
+      ]),
     })),
   };
 }

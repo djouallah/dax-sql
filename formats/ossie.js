@@ -209,7 +209,7 @@ export function tmslToOssie(bim, name = 'model', { source = () => null } = {}) {
   const roles = (m.roles ?? []).map(r => ({
     name: r.name,
     ...(r.modelPermission && r.modelPermission !== 'read' ? { modelPermission: r.modelPermission } : {}),
-    ...(r.tablePermissions?.length ? { tablePermissions: r.tablePermissions.map(p => pick(p, ['name', 'filterExpression'])) } : {}),
+    ...(r.tablePermissions?.length ? { tablePermissions: r.tablePermissions.map(p => pick(p, ['name', 'filterExpression', 'metadataPermission', 'columnPermissions'])) } : {}),
   }));
   if (roles.length) model.roles = roles;
   return {

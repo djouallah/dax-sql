@@ -442,7 +442,7 @@ SELECT * FROM (SHOW SEMANTIC METRICS IN sales) WHERE ...;   -- each one reads as
 | `castOutput` | `true` (default): whole numbers as `BIGINT`, other numbers as `DOUBLE`. Or an object, by the column's type (`int`, `double`, `decimal`, `datetime`, `string`, `bool`), of a function of its SQL: `{ int: s => \`CAST(${s} AS INTEGER)\` }`; a type it leaves out is not cast. |
 | `assumeIntegrity` | `true`: every relationship relies on referential integrity, so a dimension key is read off the fact's foreign key without a join. By default only relationships whose `relyOnReferentialIntegrity` is set are treated this way. |
 | `user` | The value of `USERNAME()` and `USERPRINCIPALNAME()`. |
-| `roles` | A role name, or several: row-level security. Each table keeps the rows that at least one of the roles keeps. |
+| `roles` | A role name, or several: row-level security. Each table keeps the rows that at least one of the roles keeps. A role with object-level security (it hides tables or columns) is refused: that is not implemented, and reading the model without it would show what it hides. |
 | `params` | The values of the query's parameters (`@name`), by name: numbers, text, booleans, `Date`s or `null` (blank). |
 
 Errors are `DaxError` with a `code`:

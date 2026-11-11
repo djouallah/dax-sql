@@ -21,13 +21,14 @@ other than by design), then the speed of the SQL.
 
 - **Object-level security**: a role that hides whole tables or columns (a model's
   `tablePermission`/`columnPermission` with `metadataPermission: none`), so that a query
-  naming one fails as if it did not exist. Row-level security is done; this is not read.
-- **Dynamic format strings** (a measure's `formatStringDefinition`), and model format strings:
-  not applied to the values returned.
-- **The window functions' reset argument** (`RUNNINGSUM(…, …, reset)` and the like).
-- **FORMAT** is en-US only, with a constant pattern.
-- **DATEDIFF with WEEK** counts Sunday week boundaries, whatever the model's first day.
+  naming one fails as if it did not exist. A role that has it is refused for now. To do it:
+  a conformance model with such a role and the Oracle's answers first (what a measure over a
+  hidden column answers, a relationship on one, several roles together), then hide the
+  objects from the names a query can use while the joins still read them.
 - Anything DESIGN.md does not list under "What it does".
+
+By design, and so not here: values are returned unformatted (a measure's format string, fixed
+or dynamic, is the caller's to apply), and FORMAT is en-US with a constant pattern.
 
 ## Conformance
 

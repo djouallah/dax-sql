@@ -175,5 +175,6 @@
   {"id":"patterns/segmentation/segmentation-topn-others-products","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"},
   {"id":"patterns/time/time-autoexist-year-month-removefilters-year","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"},
   {"id":"patterns/time/time-blank-product-order-days-crossfilter-both","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"},
-  {"id":"patterns/time/time-calc-group-yoy-pct-margin-pct","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"}
+  {"id":"patterns/time/time-calc-group-yoy-pct-margin-pct","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"},
+  {"id":"patterns/segmentation/segmentation-customer-bands-by-category","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"}
 ]

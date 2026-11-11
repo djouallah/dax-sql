@@ -159,3 +159,15 @@ test('text given as a date is the date it reads as', async () => {
   const [r] = await h.run(`EVALUATE ROW("y", YEAR("2024-03-05"), "m", MONTH("2024-03-05"), "d", DATEDIFF("2024-01-01", "2024-03-05", DAY), "w", WEEKDAY("2024-03-05"), "h", HOUR("2024-03-05 13:45:00"))`);
   assert.deepEqual(Object.values(r), [2024, 3, 64, 3, 13]);
 });
+
+test('a role with object-level security is refused: reading the model without it would show what it hides', async () => {
+  const { createCompiler } = await import('../src/index.js');
+  const { tmslToModel } = await import('../formats/tmsl.js');
+  const { tmslToOssie, ossieToTmsl } = await import('../formats/ossie.js');
+  const secured = structuredClone(bim);
+  secured.model.roles.push({ name: 'NoPrice', tablePermissions: [{ name: 'Product', columnPermissions: [{ name: 'Price', metadataPermission: 'none' }] }] });
+  for (const m of [secured, ossieToTmsl(tmslToOssie(secured))]) {
+    assert.throws(() => createCompiler(tmslToModel(m), { roles: 'NoPrice' }), e => e.code === 'UNSUPPORTED' && /Product.*Price/.test(e.message));
+    assert.ok(createCompiler(tmslToModel(m), { roles: 'Paris' }).compile('EVALUATE ROW("s", [Sales Amount])').sql);
+  }
+});

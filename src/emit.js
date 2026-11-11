@@ -35,6 +35,18 @@ export class Emitter {
     this.rejects = new Map();
     this.exact = 0;               // > 0 inside a value whose floating-point sums are added exactly (`same`)
     this.nullArms = new Map();
+    // Fabric's planner (mapAlone): the mappings a SELECT joins (name -> whether one holds a
+    // subquery that reads the key row), whether an aggregate under a filter that reads an outer
+    // row was left a subquery (unmapped), and whether a SELECT mixed them (mixed).
+    this.maps = new Map();
+    this.unmapped = false;
+    this.mixed = false;
+  }
+
+  // A mapping beside a subquery under a filter that reads the group, or a mapping that holds
+  // one beside another mapping: what Fabric cannot plan in one SELECT (measured on the suite).
+  mixedMaps() {
+    return this.maps.size > 0 && (this.unmapped || (this.maps.size > 1 && [...this.maps.values()].some(Boolean)));
   }
 
   alias(p) { return `${p}${++this.n}`; }
@@ -913,6 +925,12 @@ export class Emitter {
       if (s) return s;
     }
     if (x.src.k === 'currentgroup') return this.aggExpr(x, scope);
+    // A table filter that reads an outer row (time intelligence by the group's period) left
+    // to a subquery: on an engine that cannot plan it beside a mapping (mapAlone), the query
+    // is written again without mappings (index.js).
+    let under = x.src;
+    while (under.k === 'distinct' || under.k === 'project') under = under.src;
+    if (under.k === 'scan' && under.ctx.filters.some(f => f.kind === 'rel' && ir.freeRows({ k: 'scan', ctx: new Ctx([f]) }).size)) this.unmapped = true;
     // A subquery: what it holds is not fused (SQL would read an aggregate of a column of the
     // outer query as the outer query's aggregate).
     const sql = this.isolated(() => {
@@ -1092,7 +1110,14 @@ export class Emitter {
     fusions.push(fusion);
     this.fusions.push(fusion);
     let items;
+    // A mapping beside a subquery under a filter that reads the group (mapAlone) is a level's
+    // SELECT holding both; levels apart (UNION ALL) are planned apart.
+    const outside = [this.maps, this.unmapped];
+    this.maps = new Map();
+    this.unmapped = false;
     try { items = L.items.map(i => this.scalar(i.expr, withRow(scope, x.keyRow, keyRes))); } finally { this.fusions.pop(); }
+    if (this.mixedMaps()) this.mixed = true;
+    [this.maps, this.unmapped] = outside;
     const groupsSql = fusion.groups;
 
     // The groups: from the fused aggregates when every expression is blank without their
@@ -1213,7 +1238,7 @@ class Fusion {
     const em = this.em, S = x.src;
     // MIN or MAX over the distinct values of a scan's column (VALUES, MAX of the visible dates):
     // over the scan's rows, the same values.
-    if ((x.fn === 'min' || x.fn === 'max') && S.k === 'distinct' && S.src.k === 'project' && !S.src.keep && S.src.src.k === 'scan'
+    if ((x.fn === 'min' || x.fn === 'max') && !em.options.noMapping && S.k === 'distinct' && S.src.k === 'project' && !S.src.keep && S.src.src.k === 'scan'
       && x.arg?.k === 'col' && x.arg.row === x.row) {
       const at = typeof x.arg.ref === 'number' ? x.arg.ref : S.cols.findIndex(c => c.lineage === x.arg.ref);
       const item = S.src.items[at];
@@ -1307,6 +1332,7 @@ class Fusion {
       }
     }
     if (this.mappedOnly && !mapped.length) return null;
+    if (mapped.length && em.options.noMapping) return null;
     const kept = rest.filter(f => !mapped.some(m => m.f === f));
     const block = em.isolated(() => em.scanBlock(S.table, new Ctx(kept, S.ctx.mods), new Map(), null, readsKeys ? [this.keyRow, this.keyCols] : null));
     const keyExpr = new Map();
@@ -1424,15 +1450,25 @@ class Fusion {
       if (!byTable.has(t)) byTable.set(t, []);
       byTable.get(t).push(i);
     }
+    // Each key table's values under the filters that decide the level's combinations (a level's
+    // seven dates, not the calendar's): its groups are joined to those combinations.
+    const dom = this.domain.length && em.d.mapDomain ? new Ctx(this.domain) : EMPTY;
     const parts = [...byTable].map(([t, is]) => {
-      const b = em.isolated(() => em.scanBlock(t, EMPTY, new Map()));
+      const b = em.isolated(() => em.scanBlock(t, dom, new Map()));
       b.setOut(is.map(i => ({ name: `k${i}`, lineage: null })), is.map(i => b.res.meta(this.keyCols[i])));
       b.distinct = true;
       return `(${b.render()}) AS ${em.alias('c')}`;
     });
     const dm = em.alias('d'), r = em.alias('r');
     const domRes = new WrapRes(em, null, this.keyCols.map((c, i) => ({ sql: refs.includes(i) ? `${dm}.${em.ident(`k${i}`)}` : 'NULL', lineage: c })), state);
-    const sb = em.isolated(() => em.table(f.src, withRow(new Map(), this.keyRow, domRes)));
+    // Whether its own filter keeps a subquery that reads the key row (a mapping inside a
+    // mapping, PY of YTD): see mixedMaps.
+    const was = em.unmapped;
+    em.unmapped = false;
+    let sb, nested;
+    try {
+      sb = em.isolated(() => em.table(f.src, withRow(new Map(), this.keyRow, domRes)));
+    } finally { nested = em.unmapped; em.unmapped = was; }
     // A filter of a table's rows (f.base) has no idx: its columns are the table's, by lineage.
     const at = f.idx ? f.idx[f.cols.indexOf(c)] : f.src.cols.findIndex(x => x.lineage === c);
     if (at < 0) throw semantic(`emit: no column ${c.name} in the filter`);
@@ -1446,6 +1482,7 @@ class Fusion {
       em.ctes.push(`${name} AS ${em.d.materialized}(${sql})`);
       em.memo.set(key, name);
     }
+    em.maps.set(name, nested);
     return name;
   }
 

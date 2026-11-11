@@ -22,31 +22,27 @@ aggregates by the same keys and groups a fact before its joins.
 Left, measured at 1.1M sales on DuckDB:
 
 - **Currency conversion by country** (`relationships-currency-usd-by-country`) is past 30 s, and
-  **closing vs average rate** 17 s: the rate's LASTNONBLANK reads the group's year through MAX of
+  **closing vs average rate** 13 s: the rate's LASTNONBLANK reads the group's year through MAX of
   the date (the rate's own date filter replaces it, but the MAX's does not), so its mapping would
   read the group.
 - **SAMEPERIODLASTYEAR inside SUMMARIZE** (`segmentation-summarize-sply-quarter-band`,
-  `relationships-summarize-sply-product-category`): 16 to 20 s.
-- **RANKX** over a measure (`segmentation-rankx-growth-blank-zero-negative`, 136 scans): 9.5 s.
+  `relationships-summarize-sply-product-category`): 3.6 to 3.8 s.
+- **RANKX** over a measure (`segmentation-rankx-growth-blank-zero-negative`, 136 scans): 2 s.
   It compares the measure for each pair of rows; row fusion, which computes the ranked rows'
   values once, measured slower on DuckDB as a whole (62 s to 96 s over 139 queries), so it is
   T-SQL's only.
 - Visual calculations are a window inside a subquery of each of the visual's rows: 0.35 s at
   most, the fact's aggregation most of it. Not worth a rewrite.
 
-# T-SQL on lakehouse tables: 9 queries fail on Fabric
+# T-SQL on lakehouse tables: 5 queries fail on Fabric
 
-Not on the known list. Each holds a subquery of each group that the mapping does not reach yet;
-Fabric cannot plan one SELECT holding a subquery correlated by a period's range beside one by
-shifted dates, and each one the mapping takes out is one less:
+Not on the known list; each failed on 0.1.7 too. Each holds a subquery of each group that the
+mapping does not reach yet; Fabric cannot plan one SELECT holding a subquery correlated by a
+period's range beside one by shifted dates, and each one the mapping takes out is one less:
 
 - a time-intelligence item applied to another (PY of YTD: a mapping inside a mapping):
-  `filters-calcgroup-item-as-calculate-filter`, `context-calc-group-in-iterator`,
   `customers-returning-calc-group-all`;
 - an aggregate inside an iterator over rows of more than four columns, or under a table filter
   of a table's rows (SUMMARIZE's extension columns): `context-summarize-sameperiodlastyear`,
   `segmentation-customer-bands-calc-group`;
-- dates that reach the scan over a many-to-many relationship (Budget by YearMonth):
-  `relationships-budget-calc-group-py`;
-- past 30 s: `segmentation-calc-group-name-ordinal-filter`,
-  `segmentation-calc-group-name-filter-ordinal-grouped`, `segmentation-summarize-sply-quarter-band`.
+- past 30 s: `segmentation-calc-group-name-ordinal-filter`, `segmentation-summarize-sply-quarter-band`.

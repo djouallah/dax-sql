@@ -115,6 +115,13 @@ export class Dialect {
   fuseRows = false;
   // Whether a join's ON can read a row of the query around (T-SQL; DuckDB: not in an outer join).
   correlatedJoin = false;
+  mapAlone = false;
+  // SUMMARIZECOLUMNS by one calculation group's column: 'split' (a level for each item) or
+  // 'smaller' (that or one level of CASEs, whichever SQL is smaller; index.js).
+  splitOneGroup = 'smaller';
+  // A time-intelligence mapping's keys: the values the level's filters keep (true) or every
+  // value of the key columns.
+  mapDomain = true;
   // Whether an iterator's aggregate that a mapping takes is fused, where fuseRows is off.
   fuseMappedRows = false;
   // Whether the engine computes again what the SQL writes again (T-SQL): a CTE at each name, a

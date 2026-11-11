@@ -44,6 +44,10 @@ export class Compiler {
   query(src, then = statements => statements) {
     const q = typeof src === 'string' ? parseQuery(src) : src;
     const model = this.model.fork(this.hidden), c = new Compiler(model, this.options);
+    // SUMMARIZECOLUMNS by one calculation group's column: split into a level for each item
+    // (splitOne, table.js), or not (noSplit); index.js keeps the smaller.
+    c.noSplit = this.noSplit;
+    this.splitOne = false;
     const queryVars = new Map(), queryTables = new Map(), queryCols = [];
     const env0 = c.env({ vars: queryVars, queryTables, queryVarsTop: queryVars });
     // A table WITH VISUAL SHAPE and the COLUMNs defined on it are a visual calculation's.
@@ -74,7 +78,9 @@ export class Compiler {
         Object.assign(col.query, { row, expr });
         col.type = expr.t ?? 'variant';
       }
-      return then(c.evaluates(q, env0));
+      const evs = c.evaluates(q, env0);
+      this.splitOne = c.splitOne;
+      return then(evs);
     } finally {
       model.dropQueryColumns(queryCols.map(([col]) => col));
     }

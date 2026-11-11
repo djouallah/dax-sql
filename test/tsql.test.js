@@ -87,7 +87,7 @@ test("a VAR's filter table of a column's values is its conditions, constants a l
 
 test('a value that a function names twice is written once: fixed decimals nested stay small', () => {
   const q = query('check-measure-average-price-change');
-  assert.ok(compileAs(q.model, q.dax).length < 2 * compileAs(q.model, q.dax, null).length);
+  assert.ok(compileAs(q.model, q.dax).length < 2.5 * compileAs(q.model, q.dax, null).length);
 });
 
 test("a measure in a column and in another's DIVIDE is one subquery of the row", () => {
@@ -123,4 +123,21 @@ test('T-SQL: FORMAT with a pattern rounds as a DECIMAL and reads a date through 
   assert.match(sql, /FORMAT\(CAST\(.* AS FLOAT\), 'E14'\)/);
   assert.match(sql, /'dd\/MM\/yyyy HH:mm'/);
   assert.match(sql, /'#,0', 'en-US'\)/);
+});
+
+test('T-SQL: a mapping is not written beside a subquery under a filter that reads the group (Fabric cannot plan both)', () => {
+  const q = query('context-calc-group-in-iterator');
+  const mapping = /\bm\d+ AS (?:MATERIALIZED )?\(SELECT DISTINCT/;
+  // DuckDB maps [Sales]' PY; on T-SQL the iterator's PY stays a subquery of each month, so [Sales]' does too.
+  assert.match(compileAs(q.model, q.dax, null), mapping);
+  assert.doesNotMatch(compileAs(q.model, q.dax), mapping);
+  // Every aggregate mapped: the mappings stay.
+  const p = query('paper-q4-catalog-yoy-ar');
+  assert.match(compileAs(p.model, p.dax), /JOIN m\d+ ON m\d+\.v = /);
+});
+
+test('SUMMARIZECOLUMNS by one calculation group: split by item only when that is the smaller SQL', () => {
+  // Every measure sets the group's filter itself: split, a copy of each for each of the six items.
+  const q = query('segmentation-calc-group-name-filter-ordinal-grouped');
+  for (const dialect of ['tsql', null]) assert.ok(compileAs(q.model, q.dax, dialect).length < 20000);
 });

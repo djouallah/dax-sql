@@ -259,7 +259,14 @@ same table, relationship state, keys, and other filters (the filters compared as
   to date): the filter is a mapping of (key, date), a CTE over the key columns' values and the
   Date table alone, joined to the scan, which is grouped by the key in the level's GROUP BY.
   Each group otherwise had a subquery of its own over the fact table; Fabric could not plan a
-  SELECT holding one correlated by a period's range beside one by shifted dates.
+  SELECT holding one correlated by a period's range beside one by shifted dates. Its keys are
+  the values the level's filters keep (seven days, not the calendar). Fabric cannot plan a
+  level that holds a mapping beside such a subquery the mapping does not take, or a mapping
+  that holds one beside another mapping: on T-SQL that query is written with subqueries alone.
+- **SUMMARIZECOLUMNS by one calculation group's column** is a level for each item, the item
+  applied as it is, or one level whose measures are a CASE on the item, whichever SQL is
+  smaller: a measure that sets the group's filter itself is the same for every item, and split,
+  a copy for each. Two groups crossed are split.
 - **RANKX's two sides** (the row's value and each ranked row's) are the same measure written
   twice: their sums of floating-point values are added as DECIMALs, the same in any order.
   DuckDB's threads add a column's values in an order of their own, and over three million

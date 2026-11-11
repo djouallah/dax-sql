@@ -519,6 +519,13 @@ function summarizeColumns(c, args, env) {
     }
     splits.get(g).keys.push(k);
   }
+  // One group split is not always smaller: a measure that sets the group's filter itself is
+  // one item whatever the key, and split, one copy for each. index.js compiles the query both
+  // ways and keeps the smaller; crossed groups are split.
+  if (splits.size === 1) {
+    if (c.noSplit) splits.clear();
+    else c.splitOne = true;
+  }
   const itemValue = (g, it, k) => (k === g.ordinal ? it.ordinal : it.name);
   let picks = [[]];
   for (const [g, s] of splits) picks = picks.flatMap(p => s.items.map(it => [...p, { g, it, keys: s.keys }]));

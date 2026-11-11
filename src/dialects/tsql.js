@@ -29,6 +29,7 @@ export class TSqlDialect extends Dialect {
   correlatedSemiJoin = false;
   fuseRows = true;
   correlatedJoin = true;
+  mapAlone = true;
   aggBelowJoins = true;
   // extra.filter, as a CASE (agg): aggregates by the same keys with different filters on the joined
   // tables share a scan.

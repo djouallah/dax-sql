@@ -137,7 +137,12 @@ export function createCompiler(input, options = {}) {
   const cache = new Map();
   const emit = opts => statements => statements.map(s => {
     const em = new Emitter(model, dialect, { ...opts, calcColumn, calcTable, security });
-    return em.query(s);
+    const sql = em.query(s);
+    // Fabric cannot plan a mapping (time intelligence by the group's keys, joined once) beside
+    // a subquery of each group under a filter that reads the group: such a query is written
+    // with subqueries alone, as before mappings.
+    if (!dialect.mapAlone || !(em.mixed || em.mixedMaps())) return sql;
+    return new Emitter(model, dialect, { ...opts, calcColumn, calcTable, security, noMapping: true }).query(s);
   });
   // `dax`: the query's text, or its tree (keyed by `key`, the text it was built from).
   function compileAll(dax, key = dax) {
@@ -145,6 +150,14 @@ export function createCompiler(input, options = {}) {
     let out = cache.get(key);
     if (out) return out;
     out = base.query(dax, emit(options));
+    if (base.splitOne && dialect.splitOneGroup === 'smaller') {
+      const size = o => o.reduce((n, x) => n + (x.sql ?? '').length, 0);
+      base.noSplit = true;
+      try {
+        const whole = base.query(dax, emit(options));
+        if (size(whole) < size(out)) out = whole;
+      } finally { base.noSplit = false; }
+    }
     if (cache.size >= 500) cache.clear();
     cache.set(key, out);
     return out;

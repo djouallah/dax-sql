@@ -1,0 +1,3 @@
+// note: a table with a column the role hides, iterated: its other columns by name in a row context
+// roles: NoPrice
+EVALUATE ROW("n", COUNTROWS(FILTER(Product, Product[Color] = "Red")), "x", SUMX(Product, Product[CategoryKey]))

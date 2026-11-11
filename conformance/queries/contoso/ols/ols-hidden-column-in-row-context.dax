@@ -1,0 +1,3 @@
+// note: a column the role hides, in a row context of its table
+// roles: NoPrice
+EVALUATE ROW("x", SUMX(Product, Product[Price]))

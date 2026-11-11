@@ -1,0 +1,4 @@
+// note: a table one of whose columns the role hides, as the query's result: which columns come back
+// roles: NoPrice
+EVALUATE TOPN(2, Product, Product[ProductKey], ASC)
+ORDER BY Product[ProductKey]

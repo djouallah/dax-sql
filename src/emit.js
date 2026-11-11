@@ -1272,9 +1272,13 @@ class Fusion {
       if (free.size) {
         const refs = [...ir.rowRefs(f, kid)];
         if (refs.every(i => keys.has(i))) { readsKeys = true; continue; }
-        if (f.kind !== 'rel' || f.cols.length !== 1 || mapped.length || via.length || !NULL_EMPTY.has(x.fn)
-          || !exp.has(f.cols[0].table.name) || refs.some(i => !this.keyCols[i]?.table)) return null;
-        mapped.push({ f, refs });
+        // The column the mapping is on: the filter's one column, or the key of the one table whose
+        // columns it holds (FILTER(ALL('Date'), ...): the key says which row).
+        const T = f.cols[0]?.table;
+        const c = f.cols.length === 1 ? f.cols[0] : f.cols.every(x => x.table === T) && T.key && f.cols.includes(T.key) ? T.key : null;
+        if (f.kind !== 'rel' || !c || via.length || !NULL_EMPTY.has(x.fn) || !exp.has(c.table.name)
+          || refs.some(i => !this.keyCols[i]?.table)) return null;
+        mapped.push({ f, refs, c });
       }
     }
     const kept = rest.filter(f => !mapped.some(m => m.f === f));
@@ -1293,10 +1297,9 @@ class Fusion {
       block.joins.push(`JOIN (${pairs}) AS ${ma} ON ${on}`);
       via.forEach((v, j) => { keys.add(v.ref); keyExpr.set(v.ref, `${ma}.g${j}`); });
     }
-    if (mapped.length) {
-      const { f, refs } = mapped[0], c = f.cols[0];
+    for (const { f, refs, c } of mapped) {
       let mp;
-      try { mp = this.mapping(f, refs, state); } catch (e) { if (e.code === 'SEMANTIC') return null; throw e; }
+      try { mp = this.mapping(f, refs, c, state); } catch (e) { if (e.code === 'SEMANTIC') return null; throw e; }
       const here = block.res.meta(c);
       // A key the scan is grouped by already (its own row's, the group's category) is the
       // mapping's too: the same value. One it is not grouped by is the mapping's.
@@ -1384,10 +1387,10 @@ class Fusion {
     return `CASE WHEN ${when} THEN ${g.alias}.a${i}${x.fn === 'count0' || x.fn === 'dcount0' ? ' ELSE 0' : ''} END`;
   }
 
-  // The mapping of filter f (a table filter on one column, reading keys `refs` of the key row):
+  // The mapping of filter f (a table filter, on its column c, reading keys `refs` of the key row):
   // a CTE of every value of those key columns (k<i>) beside each value f's table holds for them
   // (v), computed once: f's table under each key's values (a LATERAL join). Its name.
-  mapping(f, refs, state) {
+  mapping(f, refs, c, state) {
     const em = this.em;
     const byTable = new Map();
     for (const i of refs) {
@@ -1404,7 +1407,10 @@ class Fusion {
     const dm = em.alias('d'), r = em.alias('r');
     const domRes = new WrapRes(em, null, this.keyCols.map((c, i) => ({ sql: refs.includes(i) ? `${dm}.${em.ident(`k${i}`)}` : 'NULL', lineage: c })), state);
     const sb = em.isolated(() => em.table(f.src, withRow(new Map(), this.keyRow, domRes)));
-    const v = sb.names()[f.idx[0]];
+    // A filter of a table's rows (f.base) has no idx: its columns are the table's, by lineage.
+    const at = f.idx ? f.idx[f.cols.indexOf(c)] : f.src.cols.findIndex(x => x.lineage === c);
+    if (at < 0) throw semantic(`emit: no column ${c.name} in the filter`);
+    const v = sb.names()[at];
     const sql = `SELECT DISTINCT ${refs.map(i => `${dm}.${em.ident(`k${i}`)}`).join(', ')}, ${r}.${em.ident(v)} AS v`
       + ` FROM (SELECT * FROM ${parts.join(' CROSS JOIN ')}) AS ${dm}${em.d.lateral(sb.render(), r, false)}`;
     const key = `mapping|${canonical(sql)}`;

@@ -25,23 +25,17 @@ on the known lists, by design (no blank row).
   repeated subqueries are no longer written once.
 - **T-SQL:** aggregates by the same keys with different filters on joined tables as one scan
   with `CASE` (DuckDB's `FILTER`); a table grouped before its joins.
-- **T-SQL on lakehouse tables: 13 queries fail on Fabric**, not on the known list (the suite reads
-  the lakehouse's Delta tables since it read session #temp tables, which ran single-node; the
-  currency, SAMEPERIODLASTYEAR-in-SUMMARIZE and ranked cumulative queries that timed out there
-  answer now):
-  - 10 get "Internal Query Processor Error: could not produce a query plan": calculation groups
-    (`time-calc-group-items-by-year`, `segmentation-cumulative-calc-group`, …), DATEADD and
-    PARALLELPERIOD (`time-parallelperiod-vs-dateadd-quarter`, `time-yoy-mixed-grain-rollup`),
-    `context-summarize-sameperiodlastyear`. The cause, found by bisecting: each time-intelligence
-    measure is a subquery of the group's row, filtering dates by a range bounded by the group's
-    first and last date (PARALLELPERIOD, YTD, rolling windows) or by membership in its shifted
-    dates (SAMEPERIODLASTYEAR, DATEADD). Fabric plans either kind alone, or two of one kind, but
-    not one SELECT with both (the Time Intelligence calculation group's items mix them). Moving
-    the date functions into the bounds' subqueries, the bounds to an OUTER APPLY of the group, or
-    the range onto the fact's date as plain conditions does not help (the last makes tpcds' YoY +
-    YTD fail too). The fix: no correlation. A mapping of (group key, date of its period), from
-    the group keys and the Date table alone, joined to the fact once and grouped by the key, as
-    DuckDB decorrelates them; it is the currency and orders-in-transit item above too;
-  - 3 go past 30 s: `queries-calcgroup-x-field-parameter`,
-    `segmentation-calc-group-name-ordinal-filter` (339 KB of SQL), and aac's
-    `check-measure-*-change` (2 to 4 s on #temp tables).
+- **T-SQL on lakehouse tables: 9 queries fail on Fabric**, not on the known list. Time intelligence by
+  the group's keys is a mapping (key, date) joined to the fused GROUP BY now (Fusion.mapping), which
+  took five of them; the others still hold a subquery of each group the mapping does not reach:
+  - an aggregate over VALUES (MAX of the visible dates in a calculation item; Fusion.add takes a
+    scan only): `filters-calcgroup-item-as-calculate-filter`, `context-calc-group-in-iterator`;
+  - an aggregate inside an iterator over rows of more than four columns, or under a table filter
+    of a table's rows (SUMMARIZE's extension columns): `context-summarize-sameperiodlastyear`,
+    `segmentation-customer-bands-calc-group`, `segmentation-cumulative-calc-group`;
+  - dates that reach the scan over a many-to-many relationship (Budget by YearMonth):
+    `relationships-budget-calc-group-py`;
+  - past 30 s: `queries-calcgroup-x-field-parameter`, `segmentation-calc-group-name-ordinal-filter`
+    (339 KB of SQL), `segmentation-summarize-sply-quarter-band`.
+  Fabric cannot plan one SELECT holding a subquery correlated by a period's range and another by
+  shifted dates; each one the mapping takes out is one less.

@@ -148,6 +148,10 @@ test('a SELECT over the model is a relation of any SQL', async () => {
     SELECT m.Color, m.o::INTEGER AS o, $$it's$$ AS s, p.n FROM m
     JOIN (SELECT "Color", COUNT(*) AS n FROM "Product" GROUP BY ALL) p ON p."Color" = m.Color`);
   assert.equal(cte.length, byColor.filter(r => r.Color != null).length);
+  // An E'...' string's backslash takes the quote after it.
+  const esc = await run(`WITH m AS (SELECT Color, AGG(Orders) o FROM model GROUP BY ALL) SELECT E'it\\'s (' AS s, count(*) AS n FROM m`);
+  assert.equal(esc[0].s, "it's (");
+  assert.throws(() => st(`SELECT E'it\\' FROM model`), e => e.code === 'SYNTAX');
   assert.ok(cte.every(r => r.s === "it's" && r.n > 0));
   // Two arms of a UNION, a FROM subquery, IN.
   const both = await run(`(SELECT Color AS k, AGG(Orders) v FROM model GROUP BY ALL)

@@ -57,9 +57,12 @@ function tokens(sql) {
       continue;
     }
     if (c === "'" || c === '"') {
+      // E'...': a backslash takes the next character, a quote too.
+      const escapes = c === "'" && /^[Ee]$/.test(sql[i - 1] ?? '') && !/[\w$]/.test(sql[i - 2] ?? '');
       i++;
       let v = '';
       while (i < n) {
+        if (escapes && sql[i] === '\\' && i + 1 < n) { v += sql[i] + sql[i + 1]; i += 2; continue; }
         if (sql[i] === c) {
           if (sql[i + 1] === c) { v += c; i += 2; continue; }
           i++;

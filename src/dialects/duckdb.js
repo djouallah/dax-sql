@@ -135,7 +135,8 @@ export class DuckDBDialect extends Dialect {
       // dates
       case 'date': return `CAST(make_date(CAST(${x} AS BIGINT), 1, 1) + to_months(CAST(${y} AS INTEGER) - 1) + to_days(CAST(${z} AS INTEGER) - 1) AS DATE)`;
       // A time is a date and time on day zero (1899-12-30), as in DAX.
-      case 'time': return `(DATE '1899-12-30' + make_time(CAST(${x} AS BIGINT), CAST(${y} AS BIGINT), CAST(${z} AS DOUBLE)))`;
+      // Hours past 23, minutes and seconds past 59 carry, and the day they make is dropped.
+      case 'time': return `(TIMESTAMP '1899-12-30' + to_microseconds(CAST(round(((CAST(${x} AS BIGINT) * 3600 + CAST(${y} AS BIGINT) * 60 + CAST(${z} AS DOUBLE)) % 86400) * 1000000) AS BIGINT)))`;
       // A date and time plus another: the second's time since day zero added to the first.
       case 'add_datetimes': {
         const z0 = "TIMESTAMP '1899-12-30'", T = v => `COALESCE(CAST(${v} AS TIMESTAMP), ${z0})`;

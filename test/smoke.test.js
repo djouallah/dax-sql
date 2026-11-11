@@ -113,3 +113,13 @@ test('totals from the groups answer what their own scans answer', async () => {
     if (r.s != null) assert.ok(close(r.share, one.all ? r.s / one.all : null), JSON.stringify({ r, one }));
   }
 });
+
+test('text in arithmetic is its number; TIME carries past 23 hours and 59 minutes; whole numbers are 64 bits', async () => {
+  const [r] = await h.run(`EVALUATE ROW("a", "3" * 2, "b", "1" + "2", "c", 10 / "4", "t", HOUR(TIME(27, 0, 0)), "m", MINUTE(TIME(10, 75, 0)), "s", SECOND(TIME(1, 0, 61)))`);
+  assert.deepEqual(Object.values(r), [6, 3, 2.5, 3, 15, 1]);
+  // A column stored as 32 bits: its product with itself is past them.
+  await h.sql(`CREATE TABLE "Sales32" AS SELECT * REPLACE (CAST(100000 AS INTEGER) AS "Qty") FROM "Sales"`);
+  const sql = h.dax.compile(`EVALUATE ROW("p", SUMX(Sales, Sales[Qty] * Sales[Qty]))`).sql.replaceAll('"Sales"', '"Sales32"');
+  const [p] = await h.sql(sql);
+  assert.ok(Object.values(p)[0] >= 1e10);
+});

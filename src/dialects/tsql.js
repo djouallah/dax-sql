@@ -191,19 +191,24 @@ export class TSqlDialect extends Dialect {
       case 'search': case 'find': return this.bind([x, y, z, w], (x, y, z, w) => {
         const s = v => (name === 'search' ? `LOWER(${v})` : `${v} COLLATE ${BIN}`);
         const pos = `CHARINDEX(${s(`COALESCE(${x}, '')`)}, ${s(`COALESCE(${y}, '')`)}, ${z})`;
-        return `CASE WHEN COALESCE(${x}, '') = '' THEN ${z} WHEN ${pos} = 0 THEN ${w} ELSE ${pos} END`;
+        // = takes " " for "": the text's length says whether it is empty.
+        return `CASE WHEN DATALENGTH(COALESCE(${x}, '')) = 0 THEN ${z} WHEN ${pos} = 0 THEN ${w} ELSE ${pos} END`;
       });
       case 'rept': return `REPLICATE(${x}, ${int(y)})`;
-      case 'exact': return this.bind([x, y], (x, y) => `(COALESCE(${x}, '') COLLATE ${BIN} = COALESCE(${y}, '') AND DATALENGTH(COALESCE(${x}, '')) = DATALENGTH(COALESCE(${y}, '')))`);
+      // The lengths as one type: a constant with a letter outside ASCII is an NVARCHAR, two bytes a
+      // letter, beside a column's UTF-8.
+      case 'exact': return this.bind([x, y], (x, y) => `(COALESCE(${x}, '') COLLATE ${BIN} = COALESCE(${y}, '') AND DATALENGTH(CAST(COALESCE(${x}, '') AS NVARCHAR(4000))) = DATALENGTH(CAST(COALESCE(${y}, '') AS NVARCHAR(4000))))`);
       case 'unichar': return `NCHAR(${int(x)})`;
       case 'unicode': return `UNICODE(${x})`;
-      case 'containsstring': return `(COALESCE(${y}, '') = '' OR CHARINDEX(LOWER(COALESCE(${y}, '')), LOWER(COALESCE(${x}, ''))) > 0)`;
-      case 'containsstringexact': return `(COALESCE(${y}, '') = '' OR CHARINDEX(COALESCE(${y}, '') COLLATE ${BIN}, COALESCE(${x}, '')) > 0)`;
+      case 'containsstring': return `(DATALENGTH(COALESCE(${y}, '')) = 0 OR CHARINDEX(LOWER(COALESCE(${y}, '')), LOWER(COALESCE(${x}, ''))) > 0)`;
+      case 'containsstringexact': return `(DATALENGTH(COALESCE(${y}, '')) = 0 OR CHARINDEX(COALESCE(${y}, '') COLLATE ${BIN}, COALESCE(${x}, '')) > 0)`;
       // A path's items: "" is a path of none, and a blank path's length is blank; a position past
       // either end is blank.
-      case 'pathlength': return `CASE WHEN ${x} = '' THEN 0 ELSE DATALENGTH(${x}) - DATALENGTH(REPLACE(${x}, '|', '')) + 1 END`;
+      // The separators counted in letters (each written twice is one letter more), not in bytes:
+      // a constant with a letter outside ASCII is two bytes a letter.
+      case 'pathlength': return `CASE WHEN ${x} = '' THEN 0 ELSE LEN(REPLACE(${x}, '|', '||')) - LEN(${x}) + 1 END`;
       case 'pathitem': return `(SELECT value FROM STRING_SPLIT(NULLIF(${x}, ''), '|', 1) WHERE ordinal = ${y})`;
-      case 'pathitemreverse': return `(SELECT value FROM STRING_SPLIT(NULLIF(${x}, ''), '|', 1) WHERE ordinal = DATALENGTH(${x}) - DATALENGTH(REPLACE(${x}, '|', '')) + 2 - ${y})`;
+      case 'pathitemreverse': return `(SELECT value FROM STRING_SPLIT(NULLIF(${x}, ''), '|', 1) WHERE ordinal = LEN(REPLACE(${x}, '|', '||')) - LEN(${x}) + 2 - ${y})`;
       case 'pathcontains': return `(NULLIF(${x}, '') IS NOT NULL AND CHARINDEX('|' || ${y} || '|' COLLATE ${BIN}, '|' || ${x} || '|') > 0)`;
       case 'combinevalues': return `CONCAT_WS(${x}, ${a.slice(1).map((v, i) => `COALESCE(${nodes[i + 1] ? this.text(v, nodes[i + 1].t) : `CAST(${v} AS VARCHAR(8000))`}, '')`).join(', ')})`;
       case 'format_date': case 'format_number': throw unsupported('FORMAT on the SQL endpoint');
@@ -212,7 +217,8 @@ export class TSqlDialect extends Dialect {
       // dates
       case 'date': return `CAST(DATEADD(DAY, ${int(z)} - 1, DATEADD(MONTH, ${int(y)} - 1, DATEFROMPARTS(${int(x)}, 1, 1))) AS DATE)`;
       // A time is a date and time on day zero (1899-12-30), as in DAX.
-      case 'time': return `DATEADD(MILLISECOND, CAST(ROUND((${x} * 3600 + ${y} * 60 + ${fl(z)}) * 1000, 0) AS INT), ${DAY0})`;
+      // Hours past 23, minutes and seconds past 59 carry, and the day they make is dropped.
+      case 'time': return `DATEADD(MILLISECOND, CAST(CAST(ROUND((${x} * 3600 + ${y} * 60 + ${fl(z)}) * 1000, 0) AS BIGINT) % 86400000 AS INT), ${DAY0})`;
       // A date and time plus another: the second's time since day zero added to the first.
       case 'add_datetimes': return this.bind([x, y], (x, y) => {
         const T = v => `COALESCE(CAST(${v} AS DATETIME2(6)), ${DAY0})`;
@@ -279,7 +285,8 @@ export class TSqlDialect extends Dialect {
     // and 186445.72, and the row ranks below itself. A DECIMAL's sum is the same in any order.
     const exact = v => `CAST(${v} AS DECIMAL(38,15))`;
     switch (fn) {
-      case 'sum': return extra.t === 'double' ? `CAST(SUM(${exact(only(x))}) AS FLOAT)` : `SUM(${only(x)})`;
+      // A whole number's sum as 64 bits: SUM of an INT column is an INT, and overflows as one.
+      case 'sum': return extra.t === 'double' ? `CAST(SUM(${exact(only(x))}) AS FLOAT)` : extra.t === 'int' ? `SUM(CAST(${only(x)} AS BIGINT))` : `SUM(${only(x)})`;
       case 'avg': return extra.t === 'double' ? `CAST(AVG(${exact(only(x))}) AS FLOAT)` : `AVG(${fl(only(x))})`;
       case 'min': return `MIN(${only(x)})`;
       case 'max': return `MAX(${only(x)})`;

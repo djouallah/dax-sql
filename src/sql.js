@@ -750,8 +750,11 @@ function scan(src) {
     if (c === '/' && src[i + 1] === '*') { i = skipTo('*/', i + 2, 'comment', i); continue; }
     if (c === "'" || c === '"') {
       let j = i + 1;
+      // E'...': a backslash takes the next character, a quote too.
+      const escapes = c === "'" && /^[Ee]$/.test(src[i - 1] ?? '') && !/[\w$]/.test(src[i - 2] ?? '');
       for (;;) {
-        const e = src.indexOf(c, j);
+        let e = src.indexOf(c, j);
+        if (escapes) { for (e = j; e < n && src[e] !== c; e++) if (src[e] === '\\') e++; if (e >= n) e = -1; }
         if (e < 0) throw sqlSyntax(c === '"' ? 'unterminated quoted name' : 'unterminated string', i, src);
         if (src[e + 1] === c) { j = e + 2; continue; }
         j = e + 1;

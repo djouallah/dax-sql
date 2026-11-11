@@ -62,6 +62,7 @@ export function unify(types) {
 export const lit = (v, t) => ({ k: 'lit', v, t: t ?? (v === null ? 'blank' : typeof v === 'boolean' ? 'bool'
   : typeof v === 'number' ? (Number.isInteger(v) ? 'int' : 'double') : 'string'), nn: v !== null });
 export const BLANK = lit(null, 'blank');
+const ARITHMETIC = new Set(['add', 'sub', 'mul', 'div', 'pow', 'neg']);
 export const TRUE = lit(true), FALSE = lit(false);
 
 export function col(row, ref) {
@@ -72,6 +73,8 @@ export function col(row, ref) {
 const isLit = (x, v) => x.k === 'lit' && (v === undefined || x.v === v);
 
 export function op(o, ...a) {
+  // Text in arithmetic is the number it reads as ("3" * 2 is 6), as VALUE gives.
+  if (ARITHMETIC.has(o) && a.some(x => x.t === 'string')) a = a.map(x => (x.t === 'string' ? fn('value', [x], 'double', { nn: x.nn }) : x));
   const [l, r] = a;
   // Constants fold: the conditions ISFILTERED and its kind settle at compile time.
   if (o === 'and') {

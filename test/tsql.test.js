@@ -99,3 +99,11 @@ test("a measure in a column and in another's DIVIDE is one subquery of the row",
   assert.equal(reads(duck, 'catalog_sales'), 2);
   assert.match(duck, /LEFT JOIN LATERAL/);
 });
+
+test('T-SQL = takes " " for "": an empty search text is told by its length, and EXACT by lengths of one type', () => {
+  const sql = compileAs('contoso', `EVALUATE ROW("f", FIND(" ", "John Smith"), "c", CONTAINSSTRING("abc", " "), "e", EXACT("Zoë", "Zoë"), "t", TIME(27, 0, 0))`);
+  assert.match(sql, /CASE WHEN DATALENGTH\(COALESCE\(/);
+  assert.doesNotMatch(sql, /COALESCE\([^()]*, ''\) = ''/);
+  assert.match(sql, /DATALENGTH\(CAST\(COALESCE\(.*AS NVARCHAR\(4000\)\)\) = DATALENGTH\(CAST\(/);
+  assert.match(sql, /% 86400000/);
+});

@@ -821,9 +821,11 @@ export class Emitter {
     return v.t === 'string' || v.t === 'blank' ? s : this.d.text(s, v.t);
   }
 
-  // A value in arithmetic: a whole-number constant as a 64-bit one, as DAX computes.
+  // A value in arithmetic: a whole-number constant as a 64-bit one, as DAX computes, and a
+  // whole-number column too (stored as 32 bits, a product of two would overflow).
   num(v, scope) {
-    return v.k === 'lit' && v.t === 'int' ? this.d.bigint(v.v) : this.scalar(v, scope);
+    if (v.k === 'lit' && v.t === 'int') return this.d.bigint(v.v);
+    return v.k === 'col' && v.t === 'int' ? this.d.cast(this.scalar(v, scope), 'int') : this.scalar(v, scope);
   }
 
   // A variable that reads nothing outside itself: one CTE, read where it is named. It is a

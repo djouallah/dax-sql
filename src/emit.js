@@ -95,14 +95,14 @@ export class Emitter {
       case 'scan': return this.scanBlock(x.table, x.ctx, scope);
       case 'filter': {
         const b = this.open(this.table(x.src, scope));
-        b.where.push(this.rowFused(b, x.src, x.row, () => this.scalar(x.pred, withRow(scope, x.row, b.res), true)));
+        b.where.push(this.rowFused(b, x.src, x.row, () => this.scalar(x.pred, withRow(scope, x.row, b.res), true), scope));
         return b;
       }
       case 'project': {
         const b = this.open(this.table(x.src, scope));
         const s2 = withRow(scope, x.row, b.res);
         const kept = x.keep ? b.outList() : [];
-        const items = this.rowFused(b, x.src, x.row, () => x.items.map(i => ({ sql: this.scalar(i.expr, s2) })));
+        const items = this.rowFused(b, x.src, x.row, () => x.items.map(i => ({ sql: this.scalar(i.expr, s2) })), scope);
         b.setOut(x.cols, [...kept.map(k => k.sql), ...items.map(i => i.sql)]);
         return b;
       }
@@ -922,7 +922,7 @@ export class Emitter {
         b.setOut([{ name: 'v', lineage: null }], [this.scalar(x.arg, s2)]);
         return b.render();
       }
-      const p = this.rowFused(b, x.src, x.row, () => this.aggParts(x, s2));
+      const p = this.rowFused(b, x.src, x.row, () => this.aggParts(x, s2), scope);
       const grouped = ir.freeRows(x).size ? this.groupedFirst(b, p, x.src.base ?? null) : null;
       if (grouped) {
         b.setOut([{ name: 'v', lineage: null }], [grouped]);
@@ -951,18 +951,24 @@ export class Emitter {
   // transition) are fused as SUMMARIZECOLUMNS' are, one GROUP BY each, joined to the rows.
   // Only rows that read no outer row: their GROUP BY is then written once, where one inside a
   // correlated subquery is written again for each outer row (a CTE is not kept).
-  rowFused(b, src, row, f) {
+  rowFused(b, src, row, f, scope = new Map()) {
     // A row of a few columns (VALUES, ALL, SUMMARIZE of some): a whole fact row is a GROUP BY by
     // every column, slower than the loop (8 s, and over a minute so).
-    if (!this.d.fuseRows || !row?.cols.length || row.cols.length > 4 || row.cols.some(c => !c.lineage) || ir.freeRows(src).size) return f();
+    // The rows can read an outer row (VALUES of a column under a group's filters): an aggregate
+    // bound to the outer row too is grouped by the columns it binds (Fusion.add, outer keys), so
+    // the GROUP BY reads no outer row and is computed once, joined to the outer values.
+    if (!this.d.fuseRows || !row?.cols.length || row.cols.length > 4 || row.cols.some(c => !c.lineage)) return f();
     const keyCols = row.cols.map(c => c.lineage);
     const fusion = new Fusion(this, row, keyCols.map((_, i) => i), keyCols);
     fusion.ofRows = true;
+    // The rows around the iterator: the only ones an aggregate's outer keys can read.
+    fusion.outerRows = new Set(scope.keys());
     this.fusions.push(fusion);
     let out;
     try { out = f(); } finally { this.fusions.pop(); }
     for (const g of fusion.finish()) {
-      const on = g.keys.map((ki, j) => this.d.isNotDistinct(`${g.alias}.g${j}`, b.res.col(ki)));
+      const on = [...g.keys.map((ki, j) => this.d.isNotDistinct(`${g.alias}.g${j}`, b.res.col(ki))),
+        ...(g.outer ?? []).map((o, j) => this.d.isNotDistinct(`${g.alias}.g${g.keys.length + j}`, o.sql))];
       b.joins.push(`LEFT JOIN ${g.alias} ON ${on.length ? on.join(' AND ') : this.d.always}`);
     }
     return out;
@@ -1199,15 +1205,29 @@ class Fusion {
     const em = this.em, S = x.src;
     if (S.k !== 'scan' || x.fn === 'single') return null;
     const kid = this.keyRow?.id;
-    for (const id of ir.freeRows(x)) if (id !== kid) return null;
+    // An iterator's row (ofRows): a bind of one of the scan's columns to a column of an outer row
+    // is a key too (`outer`), its value read where the iterator is. Nothing else may read one.
+    const outerBind = f => this.ofRows && f.kind === 'bind' && !f.guard && f.val.k === 'col' && f.val.row && f.val.row !== this.keyRow && !!this.outerRows?.has(f.val.row.id);
+    for (const id of ir.freeRows(x)) {
+      if (id === kid) continue;
+      if (!this.ofRows) return null;
+      for (const f of S.ctx.filters) if (!outerBind(f) && ir.freeRows({ k: 'scan', ctx: new Ctx([f]) }).has(id)) return null;
+    }
     for (const part of [x.arg, ...x.a, ...(x.order ?? []).map(o => o.expr)]) {
       if (!part) continue;
       for (const id of ir.freeRows(part)) if (id !== x.row.id) return null;
     }
     const state = em.model.state(S.ctx.mods);
     const exp = em.model.expand(S.table, state);
-    const keys = new Set(), rest = [], guards = [], via = [];
+    const keys = new Set(), rest = [], guards = [], via = [], outer = [];
     for (const f of S.ctx.filters) {
+      if (outerBind(f)) {
+        // One that does not filter the scan is left out, as a group's key is (below); one that
+        // reaches it over a relationship that filters back is not fused.
+        if (exp.has(f.cols[0].table.name)) outer.push({ col: f.cols[0], sql: em.scalar(f.val, scope) });
+        else if (em.model.reaches(f.cols[0].table, S.table, state)) return null;
+        continue;
+      }
       if (f.kind === 'bind' && f.val.k === 'col' && f.val.row === this.keyRow) {
         const c = f.cols[0];
         // A scan's row names a column by the model's (rowFused), a group's by its place.
@@ -1267,7 +1287,8 @@ class Fusion {
     }
     const keyList = [...keys].sort((a, b) => a - b);
     const body = canonical(`${block.from} ${block.joins.join(' ')} ${block.where.join(' AND ')}`);
-    const sig = `${S.table.name}|${state.key}|${keyList.join(',')}|${body}`, rows = `${S.table.name}|${state.key}|${body}`;
+    const outerSig = outer.map(o => `${o.col.id}=${o.sql}`).join(',');
+    const sig = `${S.table.name}|${state.key}|${keyList.join(',')}|${outerSig}|${body}`, rows = `${S.table.name}|${state.key}|${body}`;
     const keyed = keyList.length > 0, nullEmpty = NULL_EMPTY.has(x.fn);
     // A group whose aggregates differ in their conditions (FILTER) has the rows of any of
     // them: an aggregate that is not blank over no rows does not join it.
@@ -1278,15 +1299,15 @@ class Fusion {
     // group can have rows for keys this one has none of (it is mixed).
     // Its scan can also keep fewer rows than the group's, by conditions on the tables it
     // joins: those are the aggregate's FILTER in the group.
-    if (!g && !readsKeys && !edge && !guards.length && (OVER[x.fn] || x.fn === 'avg') && (!keyed || nullEmpty)) {
+    if (!g && !readsKeys && !edge && !outer.length && !guards.length && (OVER[x.fn] || x.fn === 'avg') && (!keyed || nullEmpty)) {
       for (const h of [...this.groups, ...this.prior.flatMap(f => f.groups)]) {
-        if (h.over || h.edge || h.readsKeys || h.tables !== `${S.table.name}|${state.key}`) continue;
+        if (h.over || h.edge || h.readsKeys || h.outer?.length || h.tables !== `${S.table.name}|${state.key}`) continue;
         if (h.keys.length <= keyList.length || !keyList.every(i => h.keys.includes(i))) continue;
         const conds = h.rows === rows ? [...h.block.where] : this.condsOn(h, S, rest);
         if (conds) return this.over(x, h, keyList, S, conds);
       }
     }
-    if (!g && !readsKeys && !edge && em.d.aggFilter && (!keyed || nullEmpty)) {
+    if (!g && !readsKeys && !edge && !outer.length && em.d.aggFilter && (!keyed || nullEmpty)) {
       // An aggregate over another scan of the same tables by the same keys is that scan's,
       // over the rows its own conditions on the joined tables keep: one scan for both, its
       // conditions (written on the group's rows, which join what they need) the group's or
@@ -1306,11 +1327,11 @@ class Fusion {
       }
     }
     if (!g) {
-      g = { sig, rows, tables: `${S.table.name}|${state.key}`, edge: !!edge, readsKeys, alias: em.alias('f'), block, keys: keyList, aggs: [], nullEmpty: true,
-        merge: !readsKeys && !edge ? `${S.table.name}|${state.key}|${keyList.join(',')}` : null };
+      g = { sig, rows, tables: `${S.table.name}|${state.key}`, edge: !!edge, readsKeys, alias: em.alias('f'), block, keys: keyList, aggs: [], nullEmpty: true, outer,
+        merge: !readsKeys && !edge && !outer.length ? `${S.table.name}|${state.key}|${keyList.join(',')}` : null };
       // An iterator's row (rowFused) can bind a column its scan does not reach (a key of the
       // other side of a relationship): that aggregate is not fused.
-      try { g.keyExprs = keyList.map(i => keyExpr.get(i) ?? block.res.meta(this.keyCols[i])); } catch (e) {
+      try { g.keyExprs = [...keyList.map(i => keyExpr.get(i) ?? block.res.meta(this.keyCols[i])), ...outer.map(o => block.res.meta(o.col))]; } catch (e) {
         if (this.ofRows && e.code === 'SEMANTIC') return null;
         throw e;
       }

@@ -910,7 +910,7 @@ export class Emitter {
   }
 
   // DAX compares a blank as the other side's default (0, "", FALSE); a comparison is never
-  // blank. Text is compared as the engine compares it (by case). Against a constant, the column
+  // blank. Text is compared as the engine compares it. Against a constant, the column
   // is compared as it is and the blank case added.
   compare(o, l, r, scope, pred) {
     const sym = { eq: '=', ne: '<>', lt: '<', le: '<=', gt: '>', ge: '>=' }[o];

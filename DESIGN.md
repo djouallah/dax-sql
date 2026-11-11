@@ -267,7 +267,8 @@ existing combinations, cross-joined, plus a dimension's blank row) and the expre
 evaluated on each. `ROLLUPADDISSUBTOTAL` is a `UNION ALL` of the levels; each call is an axis,
 and the levels of several are crossed.
 
-**Text** is compared as the engine compares it, by case (a departure from DAX): a comparison,
+**Text** is compared as the engine compares it (a departure from DAX, which compares without
+regard to case): by case on DuckDB, by the database's collation on T-SQL. A comparison,
 `IN`, a bind and a table filter's membership are plain SQL, as grouping, `DISTINCT` and the
 relationships' joins are. The engine can then use its statistics and hash joins on text, and a
 measure answers the same whether it is fused into a GROUP BY or stays a subquery. `SEARCH` and
@@ -707,7 +708,7 @@ and gives each aggregate the filters that reach its table.
 - **Stored text keeps its trailing spaces, by design:** the model drops them as it loads the
   data (`"a "` is `"a"`, in its value, its length, filters and relationships); here a column is
   read as the data has it. Trimming every row of every scan costs more than the difference is
-  worth (15-20% of a fact scan joined on a text key), as case-sensitive grouping does.
+  worth (15-20% of a fact scan joined on a text key), as comparing text by DAX's rules does.
 
 ### SQL
 
@@ -826,7 +827,7 @@ window's `ORDER BY`), and DuckDB's answers are what the emitter wrote before.
 - **No boolean type:** a boolean value is a `BIT`, a condition is `(x = 1)`, and FALSE where
   unknown is `(CASE WHEN c THEN 1 ELSE 0 END = 1)`.
 - **Text:** compared as the database's collation compares it (a lakehouse's text is binary
-  UTF-8: by case), and exactly whatever the collation (FIND, SUBSTITUTE, EXACT) with
+  UTF-8, so by case there), and exactly whatever the collation (FIND, SUBSTITUTE, EXACT) with
   `Latin1_General_100_BIN2_UTF8`. A literal with trailing spaces is cast: Fabric drops them
   otherwise, in a query over a table.
 - **The rest:** `OUTER`/`CROSS APPLY` for `LATERAL`; a CASE inside an aggregate for `FILTER`;

@@ -39,8 +39,8 @@ const { sql, columns } = dax.compile(`
 
 ## Departures from DAX, by design
 
-- Text is case-sensitive everywhere: comparisons, `IN`, filters, grouping, `DISTINCT` and
-  relationships (`"red"` is not `"Red"`); it sorts by code point, not by culture.
+- Text is compared, grouped and sorted as the engine does it (DuckDB, T-SQL: by its
+  collation), not by DAX's rules: on DuckDB `"red"` is not `"Red"`.
 - Text keeps its trailing spaces (Power BI drops them on load): `"a "` and `"a"` are two
   values, in grouping, filters, relationships and `LEN`. Trim them in the data if they matter.
 - A column that mixes numbers and text comes back as text.

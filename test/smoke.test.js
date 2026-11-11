@@ -124,7 +124,7 @@ test('text in arithmetic is its number; TIME carries past 23 hours and 59 minute
   assert.ok(Object.values(p)[0] >= 1e10);
 });
 
-test('text is compared by case: in a comparison, IN, a table filter, as in grouping', async () => {
+test('text is compared as the engine compares it (DuckDB: by case): a comparison, IN, a table filter', async () => {
   const colors = (await h.sql(`SELECT DISTINCT "Color" FROM "Product" WHERE "Color" IS NOT NULL`)).map(r => r.Color);
   const one = colors[0], other = one === one.toLowerCase() ? one.toUpperCase() : one.toLowerCase();
   assert.notEqual(one, other);

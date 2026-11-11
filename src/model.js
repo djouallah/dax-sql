@@ -21,7 +21,8 @@
 //     relationships: [{ name, from: { table, column }, to: { table, column } (required),
 //       active (true), crossFilter: single|both (single), fromCardinality: many|one (many),
 //       toCardinality: many|one (one), assumeIntegrity, securityFilter: single|both|none }],
-//     roles: [{ name, filters: [{ table, dax }], hidden: ["'Table'" | "'Table'[Column]"] }] }
+//     roles: [{ name, filters: [{ table, dax }], hidden: [{ table, column }] }] }   (hidden: object-level
+//       security, a table, or a column of one)
 // A table is one of the lakehouse (`source`, else its name), calculated (`dax`: `calc` here)
 // or a calculation group (`calcGroup`: its items); `roles` hold the row-level security
 // filters of each role.
@@ -44,7 +45,7 @@ export class Model {
     this.roles = (model.roles ?? []).map(r => ({
       name: r.name,
       filters: (r.filters ?? []).filter(f => f.dax?.trim()).map(f => ({ table: this.table(f.table), text: f.dax })),
-      hidden: r.hidden ?? [],
+      hidden: (r.hidden ?? []).map(h => (h.column == null ? { table: this.table(h.table) } : { column: this.column(h.table, h.column) })),
     }));
     // A column is unique when it is a key, or the one side of a relationship.
     for (const r of this.relationships) {
@@ -115,13 +116,38 @@ export class Model {
   }
   measure(name) { return this.measures.get(lc(name)) ?? null; }
 
-  // A copy for one query: DEFINE MEASURE adds to it, not to the model.
-  fork() {
+  // A copy for one query: DEFINE MEASURE adds to it, not to the model. With `hidden` (object-level
+  // security: { tables, columns }, Sets), the names a query writes do not reach what it hides: a
+  // hidden table or column is no name (as one the model lacks), and a measure of a hidden table
+  // none either. The model's own reads (relationships, joins, calculated columns) still see them.
+  fork(hidden = null) {
     const f = Object.create(Model.prototype);
     Object.assign(f, this);
     f.measures = new Map(this.measures);
+    if (hidden && (hidden.tables.size || hidden.columns.size)) {
+      const base = Model.prototype;
+      f.isHidden = c => hidden.columns.has(c) || hidden.tables.has(c.table);
+      f.hasTable = name => base.hasTable.call(f, name) && !hidden.tables.has(base.table.call(f, name));
+      f.findColumn = (table, name) => {
+        const c = base.findColumn.call(f, table, name);
+        return c && !f.isHidden(c) ? c : null;
+      };
+      f.column = (table, name) => {
+        const t = typeof table === 'string' ? base.table.call(f, table) : table;
+        if (hidden.tables.has(t)) throw semantic(`Failed to resolve name '${t.name}'. It is not a valid table, variable, or function name`);
+        const c = base.column.call(f, t, name);
+        if (f.isHidden(c)) throw semantic(`Column '${c.name}' in table '${t.name}' cannot be found or may not be used in this expression`);
+        return c;
+      };
+      f.measure = name => {
+        const m = base.measure.call(f, name);
+        return m && !hidden.tables.has(m.table) ? m : null;
+      };
+    }
     return f;
   }
+  // Whether object-level security hides a column (fork).
+  isHidden() { return false; }
 
   // DEFINE COLUMN: a calculated column of a table for the time of one query. The table is
   // the model's, so the column is there for everything that reads the table's columns (ALL

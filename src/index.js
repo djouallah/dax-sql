@@ -99,9 +99,6 @@ export function createCompiler(input, options = {}) {
   const security = roleNames.map(name => {
     const role = model.roles.find(r => r.name.toLowerCase() === String(name).toLowerCase());
     if (!role) throw semantic(`the model has no role ${name}`);
-    // Object-level security is not implemented: a role that hides tables or columns is refused,
-    // where reading the model without it would show them.
-    if (role.hidden.length) throw unsupported(`object-level security (role ${role.name} hides ${role.hidden[0]}${role.hidden.length > 1 ? ` and ${role.hidden.length - 1} more` : ''})`);
     return {
       name: role.name,
       filters: role.filters.map(f => {
@@ -121,6 +118,20 @@ export function createCompiler(input, options = {}) {
     ctx: new Ctx(role.filters.map(f => ({ kind: 'pred', cols: f.table.columns, row: f.row, pred: f.pred })),
       { security: true, active: new Map(), cross: new Map() }),
   }));
+
+  // Object-level security: what every role hides (one shows what another hides), as the names a
+  // query writes see it (Model.fork). Roles that hide objects together with others that filter
+  // rows are an error in Power BI; one role can do both.
+  const roles = roleNames.map(name => model.roles.find(r => r.name.toLowerCase() === String(name).toLowerCase()));
+  if (roles.length > 1 && roles.some(r => r.hidden.length) && roles.some(r => r.filters.length))
+    throw semantic('The combination of active roles results in a dynamic security configuration that is currently not supported');
+  if (roles.length && roles.every(r => r.hidden.length)) {
+    const hides = (r, t, c) => r.hidden.some(h => h.table === t || (c && h.column === c));
+    base.hidden = {
+      tables: new Set([...model.tables.values()].filter(t => roles.every(r => hides(r, t)))),
+      columns: new Set([...model.tables.values()].flatMap(t => t.columns).filter(c => roles.every(r => hides(r, c.table, c)))),
+    };
+  }
 
   const cache = new Map();
   const emit = opts => statements => statements.map(s => {

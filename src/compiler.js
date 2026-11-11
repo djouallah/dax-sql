@@ -43,7 +43,7 @@ export class Compiler {
   // the query's DEFINE COLUMNs are columns of their tables.
   query(src, then = statements => statements) {
     const q = typeof src === 'string' ? parseQuery(src) : src;
-    const model = this.model.fork(), c = new Compiler(model, this.options);
+    const model = this.model.fork(this.hidden), c = new Compiler(model, this.options);
     const queryVars = new Map(), queryTables = new Map(), queryCols = [];
     const env0 = c.env({ vars: queryVars, queryTables, queryVarsTop: queryVars });
     // A table WITH VISUAL SHAPE and the COLUMNs defined on it are a visual calculation's.
@@ -83,7 +83,13 @@ export class Compiler {
   evaluates(q, env0) {
     const c = this;
     return q.evaluates.map(ev => {
-      const table = c.table(ev.e, env0);
+      let table = c.table(ev.e, env0);
+      // A model column object-level security hides is not a column of the result (EVALUATE of
+      // its table: the other columns).
+      if (table.cols.some(x => x.lineage && c.model.isHidden(x.lineage))) {
+        const r = ir.rowOf(table, 'table');
+        table = ir.project(table, r, table.cols.map((x, i) => [x, i]).filter(([x]) => !(x.lineage && c.model.isHidden(x.lineage))).map(([, i]) => ir.itemOf(r, i)));
+      }
       const row = ir.rowOf(table, 'table');
       const order = ev.order.map(o => ({ expr: c.scalar(o.e, { ...env0, rows: [row], orderBy: true }), desc: o.desc }));
       // START AT: constants (or parameters), one per ORDER BY column from the first.
@@ -145,6 +151,14 @@ export class Compiler {
     return null;
   }
 
+  // A column of a row context that names a model column object-level security hides (iterating
+  // its table's rows): no name, as in a row context of a table that lacks it.
+  visible(x, table, name) {
+    const col = typeof x.ref === 'object' ? x.ref : x.row?.cols?.[x.ref]?.lineage;
+    if (col && this.model.isHidden(col)) throw semantic(`Column '${col.name}' in table '${table ?? col.table.name}' cannot be found or may not be used in this expression`);
+    return x;
+  }
+
   // [Name]: a column of the row (a renamed or added one first), else a measure.
   ref(ast, env) {
     const x = this.refOf(ast, env);
@@ -163,7 +177,7 @@ export class Compiler {
       const m = this.model.measure(name);
       if (!t && m && !this.model.findColumn(table, name)) return this.measureRef(m, env);
       const c = this.rowColumn(env, t ? null : table, name) ?? (t ? this.rowColumn(env, table, name) : null);
-      if (c) return c;
+      if (c) return this.visible(c, table, name);
       if (!t && !this.model.findColumn(table, name)) throw semantic(`the model has no column or measure '${table}'[${name}]`);
       throw semantic(`a single value for column '${table}'[${name}] cannot be determined here: there is no row context on '${table}'`);
     }
@@ -175,7 +189,7 @@ export class Compiler {
     const m = this.model.measure(name);
     if (m) return this.measureRef(m, env);
     const c = this.rowColumn(env, null, name);
-    if (c) return c;
+    if (c) return this.visible(c, null, name);
     throw semantic(`there is no column or measure [${name}] here`);
   }
 

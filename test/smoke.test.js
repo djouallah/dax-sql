@@ -160,15 +160,25 @@ test('text given as a date is the date it reads as', async () => {
   assert.deepEqual(Object.values(r), [2024, 3, 64, 3, 13]);
 });
 
-test('a role with object-level security is refused: reading the model without it would show what it hides', async () => {
+test('object-level security: a hidden column is no name; the model still reads it; read from TMSL and Ossie', async () => {
   const { createCompiler } = await import('../src/index.js');
   const { tmslToModel } = await import('../formats/tmsl.js');
   const { tmslToOssie, ossieToTmsl } = await import('../formats/ossie.js');
   const secured = structuredClone(bim);
   secured.model.roles.push({ name: 'NoPrice', tablePermissions: [{ name: 'Product', columnPermissions: [{ name: 'Price', metadataPermission: 'none' }] }] });
   for (const m of [secured, ossieToTmsl(tmslToOssie(secured))]) {
-    assert.throws(() => createCompiler(tmslToModel(m), { roles: 'NoPrice' }), e => e.code === 'UNSUPPORTED' && /Product.*Price/.test(e.message));
-    assert.ok(createCompiler(tmslToModel(m), { roles: 'Paris' }).compile('EVALUATE ROW("s", [Sales Amount])').sql);
+    const c = createCompiler(tmslToModel(m), { roles: 'NoPrice' });
+    const fails = dax => assert.throws(() => c.compile(dax), e => e.code === 'SEMANTIC' && /Price/.test(e.message), dax);
+    fails('EVALUATE ROW("p", SUM(Product[Price]))');
+    fails('EVALUATE ROW("p", SUMX(Product, Product[Price]))');
+    fails('EVALUATE ROW("p", SUMX(Product, [Price]))');
+    fails('EVALUATE CALCULATETABLE(ROW("s", [Sales Amount]), Product[Price] > 100)');
+    // A measure that reads it is no name either.
+    assert.throws(() => c.compile('EVALUATE ROW("a", [Avg Price])'), e => e.code === 'SEMANTIC');
+    // The rest of the table, and a calculated column computed from it, are there.
+    assert.ok(c.compile('EVALUATE SUMMARIZECOLUMNS(Product[Color], Product[PriceBand], "s", [Sales Amount])').sql);
+    // Without the role it is all there.
+    assert.ok(createCompiler(tmslToModel(m)).compile('EVALUATE ROW("p", SUM(Product[Price]))').sql);
   }
 });
 

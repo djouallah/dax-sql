@@ -1,3 +1,4 @@
 // note: a column the role hides, as a CALCULATE filter
 // roles: NoPrice
+// expect: error
 EVALUATE CALCULATETABLE(ROW("s", [Sales Amount]), Product[Price] > 100)

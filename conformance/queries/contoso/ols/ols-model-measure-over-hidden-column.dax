@@ -1,3 +1,4 @@
 // note: a model measure over a column the role hides (Avg Price = AVERAGE(Product[Price]))
 // roles: NoPrice
+// expect: error
 EVALUATE ROW("a", [Avg Price])

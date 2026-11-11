@@ -1,3 +1,4 @@
 // note: a table the role hides, named in the query
 // roles: NoReturns
+// expect: error
 EVALUATE ROW("r", COUNTROWS(Returns))

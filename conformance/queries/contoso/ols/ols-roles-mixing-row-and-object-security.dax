@@ -1,3 +1,4 @@
 // note: two roles, one hiding a column and one filtering rows: Power BI documents combining them as an error
 // roles: NoPrice, Paris
+// expect: error
 EVALUATE ROW("s", [Sales Amount])

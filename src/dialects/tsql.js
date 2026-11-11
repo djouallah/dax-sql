@@ -29,6 +29,10 @@ export class TSqlDialect extends Dialect {
   correlatedSemiJoin = false;
   fuseRows = true;
   correlatedJoin = true;
+  aggBelowJoins = true;
+  // extra.filter, as a CASE (agg): aggregates by the same keys with different filters on the joined
+  // tables share a scan.
+  get aggFilter() { return true; }
   repeats = true;
 
   // Fabric drops a varchar literal's trailing spaces in a query over a table (', ' || x is ",x"),

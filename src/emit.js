@@ -1517,7 +1517,13 @@ class Fusion {
     if ([...g.keyExprs, ...b.joins, ...b.where].some(isQuery)) return null;
     const joined = [...b.joins.join(' ').matchAll(/\bAS (\w+) ON\b/g)].map(m => m[1]);
     const readsJoined = s => joined.some(a => new RegExp(`\\b${a}\\.`).test(s ?? ''));
-    if (b.where.some(readsJoined) || g.aggs.some(a => readsJoined(a.parts.arg))) return null;
+    if (g.aggs.some(a => readsJoined(a.parts.arg))) return null;
+    // Conditions on the joined tables (a slicer, a role on a dimension) are the outer query's:
+    // each group of the scan's columns meets one row of each, which keeps the whole group or none.
+    // One that reads the scan's row and a joined table's too is not split.
+    const readsBase = c => new RegExp(`\\b${base}\\.`).test(c);
+    if (b.where.some(c => readsJoined(c) && readsBase(c))) return null;
+    const after = b.where.filter(readsJoined), before = b.where.filter(c => !readsJoined(c));
     // The scan's columns the keys and the joins read: the inner GROUP BY.
     const own = new RegExp(`\\b${base}\\.(?:"(?:[^"]|"")*"|\\[(?:[^\\]]|\\]\\])*\\])`, 'g');
     const cols = [...new Set([...g.keyExprs, ...b.joins].flatMap(s => s.match(own) ?? []))];
@@ -1528,9 +1534,9 @@ class Fusion {
     // Anything else of the scan's row they read (a calculated column's expression): written as it is.
     if ([...keys, ...joins].some(s => new RegExp(`\\b${base}\\.`).test(s))) return null;
     const inner = `SELECT ${[...cols.map((c, i) => `${c} AS ${id(`c${i}`)}`), ...g.aggs.map((a, i) => `${a.make(null)} AS ${id(`a${i}`)}`)].join(', ')}`
-      + ` FROM ${b.from}${b.where.length ? ` WHERE ${b.where.join(' AND ')}` : ''} GROUP BY ${cols.join(', ')}`;
+      + ` FROM ${b.from}${before.length ? ` WHERE ${before.join(' AND ')}` : ''} GROUP BY ${cols.join(', ')}`;
     const out = [...keys.map((k, j) => `${k} AS ${id(`g${j}`)}`), ...g.aggs.map((a, i) => `${OVER[a.parts.fn](`${p}.${id(`a${i}`)}`)} AS ${id(`a${i}`)}`)];
-    return `SELECT ${out.join(', ')} FROM (${inner}) AS ${p} ${joins.join(' ')} GROUP BY ${keys.join(', ')}`;
+    return `SELECT ${out.join(', ')} FROM (${inner}) AS ${p} ${joins.join(' ')}${after.length ? ` WHERE ${after.join(' AND ')}` : ''} GROUP BY ${keys.join(', ')}`;
   }
 
   // The CTEs, written once every aggregate is known (a level's after those of the levels

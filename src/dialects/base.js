@@ -115,6 +115,8 @@ export class Dialect {
   fuseRows = false;
   // Whether a join's ON can read a row of the query around (T-SQL; DuckDB: not in an outer join).
   correlatedJoin = false;
+  // Whether an iterator's aggregate that a mapping takes is fused, where fuseRows is off.
+  fuseMappedRows = false;
   // Whether the engine computes again what the SQL writes again (T-SQL): a CTE at each name, a
   // subquery at each copy. The emitter then writes a value once where it can.
   repeats = false;

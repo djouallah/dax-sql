@@ -957,19 +957,26 @@ export class Emitter {
     // The rows can read an outer row (VALUES of a column under a group's filters): an aggregate
     // bound to the outer row too is grouped by the columns it binds (Fusion.add, outer keys), so
     // the GROUP BY reads no outer row and is computed once, joined to the outer values.
-    if (!this.d.fuseRows || !row?.cols.length || row.cols.length > 4 || row.cols.some(c => !c.lineage)) return f();
+    // An engine that decorrelates the rest itself (DuckDB) fuses only an aggregate a mapping
+    // takes (Fusion.mapping: a filter that reads the row, the LASTNONBLANK of a currency's rate).
+    const mappedOnly = !this.d.fuseRows && this.d.fuseMappedRows;
+    if ((!this.d.fuseRows && !mappedOnly) || !row?.cols.length || row.cols.length > 4 || row.cols.some(c => !c.lineage)) return f();
     const keyCols = row.cols.map(c => c.lineage);
     const fusion = new Fusion(this, row, keyCols.map((_, i) => i), keyCols);
     fusion.ofRows = true;
+    fusion.mappedOnly = mappedOnly;
     // The rows around the iterator: the only ones an aggregate's outer keys can read.
-    fusion.outerRows = this.d.correlatedJoin ? new Set(scope.keys()) : new Set();
+    fusion.outerRows = new Set(scope.keys());
     this.fusions.push(fusion);
     let out;
     try { out = f(); } finally { this.fusions.pop(); }
     for (const g of fusion.finish()) {
-      const on = [...g.keys.map((ki, j) => this.d.isNotDistinct(`${g.alias}.g${j}`, b.res.col(ki))),
-        ...(g.outer ?? []).map((o, j) => this.d.isNotDistinct(`${g.alias}.g${g.keys.length + j}`, o.sql))];
-      b.joins.push(`LEFT JOIN ${g.alias} ON ${on.length ? on.join(' AND ') : this.d.always}`);
+      const on = g.keys.map((ki, j) => this.d.isNotDistinct(`${g.alias}.g${j}`, b.res.col(ki)));
+      const outer = (g.outer ?? []).map((o, j) => this.d.isNotDistinct(`${g.alias}.g${g.keys.length + j}`, o.sql));
+      // The outer values in the join's ON where the engine takes that (T-SQL), else in a LATERAL
+      // subquery of the group's rows (DuckDB takes no outer reference in an outer join's ON).
+      if (!outer.length || this.d.correlatedJoin) b.joins.push(`LEFT JOIN ${g.alias} ON ${[...on, ...outer].join(' AND ') || this.d.always}`);
+      else b.joins.push(`LEFT JOIN LATERAL (SELECT * FROM ${g.alias} WHERE ${outer.join(' AND ')}) AS ${g.alias} ON ${on.join(' AND ') || this.d.always}`);
     }
     return out;
   }
@@ -1221,19 +1228,23 @@ class Fusion {
     // An iterator's row (ofRows): a bind of one of the scan's columns to a column of an outer row
     // is a key too (`outer`), its value read where the iterator is. Nothing else may read one.
     const outerBind = f => this.ofRows && f.kind === 'bind' && !f.guard && f.val.k === 'col' && f.val.row && f.val.row !== this.keyRow && !!this.outerRows?.has(f.val.row.id);
+    const state = em.model.state(S.ctx.mods);
+    const exp = em.model.expand(S.table, state);
+    // A bind of a column that does not filter the scan (a group's country on a scan of rates) is
+    // left out (below): it reads no row of the scan's. So is one a filter replaces (the year a
+    // filter on the date table's dates replaces: conds skips it).
+    const idle = f => f.kind === 'bind' && (f.implied && S.ctx.filters.includes(f.implied) || !exp.has(f.cols[0].table.name) && !em.model.reaches(f.cols[0].table, S.table, state));
     for (const id of ir.freeRows(x)) {
       if (id === kid) continue;
-      if (!this.ofRows) return null;
-      for (const f of S.ctx.filters) if (!outerBind(f) && ir.freeRows({ k: 'scan', ctx: new Ctx([f]) }).has(id)) return null;
+      for (const f of S.ctx.filters) if (!outerBind(f) && !idle(f) && ir.freeRows({ k: 'scan', ctx: new Ctx([f]) }).has(id)) return null;
     }
     for (const part of [x.arg, ...x.a, ...(x.order ?? []).map(o => o.expr)]) {
       if (!part) continue;
       for (const id of ir.freeRows(part)) if (id !== x.row.id) return null;
     }
-    const state = em.model.state(S.ctx.mods);
-    const exp = em.model.expand(S.table, state);
     const keys = new Set(), rest = [], guards = [], via = [], outer = [];
     for (const f of S.ctx.filters) {
+      if (idle(f)) continue;
       if (outerBind(f)) {
         // One that does not filter the scan is left out, as a group's key is (below); one that
         // reaches it over a relationship that filters back is not fused.
@@ -1294,6 +1305,7 @@ class Fusion {
         mapped.push({ f, refs, c });
       }
     }
+    if (this.mappedOnly && !mapped.length) return null;
     const kept = rest.filter(f => !mapped.some(m => m.f === f));
     const block = em.isolated(() => em.scanBlock(S.table, new Ctx(kept, S.ctx.mods), new Map(), null, readsKeys ? [this.keyRow, this.keyCols] : null));
     const keyExpr = new Map();

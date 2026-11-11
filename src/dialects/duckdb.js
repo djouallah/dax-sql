@@ -18,6 +18,7 @@ export class DuckDBDialect extends Dialect {
   aggBelowJoins = true;
   // A subquery written twice is planned twice (and run twice where it reads the row).
   repeats = true;
+  fuseMappedRows = true;
   // A SUMMARIZE's extension columns: the group's rows as conditions, not the table joined to itself.
   correlatedSemiJoin = false;
 

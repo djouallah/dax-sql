@@ -35,7 +35,7 @@ export class Emitter {
     this.rejects = new Map();
     this.nullArms = new Map();
     this.reads = new Set();       // the tables the statement reads, the blank row's check aside
-    this.checks = 0;              // > 0 while writing that check (orphans, lacking)
+    this.checks = 0;             // > 0 while writing that check (orphans, lacking)
     this.blanks = false;          // whether a table got a blank row
   }
 
@@ -980,6 +980,11 @@ export class Emitter {
         return b.render();
       }
       const p = this.rowFused(b, x.src, x.row, () => this.aggParts(x, s2));
+      const grouped = ir.freeRows(x).size ? this.groupedFirst(b, p) : null;
+      if (grouped) {
+        b.setOut([{ name: 'v', lineage: null }], [grouped]);
+        return b.render();
+      }
       // T-SQL takes neither a subquery in an aggregate, nor a column of the outer query beside
       // its own: anything but a column is computed a row at a time first.
       if (this.d.aggOverSubquery || !partsQuery(p) && [p.arg, ...(p.keys ?? []).map(k => k.sql)].every(plainCol)) {
@@ -1018,6 +1023,43 @@ export class Emitter {
       b.joins.push(`LEFT JOIN ${g.alias} ON ${on.length ? on.join(' AND ') : this.d.always}`);
     }
     return out;
+  }
+
+  // An aggregate that reads the row around it (block b, parts p), over a table's rows grouped
+  // first, or null to write it as it is. Each outer row otherwise reads the table's every row:
+  // last year's sales by month is the fact joined to its dates for each month (12 s over a
+  // million rows; 0.1 s so). The table is grouped once, in a CTE, by the columns of its own that
+  // the joins and the conditions on other rows read (its date key), under the conditions on its
+  // own columns alone; the aggregate then adds up those groups (Fusion.belowJoins, for a
+  // group's CTE). For sums, counts, minima and maxima of the table's own columns, over joins
+  // to the one side, by three columns at most.
+  groupedFirst(b, p) {
+    const base = isQuery(b.from) ? null : / AS (\w+)$/.exec(b.from ?? '')?.[1];
+    if (!this.d.aggBelowJoins || !base || !OVER[p.fn] || partsQuery(p) || p.keys?.length || p.extra?.filter) return null;
+    if (b.group || b.distinct || b.qualify || !b.joins.every(j => b.hops?.has(j))) return null;
+    const aliases = sql => sql.split(/('(?:[^']|'')*')/).flatMap((part, i) => (i % 2 ? [] : [...part.matchAll(/\b([a-z]\d+)\./g)].map(m => m[1])));
+    const ownOnly = sql => !isQuery(sql) && aliases(sql).every(a => a === base);
+    if (p.arg != null && !ownOnly(p.arg)) return null;
+    const outer = b.where.filter(c => !ownOnly(c)), around = [...b.joins, ...outer];
+    const own = new RegExp(`\\b${base}\\.(?:"(?:[^"]|"")*"|\\[(?:[^\\]]|\\]\\])*\\])`, 'g');
+    const cols = [...new Set(around.flatMap(sql => sql.match(own) ?? []))];
+    if (!cols.length || cols.length > 3 || around.some(sql => aliases(sql.replace(own, '')).includes(base))) return null;
+    const v = this.ident('dax_a'), inner = b.where.filter(ownOnly);
+    const sql = `SELECT ${cols.join(', ')}, ${this.d.agg(p.fn, p.arg, p.extra)} AS ${v} FROM ${b.from}${inner.length ? ` WHERE ${inner.join(' AND ')}` : ''} GROUP BY ${cols.join(', ')}`;
+    const key = `grouped|${canonical(sql)}`;
+    let name = this.memo.get(key);
+    if (!name) {
+      name = this.alias('p');
+      this.ctes.push(`${name} AS ${this.d.materialized}(${sql})`);
+      this.memo.set(key, name);
+    }
+    b.from = `${name} AS ${base}`;
+    b.where = outer;
+    // A sum of floating-point groups in their own order: the same to the last digit wherever
+    // the measure is written again (a RANKX's row and the rows it ranks), whatever order the
+    // engine's threads read the groups in.
+    const exact = p.fn === 'sum' && p.extra?.t !== 'int' && p.extra?.t !== 'decimal';
+    return exact ? `SUM(${base}.${v} ORDER BY ${base}.${v})` : OVER[p.fn](`${base}.${v}`);
   }
 
   // A subquery that reads nothing of the query around it, written once: the same SQL (up to

@@ -259,6 +259,14 @@ same table, relationship state, keys, and other filters (the filters compared as
   what is left.
 - **A sum of fixed decimals** (`SUMX` of a product of currencies) rounds each row to four
   places and checks the range once, on the largest (`MAX(abs(x))`), instead of row by row.
+- **A table's rows grouped first** (DuckDB). A fused group's sums, counts, minima and maxima
+  are taken by the scan's keys before its joins to the one side, then added up by the
+  grouping columns. An aggregate that stays a subquery of each row (last year's sales by
+  month, a measure for each row an iterator reads) reads the table grouped once, in a CTE,
+  by the columns its joins and its conditions on other rows read: a million rows joined to
+  their dates for each month took 12 s, their groups 0.1 s. A sum of floating-point groups
+  is added in the values' own order, so that a measure written twice is the same to the last
+  digit.
 
 Inside a fused scan, a filter that reads a key the scan is itself filtered to reads the scan's
 own column instead. Its correlation moves from the group to the row, which joins well.

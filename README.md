@@ -32,7 +32,6 @@ const { sql, columns } = dax.compile(`
 
 ## Not implemented
 
-- Object-level security: a role that hides tables or columns is refused (`UNSUPPORTED`).
 - Anything not listed in [DESIGN.md](DESIGN.md#what-it-does).
 
 ## Departures from DAX, by design

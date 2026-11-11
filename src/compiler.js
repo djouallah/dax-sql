@@ -18,7 +18,7 @@
 import { parseExpression, parseQuery } from './parser.js';
 import { DaxError, semantic, unsupported } from './errors.js';
 import { Ctx, EMPTY_CTX, narrow } from './context.js';
-import { isDateKey } from './model.js';
+import { isDateKey, Model } from './model.js';
 import * as ir from './ir.js';
 import { dateLit, rowsTable } from './ir.js';
 import { SCALAR, TABLE, MODIFIERS } from './functions/index.js';
@@ -551,6 +551,9 @@ export class Compiler {
         }
         const qt = env.queryTables.get(lc(ast.name));
         if (qt) return this.varTable(qt);
+        // A table object-level security hides is no name (Model.fork).
+        if (this.model.isHidden !== Model.prototype.isHidden && !this.model.hasTable(ast.name))
+          throw semantic(`Failed to resolve name '${ast.name}'. It is not a valid table, variable, or function name`);
         return this.scan(this.model.table(ast.name), env.ctx);
       }
       case 'var': return this.table(ast.body, this.withVars(ast.defs, env));

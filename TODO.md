@@ -1,29 +1,15 @@
 # To do
 
 Nothing here blocks a release. Two waves: the gaps first (what DAX does and this does not,
-other than by design), then the speed of the SQL.
+other than by design), done; then the speed of the SQL.
 
 # Wave 1: gaps
 
-## Not implemented
-
-- **Object-level security**: a role that hides whole tables or columns (a model's
-  `tablePermission`/`columnPermission` with `metadataPermission: none`), so that a query
-  naming one fails as if it did not exist. A role that has it is refused for now. To do it:
-  a conformance model with such a role and the Oracle's answers first (what a measure over a
-  hidden column answers, a relationship on one, several roles together), then hide the
-  objects from the names a query can use while the joins still read them.
-- Anything DESIGN.md does not list under "What it does".
-
-By design, and so not here: values are returned unformatted (a measure's format string, fixed
-or dynamic, is the caller's to apply), and FORMAT is en-US with a constant pattern.
-
-## Conformance
-
-- 137 queries are on the known list because their golden has Power BI's blank row (the test
-  data has fact keys their dimensions lack, on purpose). They verify nothing else while listed:
-  give the models' dimensions every key (conformance/tools/*/data.js), run the Oracle again,
-  and take them off the list; drop the queries that are only about the blank row.
+Done. What DAX does and this does not is by design, in the README: values are returned
+unformatted (a measure's format string, fixed or dynamic, is the caller's to apply), FORMAT is
+en-US with a constant pattern, and the rest of its "Departures" list. The edges model keeps fact
+keys that are NULL, "" or unknown, on purpose: its queries that list a dimension's values are
+on the known lists, by design (no blank row).
 
 # Wave 2: speed of the SQL (DuckDB, a million fact rows)
 

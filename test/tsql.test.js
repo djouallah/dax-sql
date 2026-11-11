@@ -117,3 +117,10 @@ test('T-SQL: SUBSTITUTE of the n-th occurrence is n CHARINDEXes; a percentile re
   assert.equal(pct.split('OPENJSON(').length - 1, 2, pct);
   assert.doesNotMatch(pct, /WITHIN GROUP/);
 });
+
+test('T-SQL: FORMAT with a pattern rounds as a DECIMAL and reads a date through .NET tokens', () => {
+  const sql = compileAs('contoso', `EVALUATE ROW("n", FORMAT(1.005, "0.00"), "d", FORMAT(dt"2024-01-05 15:04:09", "dd/mm/yyyy hh:nn"), "g", FORMAT(1234.5, "#,##0.0"))`);
+  assert.match(sql, /FORMAT\(CAST\(.* AS FLOAT\), 'E14'\)/);
+  assert.match(sql, /'dd\/MM\/yyyy HH:mm'/);
+  assert.match(sql, /'#,0', 'en-US'\)/);
+});

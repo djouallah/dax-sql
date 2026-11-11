@@ -789,7 +789,7 @@ SELECT m.*, p.n FROM m JOIN (SELECT "Color", COUNT(*) AS n FROM "Product" GROUP 
 | `ir.js` | the intermediate form: scalars, tables, rows, aggregates over scans |
 | `emit.js` | the intermediate form into SQL |
 | `format.js` | FORMAT's patterns, read into what a dialect writes |
-| `dialects/` | what differs between SQL engines: `base.js` (the interface), `duckdb.js`, `duckdb-format.js`, `tsql.js` |
+| `dialects/` | what differs between SQL engines: `base.js` (the interface), `duckdb.js`, `duckdb-format.js`, `tsql.js`, `tsql-format.js` |
 
 The SQL it writes:
 
@@ -877,8 +877,17 @@ engine can apply as it scans.
   RANKX's row and the rows it ranks) could differ in its last digit. 0.1 + 0.2 is 0.3 here.
 - PATH and the PATH functions are refused: they need a recursive CTE, which Fabric lacks.
 
-**Not yet**, refused by name: FORMAT with a pattern, SUBSTITUTE with an instance number,
-PERCENTILE.EXC and PERCENTILEX.
+What T-SQL has no function for is written with what it has:
+
+- **FORMAT** with a pattern (`tsql-format.js`): the same rules as DuckDB's, the value rounded to
+  15 significant digits and then at the pattern's places as a DECIMAL; the integer digits and a
+  date's parts through Fabric's `FORMAT`, with DAX's tokens as .NET's.
+- **SUBSTITUTE with an instance number**: that many `CHARINDEX`es, each from just past the one
+  before, and a `STUFF`. The number is a constant (T-SQL splits no text on a text), up to 64.
+- **PERCENTILE.EXC, PERCENTILEX and PERCENTILE.INC with a k that is not a constant**: the values
+  as a JSON array (`STRING_AGG`), read back in order by a subquery (`OPENJSON`, numbered), and
+  the two around the rank interpolated. Not an ordered aggregate: Fabric takes no two of them
+  with different orders in one SELECT.
 
 `conformance/engines/dax-sql-tsql` runs the suite on a Fabric SQL endpoint, with its known list
 (those above, and DuckDB's that T-SQL shares). It has its own driver, so the package depends on

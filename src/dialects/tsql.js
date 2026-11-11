@@ -4,6 +4,7 @@
 // PERCENTILE_CONT as an aggregate and FORMAT, which SQL Server lacks in part.
 import { Dialect } from './base.js';
 import { unsupported, semantic } from '../errors.js';
+import { formatNumber, formatDate } from './tsql-format.js';
 
 const UNIT_SQL = { day: 'DAY', week: 'WEEK', month: 'MONTH', quarter: 'QUARTER', year: 'YEAR', hour: 'HOUR', minute: 'MINUTE', second: 'SECOND' };
 // Text compared exactly whatever the database's collation (EXACT, FIND, SUBSTITUTE).
@@ -226,7 +227,8 @@ export class TSqlDialect extends Dialect {
       case 'pathitemreverse': return `(SELECT value FROM STRING_SPLIT(NULLIF(${x}, ''), '|', 1) WHERE ordinal = LEN(REPLACE(${x}, '|', '||')) - LEN(${x}) + 2 - ${y})`;
       case 'pathcontains': return `(NULLIF(${x}, '') IS NOT NULL AND CHARINDEX('|' || ${y} || '|' COLLATE ${BIN}, '|' || ${x} || '|') > 0)`;
       case 'combinevalues': return `CONCAT_WS(${x}, ${a.slice(1).map((v, i) => `COALESCE(${nodes[i + 1] ? this.text(v, nodes[i + 1].t) : `CAST(${v} AS VARCHAR(8000))`}, '')`).join(', ')})`;
-      case 'format_date': case 'format_number': throw unsupported('FORMAT on the SQL endpoint');
+      case 'format_date': return formatDate(this, x, JSON.parse(nodes[1].v));
+      case 'format_number': return formatNumber(this, x, JSON.parse(nodes[1].v), nodes[0].t);
       case 'date_serial': return `(${fl(`DATEDIFF_BIG(MICROSECOND, ${DAY0}, CAST(${x} AS DATETIME2(6)))`)} / 86400000000)`;
       case 'serial_date': return `DATEADD(MILLISECOND, CAST(ROUND((${fl(x)} - FLOOR(${x})) * 86400000, 0) AS INT), DATEADD(DAY, CAST(FLOOR(${x}) AS INT), ${DAY0}))`;
       // dates

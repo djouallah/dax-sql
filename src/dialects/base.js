@@ -110,8 +110,9 @@ export class Dialect {
   // Whether a subquery in a CASE's branch is decorrelated as one elsewhere is; without, the
   // emitter makes the branches' values a row the CASE reads.
   subqueryInCase = true;
-  // Whether a correlated semi-join over many columns runs as a join (DuckDB); without, a filter
-  // of a table's own rows is written as their conditions where it can be.
+  // Whether a correlated semi-join over many columns runs as fast as conditions do; without, a
+  // filter of a table's own rows is written as their conditions where it can be (T-SQL: minutes
+  // as a loop; DuckDB: a join of the table to itself, 40 s over a million rows and 1 s so).
   correlatedSemiJoin = true;
   // Whether the aggregates an iterator's rows take over their own values are fused into a GROUP BY
   // joined to the rows (emit.js rowFused), for an engine that runs the subqueries as loops.

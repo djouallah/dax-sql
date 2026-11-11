@@ -891,6 +891,10 @@ copy. DuckDB names a value once (`[… FOR x IN [v]][1]`) and reads a CTE once; 
 - A table-reading subquery that a row's values write more than once (a measure in a column and
   again in another's DIVIDE) is a column of an `OUTER APPLY`, computed once a row.
 
+A table filter of a table's own rows is their conditions on DuckDB too: as a semi-join it
+joined the table to itself on every column (a SUMMARIZE with a measure by year and category
+took 40 s over a million rows, 1 s so).
+
 The last two are DuckDB's too (a `LATERAL` join): it plans a subquery at each copy, and a
 calculation group's items, each a `CASE` over the same measures, were 344 scans of one table
 (43 s on the test data, 5 s so). Values of more than 2 MB are left as written.

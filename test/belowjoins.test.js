@@ -63,3 +63,13 @@ test("a count of no rows stays blank, and a row with none is left out", async ()
   const q = `EVALUATE ADDCOLUMNS(VALUES(Product[Color]), "n", CALCULATE(COUNTROWS(Sales), Sales[Qty] > 1000))`;
   for (const r of await h.run(q)) assert.equal(r.n, null);
 });
+
+test("SUMMARIZE's extension columns: the group's rows are conditions on the scan, not Sales joined to itself", async () => {
+  const q = `EVALUATE SUMMARIZE(Sales, 'Date'[Year], Product[Color], "s", [Sales Amount], "all", CALCULATE([Sales Amount], REMOVEFILTERS('Date')))`;
+  const { sql } = h.dax.compile(q);
+  assert.doesNotMatch(sql, /EXISTS \(SELECT 1 FROM \(SELECT [^()]*"Qty"/, sql);
+  const got = sorted(await h.run(q));
+  const want = sorted(await h.sql(`SELECT d."Year", p."Color", SUM(s."Amount"), SUM(s."Amount")
+    FROM "Sales" s LEFT JOIN "Date" d ON d."Date" = s."OrderDate" LEFT JOIN "Product" p ON p."ProductKey" = s."ProductKey" GROUP BY 1, 2`));
+  assert.deepEqual(got.map(Object.values), want.map(Object.values));
+});

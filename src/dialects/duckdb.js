@@ -9,6 +9,8 @@ export class DuckDBDialect extends Dialect {
   materialized = 'MATERIALIZED ';
   supportsQualify = true;
   aggBelowJoins = true;
+  // A subquery written twice is planned twice (and run twice where it reads the row).
+  repeats = true;
 
   type(t) { return t === 'double' ? 'DOUBLE' : super.type(t); }
 

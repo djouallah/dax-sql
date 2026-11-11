@@ -883,6 +883,10 @@ copy. DuckDB names a value once (`[… FOR x IN [v]][1]`) and reads a CTE once; 
 - A table-reading subquery that a row's values write more than once (a measure in a column and
   again in another's DIVIDE) is a column of an `OUTER APPLY`, computed once a row.
 
+The last two are DuckDB's too (a `LATERAL` join): it plans a subquery at each copy, and a
+calculation group's items, each a `CASE` over the same measures, were 344 scans of one table
+(43 s on the test data, 5 s so). Values of more than 2 MB are left as written.
+
 In both dialects, a filter table that is a VAR (as Power BI names each filter of a visual) is
 read as the same table written in place: `FILTER(KEEPFILTERS(VALUES(T[c])), …)` is its
 conditions on the scan, and `TREATAS({"AR", "CA"}, T[c])` is `c IN ('AR', 'CA')`, which the

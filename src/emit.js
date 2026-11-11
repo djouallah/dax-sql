@@ -787,6 +787,9 @@ export class Emitter {
   // returned as the APPLY that is that row. One that reads an alias the value declares around
   // it stays.
   hoistRepeats(sqls) {
+    // Values written out in megabytes (calculation groups crossed, each item's CASE holding
+    // the others') are left as they are: finding their subqueries costs more than it saves.
+    if (sqls.reduce((n, s) => n + s.length, 0) > HOIST_LIMIT) return '';
     const count = new Map();
     for (const s of sqls) {
       const all = subqueries(s);
@@ -1557,6 +1560,7 @@ class Fusion {
 // The scalar subqueries of SQL, outermost first, that do not overlap: { start, end, sql, key },
 // key the same for two that are the same up to the aliases they declare. Not one that varies
 // between copies (NEWID).
+const HOIST_LIMIT = 2e6;
 function subqueries(sql) {
   const out = [];
   for (let i = 0; i < sql.length; i++) {
@@ -1937,13 +1941,15 @@ function renameAliases(sql, map) {
 // writings of the same SQL compare equal. A name it only refers to (a CTE) is kept: two
 // subqueries over different CTEs are different.
 function canonical(sql) {
-  const declared = new Set([...sql.matchAll(/\bAS ([a-z]\d+)\b/g)].map(m => m[1]));
+  // Outside string literals and quoted names: 's3' is a value, "m0" a column, not an alias.
+  const parts = sql.split(/('(?:[^']|'')*'|"(?:[^"]|"")*")/);
+  const declared = new Set(parts.flatMap((part, i) => i % 2 ? [] : [...part.matchAll(/\bAS ([a-z]\d+)\b/g)].map(m => m[1])));
   const map = new Map();
-  return sql.replace(/\b([a-z])(\d+)\b/g, (m) => {
+  return parts.map((part, i) => i % 2 ? part : part.replace(/\b[a-z]\d+\b/g, (m) => {
     if (!declared.has(m)) return m;
     if (!map.has(m)) map.set(m, `@${map.size}`);
     return map.get(m);
-  });
+  })).join('');
 }
 
 // A value that is text, and not the constant blank; one that is text or a blank.

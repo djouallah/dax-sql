@@ -152,8 +152,14 @@ const boolOf = x => x.t === 'bool' && x.nn ? x : { k: 'op', op: 'bool', a: [x], 
 
 // `strict`: the function gives a blank when its first argument is blank (and on a constant
 // blank, is one).
-export const fn = (name, a, t, { nn = false, strict = false } = {}) =>
-  strict && a[0]?.k === 'lit' && a[0].v === null ? lit(null, t) : ({ k: 'fn', name, a, t, nn, strict });
+// The arguments of a function that are dates: text there is the date it reads as, as DATEVALUE gives.
+const DATE_ARGS = { year: [0], month: [0], day: [0], hour: [0], minute: [0], second: [0], quarter: [0], weekday: [0], weeknum: [0],
+  eomonth: [0], add_interval: [0], datediff: [0, 1] };
+export const fn = (name, a, t, { nn = false, strict = false } = {}) => {
+  if (DATE_ARGS[name]?.some(i => a[i]?.t === 'string'))
+    a = a.map((x, i) => (DATE_ARGS[name].includes(i) && x.t === 'string' ? fn('cast', [x, lit('datetime', 'string')], 'datetime', { strict: true }) : x));
+  return strict && a[0]?.k === 'lit' && a[0].v === null ? lit(null, t) : ({ k: 'fn', name, a, t, nn, strict });
+};
 // IF and SWITCH: the type is that of all their branches (and of `others`, the types of branches
 // a condition known when compiling left out), as DAX types them before it evaluates anything.
 export function kase(w, e, t, others = []) {

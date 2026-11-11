@@ -154,3 +154,8 @@ test('no blank row: a dimension lists its own rows, with no scan of the facts fo
   const byCity = await h.run(`EVALUATE SUMMARIZECOLUMNS(Customer[City], "s", [Sales Amount])`);
   assert.ok(byCity.some(r => Object.values(r)[0] == null));
 });
+
+test('text given as a date is the date it reads as', async () => {
+  const [r] = await h.run(`EVALUATE ROW("y", YEAR("2024-03-05"), "m", MONTH("2024-03-05"), "d", DATEDIFF("2024-01-01", "2024-03-05", DAY), "w", WEEKDAY("2024-03-05"), "h", HOUR("2024-03-05 13:45:00"))`);
+  assert.deepEqual(Object.values(r), [2024, 3, 64, 3, 13]);
+});

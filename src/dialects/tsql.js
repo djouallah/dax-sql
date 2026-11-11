@@ -3,7 +3,7 @@
 // recursive CTE, and no aggregate over a subquery; but QUALIFY, ||, double-quoted names, MEDIAN,
 // PERCENTILE_CONT as an aggregate and FORMAT, which SQL Server lacks in part.
 import { Dialect } from './base.js';
-import { unsupported } from '../errors.js';
+import { unsupported, semantic } from '../errors.js';
 
 const UNIT_SQL = { day: 'DAY', week: 'WEEK', month: 'MONTH', quarter: 'QUARTER', year: 'YEAR', hour: 'HOUR', minute: 'MINUTE', second: 'SECOND' };
 // Text compared exactly whatever the database's collation (EXACT, FIND, SUBSTITUTE).
@@ -60,6 +60,25 @@ export class TSqlDialect extends Dialect {
     const b = this.alias('b');
     const refs = vals.map((v, i) => (at.includes(i) ? `${b}.${this.ident(`v${i}`)}` : v));
     return `(SELECT ${body(...refs)} FROM (SELECT ${at.map(i => `${vals[i]} AS ${this.ident(`v${i}`)}`).join(', ')}) AS ${b})`;
+  }
+
+  // SUBSTITUTE(text, old, new, n): the n-th occurrence only, found by n CHARINDEXes, each from
+  // just past the one before (a position is named once: bind); unchanged with fewer. T-SQL
+  // splits no text on a text, so n is a constant.
+  substituteAt(text, old, to, n) {
+    if (n?.k !== 'lit' || typeof n.v !== 'number') throw unsupported('SUBSTITUTE with an instance number that is not a constant, on the SQL endpoint');
+    const count = Math.trunc(n.v);
+    if (count < 1) throw semantic('SUBSTITUTE: the instance number must be 1 or more');
+    if (count > 64) throw unsupported('SUBSTITUTE with an instance number over 64 on the SQL endpoint');
+    return this.bind([text, old, to], (x, y, z) => {
+      // The old text's length in characters, its trailing spaces counted (LEN leaves them out).
+      const len = `(LEN(CONCAT(${y}, 'x')) - 1)`;
+      const next = prev => (prev == null ? `CHARINDEX(${y}, ${x} COLLATE ${BIN})`
+        : `CASE WHEN ${prev} = 0 THEN 0 ELSE CHARINDEX(${y}, ${x} COLLATE ${BIN}, ${prev} + ${len}) END`);
+      const at = (k, prev) => this.bind([`(${next(prev)})`], p => (k === count
+        ? `CASE WHEN ${p} = 0 THEN ${x} ELSE STUFF(${x}, ${p}, ${len}, COALESCE(${z}, '')) END` : at(k + 1, p)));
+      return at(1, null);
+    });
   }
 
   cond(v) { return `(${v} = 1)`; }
@@ -182,7 +201,7 @@ export class TSqlDialect extends Dialect {
       case 'trim': return `REGEXP_REPLACE(TRIM(${x}), ' {2,}', ' ')`;
       case 'substitute':
         if (w === undefined) return `REPLACE(${x} COLLATE ${BIN}, ${y}, ${z})`;
-        throw unsupported('SUBSTITUTE with an instance number on the SQL endpoint');
+        return this.substituteAt(x, y, z, nodes[3]);
       case 'replace': return `(LEFT(${x}, ${y} - 1) || ${w} || SUBSTRING(${x}, ${y} + ${z}, 2147483647))`;
       case 'search': case 'find': return this.bind([x, y, z, w], (x, y, z, w) => {
         const s = v => (name === 'search' ? `LOWER(${v})` : `${v} COLLATE ${BIN}`);
@@ -304,9 +323,29 @@ export class TSqlDialect extends Dialect {
       case 'concat': return `STRING_AGG(CAST(${only(`COALESCE(${x}, '')`)} AS VARCHAR(MAX)), ${extra.delim})${extra.order?.length ? ` WITHIN GROUP (ORDER BY ${extra.order.join(', ')})` : ''}`;
       // PERCENTILE.INC is PERCENTILE_CONT, over the column's values (its blanks left out).
       case 'pct_inc':
-        if (!/^[\d.]+$/.test(String(extra.k).trim())) throw unsupported('PERCENTILE.INC with a k that is not a number, on the SQL endpoint');
-        return `PERCENTILE_CONT(${extra.k}) WITHIN GROUP (ORDER BY ${only(x)})`;
-      case 'pct_exc': case 'pctx_inc': case 'pctx_exc': throw unsupported(`${fn} on the SQL endpoint`);
+        if (/^[\d.]+$/.test(String(extra.k).trim())) return `PERCENTILE_CONT(${extra.k}) WITHIN GROUP (ORDER BY ${only(x)})`;
+        // falls through: k is not a constant
+      // The others as DuckDB's (duckdb.js): the value at rank k(n - 1) + 1 (INC) or k(n + 1)
+      // (EXC) of the n values in order, between the two around it. T-SQL has no list: the values
+      // are a JSON array (STRING_AGG), which a subquery reads back in order (OPENJSON, numbered).
+      // Not an ordered aggregate: Fabric takes no two of them with different orders in one SELECT.
+      // A column's blanks are left out (pct_, as STRING_AGG leaves a NULL); an expression's are
+      // values (pctx_): written as JSON's null, they count in n and come first.
+      case 'pct_exc': case 'pctx_inc': case 'pctx_exc': {
+        const inc = fn.endsWith('_inc'), blanks = fn.startsWith('pctx_');
+        const item = `CONVERT(VARCHAR(MAX), CAST(${x} AS FLOAT), 3)`;
+        const list = `CONCAT('[', STRING_AGG(${only(blanks ? `COALESCE(${item}, 'null')` : item)}, ','), ']')`;
+        const k = `COALESCE(${fl(extra.k)}, 0)`;
+        const r = inc ? `${k} * (n - 1) + 1` : `${k} * (n + 1)`;
+        const range = inc ? 'PERCENTILE.INC: k must lie in 0..1' : 'PERCENTILE.EXC: k must lie in 1/(n + 1)..n/(n + 1)';
+        const at = i => `MAX(CASE WHEN rn = ${i} THEN v END)`;
+        return `(SELECT CASE WHEN MAX(n) IS NULL THEN NULL
+          WHEN MAX(r) < 1 OR MAX(r) > MAX(n) THEN ${this.fn('error', [this.str(`DAX: ${range}`)])}
+          WHEN MAX(r) = FLOOR(MAX(r)) THEN ${at('r')}
+          ELSE COALESCE(${at('FLOOR(r)')}, 0) + (MAX(r) - FLOOR(MAX(r))) * (${at('FLOOR(r) + 1')} - COALESCE(${at('FLOOR(r)')}, 0)) END
+          FROM (SELECT v, rn, n, ${r} AS r FROM (SELECT CAST(value AS FLOAT) AS v, ROW_NUMBER() OVER (ORDER BY CAST(value AS FLOAT)) AS rn,
+            COUNT_BIG(*) OVER () AS n FROM OPENJSON(${list})) AS dax_j) AS dax_p)`;
+      }
     }
     return super.agg(fn, x);
   }

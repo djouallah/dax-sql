@@ -107,3 +107,13 @@ test('T-SQL = takes " " for "": an empty search text is told by its length, and 
   assert.match(sql, /DATALENGTH\(CAST\(COALESCE\(.*AS NVARCHAR\(4000\)\)\) = DATALENGTH\(CAST\(/);
   assert.match(sql, /% 86400000/);
 });
+
+test('T-SQL: SUBSTITUTE of the n-th occurrence is n CHARINDEXes; a percentile reads its values back in order', () => {
+  const sub = compileAs('contoso', `EVALUATE ROW("s", SUBSTITUTE("a-b-c", "-", "+", 2))`);
+  assert.equal(sub.split('CHARINDEX(').length - 1, 2, sub);
+  assert.match(sub, /STUFF\(/);
+  assert.throws(() => compileAs('contoso', `EVALUATE ROW("s", SUBSTITUTE("a-b-c", "-", "+", 0))`), e => e.code === 'SEMANTIC');
+  const pct = compileAs('contoso', `EVALUATE ROW("p", PERCENTILE.EXC(Sales[Amount], 0.25), "q", PERCENTILEX.INC(Sales, Sales[Qty], 0.5))`);
+  assert.equal(pct.split('OPENJSON(').length - 1, 2, pct);
+  assert.doesNotMatch(pct, /WITHIN GROUP/);
+});

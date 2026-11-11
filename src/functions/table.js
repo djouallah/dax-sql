@@ -503,27 +503,57 @@ function summarizeColumns(c, args, env) {
   // The levels: how many of each axis' columns stay, the detail first.
   let depths = [[]];
   for (const ax of axes) depths = depths.flatMap(d => Array.from({ length: ax.length + 1 }, (_, n) => [...d, ax.length - n]));
+  // Keys that are a calculation group's (its name or its ordinal), grouped by as they are (not
+  // rolled up), the items its filters keep known now: each item is a level of its own, the key
+  // that item's value, so the item applies as it is. Grouped by, every measure would be a CASE
+  // on the item, nested once for each such group (crossed, megabytes of SQL).
+  const splits = new Map();
+  for (const k of plain) {
+    const g = k.table.calcGroup;
+    if (!g || (k !== g.column && k !== g.ordinal) || rolls.some(r => r.cols.includes(k))) continue;
+    if (!splits.has(g)) {
+      const sel = c.selection(g, { ...env, ctx: ctx0 });
+      const items = sel.kind === 'none' ? g.items : sel.dynamic ? null : sel.items;
+      if (!items) { splits.clear(); break; }
+      splits.set(g, { items, keys: [] });
+    }
+    splits.get(g).keys.push(k);
+  }
+  const itemValue = (g, it, k) => (k === g.ordinal ? it.ordinal : it.name);
+  let picks = [[]];
+  for (const [g, s] of splits) picks = picks.flatMap(p => s.items.map(it => [...p, { g, it, keys: s.keys }]));
   const levels = [];
-  for (const depth of depths) {
+  for (const depth of depths) for (const pick of picks) {
     const kept = axes.flatMap((ax, n) => ax.slice(0, depth[n]));
     const on = new Set([...plain, ...kept.flatMap(r => rolls[r].cols)]);
-    const active = keyCols.filter(k => on.has(k));
+    const fixed = new Map(pick.flatMap(p => p.keys.map(k => [k, itemValue(p.g, p.it, k)])));
+    const active = keyCols.filter(k => on.has(k) && !fixed.has(k));
     // Each level's own keys join its filters' combinations (a subtotal's, without the keys it drops).
     let ctx = given && active.length ? autoExist(c, given, env.ctx, active) : ctx0;
     for (const k of active) ctx = ctx.add({ kind: 'bind', cols: [k], val: ir.col(keyRow, keyCols.indexOf(k)) });
+    for (const [k, v] of fixed) ctx = ctx.add({ kind: 'bind', cols: [k], val: ir.lit(v, k.type) });
     const shadows = shadow.cols.size ? [...env.shadows, shadow] : env.shadows;
-    const inner = { ...env, ctx, rows: [], grouped: new Set(active), shadows };
+    const inner = { ...env, ctx, rows: [], grouped: new Set([...active, ...fixed.keys()]), shadows };
     const items = exprs.map(([name, x]) => {
       const ignore = x.k === 'call' && (x.fn === 'IGNORE' || x.fn === 'NONVISUAL') ;
       const expr = c.scalar(ignore ? x.args[0] : x, inner);
       return { name, expr, t: expr.t, ignore: x.k === 'call' && x.fn === 'IGNORE' };
     });
-    levels.push({ active, flags: rolls.map((_, n) => !kept.includes(n)), items });
+    const consts = new Map([...fixed].map(([k, v]) => [keyCols.indexOf(k), v]));
+    levels.push({ active, flags: rolls.map((_, n) => !kept.includes(n)), items, ...(consts.size ? { consts } : {}) });
   }
   const cols = [...keyCols.map(k => ({ name: k.name, lineage: k, t: k.type })),
     ...rolls.map(r => ({ name: r.flag, lineage: null, t: 'bool' })),
-    ...exprs.map(([name], n) => ({ name, lineage: null, t: levels[0].items[n].t }))];
+    ...exprs.map(([name], n) => ({ name, lineage: null, t: levelType(levels.map(L => L.items[n].t)) }))];
   return { k: 'sc', keyRow, keyCols, rolls, levels, ctx0, outer: env.ctx.filters, cols, base: null };
+}
+
+// The type of a column the levels write: theirs, a blank level's none; numbers of several kinds a
+// double (a calculation item's split: Current a whole number, YoY % a double).
+function levelType(ts) {
+  const known = [...new Set(ts.filter(t => t !== 'blank'))];
+  if (known.length <= 1) return known[0] ?? ts[0];
+  return known.every(ir.isNum) ? 'double' : 'variant';
 }
 
 // Auto-exist: the filters SUMMARIZECOLUMNS' arguments put on the columns of one table are

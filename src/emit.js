@@ -1118,7 +1118,8 @@ export class Emitter {
 
     const apply = this.d.repeats ? this.hoistRepeats(items) : '';
     const sel = [
-      ...x.keyCols.map((_, i) => `${active.includes(i) ? `${k}.${this.ident(keyNames[i])}` : 'NULL'} AS ${this.ident(names[i])}`),
+      // A key a level holds one value of (a calculation item, SUMMARIZECOLUMNS' split): that value.
+      ...x.keyCols.map((c, i) => `${active.includes(i) ? `${k}.${this.ident(keyNames[i])}` : L.consts?.has(i) ? this.d.literal(L.consts.get(i), c.type) : 'NULL'} AS ${this.ident(names[i])}`),
       ...L.flags.map((f, i) => `${this.d.bool(f)} AS ${this.ident(names[x.keyCols.length + i])}`),
       ...items.map((s, i) => `${s} AS ${this.ident(names[x.keyCols.length + L.flags.length + i])}`),
     ];

@@ -45,5 +45,5 @@ const { sql, columns } = dax.compile(`
   values, in grouping, filters, relationships and `LEN`. Trim them in the data if they matter.
 - A column that mixes numbers and text comes back as text.
 - `IFERROR` returns its first argument: SQL has no error values.
-- A query that reads one table only (`VALUES(Customer[City])`, a slicer's list) has no blank
-  row, though fact rows have keys the table lacks: it is a plain `SELECT DISTINCT`.
+- No blank row: a dimension is expected to hold every key its facts use. `VALUES` and `ALL`
+  list its own rows; fact rows with a key it lacks still count in totals.

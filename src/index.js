@@ -19,9 +19,6 @@
 //   assumeIntegrity  true: every relationship relies on referential integrity, so a
 //                  dimension's key is read off the fact's foreign key with no join (by
 //                  default only those whose assumeIntegrity says so)
-//   blankRows      false: no blank row for a dimension whose keys some fact rows miss (VALUES,
-//                  ALL and SUMMARIZECOLUMNS list it otherwise; this saves a check per table).
-//                  A statement that reads that table alone never has one
 //   user           the value of USERNAME() and USERPRINCIPALNAME()
 //   roles          the names of the model's roles to query as (row-level security): every
 //                  table's rows are those some role keeps

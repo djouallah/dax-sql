@@ -152,31 +152,19 @@ filters on its expanded table's columns only.
 
 ### The blank row
 
-`VALUES`, `ALL` and `ALLSELECTED` over a table that can have a blank row (the one side of a
-relationship that does not rely on referential integrity, either side of a one-to-one one:
-`oneSides`) are `withblank`: the rows, in a `UNION` with a row of blanks (`blankRow`).
+There is none (a departure from DAX). Power BI adds a row of blanks to a table on the one side
+of a relationship when the other side has keys it lacks, and lists it in `VALUES`, `ALL` and
+the groups of SUMMARIZECOLUMNS. Knowing whether it is there takes a scan of every such fact
+table for the keys the dimension lacks, in every query that lists a dimension's values: 3,908
+checks over the conformance queries, a third of their SQL. A dimension is expected to hold
+every key its facts use; `VALUES` and `ALL` are its rows.
 
-- The row is there when some row of the other side has a key the table lacks, or that table
-  has a blank row itself (`orphans`, recursively: a snowflake's dimensions). Row-level
-  security does not remove it, except over a relationship that filters the table back
-  (both ways, `CROSSFILTER`): there the other side's rows are those security keeps.
-- A filter that comes back from a many side (`conds`, the inbound relationships) keeps it
-  when the many side's rows it keeps have a key the table lacks (`lacking`). That is for
-  `VALUES`; `DISTINCTCOUNT` is `COUNTROWS(VALUES)` without it (`unmatched`, on `withblank`
-  and `blankexists`).
-- The filter context applies to it as to any row. Its calculated columns are blank, as are
-  those read through a join that found no row.
-- Under a bind, `VALUES` is `onerow`, whose condition gains "or the value is blank and the
-  row is there" (`blankexists`).
-- `DISTINCT`, `ALLNOBLANKROW`, the table's name and `COUNTROWS` of the table do not add it.
-- A statement that reads no table but the one with the row does not add it either (a
-  departure from DAX): the check would read the other side's tables, which the statement
-  does not. The emitter records the tables it reads outside the check (`readsOneTable`), and
-  `compileAll` compiles such a statement again with `blankRows: false`.
-  `ALLNOBLANKROW` as a CALCULATE modifier is `ALL`'s removal and its table as a filter, which
-  leaves out the rows that belong to the blank row.
+Fact rows with a key the dimension lacks are still read: they count in totals, and under a
+blank value where the groups are the measure's own rows (the joins to the one side are
+`LEFT JOIN`s). The code that wrote the row (`withblank`, `blankexists`, `blankRow`,
+`orphans`, `lacking`) is unused, and to be removed (TODO.md).
 
-A blank in a table filter must match the blank row, the fact rows that have none, and a NULL
+A blank in a table filter must match the fact rows that have no row of the table, and a NULL
 stored in a column, so membership (`member`) is null-safe where both sides can be blank
 (`blankSide`, `mayHoldNull`, `mayBeBlank`): a blank row, a column read through a join that
 may find no row, a column that is not a key, a constant blank. It stays a plain `IN`
@@ -453,7 +441,6 @@ SELECT * FROM (SHOW SEMANTIC METRICS IN sales) WHERE ...;   -- each one reads as
 | `columnNames` | `'short'` (default): the column's or the expression's name. `'dax'`: `Table[Column]`, `[Measure]`. |
 | `castOutput` | `true` (default): whole numbers as `BIGINT`, other numbers as `DOUBLE`. Or an object, by the column's type (`int`, `double`, `decimal`, `datetime`, `string`, `bool`), of a function of its SQL: `{ int: s => \`CAST(${s} AS INTEGER)\` }`; a type it leaves out is not cast. |
 | `assumeIntegrity` | `true`: every relationship relies on referential integrity, so a dimension key is read off the fact's foreign key without a join. By default only relationships whose `relyOnReferentialIntegrity` is set are treated this way. |
-| `blankRows` | `false`: no blank row for dimensions (see below), which saves a check per dimension. A statement that reads the dimension alone never has one. |
 | `user` | The value of `USERNAME()` and `USERPRINCIPALNAME()`. |
 | `roles` | A role name, or several: row-level security. Each table keeps the rows that at least one of the roles keeps. |
 | `params` | The values of the query's parameters (`@name`), by name: numbers, text, booleans, `Date`s or `null` (blank). |
@@ -567,37 +554,13 @@ and gives each aggregate the filters that reach its table.
   - Filter tables, `ROLLUPADDISSUBTOTAL`/`ROLLUPGROUP`, and `ISINSCOPE` are supported.
   - A filter table wrapped in `NONVISUAL` filters the groups and the expressions, but is not
     part of the selection: `ALLSELECTED` removes it.
-- **The blank row:** when some rows of a fact table have a key that matches no row of a
-  dimension, DAX adds a blank row to the dimension, and those fact rows belong to it.
-  - `VALUES`, `ALL` and `ALLSELECTED` over the dimension list it, and SUMMARIZECOLUMNS groups
-    by it. `DISTINCT`, `ALLNOBLANKROW` and the table itself do not. `HASONEVALUE` and
-    `SELECTEDVALUE` count it.
-  - A filter on the dimension's columns leaves it out, unless the filter keeps blanks: a blank
-    in a table filter (`TREATAS({BLANK()}, …)`, or a filter on the fact table that keeps the
-    fact rows without a dimension row) keeps it.
-  - A blank in a table filter also matches a NULL stored in a column (`TREATAS({BLANK()},
-    Sales[CustomerKey])` keeps the sales with no customer key).
-  - A filter that comes back from the fact table (a relationship that filters both ways,
-    `CROSSFILTER(…, BOTH)`) keeps it when the fact rows it keeps include some without a
-    dimension row: `VALUES` lists it then. `DISTINCTCOUNT` of a column, like `COUNTROWS` of
-    the table, counts the dimension's rows, which that filter keeps by their keys: not the
-    blank row.
-  - Row-level security does not remove it: `VALUES` lists it when security hides every fact
-    row without a dimension row. Over a relationship that filters the dimension back from the
-    fact table (`CROSSFILTER(…, BOTH)`), though, the fact rows are those security keeps.
-  - Its calculated columns are blank too.
-  - A table on the one side of a relationship to such a dimension has a blank row as well,
-    since the dimension's blank row matches none of its rows. A sale of an unknown product
-    belongs to the blank category.
-  - Each side of a one-to-one relationship has one when the other side has keys it lacks: the
-    other side's rows with such keys belong to it.
-  - The compiler adds a check for such fact rows wherever a dimension's values are listed. A
-    relationship that relies on referential integrity, the `assumeIntegrity` option, or
-    `blankRows: false` means there are none, and the check is left out.
-  - **Departure from DAX:** a query that reads the dimension alone (`VALUES(Customer[City])`,
-    `SUMMARIZECOLUMNS(Customer[City])`, or with expressions over Customer only) has no blank
-    row: it is the dimension's distinct values, with no scan of the fact tables. Once the
-    query reads a fact table (a measure, a filter), the blank row is there as in DAX.
+- **No blank row** (a departure from DAX): when some rows of a fact table have a key that
+  matches no row of a dimension, DAX adds a blank row to the dimension. Here `VALUES`, `ALL`,
+  `ALLSELECTED` and the groups of SUMMARIZECOLUMNS are the dimension's own rows, so
+  `ALLNOBLANKROW` is `ALL` and `DISTINCT` is `VALUES`. Such fact rows still count in a total,
+  and under a blank value of a measure grouped by the dimension's columns. A blank in a table
+  filter matches a NULL stored in a column (`TREATAS({BLANK()}, Sales[CustomerKey])` keeps the
+  sales with no customer key).
 - **TOPN** keeps rows tied with the last one. **ORDER BY** puts blanks first when ascending.
 - `DEFINE MEASURE`, `DEFINE VAR`, `DEFINE TABLE` and `DEFINE COLUMN` are supported, as are
   several `EVALUATE`s and lazy `VAR`s. Calculated columns are evaluated per row in an empty

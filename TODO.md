@@ -12,7 +12,6 @@ Nothing here blocks a release: tests and both conformance runs are green on `mai
 - **To probe on Power BI first** (new conformance queries, an Oracle run):
   - `ROUNDDOWN(0.29, 2)`, `TRUNC`, `ROUNDUP`, `FLOOR(0.3, 0.1)`, `CEILING`, `MROUND` scale in
     binary floating point here (0.28, 0.2); no query covers them.
-  - Whether an inactive relationship's unmatched keys give its one side a blank row.
   - `TIME` with minutes or seconds that carry past a day; text in arithmetic (`"3" * 2`).
 - **T-SQL, not yet:** `PERCENTILE.EXC` and `PERCENTILEX`, `FORMAT` with a pattern, `SUBSTITUTE`
   with an instance number (conformance/engines/dax-sql-tsql/known.json).
@@ -23,8 +22,6 @@ Nothing here blocks a release: tests and both conformance runs are green on `mai
 - **Currency conversion** (`SUMX(SUMMARIZE(Sales, Date[Date], Currency[Code]), [Sales] * [Rate])`)
   and **orders in transit** (a range of dates against each day) stay subqueries of each row:
   60 to 140 s.
-- **The blank-row check** (a fact's keys the one side lacks) is written at each use, each a scan
-  of the fact. As one CTE DuckDB did not finish planning a RANKX over it; another shape is needed.
 - **A fused group with a slicer or a role on a joined table** is not grouped before its joins
   (`Fusion.belowJoins` bails on a condition that reads a joined table).
 - **Visual calculations** (`RUNNINGSUM`, `PREVIOUS`, `RANK`) are a window inside a subquery of
@@ -35,7 +32,30 @@ Nothing here blocks a release: tests and both conformance runs are green on `mai
   with `CASE` (DuckDB's `FILTER`); a table grouped before its joins; five `patterns` queries
   time out on Fabric (calculation groups, currency conversion, a ranked cumulative total).
 
+## Not implemented
+
+- **Object-level security**: a role that hides whole tables or columns (a model's
+  `tablePermission`/`columnPermission` with `metadataPermission: none`), so that a query
+  naming one fails as if it did not exist. Row-level security is done; this is not read.
+- **Dynamic format strings** (a measure's `formatStringDefinition`), and model format strings:
+  not applied to the values returned.
+- **The window functions' reset argument** (`RUNNINGSUM(…, …, reset)` and the like).
+- **FORMAT** is en-US only, with a constant pattern.
+- **DATEDIFF with WEEK** counts Sunday week boundaries, whatever the model's first day.
+- Anything DESIGN.md does not list under "What it does".
+
+## Conformance
+
+- 137 queries are on the known list because their golden has Power BI's blank row (the test
+  data has fact keys their dimensions lack, on purpose). They verify nothing else while listed:
+  give the models' dimensions every key (conformance/tools/*/data.js), run the Oracle again,
+  and take them off the list; drop the queries that are only about the blank row.
+
 ## Code
+
+- The blank row's code is unused since there is no blank row: `withblank` and `blankexists`
+  (ir.js, emit.js), `blankRow`, `orphans`, `lacking`, `readsOneTable` and `compileAll`'s
+  second compile (index.js), `blankRowRels` and its callers (functions/). Remove it.
 
 - The dialects' differences are flags read through `emit.js`; they could be steps that rewrite
   the intermediate form before it is written, one per flag.

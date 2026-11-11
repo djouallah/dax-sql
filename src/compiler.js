@@ -394,11 +394,9 @@ export class Compiler {
     return { ...env, rows: [...env.rows, row], shadows };
   }
 
-  // Whether a table can have DAX's blank row: it is the one side of a relationship whose other
-  // side may hold keys it lacks (model.oneSides).
-  blankRowRels(table) {
-    if (this.options.blankRows === false || this.options.assumeIntegrity) return [];
-    return this.model.oneSides(table);
+  // The relationships that give a table DAX's blank row: none, there is no such row (DESIGN.md).
+  blankRowRels() {
+    return [];
   }
 
   // Context transition: each row context becomes filters on its columns.

@@ -3,7 +3,7 @@
 // are DAX's is checked elsewhere.
 import { test, before } from 'node:test';
 import assert from 'node:assert/strict';
-import { harness } from './helpers.js';
+import { harness, sorted } from './helpers.js';
 import { bim, setup } from './fixtures/contoso.js';
 
 let h;
@@ -137,4 +137,20 @@ test('text is compared by case: in a comparison, IN, a table filter, as in group
   // SEARCH and CONTAINSSTRING are without regard to case by definition.
   const [r] = await h.run(`EVALUATE ROW("s", SEARCH("${other}", "${one}"), "c", CONTAINSSTRING("${one}", "${other}"))`);
   assert.deepEqual(Object.values(r), [1, true]);
+});
+
+test('no blank row: a dimension lists its own rows, with no scan of the facts for keys it lacks', async () => {
+  // Customer 99 has sales and no row in Customer.
+  const q = `EVALUATE ADDCOLUMNS(VALUES(Customer[City]), "s", [Sales Amount])`;
+  const { sql } = h.dax.compile(q);
+  assert.doesNotMatch(sql, /IS NULL\)|UNION/, sql);
+  const rows = await h.run(q);
+  const cities = (await h.sql(`SELECT DISTINCT "City" FROM "Customer"`)).map(r => r.City);
+  assert.deepEqual(sorted(rows).map(r => Object.values(r)[0]), sorted(cities.map(City => ({ City }))).map(r => r.City));
+  // Its sales still count in the total, and under a blank city of a measure grouped by city.
+  const [all] = await h.run(`EVALUATE ROW("s", [Sales Amount])`);
+  const [sum] = await h.sql(`SELECT SUM("Amount") AS s FROM "Sales"`);
+  assert.equal(Object.values(all)[0], sum.s);
+  const byCity = await h.run(`EVALUATE SUMMARIZECOLUMNS(Customer[City], "s", [Sales Amount])`);
+  assert.ok(byCity.some(r => Object.values(r)[0] == null));
 });

@@ -1209,11 +1209,10 @@ export class Emitter {
     return out(b);
   }
 
-  // Whether a table can have a blank row: it is the one side of a relationship that does not
-  // rely on referential integrity (model.oneSides).
-  hasBlankRow(table) {
-    if (this.options.blankRows === false || this.options.assumeIntegrity) return false;
-    return this.model.oneSides(table).length > 0;
+  // Whether a table has DAX's blank row (for the fact rows with a key it lacks): never. A
+  // dimension is expected to hold every key its facts use (DESIGN.md).
+  hasBlankRow() {
+    return false;
   }
 
   // Whether some of `keys` (SQL of rows with the column k) is a key that `one` (the one side of

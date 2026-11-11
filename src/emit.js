@@ -982,7 +982,7 @@ export class Emitter {
         return b.render();
       }
       const p = this.rowFused(b, x.src, x.row, () => this.aggParts(x, s2));
-      const grouped = ir.freeRows(x).size ? this.groupedFirst(b, p) : null;
+      const grouped = ir.freeRows(x).size ? this.groupedFirst(b, p, x.src.base ?? null) : null;
       if (grouped) {
         b.setOut([{ name: 'v', lineage: null }], [grouped]);
         return b.render();
@@ -1035,7 +1035,7 @@ export class Emitter {
   // own columns alone; the aggregate then adds up those groups (Fusion.belowJoins, for a
   // group's CTE). For sums, counts, minima and maxima of the table's own columns, over joins
   // to the one side, by three columns at most.
-  groupedFirst(b, p) {
+  groupedFirst(b, p, table) {
     const base = isQuery(b.from) ? null : / AS (\w+)$/.exec(b.from ?? '')?.[1];
     if (!this.d.aggBelowJoins || !base || !OVER[p.fn] || partsQuery(p) || p.keys?.length || p.extra?.filter) return null;
     if (b.group || b.distinct || b.qualify || !b.joins.every(j => b.hops?.has(j))) return null;
@@ -1050,6 +1050,10 @@ export class Emitter {
     // year): rows that each name one value of every column (a customer and a day) find their
     // few rows faster in the table itself (0.6 s; 7 s in its groups).
     if (cols.length > 1 && !outer.some(isQuery)) return null;
+    // Not by a column that names one row (the table's key, the one side of a relationship): its
+    // groups are its rows.
+    const unique = table ? [table.key, ...this.model.oneSides(table).map(o => o.one)].filter(Boolean).map(c => `${base}.${this.ident(c.source)}`) : [];
+    if (cols.some(c => unique.includes(c))) return null;
     const v = this.ident('dax_a'), inner = b.where.filter(ownOnly);
     const sql = `SELECT ${cols.join(', ')}, ${this.d.agg(p.fn, p.arg, p.extra)} AS ${v} FROM ${b.from}${inner.length ? ` WHERE ${inner.join(' AND ')}` : ''} GROUP BY ${cols.join(', ')}`;
     const key = `grouped|${canonical(sql)}`;

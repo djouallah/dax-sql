@@ -279,9 +279,11 @@ existing combinations, cross-joined, plus a dimension's blank row) and the expre
 evaluated on each. `ROLLUPADDISSUBTOTAL` is a `UNION ALL` of the levels; each call is an axis,
 and the levels of several are crossed.
 
-**Text** compares without regard to case, as in DAX: a comparison, `IN`, a bind and a table
-filter's membership on text columns are written with the dialect's `nocase` (DuckDB's
-`NOCASE` collation, `lower` on both sides elsewhere).
+**Text** is compared as the engine compares it, by case (a departure from DAX): a comparison,
+`IN`, a bind and a table filter's membership are plain SQL, as grouping, `DISTINCT` and the
+relationships' joins are. The engine can then use its statistics and hash joins on text, and a
+measure answers the same whether it is fused into a GROUP BY or stays a subquery. `SEARCH` and
+`CONTAINSSTRING` are without regard to case, as they are defined.
 
 **One value as a table.** `VALUES(c)` under a bind on `c` is `onerow(v, exists)`, not a scan.
 
@@ -860,8 +862,8 @@ window's `ORDER BY`), and DuckDB's answers are what the emitter wrote before.
 
 - **No boolean type:** a boolean value is a `BIT`, a condition is `(x = 1)`, and FALSE where
   unknown is `(CASE WHEN c THEN 1 ELSE 0 END = 1)`.
-- **Text:** compared without regard to case with `COLLATE Latin1_General_100_CI_AS_KS_WS_SC_UTF8`
-  (a lakehouse's text is binary UTF-8), and exactly (FIND, SUBSTITUTE, EXACT) with
+- **Text:** compared as the database's collation compares it (a lakehouse's text is binary
+  UTF-8: by case), and exactly whatever the collation (FIND, SUBSTITUTE, EXACT) with
   `Latin1_General_100_BIN2_UTF8`. A literal with trailing spaces is cast: Fabric drops them
   otherwise, in a query over a table.
 - **The rest:** `OUTER`/`CROSS APPLY` for `LATERAL`; a CASE inside an aggregate for `FILTER`;

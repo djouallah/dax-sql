@@ -44,12 +44,12 @@ test('every conformance query is T-SQL with nothing Fabric lacks, or refused by 
   assert.ok(compiled > 1000, `${compiled} compiled`);
 });
 
-test("a whole-number blank is typed, and text compares without regard to case", () => {
+test("a whole-number blank is typed, and text compares as the database's collation does", () => {
   const bim = { model: { tables: [{ name: 'T', columns: [{ name: 'a', dataType: 'string', sourceColumn: 'a' }, { name: 'n', dataType: 'int64', sourceColumn: 'n' }],
     partitions: [{ source: { type: 'entity', entityName: 'T' } }] }] } };
   const c = createCompiler(tmslToModel(bim), { dialect: 'tsql' });
   const { sql } = c.compile('EVALUATE FILTER(T, T[a] = "x" && T[n] <> BLANK())');
-  assert.match(sql, /COLLATE Latin1_General_100_CI_AS_KS_WS_SC_UTF8/);
+  assert.doesNotMatch(sql, /COLLATE/);
   assert.doesNotMatch(code(sql), /\b(TRUE|FALSE)\b/);
 });
 

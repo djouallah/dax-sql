@@ -123,3 +123,18 @@ test('text in arithmetic is its number; TIME carries past 23 hours and 59 minute
   const [p] = await h.sql(sql);
   assert.ok(Object.values(p)[0] >= 1e10);
 });
+
+test('text is compared by case: in a comparison, IN, a table filter, as in grouping', async () => {
+  const colors = (await h.sql(`SELECT DISTINCT "Color" FROM "Product" WHERE "Color" IS NOT NULL`)).map(r => r.Color);
+  const one = colors[0], other = one === one.toLowerCase() ? one.toUpperCase() : one.toLowerCase();
+  assert.notEqual(one, other);
+  const n = async f => Object.values((await h.run(`EVALUATE ROW("n", COUNTROWS(CALCULATETABLE(Product, ${f})))`))[0])[0];
+  for (const f of [v => `Product[Color] = "${v}"`, v => `Product[Color] IN {"${v}"}`, v => `TREATAS({"${v}"}, Product[Color])`, v => `FILTER(ALL(Product[Color]), Product[Color] == "${v}")`]) {
+    assert.ok(await n(f(one)) > 0, f(one));
+    assert.equal(await n(f(other)), null, f(other));
+    assert.doesNotMatch(h.dax.compile(`EVALUATE CALCULATETABLE(Product, ${f(other)})`).sql, /COLLATE|lower\(/i);
+  }
+  // SEARCH and CONTAINSSTRING are without regard to case by definition.
+  const [r] = await h.run(`EVALUATE ROW("s", SEARCH("${other}", "${one}"), "c", CONTAINSSTRING("${one}", "${other}"))`);
+  assert.deepEqual(Object.values(r), [1, true]);
+});

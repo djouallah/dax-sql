@@ -16,9 +16,6 @@ export class DuckDBDialect extends Dialect {
 
   type(t) { return t === 'double' ? 'DOUBLE' : super.type(t); }
 
-  // The NOCASE collation on one side is the comparison's (and IN's, and a join's). A NULL
-  // with no type takes no collation, so it goes on the side that is text.
-  nocase(a, ...others) { return [`(${a} COLLATE NOCASE)`, ...others]; }
 
   // / divides as DOUBLE already.
   div(a, b) { return `(${a} / ${b})`; }

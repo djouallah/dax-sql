@@ -50,10 +50,6 @@ export class Dialect {
   // A query's LIMIT and OFFSET, after its ORDER BY.
   limit(n, offset) { return `${n != null ? ` LIMIT ${n}` : ''}${offset ? ` OFFSET ${offset}` : ''}`; }
 
-  // The sides of a comparison of text (=, <, IN, a table filter's values), written so that it
-  // is without regard to case, as DAX compares text. `a` is a side that is text for certain;
-  // the others can be a blank.
-  nocase(a, ...others) { return [a, ...others].map(s => `lower(${s})`); }
   isDistinct(a, b) { return `${a} IS DISTINCT FROM ${b}`; }
 
   // body(...vals): SQL that names each of `vals` more than once. An engine that has no way to

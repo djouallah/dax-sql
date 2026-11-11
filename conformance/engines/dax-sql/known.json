@@ -23,5 +23,14 @@
   {"id":"contoso/blankrow/blankrow-concatenatex-values-cities","reason":"by design: a query that reads one table only has no blank row (a plain SELECT DISTINCT, no scan of the facts for keys it lacks); Power BI lists it"},
   {"id":"contoso/blankrow/blankrow-filtered-column-no-blank-row","reason":"by design: a query that reads one table only has no blank row (a plain SELECT DISTINCT, no scan of the facts for keys it lacks); Power BI lists it"},
   {"id":"contoso/window/window-rank-no-relation-blank-row","reason":"by design: a query that reads one table only has no blank row (a plain SELECT DISTINCT, no scan of the facts for keys it lacks); Power BI lists it"},
-  {"id":"patterns/context/context-calculatetable-column-filter-no-crossfilter","reason":"by design: a query that reads one table only has no blank row (a plain SELECT DISTINCT, no scan of the facts for keys it lacks); Power BI lists it"}
+  {"id":"patterns/context/context-calculatetable-column-filter-no-crossfilter","reason":"by design: a query that reads one table only has no blank row (a plain SELECT DISTINCT, no scan of the facts for keys it lacks); Power BI lists it"},
+  {"id":"contoso/text/text-case-insensitive-compare","reason":"by design: text is case-sensitive (Power BI compares without regard to case)"},
+  {"id":"contoso/text/text-case-insensitive-filter-table","reason":"by design: text is case-sensitive (Power BI compares without regard to case)"},
+  {"id":"patterns/context/context-case-insensitive-filter-arguments","reason":"by design: text is case-sensitive (Power BI compares without regard to case)"},
+  {"id":"patterns/customers/customers-text-case-insensitive","reason":"by design: text is case-sensitive (Power BI compares without regard to case)"},
+  {"id":"patterns/gaps/gaps-text-case-insensitive","reason":"by design: text is case-sensitive (Power BI compares without regard to case)"},
+  {"id":"patterns/gaps/gaps-text-case-treatas","reason":"by design: text is case-sensitive (Power BI compares without regard to case)"},
+  {"id":"patterns/queries/queries-text-case-slicer-lookupvalue","reason":"by design: text is case-sensitive (Power BI compares without regard to case)"},
+  {"id":"patterns/relationships/relationships-currency-key-case-insensitive","reason":"by design: text is case-sensitive (Power BI compares without regard to case)"},
+  {"id":"patterns/segmentation/segmentation-bands-case-insensitive","reason":"by design: text is case-sensitive (Power BI compares without regard to case)"}
 ]

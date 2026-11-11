@@ -55,5 +55,14 @@
   {"id":"patterns/segmentation/segmentation-percentilex-exc-quartiles","reason":"not yet: PERCENTILE.EXC and PERCENTILEX (PERCENTILE.INC is PERCENTILE_CONT)"},
   {"id":"patterns/segmentation/segmentation-percentilex-exc-segment-boundary-k","reason":"not yet: PERCENTILE.EXC and PERCENTILEX (PERCENTILE.INC is PERCENTILE_CONT)"},
   {"id":"patterns/segmentation/segmentation-percentilex-inc-blank-customers-first","reason":"not yet: PERCENTILE.EXC and PERCENTILEX (PERCENTILE.INC is PERCENTILE_CONT)"},
-  {"id":"patterns/segmentation/segmentation-rankx-hierarchy-isinscope","reason":"fail: Power BI ranks the Clothing subtotal by a differently ordered float sum (266314.7899999999 vs ...79000000003); Microsoft documents RANKX on decimals as unstable, not a DAX rule to copy"}
+  {"id":"patterns/segmentation/segmentation-rankx-hierarchy-isinscope","reason":"fail: Power BI ranks the Clothing subtotal by a differently ordered float sum (266314.7899999999 vs ...79000000003); Microsoft documents RANKX on decimals as unstable, not a DAX rule to copy"},
+  {"id":"contoso/text/text-case-insensitive-compare","reason":"by design: text is case-sensitive (Power BI compares without regard to case)"},
+  {"id":"contoso/text/text-case-insensitive-filter-table","reason":"by design: text is case-sensitive (Power BI compares without regard to case)"},
+  {"id":"patterns/context/context-case-insensitive-filter-arguments","reason":"by design: text is case-sensitive (Power BI compares without regard to case)"},
+  {"id":"patterns/customers/customers-text-case-insensitive","reason":"by design: text is case-sensitive (Power BI compares without regard to case)"},
+  {"id":"patterns/gaps/gaps-text-case-insensitive","reason":"by design: text is case-sensitive (Power BI compares without regard to case)"},
+  {"id":"patterns/gaps/gaps-text-case-treatas","reason":"by design: text is case-sensitive (Power BI compares without regard to case)"},
+  {"id":"patterns/queries/queries-text-case-slicer-lookupvalue","reason":"by design: text is case-sensitive (Power BI compares without regard to case)"},
+  {"id":"patterns/relationships/relationships-currency-key-case-insensitive","reason":"by design: text is case-sensitive (Power BI compares without regard to case)"},
+  {"id":"patterns/segmentation/segmentation-bands-case-insensitive","reason":"by design: text is case-sensitive (Power BI compares without regard to case)"}
 ]

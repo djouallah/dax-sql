@@ -6,9 +6,7 @@ import { Dialect } from './base.js';
 import { unsupported } from '../errors.js';
 
 const UNIT_SQL = { day: 'DAY', week: 'WEEK', month: 'MONTH', quarter: 'QUARTER', year: 'YEAR', hour: 'HOUR', minute: 'MINUTE', second: 'SECOND' };
-// Text compared without regard to case (DAX's), and exactly (EXACT, FIND, SUBSTITUTE): a lakehouse's
-// text is binary UTF-8, so a comparison says which it means.
-const CI = 'Latin1_General_100_CI_AS_KS_WS_SC_UTF8';
+// Text compared exactly whatever the database's collation (EXACT, FIND, SUBSTITUTE).
 const BIN = 'Latin1_General_100_BIN2_UTF8';
 const DAY0 = "CAST('1899-12-30' AS DATETIME2(6))";
 
@@ -52,8 +50,6 @@ export class TSqlDialect extends Dialect {
     if (n == null && !offset) return '';
     return `${ordered ? '' : ' ORDER BY (SELECT NULL)'} OFFSET ${offset ?? 0} ROWS${n != null ? ` FETCH NEXT ${n} ROWS ONLY` : ''}`;
   }
-  // COLLATE can't follow a subquery; it can follow a CAST of one.
-  nocase(a, ...others) { return [`(${/^\(\s*SELECT\b/i.test(a) ? `CAST(${a} AS VARCHAR(8000))` : a} COLLATE ${CI})`, ...others]; }
 
   // A value more than a column or a constant, written once in a row the body reads, as the
   // CASE's branches are (emit.js): (SELECT body FROM (SELECT x AS "v0") AS b1). An aggregate

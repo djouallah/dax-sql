@@ -1,6 +1,6 @@
 {
  "grouping-auto-exist-filters-group-by-name": {
-  "hash": "09d2b2ec9039411441e210bdde3ca0673013aa10",
+  "hash": "4196bf6d529100302c49dbbe44fbe89864d899f5",
   "columns": [
    "Product[Name]",
    "[s]",
@@ -15,7 +15,7 @@
   ]
  },
  "grouping-auto-exist-filters-no-groups": {
-  "hash": "f5490bbef43b78d807fc3d87dc7e373e62fbfb21",
+  "hash": "b589b93313a700530a8ed4039bc78915bf5c6330",
   "columns": [
    "[s]",
    "[nocolor]"
@@ -28,7 +28,7 @@
   ]
  },
  "grouping-auto-exist-priceband-two-filters": {
-  "hash": "fc2778136af30b2399cc94ff0e8bd2ac672b4c92",
+  "hash": "f6dc8aebcf148d9d58a5bfd3eee49ddeb10e2df8",
   "columns": [
    "Product[PriceBand]",
    "[s]",
@@ -48,7 +48,7 @@
   ]
  },
  "grouping-by-calculated-column": {
-  "hash": "395f2488f9f894d95ad0104b74750a6ccb76bf51",
+  "hash": "b24ae0c3758acf20611162b462a10ef6f8a10282",
   "columns": [
    "Product[PriceBand]",
    "[s]"
@@ -65,7 +65,7 @@
   ]
  },
  "grouping-by-category-snowflake": {
-  "hash": "3a2d25b741e333fd46a9c6417fc44f74255d3c37",
+  "hash": "cce7574f9305036b10d118ffbc5bd600c400f8f2",
   "columns": [
    "Category[Category]",
    "[s]"
@@ -82,7 +82,7 @@
   ]
  },
  "grouping-by-color": {
-  "hash": "0e5512d690d6c7da1719fec3c5e1524fa221f05f",
+  "hash": "6e0772abd7a53088f8636886802adfb5e541d9e1",
   "columns": [
    "Product[Color]",
    "[s]"
@@ -103,7 +103,7 @@
   ]
  },
  "grouping-city-by-year": {
-  "hash": "275b8368abc41a39b1a74f44d96d70feeff43a0b",
+  "hash": "017537dd5f074f74479bf098833351264efd7c2c",
   "columns": [
    "Customer[City]",
    "Date[Year]",
@@ -121,11 +121,6 @@
     850.0
    ],
    [
-    null,
-    2024,
-    20.0
-   ],
-   [
     "Paris",
     2024,
     3100.0
@@ -134,11 +129,16 @@
     "London",
     2024,
     1000.0
+   ],
+   [
+    "Rome",
+    2024,
+    20.0
    ]
   ]
  },
  "grouping-constant-filtered-city-drops-blank-row": {
-  "hash": "e9446c62120e38875f954fc2274712603df245ea",
+  "hash": "3237ede12bd4de2ec22391b478dc50369e93f17b",
   "columns": [
    "Customer[Customer]",
    "[one]"
@@ -155,18 +155,13 @@
   ]
  },
  "grouping-constant-keeps-every-customer": {
-  "hash": "eabb151dd56776695a43bb3bd4f49a17936672b6",
+  "hash": "ce7c5117541e52533aa49b6acb0c5e2bf7b646c7",
   "columns": [
    "Customer[Customer]",
    "[s]",
    "[one]"
   ],
   "rows": [
-   [
-    null,
-    20.0,
-    1
-   ],
    [
     "Alice",
     2000.0,
@@ -183,6 +178,11 @@
     1
    ],
    [
+    "Erin",
+    20.0,
+    1
+   ],
+   [
     "Dan",
     null,
     1
@@ -190,7 +190,7 @@
   ]
  },
  "grouping-filter-table-and-ignore": {
-  "hash": "5f85327f748b3b30a729020a4c5c75a9fcfb4ebf",
+  "hash": "c92252de45d594b5016b15d8944e4dd8013a2ba2",
   "columns": [
    "Product[Color]",
    "[s]",
@@ -210,7 +210,7 @@
   ]
  },
  "grouping-measure-alone": {
-  "hash": "d62556200dcd603dbcd21870dd9067e022614082",
+  "hash": "e731b2fecda53303b3dd617728f33153924d3d82",
   "columns": [
    "[s]"
   ],
@@ -221,7 +221,7 @@
   ]
  },
  "grouping-never-blank-expressions-keep-all-cities": {
-  "hash": "e78d9d7731e45c76fbcc8a780fa03eec778bbae2",
+  "hash": "9d555983c836f6b947391f3d79bed297b280dead",
   "columns": [
    "Customer[City]",
    "[f]",
@@ -252,7 +252,7 @@
     null
    ],
    [
-    null,
+    "Rome",
     true,
     true,
     false,
@@ -261,7 +261,7 @@
   ]
  },
  "grouping-rollupaddissubtotal-isinscope": {
-  "hash": "c8b3346d825cc9d3af3dbb7a3a38b11faf84b3fb",
+  "hash": "b36461b966005b9eef893d2ababd5e13c55c1937",
   "columns": [
    "Product[Color]",
    "[IsTotal]",
@@ -296,7 +296,7 @@
   ]
  },
  "grouping-two-rollupaddissubtotal-axes": {
-  "hash": "ba631fafd532b24017c42e4896fb942f067491f3",
+  "hash": "67ffb91dbfce70a823f4feade4679a8aca74c1e0",
   "columns": [
    "Category[Category]",
    "Date[Year]",

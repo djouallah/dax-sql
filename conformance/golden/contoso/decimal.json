@@ -1,6 +1,6 @@
 {
  "decimal-allocation-sums-rounded-shares": {
-  "hash": "f5a2db5e12153fa3366da3a5e4f8e44194b32007",
+  "hash": "394af877cf0a5a04710c48488f80c081ef2a54a5",
   "columns": [
    "[a]"
   ],
@@ -11,7 +11,7 @@
   ]
  },
  "decimal-constant-if-branch-types": {
-  "hash": "5b7a72b14fbe6bd06106e20c57213cf2ff0b63f8",
+  "hash": "9ca32365b7a2be69b3b06a27ede4a1ddf304d354",
   "columns": [
    "[a]",
    "[b]"
@@ -24,7 +24,7 @@
   ]
  },
  "decimal-divide-multiply-by-number": {
-  "hash": "aaf739c696a669930efa0a6c979dfcdc72b24828",
+  "hash": "70fc163c47f45d4dc21162ba48a3dd1283ddebcf",
   "columns": [
    "Product[Color]",
    "[d]",
@@ -57,7 +57,7 @@
   ]
  },
  "decimal-if-branches-decimal-divide": {
-  "hash": "5a6847e1dc36ea5f477f082ba9b61b56817aab64",
+  "hash": "a7be154a81bd8436e91ca92d5be6ffa8e317d564",
   "columns": [
    "Product[Color]",
    "[a]"
@@ -78,7 +78,7 @@
   ]
  },
  "decimal-tie-whole-vs-double-divisor": {
-  "hash": "ce906996985d6fd47df663117b87fb024fcfb5e9",
+  "hash": "4910c299319a555eda4be9ce950b3a1729f42067",
   "columns": [
    "[w]",
    "[d]",
@@ -95,7 +95,7 @@
   ]
  },
  "decimal-two-decimals-divided": {
-  "hash": "665a2b1e056c9bc9cf87f93da62f7fe47e3e99f5",
+  "hash": "1806be605f745801cad72274c8a5a939212f8d37",
   "columns": [
    "[s]",
    "[p]"

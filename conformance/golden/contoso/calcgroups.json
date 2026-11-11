@@ -1,6 +1,6 @@
 {
  "calcgroups-filter-by-ordinal": {
-  "hash": "3273d74b291227e43e05666efb4b63f1d55b351e",
+  "hash": "767923fff12a530f7b446c3ce905e7bbd426425b",
   "columns": [
    "[s]"
   ],
@@ -11,7 +11,7 @@
   ]
  },
  "calcgroups-grouped-by-item-sideways-recursion": {
-  "hash": "ddcf8729fc301406941c678fd49e549ab6fd4851",
+  "hash": "e7518949809c16bae2870faac81d5a0e0a58462e",
   "columns": [
    "Date[Year]",
    "Time Calc[Time Calc]",
@@ -46,7 +46,7 @@
   ]
  },
  "calcgroups-item-by-name-on-other-ordinal-row": {
-  "hash": "3d1a37c741938d7c9e878180eb01c1a212a27017",
+  "hash": "13bf5cc2bd540557e52301b0b0ebed8b213fcfbd",
   "columns": [
    "Time Calc[Time Calc]",
    "Time Calc[Ordinal]",
@@ -71,7 +71,7 @@
   ]
  },
  "calcgroups-item-naming-measure-applied-once": {
-  "hash": "bea985af345c9e095e69a8515e343cbf94efd0af",
+  "hash": "c28d07f946aa2190243d42d533699ad58e013647",
   "columns": [
    "[q]"
   ],
@@ -82,7 +82,7 @@
   ]
  },
  "calcgroups-name-filter-keeps-row-ordinal": {
-  "hash": "f7579ac7bff272b0c86414c078a5846cc02ec209",
+  "hash": "de492ca53c22a1b34991a94a702f12ba8b873f23",
   "columns": [
    "Time Calc[Time Calc]",
    "Time Calc[Ordinal]",
@@ -108,7 +108,7 @@
   ]
  },
  "calcgroups-precedence-plus1-around-ytd": {
-  "hash": "fb33b668b7c41fbc6b932ff64405219ced7c6c72",
+  "hash": "ced1403e53c47ac778cefc12ad51269206e714b8",
   "columns": [
    "[s]"
   ],
@@ -119,7 +119,7 @@
   ]
  },
  "calcgroups-precedence-scale-around-py": {
-  "hash": "b3c6acd5715d1d76f5183065b6dfcb1fe0a49dc5",
+  "hash": "6e8c35016181b095ac435f452f794e7e32306f38",
   "columns": [
    "[s]"
   ],
@@ -130,7 +130,7 @@
   ]
  },
  "calcgroups-selectedmeasurename": {
-  "hash": "42f210954e5414b87529e8b1b2f145e74d97488d",
+  "hash": "b25ca0b8323e13f0b12c3b2e76bee23e01dcf947",
   "columns": [
    "[n]"
   ],
@@ -141,7 +141,7 @@
   ]
  },
  "calcgroups-several-items-selected": {
-  "hash": "e0a5650c72cab41c2043524abe8d2016533da029",
+  "hash": "b82a1ac92dfe4811ff42afc41f4d9790753bc89b",
   "columns": [
    "[s]"
   ],
@@ -152,7 +152,7 @@
   ]
  },
  "calcgroups-sumx-over-items": {
-  "hash": "461ad56456ca6ac2b4af1ccda29cf593a6bf9c53",
+  "hash": "f564c5939334e7e4dd0f8b9fc82dc71395199d34",
   "columns": [
    "[s]"
   ],
@@ -163,11 +163,11 @@
   ]
  },
  "calcgroups-sumx-table-constructor-names": {
-  "hash": "0a95386bb8a229c296090588f97d862555ff56c5",
+  "hash": "f01910c7a16271b09f060f89fd79b242021c94d8",
   "error": "Query (3, 105) Column '<oii>Value</oii>' cannot be found or may not be used in this expression."
  },
  "calcgroups-ytd-item-replaces-measures": {
-  "hash": "74d090a10c3e668f5f940ccd9adebee2d24dd2d9",
+  "hash": "e4f62a5aa06a52bcb49bbdbc446b35d23dd04b03",
   "columns": [
    "[s]",
    "[q]",

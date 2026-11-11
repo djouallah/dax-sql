@@ -1,6 +1,6 @@
 {
  "time-autoexist-year-month-removefilters-year": {
-  "hash": "e7f30a38eaf1236d580cb8e7ec494e34e3ab4ad0",
+  "hash": "3b8e200d4139e33e34bae9efbbbff66e82b59928",
   "columns": [
    "Category[Category]",
    "[Sales]",
@@ -8,12 +8,6 @@
    "[Months Without Year]"
   ],
   "rows": [
-   [
-    null,
-    null,
-    null,
-    1
-   ],
    [
     "Accessories",
     2887.2200000000003,
@@ -41,7 +35,7 @@
   ]
  },
  "time-average-daily-orders-in-transit": {
-  "hash": "34236194b8ef94b367adcd7e32ab54161eed5574",
+  "hash": "69348aa90a4be977f791b224a04df877ae6b7821",
   "columns": [
    "Date[Year Month]",
    "[Avg In Transit]"
@@ -98,7 +92,7 @@
   ]
  },
  "time-best-month-per-fiscal-year": {
-  "hash": "1186eaf4add9c2f5f6f195ccb28f4bb320d83cae",
+  "hash": "043c3f545669c760cbe3b749022d9bdec7c110d7",
   "columns": [
    "Date[Fiscal Year]",
    "Date[Year Month]",
@@ -128,7 +122,7 @@
   ]
  },
  "time-blank-product-order-days-crossfilter-both": {
-  "hash": "66946d08d33d86385c8d952406754c8e61f41e7d",
+  "hash": "c9a19b36db5fb998ed044cee278ddaa9b1431512",
   "columns": [
    "Product[Category]",
    "[Sales]",
@@ -137,13 +131,6 @@
    "[Last Order Day]"
   ],
   "rows": [
-   [
-    null,
-    190.0,
-    2,
-    "2023-05-17",
-    "2024-08-09"
-   ],
    [
     "Accessories",
     191652.88000000003,
@@ -167,15 +154,15 @@
    ],
    [
     "Components",
-    991848.0799999993,
-    457,
+    992038.0799999993,
+    458,
     "2022-05-14",
     "2024-12-31"
    ]
   ]
  },
  "time-budget-fiscal-ytd-m2m": {
-  "hash": "c944b10e6ca4287f053dcaea342987176db6f392",
+  "hash": "b46b045bd37ea38844bd13c53ffca6de7bde25db",
   "columns": [
    "Date[Fiscal Month]",
    "[Budget Fiscal YTD]",
@@ -245,7 +232,7 @@
   ]
  },
  "time-calc-group-forced-item-by-name-ordinal": {
-  "hash": "001710a6f5c62fc0863989ee4157c0c13f9c0ddb",
+  "hash": "55614f34e73a4e0a6a2dddf143247f01ddb6f0ae",
   "columns": [
    "Time Intelligence[Time Intelligence]",
    "Time Intelligence[Ordinal]",
@@ -402,7 +389,7 @@
   ]
  },
  "time-calc-group-items-by-year": {
-  "hash": "43b98ffc958791cc452ace505e7b0334482b095e",
+  "hash": "5b3807c093912860376094e9c99072606ad6e416",
   "columns": [
    "Date[Year]",
    "Time Intelligence[Time Intelligence]",
@@ -487,7 +474,7 @@
   ]
  },
  "time-calc-group-mat-budget-m2m": {
-  "hash": "d98c09cc419b11879029ed84714c7d81d7980e02",
+  "hash": "875d2a48a04fd3748aea77caff464fe00edbfc1e",
   "columns": [
    "Date[Year Month]",
    "[Budget]",
@@ -557,7 +544,7 @@
   ]
  },
  "time-calc-group-py-on-delivery-measure": {
-  "hash": "902583731e8ff417ed50eb8cc7f7f6ac6cb53b95",
+  "hash": "cbf0b70c88cbb999b79eb89187cfaca38f98c443",
   "columns": [
    "Date[Year]",
    "Time Intelligence[Time Intelligence]",
@@ -602,7 +589,7 @@
   ]
  },
  "time-calc-group-yoy-pct-margin-pct": {
-  "hash": "4d36c8aa3a80b8d78e41ffa1579be961857176ad",
+  "hash": "4c187475bd934ea14733b3a02808e3747a1d3b25",
   "columns": [
    "Date[Year]",
    "Category[Category]",
@@ -627,12 +614,7 @@
    [
     2023,
     "Components",
-    0.013001060850826229
-   ],
-   [
-    2024,
-    null,
-    0.06337888690829857
+    0.013100315495426878
    ],
    [
     2024,
@@ -652,12 +634,12 @@
    [
     2024,
     "Components",
-    0.02628920909954999
+    0.02624706652038309
    ]
   ]
  },
  "time-calc-group-ytd-over-fiscal-ytd": {
-  "hash": "8ee275a3d9dadf11f4f935a1cea50d1a35528222",
+  "hash": "52125515c72182ed65b4be89854117723b473e82",
   "columns": [
    "Date[Year Month]",
    "[Fiscal YTD]",
@@ -727,7 +709,7 @@
   ]
  },
  "time-calculatetable-userelationship-summarize": {
-  "hash": "2f542a85c846ad47834ced76b6459b4846fd1f3b",
+  "hash": "ae963ac4c8b70b7855e3b906d7bbe6934b7c5772",
   "columns": [
    "Date[Year]",
    "[Lines]",
@@ -752,7 +734,7 @@
   ]
  },
  "time-closing-balance-fiscal-year": {
-  "hash": "ff923c0533a0f8f661b5a2b4b7648bf40b57ad9a",
+  "hash": "fcbf289d598154df268ca891cd15cd53e1701338",
   "columns": [
    "Date[Fiscal Year]",
    "[Closing]",
@@ -782,7 +764,7 @@
   ]
  },
  "time-closing-balance-quarter": {
-  "hash": "d32960c1aa4dfbd1452178e1ef60a70fb8b2f8d1",
+  "hash": "fa67d64d080dd36319a91a655f1259f3e0cec2b8",
   "columns": [
    "Date[Year]",
    "Date[Quarter]",
@@ -878,7 +860,7 @@
   ]
  },
  "time-context-transition-date-clears-month": {
-  "hash": "71d9d4819e683eb3ea5a9e243f7b8e4df4e9b638",
+  "hash": "152ebc89ca5be0a66459fe21e1d610a8b8a4b467",
   "columns": [
    "Date[Year]",
    "[Days]",
@@ -911,7 +893,7 @@
   ]
  },
  "time-dateadd-month-end-days": {
-  "hash": "c6e7aae730b1a002115e47654c630a3fcbf007f4",
+  "hash": "ec55e70b4a7c9070ebbeef0f84f605b09ff97d85",
   "columns": [
    "Date[Date]",
    "[Days]",
@@ -1076,7 +1058,7 @@
   ]
  },
  "time-datesbetween-startofyear-fiscal": {
-  "hash": "5df780f6e6a5988d93cb1ec231450cf5a0d0287a",
+  "hash": "a1c0b8278a8fcd502929e2d43f63d565851db307",
   "columns": [
    "Date[Fiscal Month]",
    "[Fiscal YTD]"
@@ -1109,7 +1091,7 @@
   ]
  },
  "time-datesinperiod-from-month-ends": {
-  "hash": "50307b0ed9d593a4b42694d947b11d1da4091040",
+  "hash": "59583a3589b25c2f7ec4d45e6c11c33697bed484",
   "columns": [
    "Date[Date]",
    "[Back 1M First]",
@@ -1484,7 +1466,7 @@
   ]
  },
  "time-delivered-same-month-as-ordered": {
-  "hash": "b02d51454f16000da780ca89420e73c0c9cee5bb",
+  "hash": "8d4c39d19c0995fbb6cd0976434624dfa4f917b7",
   "columns": [
    "Date[Year Month]",
    "[Ordered]",
@@ -1567,7 +1549,7 @@
   ]
  },
  "time-firstnonblank-filter-all-dates-sparse": {
-  "hash": "52f635372eadbf2709f3b91650a2aa947fb81f5f",
+  "hash": "88bc92a14d51ec98cffc08d05e11e0419465b6d6",
   "columns": [
    "Date[Year Month]",
    "[Sales]",
@@ -1650,7 +1632,7 @@
   ]
  },
  "time-fiscal-py-custom-quarter": {
-  "hash": "3fc1a3a6a8ccdeaaea3c45cb048e633262f75911",
+  "hash": "1fcbf41dc9f842fea50ff37eaf8a8dbcd43fd41a",
   "columns": [
    "Date[Fiscal Year]",
    "Date[Fiscal Quarter]",
@@ -1727,7 +1709,7 @@
   ]
  },
  "time-fiscal-ytd-by-month": {
-  "hash": "4f1f469140086caccf69d806cce0ae48c3cd7da5",
+  "hash": "e007e01a4b2db6c4c0359063bcdb820a2bc13f8d",
   "columns": [
    "Date[Fiscal Year]",
    "Date[Fiscal Month]",
@@ -1882,7 +1864,7 @@
   ]
  },
  "time-fiscal-ytd-manual-calendar-months": {
-  "hash": "a507984d615b141b65e2c4c0d59f1936c190f0b0",
+  "hash": "9af8839834953e0d13e16fa5d396bdaad127e60e",
   "columns": [
    "Date[Year Month]",
    "[Fiscal YTD Manual]"
@@ -1939,7 +1921,7 @@
   ]
  },
  "time-inventory-average-month-end": {
-  "hash": "1e48bd7f89d6c26e56b6d417b0f2b90d92173261",
+  "hash": "2b05b147a27fbe8ff7a239a4cba91e29f42f8d7e",
   "columns": [
    "Date[Year]",
    "Product[Category]",
@@ -2009,7 +1991,7 @@
   ]
  },
  "time-iso-week-previous-year": {
-  "hash": "6785bd507ac3f9b2886277c586c1e131312d9a85",
+  "hash": "fd800f4608f3d288cf557294c0b27b1d24dc44fe",
   "columns": [
    "Date[ISO Year]",
    "Date[ISO Week]",
@@ -2332,7 +2314,7 @@
   ]
  },
  "time-iso-week-ytd": {
-  "hash": "b4127586e73a6f86162c85f06dbdc462647713fd",
+  "hash": "b40ec6d844addf8e36e9490895cb71d08ca9f857",
   "columns": [
    "Date[ISO Week]",
    "[Sales]",
@@ -2602,7 +2584,7 @@
   ]
  },
  "time-iso-year-boundary-days": {
-  "hash": "708b1eabac1f6c35c8d8588aa90f9b12a6b0f1a3",
+  "hash": "ab26bcefec3aa7b4c4ab324f0a8f4e63cb7466f8",
   "columns": [
    "Date[Date]",
    "Date[Year]",
@@ -2655,7 +2637,7 @@
   ]
  },
  "time-last-day-with-sales": {
-  "hash": "bb49350a414360dcd3376dee46c25b8de382dea2",
+  "hash": "023a425b312de50a546561249d78e1c7bc0cd7a7",
   "columns": [
    "Date[Year Month]",
    "[Last Sales Day]",
@@ -2725,7 +2707,7 @@
   ]
  },
  "time-lastnonblank-per-product": {
-  "hash": "da489d9f7ab3b1cf98b48c8c14756bfba8e044a5",
+  "hash": "2b66b5ca734e1e14a2ccd03c10a6cf35e65ed7df",
   "columns": [
    "Date[Year]",
    "Product[Category]",
@@ -2808,7 +2790,7 @@
   ]
  },
  "time-marked-date-table-filter-override": {
-  "hash": "56f810389857888b3fe7e615a3cd9734efa33f1e",
+  "hash": "0edcf8b943da1ca77eaf0565d70502b250575147",
   "columns": [
    "Date[Year]",
    "[Sales]",
@@ -2837,7 +2819,7 @@
   ]
  },
  "time-matrix-year-quarter-crossed-totals": {
-  "hash": "cedda3d7fdd08bb5889c6aa9f33c37e9bf1a8b7e",
+  "hash": "0043a0d6dba811093c690e6fb0a003433c71f489",
   "columns": [
    "Date[Year]",
    "Date[Quarter]",
@@ -3022,7 +3004,7 @@
   ]
  },
  "time-moving-average-3m-datesinperiod": {
-  "hash": "a873411b8548b49136f39f5ec68fae03e29a2392",
+  "hash": "adad3ea9e9e9a2ce9f1b48176d1e87fd0a9a04c3",
   "columns": [
    "Date[Year Month]",
    "[Sales]",
@@ -3152,7 +3134,7 @@
   ]
  },
  "time-moving-average-window": {
-  "hash": "60ff59d35c4d11b9b15825ca295e79059d72e3ec",
+  "hash": "36b98cef5bbc5526e24b1d267dd8f3000dfbadfd",
   "columns": [
    "Date[Year Month]",
    "[Sales]",
@@ -3222,7 +3204,7 @@
   ]
  },
  "time-mtd-vs-prior-mtd": {
-  "hash": "f8022ec2779c52bdd26f1dbc8bbe7b7668ab3c8a",
+  "hash": "75b6615a8df07245889017c1fffbb604ba30a674",
   "columns": [
    "Date[Date]",
    "[MTD]",
@@ -3387,7 +3369,7 @@
   ]
  },
  "time-nextyear-fiscal-past-table": {
-  "hash": "8d371af99e65c76f715008a39ad88022aaa1b544",
+  "hash": "62d8982840e5bc899167b2a18b5cd1d57e4429ce",
   "columns": [
    "Date[Fiscal Year]",
    "[Sales]",
@@ -3422,7 +3404,7 @@
   ]
  },
  "time-offset-vs-dateadd-previous-month": {
-  "hash": "6c684d698795373798f183b6033db52b39e83d14",
+  "hash": "a084236db2d67c13695475dd31085eb2043198fe",
   "columns": [
    "Date[Year]",
    "Date[Month]",
@@ -3505,7 +3487,7 @@
   ]
  },
  "time-opening-balance-fiscal-year-category": {
-  "hash": "acdf1b58f5b78a2f3d8542519276318c7d200271",
+  "hash": "941fe81865d6c03f2ed55c1fda53b3ad60844ed6",
   "columns": [
    "Date[Fiscal Year]",
    "Category[Category]",
@@ -3612,7 +3594,7 @@
   ]
  },
  "time-opening-balance-quarter": {
-  "hash": "6255a8a3ea98b59803c93dac0d4c10a5eb4608e0",
+  "hash": "2f4d3d868cb003bc7bcc4aa13a633a581ac003ac",
   "columns": [
    "Date[Year]",
    "Date[Quarter]",
@@ -3695,7 +3677,7 @@
   ]
  },
  "time-orders-active-in-iso-week": {
-  "hash": "41eac7000662ec9e6d8e650dd6e891f6df2160b5",
+  "hash": "f921ea558771afbb45406e7365b1b381f54c5d20",
   "columns": [
    "Date[ISO Week]",
    "[Orders Placed]",
@@ -3770,7 +3752,7 @@
   ]
  },
  "time-orders-in-transit-month-end": {
-  "hash": "0c6e9e21e42843ccc8cefbb9b6da5476aba35650",
+  "hash": "9d1d2660a767baab3446c3ebba362deddce53b4d",
   "columns": [
    "Date[Year Month]",
    "[Orders]",
@@ -3840,7 +3822,7 @@
   ]
  },
  "time-parallelperiod-vs-dateadd-quarter": {
-  "hash": "c2b1504936cad92652efa258fd746bc757a87e55",
+  "hash": "3cb4aee4641060903ba4120c813f2aee84a85bde",
   "columns": [
    "Date[Year Month]",
    "[Parallel PQ]",
@@ -3910,7 +3892,7 @@
   ]
  },
  "time-parallelperiod-vs-sply-year": {
-  "hash": "200301c53b1afd66eb40b856bf9e258c9122a126",
+  "hash": "1a66fda44c04fa61be80d16dcfe5aca39ad0d0bb",
   "columns": [
    "Date[Year]",
    "Date[Quarter]",
@@ -3969,7 +3951,7 @@
   ]
  },
  "time-previousyear-fiscal": {
-  "hash": "ced0ef77cf60fe508c3e552102d60cf991131822",
+  "hash": "6d761cfc2e1f4c785d95b6a59a6674fbe12adee5",
   "columns": [
    "Date[Fiscal Year]",
    "[Sales]",
@@ -3999,11 +3981,11 @@
   ]
  },
  "time-rank-rownumber-on-added-columns-fiscal": {
-  "hash": "0c12ceef40c463b71e951a1efc4a6dac5b72a8cd",
+  "hash": "91d5335e19642c5873690deee3dd203be496e7de",
   "error": "Query (15, 117) Function PARTITIONBY cannot be used with columns added by DAX table functions."
  },
  "time-rankx-dense-ascending-blank-months": {
-  "hash": "558c0617d95609bbba7e3a59a4832a9fdfa502a1",
+  "hash": "dc79ba10c24d5fe870764892e1bc2cbadcad4a9a",
   "columns": [
    "Date[Year Month]",
    "[Sales]",
@@ -4230,11 +4212,11 @@
   ]
  },
  "time-rls-france-bidirectional-days-customers": {
-  "hash": "bb2aec72062b2c7127117bd59123f22ec2d9d8cb",
+  "hash": "322dd6d392b78aa781dc2a286b06b117d084ef76",
   "error": "Join paths are expected to form a tree, but the table '<oii>Customer</oii>' has two join paths to table '<oii>Customer</oii>': <oii>'Customer'</oii> and <oii>'Customer'->'Sales'->'Customer'</oii>."
  },
  "time-rolling-12m-custom-filter": {
-  "hash": "e307ea76c4c38546d49065a4c1f33028b06308ca",
+  "hash": "601612c38e3a2ac1d0eafff07122c3e92d5731c1",
   "columns": [
    "Date[Year Month]",
    "[Rolling 12M]"
@@ -4291,7 +4273,7 @@
   ]
  },
  "time-rolling-30-days": {
-  "hash": "8476d56fabfe52e61e4665b73c6cd7e58a28d906",
+  "hash": "ece7e24871157299200316043250afd46ffa0ac5",
   "columns": [
    "Date[Date]",
    "[Rolling 30D]"
@@ -4424,7 +4406,7 @@
   ]
  },
  "time-sply-leap-day": {
-  "hash": "e9ca4ec4ee6493c8762a720948772090e9ddd367",
+  "hash": "e7be7718c8cf43878dc4b7aaaf29eedb52babc14",
   "columns": [
    "Date[Date]",
    "[Days]",
@@ -4609,7 +4591,7 @@
   ]
  },
  "time-startofyear-endofyear-fiscal-boundary-days": {
-  "hash": "be80e5d5448d352b5f3dce25f3b5bfa27c909ee2",
+  "hash": "d3668ad17577dc6091a21fc69e05ef8e27759810",
   "columns": [
    "Date[Date]",
    "[Fiscal Year]",
@@ -4670,7 +4652,7 @@
   ]
  },
  "time-summarize-rollup-sply-issubtotal": {
-  "hash": "d814fe14be09c195f4fed0730b4bc84a5396f59e",
+  "hash": "c3aa69a4a3db55fb64a473889cd732993fdf8990",
   "columns": [
    "Date[Year]",
    "Date[Quarter]",
@@ -4803,7 +4785,7 @@
   ]
  },
  "time-userelationship-delivery-date": {
-  "hash": "49061524e484694692a98e647cb8e0f5404a6022",
+  "hash": "2dc39d2517acb11499cee145fcc70edac61b4e24",
   "columns": [
    "Date[Year]",
    "Date[Quarter]",
@@ -4880,11 +4862,11 @@
   ]
  },
  "time-window-running-total-blank-partition": {
-  "hash": "434537464ed8d0f0cf103da5ae4c325604b8216f",
+  "hash": "23a605ffe25e7b23dd70d6f0b9825a531828385d",
   "error": "Query (14, 97) Function PARTITIONBY cannot be used with columns added by DAX table functions."
  },
  "time-window-running-total-by-year": {
-  "hash": "46815819d7f32c99f77b3c73003314a2e389049a",
+  "hash": "89781fd0076e4f71749ed4899d2a077fb9e9ba2e",
   "columns": [
    "Date[Year]",
    "Date[Month]",
@@ -5087,7 +5069,7 @@
   ]
  },
  "time-yoy-mixed-grain-rollup": {
-  "hash": "a254898eae86403501cb50f0c64c089c1d995aa6",
+  "hash": "bfc6d7aeb31622e120a30e5f89303ca10f47fa9a",
   "columns": [
    "Date[Year]",
    "Date[Quarter]",

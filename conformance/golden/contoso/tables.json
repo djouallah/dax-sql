@@ -1,6 +1,6 @@
 {
  "tables-addcolumns-summarize-all-color": {
-  "hash": "5bef45982383fd4e261de01b353007fe5d501d81",
+  "hash": "4e8e47c766a0bcb245793d63e14432dc020d7abf",
   "columns": [
    "Product[Color]",
    "[s]",
@@ -25,16 +25,12 @@
   ]
  },
  "tables-addcolumns-summarize-related-city": {
-  "hash": "52225eb44cfa26866cddeecfb6cf893e0d044b9b",
+  "hash": "1aeada227cf2bd7192aaa9e3d3359c00139e5f9e",
   "columns": [
    "Customer[City]",
    "[s]"
   ],
   "rows": [
-   [
-    null,
-    20.0
-   ],
    [
     "Paris",
     4260.0
@@ -42,11 +38,15 @@
    [
     "London",
     1850.0
+   ],
+   [
+    "Rome",
+    20.0
    ]
   ]
  },
  "tables-addmissingitems": {
-  "hash": "b688501fbb15e1c869fd1d1e1d6b648cf3a4d931",
+  "hash": "33360cc098e580ac64d28574f63246f843908dcb",
   "columns": [
    "Product[Color]",
    "[s]"
@@ -67,7 +67,7 @@
   ]
  },
  "tables-calculated-table": {
-  "hash": "dfcd873c80ae96a9791ef44f2d6e3853304b652d",
+  "hash": "f9ae70197901e138451d21078dae7fdaf3ab96ef",
   "columns": [
    "Big Products[ProductKey]",
    "Big Products[Name]",
@@ -87,7 +87,7 @@
   ]
  },
  "tables-calculated-table-own-columns": {
-  "hash": "7a9be50b290fa754676a3e57ababd60b3062d11c",
+  "hash": "22f4da762dc8671b86bd94f04f3766b02ba85fa3",
   "columns": [
    "[n]",
    "[b]"
@@ -100,7 +100,7 @@
   ]
  },
  "tables-calendarauto": {
-  "hash": "3352d2cdeb6e990113afb4bd2ff35c55096dc26c",
+  "hash": "57a084b39d6b9efb181ba1fb24132bf8a76b9daa",
   "columns": [
    "[n]",
    "[first]",
@@ -115,7 +115,7 @@
   ]
  },
  "tables-datatable": {
-  "hash": "c0b5e7bbfbbc14d5d22a38f16047d16473ae0e08",
+  "hash": "facccb73adcad30bbf3e7ee1e0ae00d39f28deee",
   "columns": [
    "[a]",
    "[b]"
@@ -132,18 +132,18 @@
   ]
  },
  "tables-define-column-filtered": {
-  "hash": "7006a713d14274bee1adbc3d0f69174b3b6e1fa1",
+  "hash": "da001765f9aebd5d34b5d840ad2369a7f3e4696c",
   "columns": [
    "[Other]"
   ],
   "rows": [
    [
-    1850.0
+    1870.0
    ]
   ]
  },
  "tables-define-column-grouped": {
-  "hash": "4987ff9aa0109ee213b3e99264b26d6113f2d2c5",
+  "hash": "b413700d76b1bc1bfc5a9efd86450dd76f92efc5",
   "columns": [
    "Customer[Region]",
    "[Sales]",
@@ -157,18 +157,13 @@
    ],
    [
     "Other",
-    1850.0,
-    6130.0
-   ],
-   [
-    null,
-    20.0,
+    1870.0,
     6130.0
    ]
   ]
  },
  "tables-define-column-relatedtable": {
-  "hash": "f74254a80b1e19cab43ad4c27b80ed8e20ddf89a",
+  "hash": "b4c96e254d10561b537762f223f1ddc65f47fde8",
   "columns": [
    "[n]",
    "[max]"
@@ -181,7 +176,7 @@
   ]
  },
  "tables-except-colors": {
-  "hash": "76fd6275d602ede781de2735dff0bc1bc0969124",
+  "hash": "951113d1d718b0359d0b545f7ef72ffccefeef52",
   "columns": [
    "Product[Color]"
   ],
@@ -195,7 +190,7 @@
   ]
  },
  "tables-field-parameter-table": {
-  "hash": "aba4be6bc682bb8e33c094f99bf3743210b4baf9",
+  "hash": "ab8eab4887aba0ab430f534edf89a4c07e606047",
   "columns": [
    "Fields[Fields]",
    "Fields[Fields Fields]",
@@ -220,7 +215,7 @@
   ]
  },
  "tables-groupby-added-column": {
-  "hash": "e998590b65cb1638e58b78f1c45628f41eaf2974",
+  "hash": "3850c399b60b536a04654fb5703c63a6711ce301",
   "columns": [
    "[big]",
    "[n]"
@@ -237,7 +232,7 @@
   ]
  },
  "tables-groupby-currentgroup": {
-  "hash": "add503a03297de08ed6f098aff68571912194378",
+  "hash": "53528489986d6e01fcff18b1676b2f27e84f8747",
   "columns": [
    "Product[Color]",
    "[q]"
@@ -258,18 +253,21 @@
   ]
  },
  "tables-intersect-cities": {
-  "hash": "cfea7567e24161abf4fd4d9bde1c145bdb3118fb",
+  "hash": "3d065ef971584aaa963f685d79b94474632b012a",
   "columns": [
    "Customer[City]"
   ],
   "rows": [
    [
     "Paris"
+   ],
+   [
+    "Rome"
    ]
   ]
  },
  "tables-naturalinnerjoin-by-name": {
-  "hash": "f91295e927ac664384eaaa06b50f79cc5c32cd60",
+  "hash": "cf2d7dd7347c406846a261a8b9686e4e3b6b9455",
   "columns": [
    "[k]",
    "[Category]",
@@ -294,7 +292,7 @@
   ]
  },
  "tables-naturalinnerjoin-numbers": {
-  "hash": "d42e42b59265ea29f38cb31f353a9d520e310d05",
+  "hash": "00644b547b9c5c140b808cc0ec2545137b49bc4f",
   "columns": [
    "[k]",
    "[Name]"
@@ -323,7 +321,7 @@
   ]
  },
  "tables-naturalleftouterjoin-by-name": {
-  "hash": "6f40627571def0e1dbb97f8e9e73b0592afedbdf",
+  "hash": "cb66b43bb476bdd882eb1781bb58fd7366edbf77",
   "columns": [
    "[k]",
    "[Category]",
@@ -353,7 +351,7 @@
   ]
  },
  "tables-naturalleftouterjoin-if-maxx-inline": {
-  "hash": "a8583e07e12458eacfc98d607f8de6a755532409",
+  "hash": "191282b1855947e790b3db5d821260801650cacd",
   "columns": [
    "[Name]"
   ],
@@ -370,7 +368,7 @@
   ]
  },
  "tables-naturalleftouterjoin-if-maxx-with-blanks": {
-  "hash": "120ea517b7cdbf0cc01363b56dc54979eef00744",
+  "hash": "b89c71e21156eba541e9e9dd2d8511be4f3ceab3",
   "columns": [
    "[Name]"
   ],
@@ -387,7 +385,7 @@
   ]
  },
  "tables-naturalleftouterjoin-maxx-with-blanks": {
-  "hash": "2574a14e7f70fc4696946cdb55e0e673ab63cdda",
+  "hash": "9ba8239413b55175cc9014c5e0762c76027c54c2",
   "columns": [
    "[Name]"
   ],
@@ -404,15 +402,15 @@
   ]
  },
  "tables-naturalleftouterjoin-measure-if-maxx": {
-  "hash": "44e06916045c78fd50319f74f6c9c0474438c0d8",
+  "hash": "b835f6205c37d1ae2121eaaef4c5e20f830298fc",
   "error": "Query (3, 79) An incompatible join column, ('<oii></oii>'[<oii>Name</oii>]) was detected. 'NATURALLEFTOUTERJOIN' doesn't support joins by using columns with different data types or lineage."
  },
  "tables-naturalleftouterjoin-measure-maxx": {
-  "hash": "eae19aa5da176d3df987a483d227b7711065b3a6",
+  "hash": "96eafb6b24f22a7fc2bb0f89f7e3fdfcb88c9553",
   "error": "Query (3, 76) An incompatible join column, ('<oii></oii>'[<oii>Name</oii>]) was detected. 'NATURALLEFTOUTERJOIN' doesn't support joins by using columns with different data types or lineage."
  },
  "tables-order-by-measure-desc": {
-  "hash": "e11056e45b49ddbf6df6a71a07d84ea25c07fa83",
+  "hash": "ff376e51ae39abd89125ec17f960b9bee66f5779",
   "columns": [
    "Customer[Customer]",
    "[s]"
@@ -431,13 +429,13 @@
     1850.0
    ],
    [
-    null,
+    "Erin",
     20.0
    ]
   ]
  },
  "tables-start-at-asc-decimal-measure": {
-  "hash": "3607532ebb72edd903ed79a4531c863aba91dfd4",
+  "hash": "327a9b4016553b2e3b369fb943a5526abf3e3c66",
   "columns": [
    "Product[Color]",
    "[s]"
@@ -454,7 +452,7 @@
   ]
  },
  "tables-start-at-before-first": {
-  "hash": "ff29629eafafd0b41f0ec18d6a30f5969788769c",
+  "hash": "48932da0e28da661ea060566d1b5add770357c8f",
   "columns": [
    "Product[Color]",
    "[s]"
@@ -475,7 +473,7 @@
   ]
  },
  "tables-start-at-desc-decimal-literal": {
-  "hash": "f078b7979b08ba9605a4443aa7694cd1865b6341",
+  "hash": "6bc34984dccf16fc880e33670002544cb2b95cc5",
   "columns": [
    "Product[Color]",
    "[s]"
@@ -492,7 +490,7 @@
   ]
  },
  "tables-start-at-desc-double-measure": {
-  "hash": "9c1c179d250e179c7053d2d5229bca6e3002c8f9",
+  "hash": "246b1266d37b73e83f1502de815bf0e0056a1129",
   "columns": [
    "Product[Color]",
    "[s]"
@@ -509,7 +507,7 @@
   ]
  },
  "tables-start-at-desc-integer-measure": {
-  "hash": "76a3691d57c468859ed7fc20ebd120bbd66d581c",
+  "hash": "cfc806b8f3ef660209e28a6aac0f42ad8aad4b11",
   "columns": [
    "Product[Color]",
    "[q]"
@@ -526,7 +524,7 @@
   ]
  },
  "tables-start-at-desc-model-column": {
-  "hash": "80cd0513cc00bb3efaeebcd9e4f7b973cc30a85c",
+  "hash": "51b42f77a05ff9410c3fb6da1de61fc5ac142e0f",
   "columns": [
    "Product[Price]"
   ],
@@ -546,7 +544,7 @@
   ]
  },
  "tables-start-at-descending": {
-  "hash": "2c6784de9833e2034335a1c45500919285150f0b",
+  "hash": "d9ab401459096d8400697296973c424f3fb745e0",
   "columns": [
    "Product[Color]",
    "[s]"
@@ -559,7 +557,7 @@
   ]
  },
  "tables-start-at-text-descending": {
-  "hash": "383d815e24ee41451c56014d38a0c090744f89d0",
+  "hash": "b66c48ed308fbc1c562fbf314861faf3262dd31a",
   "columns": [
    "Product[Name]"
   ],
@@ -570,7 +568,7 @@
   ]
  },
  "tables-start-at-two-columns": {
-  "hash": "83d2d61e494998cfc5a3a2bb3412bb1fb8cd7656",
+  "hash": "83265101aa484fa17d46d5aae6a071a5d371fe76",
   "columns": [
    "Product[Color]",
    "Customer[City]",
@@ -584,13 +582,13 @@
    ],
    [
     "Blue",
-    null,
-    20.0
+    "Paris",
+    160.0
    ],
    [
     "Blue",
-    "Paris",
-    160.0
+    "Rome",
+    20.0
    ],
    [
     "Red",
@@ -605,7 +603,7 @@
   ]
  },
  "tables-substitutewithindex": {
-  "hash": "9b8186fd71c5eb43136353dd68176f62349c65a8",
+  "hash": "49ec21c6269d18a7a361f53febd7f95f23c69ae2",
   "columns": [
    "[s]",
    "[i]"
@@ -622,7 +620,7 @@
   ]
  },
  "tables-summarize-all-keeps-group-rows": {
-  "hash": "e47d1214c103ae1bfa3696c9a72892e914e3f52b",
+  "hash": "e3d575e10ca1d93349468925d55e864cb5633807",
   "columns": [
    "Product[Color]",
    "[s]",
@@ -647,7 +645,7 @@
   ]
  },
  "tables-summarize-expression-per-group": {
-  "hash": "831c44f5841317460561810cfcb4ee166f1fcfc7",
+  "hash": "488131b2f2095462dc336ebf3347dcd141c73964",
   "columns": [
    "Product[Color]",
    "[q]"
@@ -668,7 +666,7 @@
   ]
  },
  "tables-summarize-rollup-filter-replaces-year": {
-  "hash": "6098334b9b385e3d0a37974fb3b83c0303eda24e",
+  "hash": "61620bf8649ae66a95396e1665cddfd2d9c2df03",
   "columns": [
    "Date[Year]",
    "[y2024]"
@@ -689,7 +687,7 @@
   ]
  },
  "tables-summarize-rollup-issubtotal": {
-  "hash": "33f39cdb9069884045dc2baaeeeffddbb2a365af",
+  "hash": "1c7feb3ce9ee74fada591b84899aba25bc227ac5",
   "columns": [
    "Category[Category]",
    "Product[Name]",
@@ -750,7 +748,7 @@
   ]
  },
  "tables-topn-products-by-sales": {
-  "hash": "2c3c5b6829f4afc4e077d522987281269ab15f0c",
+  "hash": "4b109ebf200eda850f12d00a56c0ea780c1e4674",
   "columns": [
    "Product[Name]"
   ],
@@ -764,7 +762,7 @@
   ]
  },
  "tables-topn-ties-table-constructor": {
-  "hash": "6f7aa158733f29a2a81b648a2718af0375878be5",
+  "hash": "965fd584b0e62751eb2a4585c72fc90e6040e6be",
   "columns": [
    "[Value1]",
    "[Value2]"
@@ -781,7 +779,7 @@
   ]
  },
  "tables-topnskip-ascending": {
-  "hash": "a2176dd3f9e4b33c52c14292da5ddf22494f3862",
+  "hash": "8eeebfe5e7724ddec0a30bd149189d1b35d00e4e",
   "columns": [
    "[Name]",
    "[Price]"
@@ -798,7 +796,7 @@
   ]
  },
  "tables-topnskip-descending": {
-  "hash": "9dc2d911e41d079ca4e25a7d004313cf8bb4a0b9",
+  "hash": "ec4269f2b27818f5866f604e0a61154de23cdd5a",
   "columns": [
    "[Name]",
    "[Price]"
@@ -815,7 +813,7 @@
   ]
  },
  "tables-union-constants": {
-  "hash": "3872ade34c773b61416ea08e78ac1cc1e642151a",
+  "hash": "d9afada66b44c571f38e2809f0d116beb95d880b",
   "columns": [
    "[Value]"
   ],

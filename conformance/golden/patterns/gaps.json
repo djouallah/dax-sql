@@ -1,6 +1,6 @@
 {
  "gaps-addmissingitems": {
-  "hash": "18d8e1947aea1d41abacab691d57055a387c8c42",
+  "hash": "d17cf61fb024029139b54e0bd4508010ee24362f",
   "columns": [
    "Product[Color]",
    "[Sales]"
@@ -12,7 +12,7 @@
    ],
    [
     "Black",
-    956008.5099999998
+    956198.5099999998
    ],
    [
     "Red",
@@ -29,15 +29,11 @@
    [
     "White",
     null
-   ],
-   [
-    null,
-    null
    ]
   ]
  },
  "gaps-define-column": {
-  "hash": "d05c6061b91be6638d1372e0234a27eb655354e2",
+  "hash": "d5a224d5ca5b6ce3069f064cd117187010f3f951",
   "columns": [
    "Customer[Generation]",
    "[Customers]",
@@ -46,23 +42,18 @@
   "rows": [
    [
     "1980 or later",
-    46,
-    1149931.319999999
+    47,
+    1150120.319999999
    ],
    [
     "Before 1980",
     74,
     2213727.310000003
-   ],
-   [
-    null,
-    null,
-    189.0
    ]
   ]
  },
  "gaps-naturalinnerjoin": {
-  "hash": "5bbe5f2c4f74e9643276a78dcbae43c33393eb8a",
+  "hash": "3b194eafda4928c55205a9bf45cddf6d13c71782",
   "columns": [
    "[SubcategoryKey]",
    "[Product]",
@@ -293,11 +284,16 @@
     12,
     "Unsold Widget",
     "Chains"
+   ],
+   [
+    12,
+    "Clearance Lot",
+    "Chains"
    ]
   ]
  },
  "gaps-naturalleftouterjoin": {
-  "hash": "ae2ef107719e355606f10547e04c38ef3c32fcb3",
+  "hash": "77320efe9813a80e1c3dd11b22403a9337c85edd",
   "columns": [
    "[CategoryKey]",
    "[Category]",
@@ -327,7 +323,7 @@
   ]
  },
  "gaps-path": {
-  "hash": "a9591f9bda2d5c2477ef16da4f79f95a3310d1db",
+  "hash": "d4583d839167d7fe8061024904232f191ca6ce44",
   "columns": [
    "Employee[EmployeeKey]",
    "Employee[Employee]",
@@ -444,7 +440,7 @@
   ]
  },
  "gaps-pathcontains-team-sales": {
-  "hash": "2fb0aa6249f54c442615aae7746b8c8b075d4e48",
+  "hash": "ea0023f390f5a7201cee812d187e46b9c1d9aa7c",
   "columns": [
    "[Key]",
    "[Employee]",
@@ -529,7 +525,7 @@
   ]
  },
  "gaps-pathitem-levels": {
-  "hash": "501c7a651c48772b9a5fd2adb31e4d23dd0db0c5",
+  "hash": "01a0a9b5c964422837aef9dc64559574ea5ffeb4",
   "columns": [
    "[Employee]",
    "[Path]",
@@ -646,7 +642,7 @@
   ]
  },
  "gaps-pathitemreverse": {
-  "hash": "b97f5d3dbd9ded9556a9df5f89957235fe2969f4",
+  "hash": "1da99ca2877bbe499ac03ef3ead67e677cc2f13a",
   "columns": [
    "[Employee]",
    "[Manager]"
@@ -715,7 +711,7 @@
   ]
  },
  "gaps-pathlength": {
-  "hash": "7d8f0e211a5c84c99cd507eeb8a6a266b42c275c",
+  "hash": "e451073e8435907722842685bc4897132026f01f",
   "columns": [
    "[Employee]",
    "[Level]"
@@ -784,7 +780,7 @@
   ]
  },
  "gaps-percentile-exc": {
-  "hash": "2793f2cb0c7716d402f336e3565a8014d6adda11",
+  "hash": "0e2c66bd24befa6c073c7b1468815bf342ac5eea",
   "columns": [
    "Category[Category]",
    "[P50]",
@@ -798,7 +794,7 @@
    ],
    [
     "Components",
-    784.86,
+    779.04,
     3
    ],
    [
@@ -810,16 +806,11 @@
     "Clothing",
     251.415,
     4
-   ],
-   [
-    null,
-    95.0,
-    1.5
    ]
   ]
  },
  "gaps-substitute-instance": {
-  "hash": "15d3bcecd53e11a20b863c4720d9cc3800fa8cbf",
+  "hash": "a1603898ab209e5a339bd344937cdc4e4d00a43d",
   "columns": [
    "[Customer]",
    "[Second Zero]",
@@ -885,11 +876,16 @@
     "Customer 012",
     "Customer 012",
     "Customer #12"
+   ],
+   [
+    "Customer 000",
+    "Customer 0#0",
+    "Customer ###"
    ]
   ]
  },
  "gaps-summarize-rollup": {
-  "hash": "81a4c313fb8ddbc9c38df482ec9c78107bd8b9ad",
+  "hash": "768ddbb9ee42c5a5cdebeb1f2b397bd98b8c7409",
   "columns": [
    "Category[Category]",
    "Subcategory[Subcategory]",
@@ -898,13 +894,6 @@
    "[Grand Total]"
   ],
   "rows": [
-   [
-    null,
-    null,
-    190.0,
-    false,
-    false
-   ],
    [
     "Bikes",
     "Road Bikes",
@@ -985,15 +974,8 @@
    [
     "Components",
     "Chains",
-    267142.25,
+    267332.25,
     false,
-    false
-   ],
-   [
-    null,
-    null,
-    190.0,
-    true,
     false
    ],
    [
@@ -1020,7 +1002,7 @@
    [
     "Components",
     null,
-    991848.0799999993,
+    992038.0799999993,
     true,
     false
    ],
@@ -1034,7 +1016,7 @@
   ]
  },
  "gaps-text-case-insensitive": {
-  "hash": "b0789f1486bd634a82bc755e834cf8055e22854b",
+  "hash": "9d2eaa2d172fcdc9778e09bf616b5f904b22a3b9",
   "columns": [
    "Category[Category]",
    "[Sales]"
@@ -1051,7 +1033,7 @@
   ]
  },
  "gaps-text-case-treatas": {
-  "hash": "4efc03019327acc93e19daa53d76f1b8da246360",
+  "hash": "7c604cc9be4cd692fa90cab770ace752f8989d5b",
   "columns": [
    "Customer[Country]",
    "[Sales]"
@@ -1063,12 +1045,12 @@
    ],
    [
     "France",
-    680739.7600000006
+    680928.7600000006
    ]
   ]
  },
  "gaps-topnskip": {
-  "hash": "01c9fab9d01e4d467b1a0d175c54467d50acfec0",
+  "hash": "7c5c0e80099cc700d2757b5f19ec7968e0a0a0a3",
   "columns": [
    "[Product]",
    "[Unit Price]"

@@ -1,45 +1,41 @@
 {
  "blankrow-blank-row-as-filter": {
-  "hash": "48343636014d07ee1938ee14566ff04f7379af68",
+  "hash": "f12b2ff166d6eb682bb468e1288168c9425bd64c",
   "columns": [
    "[s]"
   ],
   "rows": [
    [
-    20.0
+    null
    ]
   ]
  },
  "blankrow-calculated-column-blank-on-blank-row": {
-  "hash": "e78968f63b9b3ba33884de26cd4e9ba43d861948",
+  "hash": "0c7a4bd0e2c27ea5cae30086b2beed2189a4bb8d",
   "columns": [
    "Customer[Flag]",
    "[s]"
   ],
   "rows": [
    [
-    null,
-    20.0
-   ],
-   [
     1,
-    6110.0
+    6130.0
    ]
   ]
  },
  "blankrow-concatenatex-values-cities": {
-  "hash": "609dc7e60145926633f1b21a6ba66850c6480b78",
+  "hash": "2f5c4fad5f909830e8282f176036dc92e962fb40",
   "columns": [
    "[c]"
   ],
   "rows": [
    [
-    ", Berlin, London, Paris"
+    "Berlin, London, Paris, Rome"
    ]
   ]
  },
  "blankrow-crossfilter-both-reaches-blank-row": {
-  "hash": "74404775a4b68e788edb06cd1a9f4f7e97b0b10c",
+  "hash": "571320ebf096ea6433e33a8a6013dccd24495536",
   "columns": [
    "Product[Name]",
    "[rows]",
@@ -57,10 +53,10 @@
    ],
    [
     "Cap",
-    2,
     3,
-    2,
-    ",Alice,Chloe"
+    3,
+    3,
+    "Alice,Chloe,Erin"
    ],
    [
     "Jersey",
@@ -79,7 +75,7 @@
   ]
  },
  "blankrow-fact-filter-reaches-blank-city": {
-  "hash": "fc49558ea7bae1c513716ef7be79171a9e3666f8",
+  "hash": "1638d515b04ac3c710e0f4aa99bc14d342272b9b",
   "columns": [
    "Customer[City]",
    "[s]"
@@ -94,13 +90,13 @@
     1850.0
    ],
    [
-    null,
+    "Rome",
     20.0
    ]
   ]
  },
  "blankrow-filtered-column-no-blank-row": {
-  "hash": "3ce5df32fe9c27838a680f9c9f6fe959d49be507",
+  "hash": "2ad9c31a54f369e30de84ae4fd7a2f28005ec706",
   "columns": [
    "[n]"
   ],
@@ -111,7 +107,7 @@
   ]
  },
  "blankrow-hasonevalue-selectedvalue": {
-  "hash": "150b1cb869ade76b4975959837a6269fbf0d9a9e",
+  "hash": "baf6ab5ea788d624cf7f4a07e9e108fb0669d05d",
   "columns": [
    "Customer[Customer]",
    "[h]",
@@ -139,14 +135,14 @@
     "Dan"
    ],
    [
-    null,
+    "Erin",
     true,
-    null
+    "Erin"
    ]
   ]
  },
  "blankrow-matched-keys-no-blank-row": {
-  "hash": "244871a99619f1c11e6e26e07b6f830199a58777",
+  "hash": "1d828e5eb5439534115ef94a6fabb22e5b7abab0",
   "columns": [
    "[n]"
   ],
@@ -157,7 +153,7 @@
   ]
  },
  "blankrow-treatas-blank-values-vs-distinct": {
-  "hash": "d72221c526ab8e593346d23efc3cbd29105c0274",
+  "hash": "951165d93132ab8d6091a0ed306e0e0fa06b0552",
   "columns": [
    "[t]",
    "[c]",
@@ -166,24 +162,20 @@
   ],
   "rows": [
    [
-    20.0,
+    null,
     true,
     6130.0,
-    6110.0
+    6130.0
    ]
   ]
  },
  "blankrow-unknown-customer-sales": {
-  "hash": "378ebe8c8bbca418125c7e8d32ec746d13c3c0af",
+  "hash": "24865cb570289d3afa78bf7f8aa0773d4c996689",
   "columns": [
    "Customer[Customer]",
    "[s]"
   ],
   "rows": [
-   [
-    null,
-    20.0
-   ],
    [
     "Alice",
     2000.0
@@ -195,11 +187,15 @@
    [
     "Chloe",
     2260.0
+   ],
+   [
+    "Erin",
+    20.0
    ]
   ]
  },
  "blankrow-values-all-distinct-counts": {
-  "hash": "7e7f8f3ad6eccf1ed4cf7eb2d066f4b0e544ea9d",
+  "hash": "f6d7e317ddcf74896537d404c4cdc9b10274bac4",
   "columns": [
    "[values]",
    "[distinct]",
@@ -210,15 +206,15 @@
   "rows": [
    [
     5,
-    4,
-    4,
     5,
-    4
+    5,
+    5,
+    5
    ]
   ]
  },
  "blankrow-values-customer-sales": {
-  "hash": "ba6051708bc0a38cd49e2c3e209160869c441d72",
+  "hash": "8f756da321d138fccfb6a9950dfc1eb1abdab584",
   "columns": [
    "Customer[Customer]",
    "[s]"
@@ -241,7 +237,7 @@
     null
    ],
    [
-    null,
+    "Erin",
     20.0
    ]
   ]

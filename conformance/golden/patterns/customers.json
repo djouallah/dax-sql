@@ -1,6 +1,6 @@
 {
  "customers-autoexist-remove-city": {
-  "hash": "5ae3a26b202ae0fd4cc7157ccd7241d3dc1d530c",
+  "hash": "9c4ae0e8e777e17980ed2d743beabf3fbbb7229a",
   "columns": [
    "Customer[Gender]",
    "[Customers]",
@@ -10,9 +10,9 @@
   "rows": [
    [
     "F",
-    12,
-    29,
-    29
+    13,
+    30,
+    30
    ],
    [
     "M",
@@ -23,18 +23,13 @@
   ]
  },
  "customers-avg-active-months": {
-  "hash": "0d258be7f591c404ae81ed581aa514aba3d5958e",
+  "hash": "5178760cca793b6fd123e32878003ac8f50f323d",
   "columns": [
    "Customer[Country]",
    "Date[Year]",
    "[Avg Active Months]"
   ],
   "rows": [
-   [
-    null,
-    2024,
-    2.0
-   ],
    [
     "Australia",
     2022,
@@ -63,7 +58,7 @@
    [
     "France",
     2024,
-    4.964285714285714
+    4.862068965517241
    ],
    [
     "Germany",
@@ -98,7 +93,7 @@
   ]
  },
  "customers-avg-days-between-orders-by-country": {
-  "hash": "be3e97b8ae3f854616f78fd68408e88ba45df7a1",
+  "hash": "6859e0350b3d3b7e2f4188960f20979e7fe1c4d4",
   "columns": [
    "Customer[Country]",
    "[Avg Days Between Orders]",
@@ -106,19 +101,14 @@
   ],
   "rows": [
    [
-    null,
-    113.0,
-    1
-   ],
-   [
     "Australia",
     77.41867887859267,
     29
    ],
    [
     "France",
-    66.96688212581071,
-    28
+    68.55423101802413,
+    29
    ],
    [
     "Germany",
@@ -133,7 +123,7 @@
   ]
  },
  "customers-avg-days-between-orders-total": {
-  "hash": "7256b8c15ff69f40e2e1ebc99e00aec361837e2b",
+  "hash": "89c10f59c4b94dab7e9b95a0583bb96f3f92536e",
   "columns": [
    "Customer[Gender]",
    "[Is Total]",
@@ -142,16 +132,10 @@
   ],
   "rows": [
    [
-    null,
-    false,
-    113.0,
-    1
-   ],
-   [
     "F",
     false,
-    53.14179325724781,
-    55
+    54.210689806225524,
+    56
    ],
    [
     "M",
@@ -168,7 +152,7 @@
   ]
  },
  "customers-basket-and-category-treatas": {
-  "hash": "f2e12bc36eb8e27bd2428a079847703cc10918a9",
+  "hash": "af39e489c6d76afab48b9c7d87ef4e4a9ab78314",
   "columns": [
    "Category[Category]",
    "[And Category]",
@@ -203,17 +187,12 @@
    [
     "Components",
     "Bikes",
-    384
+    385
    ],
    [
     "Bikes",
     "Components",
-    384
-   ],
-   [
-    null,
-    "Bikes",
-    1
+    385
    ],
    [
     "Clothing",
@@ -258,12 +237,12 @@
    [
     "Components",
     "Components",
-    695
+    697
    ]
   ]
  },
  "customers-basket-bike-attach": {
-  "hash": "c7d925244d112cb1b8f557cb185f03c655b3c314",
+  "hash": "9ae576fbcb4910252883df0afe94f2809c1ba5ef",
   "columns": [
    "Subcategory[Subcategory]",
    "[Orders]",
@@ -271,12 +250,6 @@
    "[Attach %]"
   ],
   "rows": [
-   [
-    null,
-    2,
-    1,
-    0.5
-   ],
    [
     "Bottles",
     232,
@@ -291,9 +264,9 @@
    ],
    [
     "Chains",
-    244,
-    138,
-    0.5655737704918032
+    246,
+    139,
+    0.5650406504065041
    ],
    [
     "Gloves",
@@ -352,7 +325,7 @@
   ]
  },
  "customers-basket-customers-both": {
-  "hash": "788c8898f7aa1abb4aeca1ea63019ce058a3b775",
+  "hash": "45c9aff6cced4e932cc7aee04f0663fda3dab65c",
   "columns": [
    "Date[Year]",
    "[Bikes And Helmets]",
@@ -377,7 +350,7 @@
   ]
  },
  "customers-basket-subcategory-pairs": {
-  "hash": "ec02fd8b52a834fb12fc5bc85d6e555e06f5a0de",
+  "hash": "3c84d7e2fb87aca1035d86a1bef19934d279232e",
   "columns": [
    "Subcategory[Subcategory]",
    "[Other]",
@@ -576,6 +549,11 @@
    ],
    [
     "Chains",
+    "Road Bikes",
+    50
+   ],
+   [
+    "Chains",
     "Gloves",
     50
    ],
@@ -706,18 +684,13 @@
    ],
    [
     "Chains",
-    "Road Bikes",
-    49
-   ],
-   [
-    "Chains",
     "Lights",
     45
    ]
   ]
  },
  "customers-basket-with-product": {
-  "hash": "74682a6f9bb3c844756d606ecc57f80ebbb658bf",
+  "hash": "e934bcaefb89023283393c9b2330010ac7f588c2",
   "columns": [
    "Product[Product]",
    "[Orders Together]"
@@ -898,7 +871,7 @@
   ]
  },
  "customers-blank-category-crossfilter-both": {
-  "hash": "c0655043c7507ab9c48784efbf5f2e4322810151",
+  "hash": "a93ccc4d6ce245d448b9ee459953d6beb353d590",
   "columns": [
    "Product[Category]",
    "[Customer Rows]",
@@ -907,13 +880,6 @@
    "[Countries]"
   ],
   "rows": [
-   [
-    null,
-    1,
-    2,
-    1,
-    ", France"
-   ],
    [
     "Accessories",
     120,
@@ -930,22 +896,22 @@
    ],
    [
     "Clothing",
-    120,
     121,
-    120,
-    ", Australia, France, Germany, United States"
+    121,
+    121,
+    "Australia, France, Germany, United States"
    ],
    [
     "Components",
-    120,
-    120,
-    120,
+    121,
+    121,
+    121,
     "Australia, France, Germany, United States"
    ]
   ]
  },
  "customers-calc-group-item-override": {
-  "hash": "09721bf51920e3f31d85431a57d63daa77f624a4",
+  "hash": "8564d6d9203207e83a7e2bbde2a6b4410b91b3e1",
   "columns": [
    "Time Intelligence[Time Intelligence]",
    "Time Intelligence[Ordinal]",
@@ -999,7 +965,7 @@
   ]
  },
  "customers-cohort-first-bike-year": {
-  "hash": "c4654fb8310a46d7ffef2aa9f26a60a6e51eadbd",
+  "hash": "36faa1415540e8efc1a864d1f56acd6cedc574f8",
   "columns": [
    "[@First Year]",
    "[Customers]"
@@ -1020,7 +986,7 @@
   ]
  },
  "customers-cohort-first-order-dates": {
-  "hash": "61da40d07876277350fcaf3d690682247fc6206a",
+  "hash": "e587c8e82494e61690b209857abc27a6d79863b7",
   "columns": [
    "Customer[First Order]",
    "[Cohort Customers]",
@@ -1030,7 +996,7 @@
   "rows": []
  },
  "customers-cohort-retention-pct": {
-  "hash": "caab67bc6d1ad6766e21ad7d0548ec34c62cf494",
+  "hash": "08b5b9655b94a6ba48fa6fa1fac6e56aca12606d",
   "columns": [
    "[Cohort Year]",
    "[Cohort Size]",
@@ -1070,14 +1036,14 @@
    ],
    [
     2024,
-    14,
+    15,
     2024,
     1.0
    ]
   ]
  },
  "customers-cohort-year-matrix": {
-  "hash": "da45fbdccfdee0b82299120452049ed9165c7726",
+  "hash": "8e23cc2604a3923ed86b39fd81c0ca673f9abc6b",
   "columns": [
    "[Cohort Year]",
    "Date[Year]",
@@ -1127,12 +1093,12 @@
    [
     2024,
     2024,
-    14
+    15
    ]
   ]
  },
  "customers-days-to-second-order": {
-  "hash": "5e130d26b675b8923c16224e22a682ce7ad702ce",
+  "hash": "efef2556ce4d781374589b7ea2eb36c304acd8b8",
   "columns": [
    "[@Cohort]",
    "[Customers]",
@@ -1154,14 +1120,14 @@
    ],
    [
     2024,
-    14,
-    14,
-    55.07142857142857
+    15,
+    15,
+    58.93333333333333
    ]
   ]
  },
  "customers-delivery-userelationship": {
-  "hash": "bab93239cb5e9f1f3d2c073c9733a36c10752792",
+  "hash": "c925e9056d0af17638456397523feecc5d1273bc",
   "columns": [
    "Date[Year]",
    "[By Order Date]",
@@ -1186,7 +1152,7 @@
   ]
  },
  "customers-distinct-bridge-account-type": {
-  "hash": "fcd4c80e704a5fb03c8b596d6532883cec577ac8",
+  "hash": "52570129d4a9efa6f8891b3c3648569d3a5943fe",
   "columns": [
    "Account[Account Type]",
    "[Is Total]",
@@ -1215,7 +1181,7 @@
   ]
  },
  "customers-distinct-geo-subtotals": {
-  "hash": "f66c40b21fb27cc1280efef3d06ddded793d1588",
+  "hash": "51785ca6dce40763334d60f82904a794928160c8",
   "columns": [
    "Customer[Country]",
    "Customer[City]",
@@ -1225,22 +1191,6 @@
    "[Products]"
   ],
   "rows": [
-   [
-    null,
-    null,
-    false,
-    false,
-    1,
-    2
-   ],
-   [
-    null,
-    null,
-    false,
-    true,
-    1,
-    2
-   ],
    [
     "Australia",
     "Melbourne",
@@ -1286,7 +1236,7 @@
     "Paris",
     false,
     false,
-    12,
+    13,
     45
    ],
    [
@@ -1294,7 +1244,7 @@
     null,
     false,
     true,
-    28,
+    29,
     45
    ],
    [
@@ -1364,7 +1314,7 @@
   ]
  },
  "customers-distinct-nonadditive": {
-  "hash": "f0c64c44297b8db22caec31742793fe6ad03ae06",
+  "hash": "65aa0381c9be92f6eb47c0caf3d24cecafa43c5a",
   "columns": [
    "Category[Category]",
    "[Customers]",
@@ -1372,12 +1322,6 @@
    "[Sum Over Products]"
   ],
   "rows": [
-   [
-    null,
-    2,
-    2,
-    2
-   ],
    [
     "Accessories",
     120,
@@ -1398,14 +1342,14 @@
    ],
    [
     "Components",
-    120,
-    327,
-    667
+    121,
+    328,
+    669
    ]
   ]
  },
  "customers-distinct-week-vs-days": {
-  "hash": "d9b2e186b469c92914841dba3d3fee5818ec49ef",
+  "hash": "bd8d25bd3b441757d7786c6a4232c63befdaf662",
   "columns": [
    "Date[ISO Week]",
    "[Is Total]",
@@ -1458,7 +1402,7 @@
   ]
  },
  "customers-expanded-vs-key": {
-  "hash": "6ab6b435caedb1bac9c5f939ec6ce6fabc2006e8",
+  "hash": "d3c34a7120bdafb6f2d31afa1063a822c5056d48",
   "columns": [
    "Date[Year]",
    "[Distinct Keys]",
@@ -1478,12 +1422,12 @@
    [
     2024,
     121,
-    120
+    121
    ]
   ]
  },
  "customers-first-last-order-filter-all-dates": {
-  "hash": "154a46784bd5895290219e06a274c8756f0bab4a",
+  "hash": "03925646115e5a4979b0ea27d1a720eda269ba95",
   "columns": [
    "Customer[Customer]",
    "[Orders 2023]",
@@ -1537,7 +1481,7 @@
   ]
  },
  "customers-first-purchase-dynamic": {
-  "hash": "236b1ab4bceafc2fa880caa04d774a755f85d196",
+  "hash": "0163c7d948e4efcdee06a84f16914f4c5363a32c",
   "columns": [
    "Customer[Customer]",
    "Customer[First Order]",
@@ -1620,7 +1564,7 @@
   ]
  },
  "customers-fiscal-opening-closing": {
-  "hash": "71c6e69a4f845edb2649e20f7131bddc3cb3416f",
+  "hash": "72a06a55c779c9a27a55b69e2badd47710d13aa8",
   "columns": [
    "Date[Fiscal Year]",
    "Date[Fiscal Quarter]",
@@ -1716,7 +1660,7 @@
   ]
  },
  "customers-fiscal-prev-next-year": {
-  "hash": "c2f40a0045f82f9461353f3e2b5284187fac1764",
+  "hash": "f97205408ef41aa5c385fd3630566b59bea7ff18",
   "columns": [
    "Date[Fiscal Year]",
    "[Customers]",
@@ -1761,7 +1705,7 @@
   ]
  },
  "customers-lost-by-month": {
-  "hash": "1c0b89e0721e29a2547b1ff380a8c4f109d20a80",
+  "hash": "e5b4888b03d5caa5682973f66ceba006c527fd04",
   "columns": [
    "Date[Year Month]",
    "[Lost]",
@@ -1831,7 +1775,7 @@
   ]
  },
  "customers-lost-window-local": {
-  "hash": "4505111f99a161f6630575eb8674dfb399cfcfd7",
+  "hash": "523ef93ddedc97390772759473312b68983cffbb",
   "columns": [
    "Date[Year Month]",
    "[Lost 30d]",
@@ -1901,7 +1845,7 @@
   ]
  },
  "customers-matrix-rows-columns-totals": {
-  "hash": "e26dc5e286fbb759b657f02d1e9aa3c517cf5239",
+  "hash": "932dedb5f2a21045bff8832649bf04d2570cf525",
   "columns": [
    "Customer[Country]",
    "Date[Year]",
@@ -1944,22 +1888,6 @@
     15
    ],
    [
-    null,
-    null,
-    false,
-    true,
-    1,
-    1
-   ],
-   [
-    null,
-    2024,
-    false,
-    false,
-    1,
-    1
-   ],
-   [
     "Australia",
     null,
     false,
@@ -1996,8 +1924,8 @@
     null,
     false,
     true,
-    28,
-    28
+    29,
+    29
    ],
    [
     "France",
@@ -2020,8 +1948,8 @@
     2024,
     false,
     false,
-    28,
-    3
+    29,
+    4
    ],
    [
     "Germany",
@@ -2090,7 +2018,7 @@
   ]
  },
  "customers-matrix-visual": {
-  "hash": "1f1c2c5fd058384c24419a4d5cbc7d0f8d8035ca",
+  "hash": "bf91230af8636113c04b25199afb29bb1c077e8d",
   "columns": [
    "Date[Quarter]",
    "Customer[Country]",
@@ -2271,7 +2199,7 @@
   ]
  },
  "customers-naturaljoin-blank-country": {
-  "hash": "d2e10c31290d8babad7df2cd7d7c60fa3354443e",
+  "hash": "5ea79c4acd09bb0557cb600f8df74b62b88eac5f",
   "columns": [
    "Customer[Country]",
    "[Buyers]",
@@ -2279,12 +2207,6 @@
    "[Orders]"
   ],
   "rows": [
-   [
-    null,
-    1,
-    null,
-    2
-   ],
    [
     "Australia",
     29,
@@ -2299,13 +2221,13 @@
    ],
    [
     "France",
-    28,
+    29,
     "F",
-    60
+    62
    ],
    [
     "France",
-    28,
+    29,
     "M",
     120
    ],
@@ -2336,7 +2258,7 @@
   ]
  },
  "customers-new-by-category": {
-  "hash": "131092f216b5ddd7ed2416f2032fb77314bbdbb8",
+  "hash": "c5a98a5346daa31921128a447f7ecf36d208e808",
   "columns": [
    "Date[Year]",
    "Category[Category]",
@@ -2370,12 +2292,6 @@
    ],
    [
     2023,
-    null,
-    1,
-    1
-   ],
-   [
-    2023,
     "Accessories",
     66,
     91
@@ -2400,12 +2316,6 @@
    ],
    [
     2024,
-    null,
-    1,
-    1
-   ],
-   [
-    2024,
     "Accessories",
     28,
     117
@@ -2425,13 +2335,13 @@
    [
     2024,
     "Components",
-    25,
-    117
+    26,
+    118
    ]
   ]
  },
  "customers-new-calc-group-ytd": {
-  "hash": "9a6e191a126754e6a8ab7cc850a8d48c57f90cd9",
+  "hash": "ed45e229c2d968fec8843676994b2f5509b7e1b5",
   "columns": [
    "Date[Month]",
    "Time Intelligence[Time Intelligence]",
@@ -2596,7 +2506,7 @@
   ]
  },
  "customers-new-returning-by-month": {
-  "hash": "7b13992979620e5eb0cb6b698b781d6adfc3dd79",
+  "hash": "e8c5f4b5ff926219a18ecf6cb2380060929f46ad",
   "columns": [
    "Date[Year Month]",
    "[Customers]",
@@ -2679,7 +2589,7 @@
   ]
  },
  "customers-new-sales-share": {
-  "hash": "4c0167d43d9967052c9ab62d6aed092a836a2308",
+  "hash": "9e3231c1ebe5484589eaf43afb46e45b14503641",
   "columns": [
    "Date[Year]",
    "Customer[Country]",
@@ -2746,13 +2656,6 @@
    ],
    [
     2024,
-    null,
-    189.0,
-    189.0,
-    1.0
-   ],
-   [
-    2024,
     "Australia",
     null,
     708335.8299999996,
@@ -2761,9 +2664,9 @@
    [
     2024,
     "France",
-    103158.47,
-    445586.26000000024,
-    0.2315117840482782
+    103347.47,
+    445775.26000000024,
+    0.23183760803594158
    ],
    [
     2024,
@@ -2782,7 +2685,7 @@
   ]
  },
  "customers-new-static-vs-dynamic": {
-  "hash": "507103332d0dc3d357ddaa30d6370839aa90c5c7",
+  "hash": "fc396ebecd3cae61b04f911aea24cc63347a4933",
   "columns": [
    "Date[Year]",
    "Category[Category]",
@@ -2790,12 +2693,6 @@
    "[New Dynamic]"
   ],
   "rows": [
-   [
-    2022,
-    null,
-    36,
-    null
-   ],
    [
     2022,
     "Accessories",
@@ -2819,12 +2716,6 @@
     "Components",
     36,
     26
-   ],
-   [
-    2023,
-    null,
-    70,
-    1
    ],
    [
     2023,
@@ -2852,38 +2743,32 @@
    ],
    [
     2024,
-    null,
-    14,
-    1
-   ],
-   [
-    2024,
     "Accessories",
-    14,
+    15,
     28
    ],
    [
     2024,
     "Bikes",
-    14,
+    15,
     27
    ],
    [
     2024,
     "Clothing",
-    14,
+    15,
     28
    ],
    [
     2024,
     "Components",
-    14,
-    25
+    15,
+    26
    ]
   ]
  },
  "customers-new-treatas-lineage": {
-  "hash": "a0205b0b65523f7e0ae3f48ff949bb87582889a6",
+  "hash": "0968c6397afaf409efd9231ee017c936e832d90f",
   "columns": [
    "Date[Year]",
    "Date[Quarter]",
@@ -2954,7 +2839,7 @@
   ]
  },
  "customers-offset-blank-category-partition": {
-  "hash": "1223c9cea19a83e988442477c10bc0464bf508d0",
+  "hash": "b3a9b1fc6d9136da6e7a932e15c549cd86f55832",
   "columns": [
    "Product[Category]",
    "Date[Year]",
@@ -2964,20 +2849,6 @@
   ],
   "rows": [
    [
-    null,
-    2023,
-    1,
-    null,
-    1
-   ],
-   [
-    null,
-    2024,
-    1,
-    1,
-    2
-   ],
-   [
     "Accessories",
     2022,
     26,
@@ -3057,14 +2928,14 @@
    [
     "Components",
     2024,
-    117,
+    118,
     90,
     3
    ]
   ]
  },
  "customers-percentile-exc-blanks": {
-  "hash": "f2e3a2196579670c9572fe9e486b5b198b591fd4",
+  "hash": "fc604ed43605db2b444d4991d18d5d75dfff32ef",
   "columns": [
    "Customer[Country]",
    "[Buyers]",
@@ -3087,8 +2958,8 @@
     7,
     null,
     null,
-    2013.8380000000034,
-    1968.0
+    1790.95,
+    1969
    ],
    [
     "Germany",
@@ -3109,7 +2980,7 @@
   ]
  },
  "customers-prev-order-classic": {
-  "hash": "60a6ea1e7d3ae01c7dd699f3fe2f56b060f564ce",
+  "hash": "2f7b76ea63dc1a1939f8713597fa15e355157c9f",
   "columns": [
    "Sales[CustomerKey]",
    "Sales[Order Date]",
@@ -3339,7 +3210,7 @@
   ]
  },
  "customers-prev-order-offset": {
-  "hash": "dc782473292487fbc4b630c4a919c5e14fb53cf4",
+  "hash": "13b927fe046a2f7bece02df525bf5e3e95dcb4c9",
   "columns": [
    "Sales[CustomerKey]",
    "Sales[Order Date]",
@@ -3614,7 +3485,7 @@
   ]
  },
  "customers-rank-added-column-ties": {
-  "hash": "f697d28196a9617238f6013d645d9caed78f1670",
+  "hash": "ec1bbd24ffb81e71fab6afa5295d00331c71b3ae",
   "columns": [
    "Customer[Country]",
    "Customer[Customer]",
@@ -3623,13 +3494,6 @@
    "[Skip]"
   ],
   "rows": [
-   [
-    null,
-    null,
-    2,
-    1,
-    1
-   ],
    [
     "Australia",
     "Customer 048",
@@ -4014,6 +3878,13 @@
     3,
     10,
     26
+   ],
+   [
+    "France",
+    "Customer 000",
+    2,
+    11,
+    27
    ],
    [
     "France",
@@ -4473,7 +4344,7 @@
   ]
  },
  "customers-rankx-dense-asc-blanks": {
-  "hash": "f1a622325a4f99a83bb0ad476cfceb42eb9cf9e2",
+  "hash": "c83366bbdd09559ca85e58218ac1414647eddd2c",
   "columns": [
    "Customer[Customer]",
    "[Orders 2022]",
@@ -4481,6 +4352,12 @@
    "[Rank Asc Skip]"
   ],
   "rows": [
+   [
+    "Customer 000",
+    null,
+    1,
+    1
+   ],
    [
     "Customer 009",
     null,
@@ -4611,48 +4488,48 @@
     "Customer 023",
     1,
     2,
-    22
+    23
    ],
    [
     "Customer 076",
     1,
     2,
-    22
+    23
    ],
    [
     "Customer 083",
     1,
     2,
-    22
+    23
    ],
    [
     "Customer 117",
     1,
     2,
-    22
+    23
    ],
    [
     "Customer 005",
     2,
     3,
-    26
+    27
    ],
    [
     "Customer 063",
     3,
     4,
-    27
+    28
    ],
    [
     "Customer 068",
     3,
     4,
-    27
+    28
    ]
   ]
  },
  "customers-recovered-by-quarter": {
-  "hash": "fa2676f42723d14d825573f80a0d2dac27ff8f51",
+  "hash": "bbd0c59dffb8393dbd35121edb3cfa5829e6899c",
   "columns": [
    "Date[Year]",
    "Date[Quarter]",
@@ -4723,7 +4600,7 @@
   ]
  },
  "customers-repeat-by-year": {
-  "hash": "49515c023cd6b98cbea049a527a639886c357f6d",
+  "hash": "80c7d52111ab9d9ecfaf7efc864542b851f957a3",
   "columns": [
    "Date[Year]",
    "[Customers]",
@@ -4752,7 +4629,7 @@
   ]
  },
  "customers-returning-by-quarter-country": {
-  "hash": "6f51b18c8fe159cb7ef4a2c9c40a879c94fecd0c",
+  "hash": "918b23b244d77073378fc4bb21f9027be81a70d3",
   "columns": [
    "Date[Quarter]",
    "Customer[Country]",
@@ -4859,7 +4736,7 @@
   ]
  },
  "customers-returning-calc-group-all": {
-  "hash": "f945e055134c5d6f216f49a9c0fe2444ab7732e1",
+  "hash": "f06ebef09754bc28b3f379d778810bf325bca282",
   "columns": [
    "Date[Year]",
    "Time Intelligence[Time Intelligence]",
@@ -4914,7 +4791,7 @@
   ]
  },
  "customers-rls-bikes-basket": {
-  "hash": "aeefef7f56b072b39eed27b135b7a408072ef100",
+  "hash": "61b96c34d35b2afc274d2a483003544521822eff",
   "columns": [
    "Customer[Country]",
    "[Orders]",
@@ -4949,7 +4826,7 @@
   ]
  },
  "customers-rls-bikes-crossfilter-both": {
-  "hash": "fdaaabb54600a394abf85206e7eefdbeb9ad3a7c",
+  "hash": "c8ae4103b204440c72c1b032e5ec9068e5a53358",
   "columns": [
    "Customer[Country]",
    "[Customer Rows]",
@@ -4965,8 +4842,8 @@
    ],
    [
     "France",
-    28,
-    28,
+    29,
+    29,
     28
    ],
    [
@@ -4984,7 +4861,7 @@
   ]
  },
  "customers-rls-france-new-lost": {
-  "hash": "8ba42979b76eda991a9c63245ec48909bf29ed50",
+  "hash": "8c3b6c949035a2127b9eeb0603677902551243de",
   "columns": [
    "Date[Year]",
    "[Customers]",
@@ -5009,15 +4886,15 @@
    ],
    [
     2024,
-    28,
-    3,
-    3,
+    29,
+    4,
+    4,
     6
    ]
   ]
  },
  "customers-rolling-from-month-end": {
-  "hash": "a03bcf4f2275b9f9b257c675327fd465cfaaaf31",
+  "hash": "41efc6ffff340fa36df7ec315da7a5563e0ec3c9",
   "columns": [
    "Date[Year Month]",
    "[Back 12M]",
@@ -5297,7 +5174,7 @@
   ]
  },
  "customers-text-case-insensitive": {
-  "hash": "e0edddb7a573e603debb932c51f16c34f9eedace",
+  "hash": "59bb7cb1bd30bafdb87fc9ae907e058c8c8bab8c",
   "columns": [
    "Customer[Country]",
    "[Customers]",
@@ -5309,9 +5186,9 @@
   "rows": [
    [
     "France",
-    28,
-    12,
-    9,
+    29,
+    13,
+    10,
     7,
     7
    ],
@@ -5326,7 +5203,7 @@
   ]
  },
  "customers-to-date-by-month": {
-  "hash": "48ed79253a72f4d9d59b5ea97faac3078a9935f6",
+  "hash": "3cb012c36230b7d02b59c55613ebb7071dc293c2",
   "columns": [
    "Date[Year Month]",
    "[Customers To Date]",
@@ -5409,7 +5286,7 @@
   ]
  },
  "customers-top-avg-gap": {
-  "hash": "4d03c0ea33550ddc8a6b8650525b55114df492d7",
+  "hash": "2c986569e350a849a01a1a3ad7cc4cf59bc3135b",
   "columns": [
    "Customer[CustomerKey]",
    "[Avg Gap]"

@@ -1,6 +1,6 @@
 {
  "rls-calculated-column-ignores-security": {
-  "hash": "c05ba3e2d83f5a28c04de2ad367c94f08b4ec73e",
+  "hash": "9125b76679b3e9f39f5847b0128887ca1c3a133e",
   "columns": [
    "[t]"
   ],
@@ -11,7 +11,7 @@
   ]
  },
  "rls-define-column-ignores-security": {
-  "hash": "f9da538f3753c195e88b7d5c2f42eb1f823d5e9b",
+  "hash": "f965626edc7c5fea861836645886ffb510255257",
   "columns": [
    "[max]"
   ],
@@ -22,7 +22,7 @@
   ]
  },
  "rls-paris-all-does-not-restore": {
-  "hash": "f2b21bfce3426d4e57ecdc85a150394cd563a307",
+  "hash": "d3b51b80f8c618af0ed5fa95f9d41bcb07f09f50",
   "columns": [
    "[s]",
    "[all]",
@@ -37,7 +37,7 @@
   ]
  },
  "rls-paris-countrows-customer": {
-  "hash": "c2c8fb856ff007ebc21a0ca03080f20d19d12188",
+  "hash": "13648233c3aad2f3841861c42f26be1c52677401",
   "columns": [
    "[n]"
   ],
@@ -48,7 +48,7 @@
   ]
  },
  "rls-paris-many-to-many-target": {
-  "hash": "a3f95bc46e2eeb5c3ab01c13331ba2ef00ef90c6",
+  "hash": "397c77dc2f1cb73743dbaf6c93f322b38e112a40",
   "columns": [
    "CityTarget[City]",
    "[t]"
@@ -61,7 +61,7 @@
   ]
  },
  "rls-paris-sales-by-customer": {
-  "hash": "4b08cd92e949bfbb3ed00b069dd5172c9724768e",
+  "hash": "db8fcfd49af1f5fd25998ba1a9c5976566a5704a",
   "columns": [
    "Customer[Customer]",
    "[s]"
@@ -78,18 +78,18 @@
   ]
  },
  "rls-redonly-crossfilter-both-customer": {
-  "hash": "8d3d1cc3751b642e5d5a93a9ecbcf9e7b936c5ea",
+  "hash": "55230596725fce68f8293bc22ec64d7453537dd2",
   "columns": [
    "[n]"
   ],
   "rows": [
    [
-    4
+    5
    ]
   ]
  },
  "rls-two-roles-union": {
-  "hash": "443488bf560137b10ea758416282049a60dc2473",
+  "hash": "a724b629509ac3ac235275c7b2700bda6386f36d",
   "columns": [
    "[s]"
   ],

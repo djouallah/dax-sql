@@ -1,6 +1,6 @@
 {
  "format-custom-number-patterns": {
-  "hash": "1f097437749459177828cfa78c82b88ef339c3d4",
+  "hash": "e31bff9eef7de143ac6a7c4830dd202e016f8251",
   "columns": [
    "[c0]",
    "[c1]",
@@ -75,7 +75,7 @@
   ]
  },
  "format-dates-and-times": {
-  "hash": "fd3f826a681621bcaf4b720226e957ad8f515473",
+  "hash": "422bb6ffdbd1b7b5140a9a38e4fc5f409059fb4f",
   "columns": [
    "[c0]",
    "[c1]",
@@ -126,7 +126,7 @@
   ]
  },
  "format-implicit-text-conversion": {
-  "hash": "e5f39a6a4da6c2a5fdf5e50b6fcb7a959ad3044e",
+  "hash": "6764a47871c8a4a51a6e458b889ebbb0f31e7f32",
   "columns": [
    "[a]",
    "[b]",
@@ -147,7 +147,7 @@
   ]
  },
  "format-measure-never-blank": {
-  "hash": "e92433ae100bbc55328026a52f92ba61d8bb2cdf",
+  "hash": "988812b833630f70e981dd0d82f62bc308fae53b",
   "columns": [
    "Customer[City]",
    "[s]"
@@ -166,13 +166,13 @@
     ""
    ],
    [
-    null,
+    "Rome",
     "20"
    ]
   ]
  },
  "format-named-number-formats": {
-  "hash": "5880f2567b063b91547343255689353ca6339991",
+  "hash": "e0e183e6d1a7a94865b2463aaa3ab1a5cc9cbdc4",
   "columns": [
    "[c0]",
    "[c1]",
@@ -209,7 +209,7 @@
   ]
  },
  "format-over-columns": {
-  "hash": "4af7ca59e5a83778b070c2a8facf0f064fc8d010",
+  "hash": "438801bf03f62fc8c9b5d519fb59c003b360f854",
   "columns": [
    "[Name]",
    "[p]",
@@ -229,7 +229,7 @@
   ]
  },
  "format-time-variant-combinevalues": {
-  "hash": "ed430be76c29bc6e507529ba6de332998d837f38",
+  "hash": "b9c756a6ed2edbc480126cec161ca561eabca79c",
   "columns": [
    "[a]",
    "[b]",

@@ -1,17 +1,17 @@
 {
  "relationships-crossfilter-both-count-customers": {
-  "hash": "74257252bfa353c287cbba87d23504f780904a20",
+  "hash": "6a9e920b4953406d418a3961d84de1506188b967",
   "columns": [
    "[n]"
   ],
   "rows": [
    [
-    4
+    5
    ]
   ]
  },
  "relationships-crossfilter-both-customers-by-color": {
-  "hash": "44abffb76477f2fd6aecc7d64cd9edcf0a8b51ef",
+  "hash": "cb80785123fd0d17297150bdd81589ca1fcaf40c",
   "columns": [
    "Product[Color]",
    "[c]",
@@ -21,47 +21,51 @@
    [
     "Black",
     2,
-    4
+    5
    ],
    [
     "Blue",
-    2,
-    4
+    3,
+    5
    ],
    [
     "Red",
     3,
-    4
+    5
    ]
   ]
  },
  "relationships-crossfilter-none-oneway-related": {
-  "hash": "c442cd4f84f01272849b51a394bf9ed6b88ea0cb",
+  "hash": "8975408ca8f24bff5e2b8470405580d56ba8f912",
   "error": "Query (5, 55) The column '<oii>Product</oii>[<oii>Price</oii>]' either doesn't exist or doesn't have a relationship to any table available in the current context."
  },
  "relationships-many-to-many-target-by-customer": {
-  "hash": "ed10e11a641db1018f289fdadd6feaaa3e6f12ec",
+  "hash": "caaaaabdb179688bb9a52ddbd1c49d1e9ce8cdb9",
   "columns": [
    "Customer[Customer]",
    "[t]"
   ],
   "rows": [
    [
-    "Alice",
+    "Chloe",
     5000
    ],
    [
-    "Chloe",
+    "Alice",
     5000
    ],
    [
     "Bob",
     2000
+   ],
+   [
+    "Erin",
+    1000
    ]
   ]
  },
  "relationships-many-to-many-target-not-from-product": {
-  "hash": "3b964ea1776649bfdbe15d1897035ab40ab04679",
+  "hash": "df4d9cabd4e0ea78b23b75488fc022f257252da6",
   "columns": [
    "[t]"
   ],
@@ -72,7 +76,7 @@
   ]
  },
  "relationships-many-to-many-target-paris": {
-  "hash": "17be074f85ce65898ae2d653bdb7d2a034b8d7fa",
+  "hash": "c182656d70d28d6773662b1ed0e8dd8391ab5c8c",
   "columns": [
    "[t]"
   ],
@@ -83,7 +87,7 @@
   ]
  },
  "relationships-return-rate-by-product": {
-  "hash": "75afe8f2df3515e0323f9c2e896a3509ff961aa5",
+  "hash": "a286127e530ef3491aab7e3b3fd225461b4dd14b",
   "columns": [
    "Product[Name]",
    "[rr]"
@@ -104,7 +108,7 @@
   ]
  },
  "relationships-to-calculated-table": {
-  "hash": "2f204eacd3d3856dd993bc31f29cc16b77de46f3",
+  "hash": "f1f86a25701f0f4603e33c6242ba990ae13f5e40",
   "columns": [
    "Big Products[Name]",
    "[s]"
@@ -125,7 +129,7 @@
   ]
  },
  "relationships-two-facts-by-year": {
-  "hash": "4875f9c4570292e99bf77f2d3bf28d263c856ee0",
+  "hash": "49ab9b4f970d305f5b477c7cba7fff7b1c7ce315",
   "columns": [
    "Date[Year]",
    "[q]",
@@ -145,7 +149,7 @@
   ]
  },
  "relationships-userelationship-ship-date": {
-  "hash": "dffc7726e68ccad0b6b91139a26f7ab125a9000e",
+  "hash": "2175c9bd92f38c23a81d2a440e17b6f7689dbee2",
   "columns": [
    "Date[Year]",
    "[order]",

@@ -1,6 +1,6 @@
 {
  "context-all-undoes-transition": {
-  "hash": "7bc8bf5adeb0ac2482df8d6add00e049fc8a81ea",
+  "hash": "c76ade7a52b19bc827347152a65067a6f87a5435",
   "columns": [
    "[x]"
   ],
@@ -11,7 +11,7 @@
   ]
  },
  "context-earlier-cheaper-products": {
-  "hash": "afdada08c53ad50425cde3ac2ef3fe1d0d920a9b",
+  "hash": "485a5378faabefe591a7543b2bf1f40ab3252a5f",
   "columns": [
    "Product[Price]",
    "[cheaper]"
@@ -40,7 +40,7 @@
   ]
  },
  "context-filter-products-with-sales": {
-  "hash": "2a4be31afe5cdc72d500360523e069a15a7f03ec",
+  "hash": "a7e9dd055dfdfa6612572dd26a15c1feff4603c1",
   "columns": [
    "Category[Category]",
    "[n]"
@@ -57,7 +57,7 @@
   ]
  },
  "context-generate-topn-ties": {
-  "hash": "a10bf635e554556e2024b3a9962f873d2a7f9f9c",
+  "hash": "6725c9487980abd0cef1a2ca953c8ed24037acde",
   "columns": [
    "Product[Color]",
    "Customer[Customer]"
@@ -82,7 +82,7 @@
   ]
  },
  "context-related-sumx-vs-calculated-column": {
-  "hash": "ac6da6de8b2c984d104042e743b0688b73298426",
+  "hash": "5cf9fa8526162c7b1ec92899db8607368ae044d2",
   "columns": [
    "[a]",
    "[b]"
@@ -95,7 +95,7 @@
   ]
  },
  "context-time-intelligence-in-date-row": {
-  "hash": "5e2771eb97b2cd5735bab7000fc78d69e0a667b5",
+  "hash": "b656bf202295bc19e797d40279af1aea61641903",
   "columns": [
    "[s]"
   ],
@@ -106,7 +106,7 @@
   ]
  },
  "context-transition-every-column": {
-  "hash": "23bd3909a2d74ee674710d067904671c6fb5bed3",
+  "hash": "513061675d116f5f94a4e982e0e2b51d2efd0301",
   "columns": [
    "[Customer]",
    "[city]",
@@ -132,11 +132,16 @@
     "Dan",
     null,
     null
+   ],
+   [
+    "Erin",
+    20.0,
+    20.0
    ]
   ]
  },
  "context-transition-maxx-customers": {
-  "hash": "5b4c37f51a1bb91a852c1d1f93733088ef1cc6e2",
+  "hash": "aeb1ef3046aea7fb92d453379a3af86356bb3800",
   "columns": [
    "[best]"
   ],

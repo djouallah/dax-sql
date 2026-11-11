@@ -1,6 +1,6 @@
 {
  "window-index-first": {
-  "hash": "826c46c4a9d1c0a4cbc1e39221c4813cc2f9c5fe",
+  "hash": "2ce97e52da575af96034f012be45831d0e1b9e6b",
   "columns": [
    "Product[Name]",
    "Product[Price]"
@@ -13,7 +13,7 @@
   ]
  },
  "window-index-last": {
-  "hash": "308b63af28bf83c5e5e7aa1c300e3accd58bc1de",
+  "hash": "6d2daed8b9218c34679909f8446830128b8139c5",
   "columns": [
    "Product[Name]",
    "Product[Price]"
@@ -26,7 +26,7 @@
   ]
  },
  "window-index-partitionby-category": {
-  "hash": "50d104c4b188b9100a1782cdd54dbbc85e85dcb6",
+  "hash": "0cb4a563964a30c4cb94f573e47f41dc4c76f6fd",
   "columns": [
    "Product[Name]",
    "Product[CategoryKey]",
@@ -51,7 +51,7 @@
   ]
  },
  "window-index-partitionby-every-partition": {
-  "hash": "e13d2981169b276964be8452a8444d49f49934ae",
+  "hash": "6cef2d5ecceadaba43e5b9cb4c07e0bf23270b70",
   "columns": [
    "Customer[Customer]",
    "Product[Name]",
@@ -74,14 +74,14 @@
     2000.0
    ],
    [
-    null,
+    "Erin",
     "Cap",
     20.0
    ]
   ]
  },
  "window-moving-sum-of-three": {
-  "hash": "a0c92ee7ed39c7cc5697c5d9a53eeb887fe8ddb1",
+  "hash": "f59441d4bf4ff914aecd6e78946f318a94509f47",
   "columns": [
    "Product[Price]",
    "[n]"
@@ -110,7 +110,7 @@
   ]
  },
  "window-offset-no-current-row": {
-  "hash": "57b9e5e0298f4cd5e3c70d1984f155d4a0c61bd3",
+  "hash": "ae42253fa3ab7184bab8dff1b2afef5bbc9a4156",
   "columns": [
    "[prev]"
   ],
@@ -121,11 +121,11 @@
   ]
  },
  "window-offset-partitionby-related-column": {
-  "hash": "07121a3fb06b55901e0d85dedc6c564f950dbbcd",
+  "hash": "93188c37ffb6ae594d87f3e4abcaddac70b69ad3",
   "error": "Query (3, 171) PartitionBy column '<oii>Category</oii>' could not be found in OFFSET's Relation parameter."
  },
  "window-offset-previous-month": {
-  "hash": "de6be9e3e79d34f6a630c5a203acf7f588724751",
+  "hash": "6cf87c516b0cbab062df66ce6d9399714f2ce2ee",
   "columns": [
    "Date[Year]",
    "Date[Month]",
@@ -214,7 +214,7 @@
   ]
  },
  "window-rank-blanks-last": {
-  "hash": "749dd6adce48e6af1ef2dc6e7b5060c36219d553",
+  "hash": "1cc01dbc08a7fdf7a88acc003a1c378c57f6fbad",
   "columns": [
    "Product[Name]",
    "[r]"
@@ -243,7 +243,7 @@
   ]
  },
  "window-rank-by-orderby-columns-only": {
-  "hash": "9b6fccca47c3a99938f46bf5d8936ebb528236cc",
+  "hash": "65b2d39c17edcd57a7dc9c5f63f8a07bc5a02f49",
   "columns": [
    "Product[Color]",
    "[r]"
@@ -256,7 +256,7 @@
   ]
  },
  "window-rank-no-relation-blank-row": {
-  "hash": "5bf638794f633f1fbfa4f16ae85fd8dca51411dc",
+  "hash": "4455188aa3def706e14b8800a036b45d7fffd359",
   "columns": [
    "Customer[Customer]",
    "[r]"
@@ -264,28 +264,28 @@
   "rows": [
    [
     "Alice",
-    2
+    1
    ],
    [
     "Bob",
-    3
+    2
    ],
    [
     "Chloe",
-    4
+    3
    ],
    [
     "Dan",
-    5
+    4
    ],
    [
-    null,
-    1
+    "Erin",
+    5
    ]
   ]
  },
  "window-rank-orderby-added-partitionby-model-column": {
-  "hash": "843b00904663fd5701bc6e5ab0c727b5bd5bc81a",
+  "hash": "1ef0e42b76d72baaa799a6d4b5262b42a2a7cba3",
   "columns": [
    "Product[Name]",
    "[Band]",
@@ -326,7 +326,7 @@
   ]
  },
  "window-rank-rownumber": {
-  "hash": "1c2b9fa79243440cf4f75b4ec9967e8479b9ef15",
+  "hash": "58b71e0cd51699d05972e69c44c956c599ed8c4e",
   "columns": [
    "Product[Name]",
    "[rank]",
@@ -361,7 +361,7 @@
   ]
  },
  "window-rank-table-variable-added-column": {
-  "hash": "4f98d30fd4be1087e2cc4b1b458cbedc58c7ff4e",
+  "hash": "8e1125b39b18c143ea858cb7026ebdcad1787af2",
   "columns": [
    "Product[Name]",
    "[@s]",
@@ -396,7 +396,7 @@
   ]
  },
  "window-rankx-asc-blank-first": {
-  "hash": "3011e12f54cf69719416048d4423f9fbaa8fa53e",
+  "hash": "75704b449b7e0058dbf702e386e645cff5a75bbc",
   "columns": [
    "Product[Name]",
    "[skip]",
@@ -431,7 +431,7 @@
   ]
  },
  "window-rankx-blank-and-zero-tie": {
-  "hash": "810968be3bd935f4172950ac63de5c24eaddc515",
+  "hash": "5576cbb4ef94a772dd06b0c981a1088687227929",
   "columns": [
    "Product[Name]",
    "[skip]",
@@ -466,7 +466,7 @@
   ]
  },
  "window-rankx-blank-ranked-last": {
-  "hash": "0f3a3608d9fe888d961ff964ddb83889fd7a2eb9",
+  "hash": "fac375620a7148df0e6a97ccf866ba7c6b4056b6",
   "columns": [
    "Product[Name]",
    "[rank]"
@@ -495,7 +495,7 @@
   ]
  },
  "window-running-total-by-name": {
-  "hash": "8f40dcdc71ad12bb324799970d1243c290076d6c",
+  "hash": "b53dc46e0cb8ba937383e9c1e7b5e3a44b10b8ff",
   "columns": [
    "Product[Name]",
    "[running]"
@@ -524,7 +524,7 @@
   ]
  },
  "window-whole-partition-once": {
-  "hash": "7c07bcffac8c3d7f79f5f973c179e73e7db917b5",
+  "hash": "eee102cb3350db864c3b68ed85defa314b8028ad",
   "columns": [
    "[n]"
   ],

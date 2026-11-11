@@ -1,6 +1,6 @@
 {
  "context-addcolumns-summarize-fact": {
-  "hash": "fa8cb02dd42c7597d9f0183f9e9e67dc3871d2f3",
+  "hash": "601e37a2f25abe56348a8f9ba91b68d74df94fb2",
   "columns": [
    "Date[Year]",
    "Customer[Country]",
@@ -58,12 +58,6 @@
    ],
    [
     2024,
-    null,
-    189.0,
-    1
-   ],
-   [
-    2024,
     "Australia",
     708335.8299999996,
     29
@@ -71,8 +65,8 @@
    [
     2024,
     "France",
-    445586.26000000024,
-    28
+    445775.26000000024,
+    29
    ],
    [
     2024,
@@ -89,7 +83,7 @@
   ]
  },
  "context-all-dimension-expanded": {
-  "hash": "464669d2699d2175222575408a8009e84198515a",
+  "hash": "0c6c327adff9c48687c937eacf7090eb08cd9428",
   "columns": [
    "Category[Category]",
    "[Red Lines]",
@@ -115,16 +109,11 @@
     "Components",
     65,
     702
-   ],
-   [
-    null,
-    null,
-    702
    ]
   ]
  },
  "context-all-one-side-vs-many-side": {
-  "hash": "fb4a75e2e774f05c68c1ac0cf25cf6274017ad27",
+  "hash": "12002176b651dd48b206a5b3816e87adf72b9913",
   "columns": [
    "Category[Category]",
    "Subcategory[Subcategory]",
@@ -133,13 +122,6 @@
    "[All Subcategory]"
   ],
   "rows": [
-   [
-    null,
-    null,
-    190.0,
-    190.0,
-    3363847.6299999966
-   ],
    [
     "Accessories",
     "Bottles",
@@ -213,8 +195,8 @@
    [
     "Components",
     "Chains",
-    267142.25,
-    267142.25,
+    267332.25,
+    267332.25,
     3363847.6299999966
    ],
    [
@@ -227,7 +209,7 @@
   ]
  },
  "context-all-under-rls": {
-  "hash": "265fe03ff1861d2030e8aaf3cfbdbf1242aef129",
+  "hash": "758c4965c6618f2c5056eeb2503c5fc084643512",
   "columns": [
    "Customer[Country]",
    "[Sales]",
@@ -238,15 +220,15 @@
   "rows": [
    [
     "France",
-    680739.7600000006,
-    680739.7600000006,
-    680739.7600000006,
-    28
+    680928.7600000006,
+    680928.7600000006,
+    680928.7600000006,
+    29
    ]
   ]
  },
  "context-allexcept-expanded": {
-  "hash": "e857b63a4a3609c3ff0c5655a97f829fa95f5781",
+  "hash": "b64ef6f22460ac3322034218aa9cd0290f3c7f24",
   "columns": [
    "Date[Year]",
    "Category[Category]",
@@ -254,12 +236,6 @@
    "[Year Total]"
   ],
   "rows": [
-   [
-    2022,
-    null,
-    null,
-    218245.30000000005
-   ],
    [
     2022,
     "Accessories",
@@ -286,12 +262,6 @@
    ],
    [
     2023,
-    null,
-    91.0,
-    972681.8599999999
-   ],
-   [
-    2023,
     "Accessories",
     61649.45000000004,
     972681.8599999999
@@ -311,14 +281,8 @@
    [
     2023,
     "Components",
-    294563.5499999999,
+    294654.5499999999,
     972681.8599999999
-   ],
-   [
-    2024,
-    null,
-    99.0,
-    2172920.469999998
    ],
    [
     2024,
@@ -341,13 +305,13 @@
    [
     2024,
     "Components",
-    634571.7499999995,
+    634670.7499999995,
     2172920.469999998
    ]
   ]
  },
  "context-allnoblankrow-blank-row": {
-  "hash": "0c3d19ca45ce8a2bc26e10b15bf83c85e4447872",
+  "hash": "0a20e44a7b5df31f02acd92e6c1443c72ddeddf8",
   "columns": [
    "[All Product]",
    "[All No Blank Product]",
@@ -359,16 +323,16 @@
   "rows": [
    [
     46,
-    45,
-    121,
-    120,
     46,
-    45
+    121,
+    121,
+    46,
+    46
    ]
   ]
  },
  "context-allselected-grouped-color-brand-filter": {
-  "hash": "04d449cddc1c5558d9ac6de172e2bc5bc6a312ad",
+  "hash": "509cfcd6e534b330e93492e5e6f019e440d8928c",
   "columns": [
    "Product[Color]",
    "[Sales]",
@@ -429,7 +393,7 @@
   ]
  },
  "context-allselected-in-iterator": {
-  "hash": "5ed538f48c10dcdb30e6daf05902042bf5f5287d",
+  "hash": "e5ffe71b93cd4f133fc8b6062de7d266177603ad",
   "columns": [
    "Product[Color]",
    "[Is Total]",
@@ -440,8 +404,8 @@
    [
     "Black",
     false,
-    956008.5099999998,
-    956008.5099999998
+    956198.5099999998,
+    956198.5099999998
    ],
    [
     "Blue",
@@ -458,13 +422,13 @@
    [
     null,
     true,
-    2071973.6099999978,
-    6215920.829999984
+    2072163.6099999978,
+    6216490.829999984
    ]
   ]
  },
  "context-allselected-shadow-from-all": {
-  "hash": "bf999da8e440f7977e66cbe9a9630fe4161202df",
+  "hash": "ec1c9aa1bcfb4a12cc0893bbf38058d24a312fef",
   "columns": [
    "Customer[Country]",
    "[Sales]",
@@ -488,18 +452,13 @@
    ],
    [
     "France",
-    680739.7600000006,
-    3363847.63
-   ],
-   [
-    null,
-    189.0,
+    680928.7600000006,
     3363847.63
    ]
   ]
  },
  "context-allselected-shadow-from-values": {
-  "hash": "a09c1ffa6e91fbf5d0b0ad4f86908885d28b4615",
+  "hash": "d148ac6c65c0d3044a9f3c2d03510997c325cd13",
   "columns": [
    "Customer[Country]",
    "[Sales]",
@@ -509,22 +468,22 @@
    [
     "Germany",
     809458.8099999989,
-    2660687.480000001
+    2660876.480000001
    ],
    [
     "Australia",
     1170488.9100000013,
-    2660687.480000001
+    2660876.480000001
    ],
    [
     "France",
-    680739.7600000006,
-    2660687.480000001
+    680928.7600000006,
+    2660876.480000001
    ]
   ]
  },
  "context-allselected-share": {
-  "hash": "170bca4aa517f5e3aa9a4e2fa29a86fd42e6a235",
+  "hash": "fd3c21ff50e30e10ac416de28b64c5ec8499e81a",
   "columns": [
    "Category[Category]",
    "[Sales]",
@@ -549,7 +508,7 @@
   ]
  },
  "context-auto-exist-fiscal-year-month": {
-  "hash": "d9b59ff29646dc05b6922757feefbac2897eaa8a",
+  "hash": "7957a1f0eb4eaf7e28cfcfded491740ca46634b9",
   "columns": [
    "Category[Category]",
    "[Sales]",
@@ -557,12 +516,6 @@
    "[Fiscal Years Left]"
   ],
   "rows": [
-   [
-    null,
-    null,
-    null,
-    "2024"
-   ],
    [
     "Accessories",
     7951.460000000001,
@@ -590,7 +543,7 @@
   ]
  },
  "context-auto-exist-grouped-color-band-brand": {
-  "hash": "eff2a299aa9f04b039fe9deccae1d82e150fd986",
+  "hash": "52164bc1b2e3c22ee07b3856a4f7a9649187a703",
   "columns": [
    "Product[Color]",
    "[Sales]",
@@ -649,7 +602,7 @@
   ]
  },
  "context-auto-exist-removefilters": {
-  "hash": "4096654cf0abc61f8952cdb7c2c877e745c9f7b0",
+  "hash": "5cc913b890964fb8b600173abe2ee794dc147979",
   "columns": [
    "Product[Brand]",
    "[Sales]",
@@ -664,7 +617,7 @@
   ]
  },
  "context-big-customers-filter-measure": {
-  "hash": "7db1b32b867c258cb5f698617813d2d20c1d3c96",
+  "hash": "f4fbdbc3625daa3af45fbcd9a10c9c397033391c",
   "columns": [
    "Date[Year]",
    "[Sales]",
@@ -693,7 +646,7 @@
   ]
  },
  "context-calc-group-in-iterator": {
-  "hash": "f21ea3abfbc74e631184a9a41e271da1f0c1ad67",
+  "hash": "0cb28600ad27a67f391b49df86128642baff7b98",
   "columns": [
    "Date[Year]",
    "[Sales]",
@@ -713,7 +666,7 @@
   ]
  },
  "context-calc-group-name-filter-vs-ordinal-group": {
-  "hash": "bf4536c1e0ada97cb0e6e55c11a026367a878f87",
+  "hash": "71d7b884feb82934204de8730164b2e20a663dc2",
   "columns": [
    "Time Intelligence[Time Intelligence]",
    "Time Intelligence[Ordinal]",
@@ -774,7 +727,7 @@
   ]
  },
  "context-calc-group-ordinal-filter-name-calculate": {
-  "hash": "c8db5a1c17e33b0590bb27d2315845f5d9dc1944",
+  "hash": "4dce63317f3e5e4e7ac319140e2b0e10bcf468f3",
   "columns": [
    "Category[Category]",
    "[Sales]",
@@ -784,14 +737,6 @@
    "[Items Named YTD]"
   ],
   "rows": [
-   [
-    null,
-    99.0,
-    91.0,
-    99.0,
-    99.0,
-    null
-   ],
    [
     "Accessories",
     118461.11999999995,
@@ -818,16 +763,16 @@
    ],
    [
     "Components",
-    634571.7499999995,
-    294563.5499999999,
-    634571.7499999995,
-    634571.7499999995,
+    634670.7499999995,
+    294654.5499999999,
+    634670.7499999995,
+    634670.7499999995,
     null
    ]
   ]
  },
  "context-calculated-column-filter-intersects": {
-  "hash": "611a06151a03aca44da1c78630a66f786e2f1ac2",
+  "hash": "f16b01777734dedf77cdf340ee256a1a7788fff4",
   "columns": [
    "Category[Category]",
    "[Sales]",
@@ -835,12 +780,6 @@
    "[Bikes By Category Column]"
   ],
   "rows": [
-   [
-    null,
-    190.0,
-    null,
-    1913841.8799999978
-   ],
    [
     "Bikes",
     1913841.8799999978,
@@ -861,14 +800,14 @@
    ],
    [
     "Components",
-    991848.0799999993,
+    992038.0799999993,
     null,
     1913841.8799999978
    ]
   ]
  },
  "context-calculatetable-column-filter-no-crossfilter": {
-  "hash": "caf34af4710be8338ce0c38c2dbb330df9606a31",
+  "hash": "0d4f90e5d3f46d6ab624789a130ec248eb274275",
   "columns": [
    "Product[Color]"
   ],
@@ -890,14 +829,11 @@
    ],
    [
     "White"
-   ],
-   [
-    null
    ]
   ]
  },
  "context-calculatetable-table-filter-expanded": {
-  "hash": "e3505970ea5cfd37932165e41928dabbfabea823",
+  "hash": "4b8c3be4c86db366ba5c0c942a92e768968c4579",
   "columns": [
    "Product[Color]"
   ],
@@ -923,7 +859,7 @@
   ]
  },
  "context-case-insensitive-filter-arguments": {
-  "hash": "8f939a5e91398c9fb41c11ed6298c5043853b46d",
+  "hash": "7ef150f55f5c13de57b6634908f67cba49412367",
   "columns": [
    "Category[Category]",
    "[Sales]",
@@ -955,18 +891,13 @@
   ]
  },
  "context-concatenatex-ordered": {
-  "hash": "81b7a4ba622b0b9eaa7028a3e5e4c4cb87d1ac26",
+  "hash": "94310703d69c841c76c65e9664513c5ef04f5686",
   "columns": [
    "Category[Category]",
    "[Sales]",
    "[Colors Sold]"
   ],
   "rows": [
-   [
-    null,
-    99.0,
-    ""
-   ],
    [
     "Bikes",
     1250389.6499999985,
@@ -984,13 +915,13 @@
    ],
    [
     "Components",
-    634571.7499999995,
+    634670.7499999995,
     "Black, Blue, Red, White, Yellow"
    ]
   ]
  },
  "context-crossfilter-both-blank-category-customers": {
-  "hash": "ed1fc2a6f911e2beab8b91cabcb98c9770af8957",
+  "hash": "ad1f3ea8b753351d128e9894ad4304f92f8ce6f3",
   "columns": [
    "Category[Category]",
    "[Lines]",
@@ -1000,14 +931,6 @@
    "[Countries Both]"
   ],
   "rows": [
-   [
-    null,
-    2,
-    2,
-    1,
-    2,
-    ", France"
-   ],
    [
     "Accessories",
     934,
@@ -1028,22 +951,22 @@
     "Clothing",
     922,
     121,
-    120,
     121,
-    ", Australia, France, Germany, United States"
+    121,
+    "Australia, France, Germany, United States"
    ],
    [
     "Components",
-    925,
-    120,
-    120,
-    120,
+    927,
+    121,
+    121,
+    121,
     "Australia, France, Germany, United States"
    ]
   ]
  },
  "context-crossfilter-both-blank-rows-by-date": {
-  "hash": "ad19806be9ab0a48c6a44a87acb7585e3873474b",
+  "hash": "61d1d310ce0ec3a6a3eab5f870fd838b0d7fef48",
   "columns": [
    "Date[Date]",
    "[Lines]",
@@ -1060,10 +983,10 @@
    [
     "2023-05-17",
     2,
-    1,
-    1,
     2,
-    ", Litware",
+    2,
+    2,
+    "Litware",
     1,
     1,
     1,
@@ -1072,14 +995,14 @@
    [
     "2024-08-09",
     12,
-    9,
-    9,
     10,
-    ", Contoso, Fabrikam, Litware, Northwind",
-    3,
-    3,
+    10,
+    10,
+    "Contoso, Fabrikam, Litware, Northwind",
     4,
-    ", France, United States"
+    4,
+    4,
+    "France, United States"
    ],
    [
     "2024-11-30",
@@ -1088,15 +1011,15 @@
     16,
     16,
     "Contoso, Fabrikam, Litware, Northwind",
-    7,
-    7,
     8,
-    ", France, Germany, United States"
+    8,
+    8,
+    "France, Germany, United States"
    ]
   ]
  },
  "context-earlier-rank": {
-  "hash": "5b38c6b809aa36c6cea7110c475f437186f26455",
+  "hash": "a552bfe364253cc442a174da6eca4f5b0659c84e",
   "columns": [
    "Subcategory[Subcategory]",
    "[Sales]",
@@ -1160,18 +1083,13 @@
    ],
    [
     "Chains",
-    267142.25,
+    267332.25,
     6
-   ],
-   [
-    null,
-    190.0,
-    13
    ]
   ]
  },
  "context-fact-table-filter-vs-column-predicate": {
-  "hash": "bbed9571d94f9dcd8dce5354b7921c219defb2ab",
+  "hash": "37d4bcc53c3f561659a3a31c93cc209703bf84e0",
   "columns": [
    "Category[Category]",
    "[Column Predicate]",
@@ -1202,17 +1120,11 @@
     null,
     null,
     1232167.9200000002
-   ],
-   [
-    null,
-    null,
-    null,
-    1232167.9200000002
    ]
   ]
  },
  "context-filters-vs-values": {
-  "hash": "2d364bead6567b761786974dbbf2d7a914f43e0f",
+  "hash": "850c4d713251c5defda43f8b4ea76f0b0eb2f42e",
   "columns": [
    "Category[Category]",
    "[Sales]",
@@ -1243,17 +1155,11 @@
     366289.3500000001,
     3,
     3
-   ],
-   [
-    null,
-    null,
-    3,
-    null
    ]
   ]
  },
  "context-firstnonblank-all-dates-in-year-cell": {
-  "hash": "cb0fefd8377abca112537792fc53ba47c204990a",
+  "hash": "745d025dae83b4a77353d7b570304823f1643571",
   "columns": [
    "Category[Category]",
    "Date[Year]",
@@ -1262,27 +1168,6 @@
    "[Last Sale Up To Leap Day]"
   ],
   "rows": [
-   [
-    null,
-    2022,
-    null,
-    "2024-08-09",
-    "2023-05-17"
-   ],
-   [
-    null,
-    2023,
-    91.0,
-    "2024-08-09",
-    "2023-05-17"
-   ],
-   [
-    null,
-    2024,
-    99.0,
-    "2024-08-09",
-    "2023-05-17"
-   ],
    [
     "Accessories",
     2022,
@@ -1356,32 +1241,27 @@
    [
     "Components",
     2023,
-    294563.5499999999,
+    294654.5499999999,
     "2024-02-29",
     "2024-02-29"
    ],
    [
     "Components",
     2024,
-    634571.7499999995,
+    634670.7499999995,
     "2024-02-29",
     "2024-02-29"
    ]
   ]
  },
  "context-generate-topn-per-category": {
-  "hash": "a41f43dd4b387d8c6f91ede8ddb9076f8d8d84cd",
+  "hash": "0baae363d64f9a685c557f883856f67ef32e8abe",
   "columns": [
    "Category[Category]",
    "Product[Product]",
    "[Sales]"
   ],
   "rows": [
-   [
-    null,
-    null,
-    190.0
-   ],
    [
     "Accessories",
     "Bottle C",
@@ -1425,7 +1305,7 @@
   ]
  },
  "context-hasonevalue-selectedvalue-rollup": {
-  "hash": "bc096900db8b23b2497c15083f87ba860deb8111",
+  "hash": "1d46af264c50c4f87d57d07aa0fe9123780f8a75",
   "columns": [
    "Date[Year]",
    "[Is Total]",
@@ -1470,7 +1350,7 @@
   ]
  },
  "context-isfiltered-iscrossfiltered": {
-  "hash": "826b5922fa16f51358d28becddc1caaeb990881f",
+  "hash": "454c9bb8dcd2d4c35c9044a5955ba61b9edeb7c9",
   "columns": [
    "Category[Category]",
    "[Sales]",
@@ -1516,20 +1396,11 @@
     true,
     true,
     true
-   ],
-   [
-    null,
-    null,
-    true,
-    true,
-    true,
-    true,
-    true
    ]
   ]
  },
  "context-keepfilters-vs-overwrite": {
-  "hash": "f5f6bed5b95106f33abe6500f3ddc32dca14e32f",
+  "hash": "8a919b60cf7ed3a4ddfd1cccafae4a8a6a26b3e7",
   "columns": [
    "Product[Color]",
    "[Sales]",
@@ -1537,12 +1408,6 @@
    "[Keep]"
   ],
   "rows": [
-   [
-    null,
-    190.0,
-    1115965.099999998,
-    null
-   ],
    [
     "Blue",
     399046.1799999999,
@@ -1557,7 +1422,7 @@
    ],
    [
     "Black",
-    956008.5099999998,
+    956198.5099999998,
     1115965.099999998,
     null
    ],
@@ -1582,7 +1447,7 @@
   ]
  },
  "context-lookupvalue-ignores-filters": {
-  "hash": "2662d89b65f8f17f8b54eb0ee6321cfaf76b93a1",
+  "hash": "9bf91d9c61b95f97bbdddcb9b334b7f9a347773f",
   "columns": [
    "Category[Category]",
    "[Sales]",
@@ -1593,15 +1458,6 @@
    "[Product 1 Price Filtered]"
   ],
   "rows": [
-   [
-    null,
-    99.0,
-    799.69,
-    "Bikes",
-    1.1121,
-    96,
-    null
-   ],
    [
     "Accessories",
     118461.11999999995,
@@ -1631,7 +1487,7 @@
    ],
    [
     "Components",
-    634571.7499999995,
+    634670.7499999995,
     799.69,
     "Bikes",
     1.1121,
@@ -1641,7 +1497,7 @@
   ]
  },
  "context-matrix-crossed-totals-shares": {
-  "hash": "c6fa759e94513fc539b1b46bcf53fc7dcee67bc8",
+  "hash": "d4e92aba154586f8e9e38e27b51b9877c131bb9c",
   "columns": [
    "Category[Category]",
    "Date[Year]",
@@ -1835,11 +1691,11 @@
   ]
  },
  "context-naturalinnerjoin-date-vs-text": {
-  "hash": "e51cfb41bd526ec3d730ca021a7c78b1e0402c7b",
+  "hash": "2d30f77aa4827fb9db3a8447d1b526914d6ed0f0",
   "error": "Query (17, 30) An incompatible join column, ('<oii></oii>'[<oii>Day</oii>]) was detected. 'NATURALINNERJOIN' doesn't support joins by using columns with different data types or lineage."
  },
  "context-nested-calculate-precedence": {
-  "hash": "8934aa8226f067caa386b77fccbe05876d6f63ae",
+  "hash": "0e2feb5c5615ee42259c6b80eb88f551cf3044ba",
   "columns": [
    "[Inner Wins]",
    "[Inner Kept]",
@@ -1856,18 +1712,13 @@
   ]
  },
  "context-nested-iterator-transition": {
-  "hash": "6043b2bb40d5e68752c8f1d0284bc2231f694061",
+  "hash": "918f824127603aabf6b3fda7d3003baa58e79cbd",
   "columns": [
    "Category[Category]",
    "[Sales]",
    "[Sum Of Largest Orders]"
   ],
   "rows": [
-   [
-    null,
-    190.0,
-    190.0
-   ],
    [
     "Bikes",
     1913841.8799999978,
@@ -1885,13 +1736,13 @@
    ],
    [
     "Components",
-    991848.0799999993,
-    350416.8100000001
+    992038.0799999993,
+    350515.8100000001
    ]
   ]
  },
  "context-or-predicate-two-columns": {
-  "hash": "cd70d3ee8d20a9d44ab5ea2b2fd01b08eba84d0c",
+  "hash": "5ab16b5c4c41509231984a08e730036f58d1c7e9",
   "columns": [
    "Product[Color]",
    "[Sales]",
@@ -1899,12 +1750,6 @@
    "[Red Or Contoso Kept]"
   ],
   "rows": [
-   [
-    null,
-    190.0,
-    1567246.1099999975,
-    null
-   ],
    [
     "Blue",
     399046.1799999999,
@@ -1919,7 +1764,7 @@
    ],
    [
     "Black",
-    956008.5099999998,
+    956198.5099999998,
     1567246.1099999975,
     287401.47
    ],
@@ -1944,11 +1789,11 @@
   ]
  },
  "context-partitionby-summarizecolumns-band": {
-  "hash": "ff7e1a39381416a1978d595b846ed55ba91778e8",
+  "hash": "814947b0a4e6056e23bac5a57985785760d09ccf",
   "error": "Query (12, 138) Function PARTITIONBY cannot be used with columns added by DAX table functions."
  },
  "context-path-subtree-sales-transition": {
-  "hash": "d7628d01e956a3a7b1a77121caa588b17c770421",
+  "hash": "9cba298d642f4ef7723f6e099d007995875c8b2f",
   "columns": [
    "Employee[EmployeeKey]",
    "Employee[Employee]",
@@ -2145,7 +1990,7 @@
   ]
  },
  "context-percent-of-parent": {
-  "hash": "9e8c4a7c1cc63932562eccfba51814ac5933454f",
+  "hash": "a08707ddb26427c38c907f1343017ab7408c0a9b",
   "columns": [
    "Category[Category]",
    "Subcategory[Subcategory]",
@@ -2240,11 +2085,11 @@
   ]
  },
  "context-percentile-inc-exc-blank-parent-key": {
-  "hash": "6087a22211e77ff1ccd9733b1f01361f0eaec85f",
+  "hash": "2f1325c8b54df1c977f9af26275a363ebb972fae",
   "error": "Query (10, 19) The percentile value should be in the range 1/(N+1)..N/(N+1) inclusive, where N is the number of data values."
  },
  "context-percentilex-exc-customer-median": {
-  "hash": "60ad54d50dec293f10d69b4d985281f4634b83ba",
+  "hash": "fe33ff22b8e0f3afad05a39d8a488f96eeb1ce28",
   "columns": [
    "Subcategory[Subcategory]",
    "[Customers]",
@@ -2252,12 +2097,6 @@
    "[Median Inc]"
   ],
   "rows": [
-   [
-    null,
-    1,
-    null,
-    null
-   ],
    [
     "Bottles",
     48,
@@ -2333,11 +2172,11 @@
   ]
  },
  "context-percentilex-exc-k-out-of-range-small-groups": {
-  "hash": "e00440e65d41a1699289ac2e25a4328c31012263",
+  "hash": "57dc1c3efe1aa53fffd913a3c34ae33fd1387388",
   "error": "Query (9, 16) The percentile value should be in the range 1/(N+1)..N/(N+1) inclusive, where N is the number of data values."
  },
  "context-percentilex-inc-unsold-products-first": {
-  "hash": "15a80607e8b9fb66c6d5d75f7fc34802061b789e",
+  "hash": "21f60def4a7e702adccc1c050c2461e75e0ae884",
   "columns": [
    "Category[Category]",
    "[Products]",
@@ -2348,15 +2187,6 @@
    "[Min Sales]"
   ],
   "rows": [
-   [
-    null,
-    null,
-    1,
-    99.0,
-    99.0,
-    99.0,
-    99.0
-   ],
    [
     "Accessories",
     11,
@@ -2386,17 +2216,17 @@
    ],
    [
     "Components",
+    13,
     12,
-    11,
     null,
-    9035.292,
-    42504.735,
-    7678.579999999998
+    1614.916000000001,
+    38289.53,
+    99.0
    ]
   ]
  },
  "context-rankx-allselected-brand": {
-  "hash": "89a7d74ffcb83c409418f9bd60dc6e0032125828",
+  "hash": "a3f4a24e1032f21b279f9a45fa5c0bfc9e74d836",
   "columns": [
    "Category[Category]",
    "Product[Brand]",
@@ -2404,12 +2234,6 @@
    "[Rank]"
   ],
   "rows": [
-   [
-    null,
-    null,
-    99.0,
-    1
-   ],
    [
     "Accessories",
     "Contoso",
@@ -2491,7 +2315,7 @@
    [
     "Components",
     "Litware",
-    62009.98999999999,
+    62108.98999999999,
     3
    ],
    [
@@ -2503,7 +2327,7 @@
   ]
  },
  "context-rankx-blank-ties-zero": {
-  "hash": "4e6400bfd7ed1ae9586337f486b49425f468cb76",
+  "hash": "804fdab81241aad2cc65381c89ec8dc0a0ecf430",
   "columns": [
    "[Value1]",
    "[Value2]",
@@ -2572,7 +2396,7 @@
   ]
  },
  "context-rankx-dense-asc-blank-subcategories": {
-  "hash": "5ebd41a3842f2c25edef3750594b2d8e815cc916",
+  "hash": "e5981e2112b9975db7cc7956df95b01a3a364c5f",
   "columns": [
    "Subcategory[Subcategory]",
    "[Sales]",
@@ -2581,40 +2405,34 @@
   ],
   "rows": [
    [
-    null,
-    null,
-    1,
-    1
-   ],
-   [
     "Bottles",
     998.36,
     6,
-    7
+    6
    ],
    [
     "Brakes",
     4398.53,
     11,
-    12
+    11
    ],
    [
     "Chains",
     360.86,
     3,
-    4
+    3
    ],
    [
     "Gloves",
     297.01,
     2,
-    3
+    2
    ],
    [
     "Helmets",
     693.0799999999999,
     4,
-    5
+    4
    ],
    [
     "Jerseys",
@@ -2626,42 +2444,42 @@
     "Lights",
     877.21,
     5,
-    6
+    5
    ],
    [
     "Mountain Bikes",
     4118.26,
     10,
-    11
+    10
    ],
    [
     "Road Bikes",
     4103.7300000000005,
     9,
-    10
+    9
    ],
    [
     "Shorts",
     1089.4299999999998,
     7,
-    8
+    7
    ],
    [
     "Touring Bikes",
     5791.34,
     12,
-    13
+    12
    ],
    [
     "Wheels",
     1980.48,
     8,
-    9
+    8
    ]
   ]
  },
  "context-relatedtable-row-context": {
-  "hash": "ddd9a5d052d8db6bb81ee24ef333e6c52a9f7a5f",
+  "hash": "e8183654b10baf0d06683ef80f69abe0e9673dad",
   "columns": [
    "Customer[Country]",
    "[Buying Customers]",
@@ -2691,7 +2509,7 @@
   ]
  },
  "context-removefilters-vs-allselected": {
-  "hash": "3fd8260e51babd31753dbb0d8045b22bf5a6aff1",
+  "hash": "be0f1459f27038ab15f3c8c7fcae39caec2af5d3",
   "columns": [
    "Category[Category]",
    "[Sales]",
@@ -2700,13 +2518,6 @@
    "[Remove Category]"
   ],
   "rows": [
-   [
-    null,
-    99.0,
-    3363847.6299999966,
-    2172920.469999998,
-    2172920.469999998
-   ],
    [
     "Bikes",
     1250389.6499999985,
@@ -2730,7 +2541,7 @@
    ],
    [
     "Components",
-    634571.7499999995,
+    634670.7499999995,
     3363847.6299999966,
     2172920.469999998,
     2172920.469999998
@@ -2738,7 +2549,7 @@
   ]
  },
  "context-rls-bikes-crossfilter-both-customers": {
-  "hash": "92f67cdc9fede0736e6efdb0f7e7e40878417ac1",
+  "hash": "dd55d8dc57c8a8f5d75373ae8942810911efca19",
   "columns": [
    "Customer[Country]",
    "[Customer Rows]",
@@ -2756,9 +2567,9 @@
    ],
    [
     "France",
-    28,
-    28,
-    28,
+    29,
+    29,
+    29,
     234
    ],
    [
@@ -2778,11 +2589,11 @@
   ]
  },
  "context-rls-bikes-crossfilter-category-doubles-back": {
-  "hash": "72f864690159b68ceb574b2aea0b59acd8b21b47",
+  "hash": "4aa45b9e7a5f52b40723298e7c0dfb735bf34aca",
   "error": "Join paths are expected to form a tree, but the table '<oii>Category</oii>' has two join paths to table '<oii>Category</oii>': <oii>'Category'</oii> and <oii>'Category'->'Subcategory'->'Category'</oii>."
  },
  "context-rls-bikes-unmatched-fact-rows": {
-  "hash": "698f98cafc055e17c91216f2533b53d526b620aa",
+  "hash": "0eeba3a38b1ef85757e0112863fdca573c1e047c",
   "columns": [
    "[Category Values]",
    "[Product Rows]",
@@ -2803,7 +2614,7 @@
   ]
  },
  "context-rls-france-crossfilter-both-blank-product": {
-  "hash": "185e261094388293b16957c4d931b40beaf89690",
+  "hash": "af576a80a32a92581236b9618bbebcc99de8cf0c",
   "columns": [
    "Date[Year]",
    "[Lines]",
@@ -2829,26 +2640,26 @@
     2023,
     292,
     1,
-    44,
-    44,
     45,
-    1,
-    ", Accessories, Bikes, Clothing, Components"
+    45,
+    45,
+    null,
+    "Accessories, Bikes, Clothing, Components"
    ],
    [
     2024,
-    551,
-    null,
-    44,
-    44,
-    44,
+    553,
+    1,
+    45,
+    45,
+    45,
     null,
     "Accessories, Bikes, Clothing, Components"
    ]
   ]
  },
  "context-row-context-without-transition": {
-  "hash": "eb02eb494d5304baf8e03f93f2dea0c39f372303",
+  "hash": "37aa4271f5cde518273de869096044cc20e0982b",
   "columns": [
    "Customer[Country]",
    "[No Transition]",
@@ -2872,13 +2683,13 @@
    ],
    [
     "France",
-    69048,
-    2466
+    71630,
+    2470
    ]
   ]
  },
  "context-selectcolumns-measure": {
-  "hash": "dc17e1404313661ab9da86dfd0b9c81c7112a37c",
+  "hash": "f2fb20778f15be476fb1319a73341f3abfbbfe9d",
   "columns": [
    "[Country]",
    "[Sales]",
@@ -2906,20 +2717,14 @@
    ],
    [
     "France",
-    680739.7600000006,
-    28,
-    31.428571428571427
-   ],
-   [
-    null,
-    189.0,
-    1,
-    2.0
+    680928.7600000006,
+    29,
+    30.413793103448278
    ]
   ]
  },
  "context-selectedvalue-filter-direction": {
-  "hash": "bfab5da604a874a9ef287029760ccb769d36be42",
+  "hash": "26a71e91c33bbb7633e71eb8ab5749d579ba3633",
   "columns": [
    "Subcategory[Subcategory]",
    "[Sales]",
@@ -2928,13 +2733,6 @@
    "[Product Category Column]"
   ],
   "rows": [
-   [
-    null,
-    190.0,
-    "none",
-    null,
-    null
-   ],
    [
     "Road Bikes",
     426256.2300000004,
@@ -3014,7 +2812,7 @@
    ],
    [
     "Chains",
-    267142.25,
+    267332.25,
     "none",
     "Components",
     "Components"
@@ -3022,7 +2820,7 @@
   ]
  },
  "context-shaped-filter-overwrite": {
-  "hash": "08a90b307973c0375408fde9665d883e8796b6f0",
+  "hash": "24575bb7c338f4a60346cff69a4c176cef62bb4c",
   "columns": [
    "[Shaped]",
    "[Year Overwritten]",
@@ -3037,7 +2835,7 @@
   ]
  },
  "context-summarize-extension-month-removed": {
-  "hash": "fea69bb450026a431bfa30d4fadc1771c961b340",
+  "hash": "fd78e23b3107f0ff26848b0d276612646cd69621",
   "columns": [
    "Date[Year]",
    "Date[Month]",
@@ -3146,7 +2944,7 @@
   ]
  },
  "context-summarize-rollup-group-rows-kept": {
-  "hash": "d100ffc752ed31f1ffa3726ee10a031d696275a2",
+  "hash": "996f7b21641285645c6a60925185913e96cd295f",
   "columns": [
    "Date[Year]",
    "Date[Quarter]",
@@ -3327,7 +3125,7 @@
   ]
  },
  "context-summarize-rollup-subtotal-share": {
-  "hash": "618f7d656b372e373e2f770ceedf6e72eb3dd896",
+  "hash": "d502aa705037633bd145fbc47bff419b3a1c0efc",
   "columns": [
    "Category[Category]",
    "Date[Year]",
@@ -3337,30 +3135,6 @@
    "[Share Of Category]"
   ],
   "rows": [
-   [
-    null,
-    2023,
-    91.0,
-    false,
-    false,
-    1.0
-   ],
-   [
-    null,
-    2024,
-    99.0,
-    false,
-    false,
-    1.0
-   ],
-   [
-    null,
-    null,
-    190.0,
-    false,
-    true,
-    1.0
-   ],
    [
     "Accessories",
     2022,
@@ -3468,7 +3242,7 @@
    [
     "Components",
     2023,
-    294563.5499999999,
+    294654.5499999999,
     false,
     false,
     1.0
@@ -3476,7 +3250,7 @@
    [
     "Components",
     2024,
-    634571.7499999995,
+    634670.7499999995,
     false,
     false,
     1.0
@@ -3484,7 +3258,7 @@
    [
     "Components",
     null,
-    991848.0799999993,
+    992038.0799999993,
     false,
     true,
     1.0
@@ -3500,7 +3274,7 @@
   ]
  },
  "context-summarize-sameperiodlastyear": {
-  "hash": "6af4592fe6e6b08b9c69f5fe21f5f14dd780e3f9",
+  "hash": "d8284dd8c28a0c13a69b355f583865335171e56d",
   "columns": [
    "Date[Year]",
    "Date[Month]",
@@ -3609,7 +3383,7 @@
   ]
  },
  "context-sumx-fact-transition": {
-  "hash": "3b3f5727d05433188bd0194ead0875399738e2c5",
+  "hash": "c7a9b38f45b3016a5aea112ddae3962512e8b63f",
   "columns": [
    "Date[Year]",
    "[Sales]",
@@ -3638,7 +3412,7 @@
   ]
  },
  "context-transition-date-key-other-date-filters": {
-  "hash": "162763248e6f5b7105ec4b9648fe0a5d50ef4fbc",
+  "hash": "1ace8e443dbc3799fef42d49d91b1b1f76b32d1c",
   "columns": [
    "Date[Date]",
    "[Week Filtered Outside]",
@@ -3699,7 +3473,7 @@
   ]
  },
  "context-var-evaluated-before-calculate": {
-  "hash": "f045d35b9979fb4b62b5045fae7f82196ab4d9aa",
+  "hash": "f778f9c6a5f3ab677d9926e622801bbb704bcbef",
   "columns": [
    "Category[Category]",
    "[Var Then Calculate]",
@@ -3707,11 +3481,6 @@
   ],
   "rows": [
    [
-    null,
-    190.0,
-    3363847.629999997
-   ],
-   [
     "Bikes",
     1913841.8799999978,
     3363847.629999997
@@ -3728,13 +3497,13 @@
    ],
    [
     "Components",
-    991848.0799999993,
+    992038.0799999993,
     3363847.629999997
    ]
   ]
  },
  "context-var-row-value-in-calculate": {
-  "hash": "05a3f8a6682826af7e8afaf646e4bcf98d985ac7",
+  "hash": "ddd097bc02f55ab000441ac8bfb8713131c4cb80",
   "columns": [
    "Category[Category]",
    "[Sales]",
@@ -3742,34 +3511,29 @@
   ],
   "rows": [
    [
-    null,
-    190.0,
-    190.0
-   ],
-   [
     "Bikes",
     1913841.8799999978,
-    3363657.629999999
+    3363847.629999999
    ],
    [
     "Clothing",
     266314.7900000005,
-    3363657.629999999
+    3363847.629999999
    ],
    [
     "Accessories",
     191652.88000000003,
-    3363657.629999999
+    3363847.629999999
    ],
    [
     "Components",
-    991848.0799999993,
-    2574196.5599999977
+    992038.0799999993,
+    2574386.5599999977
    ]
   ]
  },
  "context-var-topn-table-filter": {
-  "hash": "40b2a5a887f03333ded5aa7107ef6ac3a9513480",
+  "hash": "941d44ccab29ac076272945b055163ec124e4494",
   "columns": [
    "Date[Year]",
    "Category[Category]",
@@ -3803,12 +3567,6 @@
    ],
    [
     2023,
-    null,
-    91.0,
-    91.0
-   ],
-   [
-    2023,
     "Accessories",
     61649.45000000004,
     54691.67000000002
@@ -3828,14 +3586,8 @@
    [
     2023,
     "Components",
-    294563.5499999999,
-    246182.84999999998
-   ],
-   [
-    2024,
-    null,
-    99.0,
-    99.0
+    294654.5499999999,
+    246273.84999999998
    ],
    [
     2024,
@@ -3858,13 +3610,13 @@
    [
     2024,
     "Components",
-    634571.7499999995,
-    506338.1500000002
+    634670.7499999995,
+    506437.1500000002
    ]
   ]
  },
  "context-visual-matrix-pct-selected": {
-  "hash": "c215a8411f9adab19843355d8bc4c8d812370539",
+  "hash": "3a095cf1876db16208dd18337bb158a67c6c4e12",
   "columns": [
    "Category[Category]",
    "[IsGrandTotalRowTotal]",
@@ -3876,49 +3628,42 @@
    [
     null,
     true,
-    1410613.4999999998,
-    0.4354254230517431,
+    1410802.4999999998,
+    0.43544718697337154,
     1.0
-   ],
-   [
-    null,
-    false,
-    91.0,
-    0.5604395604395604,
-    6.451093797131533e-05
    ],
    [
     "Accessories",
     false,
     81878.07999999999,
     0.4451722610007462,
-    0.05804430483615817
+    0.05803652885503109
    ],
    [
     "Bikes",
     false,
     805479.9199999997,
     0.44115489558076126,
-    0.5710139028160441
+    0.5709374061925747
    ],
    [
     "Clothing",
     false,
-    106597.93000000004,
-    0.41273062244266856,
-    0.07556848846264413
+    106687.93000000004,
+    0.41288859948824586,
+    0.07562215831060695
    ],
    [
     "Components",
     false,
-    416566.5700000001,
-    0.42821124604405986,
-    0.2953087929471823
+    416756.5700000001,
+    0.4282799668881047,
+    0.29540390664178734
    ]
   ]
  },
  "context-window-added-column-blank-partition": {
-  "hash": "cb5bb67c21988954a8e5a9b57eb3b1547f92a165",
+  "hash": "f8ba451ece1eb80804fb3ac422cd8f3a23f34fc1",
   "columns": [
    "Category[Category]",
    "Date[Year]",
@@ -3928,22 +3673,6 @@
    "[Previous Year Sales]"
   ],
   "rows": [
-   [
-    null,
-    2023,
-    91.0,
-    2,
-    null,
-    null
-   ],
-   [
-    null,
-    2024,
-    99.0,
-    1,
-    91.0,
-    91.0
-   ],
    [
     "Accessories",
     2022,
@@ -4027,7 +3756,7 @@
    [
     "Components",
     2023,
-    294563.5499999999,
+    294654.5499999999,
     2,
     62712.78,
     62712.78
@@ -4035,10 +3764,10 @@
    [
     "Components",
     2024,
-    634571.7499999995,
+    634670.7499999995,
     1,
-    294563.5499999999,
-    294563.5499999999
+    294654.5499999999,
+    294654.5499999999
    ]
   ]
  }

@@ -1,6 +1,6 @@
 {
  "text-case-insensitive-compare": {
-  "hash": "4efabd17ed0bfe5cef4559492016e71bad81d5d9",
+  "hash": "cffc733e65e5617dca235ea51ff4d19e74588e3d",
   "columns": [
    "[pred]",
    "[treatas]",
@@ -21,7 +21,7 @@
   ]
  },
  "text-case-insensitive-filter-table": {
-  "hash": "2c2685b2a5518e17d07446c63217918700c67ec0",
+  "hash": "22c4f4de2503e3f7f383458c12c909365acc9be9",
   "columns": [
    "Product[Color]",
    "[n]"
@@ -38,7 +38,7 @@
   ]
  },
  "text-substitute-instance": {
-  "hash": "df0a2ab826e90ec3db1f7a3a1f4ba12700848494",
+  "hash": "da1b9503989493c6541f2dbc9ce0109946f6566d",
   "columns": [
    "[second]",
    "[none]",

@@ -1,6 +1,6 @@
 {
  "paths-path-functions": {
-  "hash": "75a804ab7ccaedc059f6448d346e278944a2a43d",
+  "hash": "186dc3204434d9a8524da2f34f0490ffaa68ad90",
   "columns": [
    "[Name]",
    "[Path]",
@@ -53,7 +53,7 @@
   ]
  },
  "paths-path-ignores-filters": {
-  "hash": "141a76edce72f2bce51298c6b1f042207bc7915f",
+  "hash": "42d08a4b351f9010fa9e57f450f4616a09b21f39",
   "columns": [
    "[Path]"
   ],
@@ -64,7 +64,7 @@
   ]
  },
  "paths-pathcontains-team-size": {
-  "hash": "01a52d6756482359012b19e17ce63ab1503aa066",
+  "hash": "3d20082b57ab8aae77528f42b2157a19bfadbc20",
   "columns": [
    "[Key]",
    "[Name]",
@@ -99,7 +99,7 @@
   ]
  },
  "paths-text-path-functions": {
-  "hash": "ec0fa8ab7249cb0362bc8cf2c2f6186a01601a16",
+  "hash": "3302fd9b5d26f61fc232423adaf2a43f87284e8c",
   "columns": [
    "[n]",
    "[m]",

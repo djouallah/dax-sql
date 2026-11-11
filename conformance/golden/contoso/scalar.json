@@ -1,6 +1,6 @@
 {
  "scalar-blank-arithmetic": {
-  "hash": "8d97da502cd7e40f8c3e9d106e2b1485f33dc746",
+  "hash": "2dedea13a465a066fb9a310b445a197cd5e90188",
   "columns": [
    "[a]",
    "[b]",
@@ -21,7 +21,7 @@
   ]
  },
  "scalar-branch-types-widen": {
-  "hash": "5a089d26314522403226d9055f08ac6cd20982e9",
+  "hash": "685a96ee0a9672a5ac614bd2332f1c8e72f2d08f",
   "columns": [
    "[a]",
    "[b]",
@@ -40,7 +40,7 @@
   ]
  },
  "scalar-coalesce-blank-measure": {
-  "hash": "a089e8e4cd66c888d80e37d3bad8f877598a149d",
+  "hash": "b6aab11d666a701167f575d6d43ad961cb9ebdee",
   "columns": [
    "[a]"
   ],
@@ -51,18 +51,18 @@
   ]
  },
  "scalar-concatenatex-distinct-cities": {
-  "hash": "48ae190723118814e3dd9eab0085f4eb19d322fc",
+  "hash": "85a12fc94e89c1db8314466cf66dadc64b58ee01",
   "columns": [
    "[c]"
   ],
   "rows": [
    [
-    "Berlin, London, Paris"
+    "Berlin, London, Paris, Rome"
    ]
   ]
  },
  "scalar-constants-int64-text-blank": {
-  "hash": "17ed606e421741a3858ac8ada3b75e889d59315f",
+  "hash": "24854c463c3db9fa689bd90fb58bde3a18b53d99",
   "columns": [
    "[a]",
    "[b]",
@@ -85,7 +85,7 @@
   ]
  },
  "scalar-countrows-empty-is-blank": {
-  "hash": "60ebc3b7601095cb247cf56ac03d799bd5cdbe18",
+  "hash": "0a1edc80d340ef8ac7a1fd3236a3344ff6c6ec70",
   "columns": [
    "[n]"
   ],
@@ -96,7 +96,7 @@
   ]
  },
  "scalar-define-measure-and-query-var": {
-  "hash": "06b9ad785f67a534bd3e13bea422dce9134cd22a",
+  "hash": "3463dbdd7df53207e6610e757b06b4541ccfd9bb",
   "columns": [
    "[d]"
   ],
@@ -107,7 +107,7 @@
   ]
  },
  "scalar-divide-by-blank-measure-keeps-row": {
-  "hash": "ce7f631cfb4e92f3221ee7796236bf91428e53dc",
+  "hash": "59735d641328251083827ffee6d90574db3f6f71",
   "columns": [
    "Product[Name]",
    "[x]"
@@ -136,7 +136,7 @@
   ]
  },
  "scalar-floor-ceiling-mround-fractions": {
-  "hash": "16b3012d24bb0d89511cdfef984d4c1f41644ce9",
+  "hash": "de79e7544216928395fa19a598726ab2fd814174",
   "columns": [
    "[a]",
    "[b]",
@@ -163,7 +163,7 @@
   ]
  },
  "scalar-functions-mixed": {
-  "hash": "5cb267b2696e8d239f2f9ed800eaff1939b40ace",
+  "hash": "dfe5f476f972b0bf65496f8ec4d75ce5a3bd55ff",
   "columns": [
    "[l]",
    "[u]",
@@ -198,7 +198,7 @@
   ]
  },
  "scalar-generateseries-fractions": {
-  "hash": "629cb22a76de32906a054109b07b59f8f9708a4a",
+  "hash": "7138b3c887c05e340ee1de96f227677691431231",
   "columns": [
    "[Value]"
   ],
@@ -221,7 +221,7 @@
   ]
  },
  "scalar-lookupvalue-ignores-filter-context": {
-  "hash": "75d6a952aaf22ec1ee9e61abf00d1e138715afbf",
+  "hash": "200be71a7ccf730740e541900a56aa1deb1c465f",
   "columns": [
    "Product[Color]",
    "[cap]",
@@ -246,7 +246,7 @@
   ]
  },
  "scalar-lookupvalue-price": {
-  "hash": "1d9b8f13b59aa6af547ce581697be7d299241fab",
+  "hash": "19cb14023c59acac0816a2347772c372a8db09f0",
   "columns": [
    "[p]"
   ],
@@ -257,7 +257,7 @@
   ]
  },
  "scalar-nameof": {
-  "hash": "ae88c24e0f43a2090060de72c34b384d365eb87c",
+  "hash": "c233c38e4530069e928dc0a7544cf8b9a69dbdde",
   "columns": [
    "[m]",
    "[c]"
@@ -270,7 +270,7 @@
   ]
  },
  "scalar-names-quotes-comments-case": {
-  "hash": "a26e535e606a65c5aa9dfed903a5da920f3d22d7",
+  "hash": "7dd13d9dc6e96e920c5e1970f8a6e9fc8c86eff2",
   "columns": [
    "[s]"
   ],
@@ -281,7 +281,7 @@
   ]
  },
  "scalar-rounding-decimal-places": {
-  "hash": "0f3bf1a1ea8e48a27add39e2bac1b8f0023511d6",
+  "hash": "75620ead5c4ea56a048e03b8ca97a311870afdd8",
   "columns": [
    "[a]",
    "[b]",
@@ -310,7 +310,7 @@
   ]
  },
  "scalar-selectedvalue-alternate": {
-  "hash": "9ea1015f99008348f9824219b38d1dcbd8157b59",
+  "hash": "58f29ce46b8154f3f6ead0f31860e5c32fd30457",
   "columns": [
    "Product[Color]",
    "[name]"
@@ -331,7 +331,7 @@
   ]
  },
  "scalar-text-as-date-en-us": {
-  "hash": "660c9cd77c56fb8bb7796d93e4201ee80ba9441b",
+  "hash": "2eedc4faa8471276e31aae8b45a7ded3b924e2f5",
   "columns": [
    "[a]",
    "[b]",
@@ -348,7 +348,7 @@
   ]
  },
  "scalar-text-as-date-iso": {
-  "hash": "c730ca3581710697871dd5a6f74d41bc151e889e",
+  "hash": "ff3c688b0f1af6878fc1acf1a0fd632bff4011d3",
   "columns": [
    "[y]",
    "[m]",
@@ -373,7 +373,7 @@
   ]
  },
  "scalar-text-in-arithmetic": {
-  "hash": "cf8c7a0bc4a1f76dc82da7ca122c7873492e4808",
+  "hash": "6e19fe23e79fd4011cb1eb2622c12837f92ab54e",
   "columns": [
    "[a]",
    "[b]",
@@ -394,7 +394,7 @@
   ]
  },
  "scalar-time-parts-carry": {
-  "hash": "1004bf9dcb424efc7a62feffd7d80541bd3549bb",
+  "hash": "00652acbfbb2751146dca5f5042ccc07b189c285",
   "columns": [
    "[a]",
    "[b]",

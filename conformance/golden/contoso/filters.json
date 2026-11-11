@@ -1,6 +1,6 @@
 {
  "filters-all-column-keeps-other-filters": {
-  "hash": "554c3b4a14bb1805fdb7a715b20bd0f8a4ec6b55",
+  "hash": "31a154cbf688ed60ea4a4da2b0b22a580af88075",
   "columns": [
    "[s]"
   ],
@@ -11,7 +11,7 @@
   ]
  },
  "filters-all-fact-table": {
-  "hash": "dac1ac846cf4d1fc5b998a73c5f06b14879ca32c",
+  "hash": "9236bdcc28e478aebabaedebaf757324152ebe62",
   "columns": [
    "Product[Color]",
    "[all]"
@@ -32,7 +32,7 @@
   ]
  },
  "filters-allexcept-share-by-name-only": {
-  "hash": "f037e4eb2854027a01bfc2e5b61060379db6e06b",
+  "hash": "635053a3f24a357580b2bf5d0c3787bf28748ebb",
   "columns": [
    "Product[Name]",
    "[share]"
@@ -57,7 +57,7 @@
   ]
  },
  "filters-allexcept-share-of-category": {
-  "hash": "268f2a2313cc76c2a6ecc7d2acba44decca33273",
+  "hash": "315dc17cba0e35592337ce7a74d64e173389b5d3",
   "columns": [
    "Category[Category]",
    "Product[Name]",
@@ -87,18 +87,13 @@
   ]
  },
  "filters-allselected-customer-blank-city-group": {
-  "hash": "97896010613b7a7e5dea72df40be3ab3b8b0bdd4",
+  "hash": "c18040daa38c2d40a1584acc21fba8b2bf7088cb",
   "columns": [
    "Customer[City]",
    "[s]",
    "[tot]"
   ],
   "rows": [
-   [
-    null,
-    20.0,
-    6130.0
-   ],
    [
     "Paris",
     4260.0,
@@ -110,6 +105,11 @@
     6130.0
    ],
    [
+    "Rome",
+    20.0,
+    6130.0
+   ],
+   [
     "Berlin",
     null,
     6130.0
@@ -117,7 +117,7 @@
   ]
  },
  "filters-allselected-grouped-column-other-filter": {
-  "hash": "29b78e8cf93260f028d68e44a69b98353d254fbd",
+  "hash": "e0e468f59a15b95163424c26d48b73b36e75504e",
   "columns": [
    "Product[Name]",
    "[n]"
@@ -134,7 +134,7 @@
   ]
  },
  "filters-allselected-grouped-column-own-filter": {
-  "hash": "e8fd0bc3de6a5f87f2f189dedb85208c89f7e3f5",
+  "hash": "676f09875a191521587226f34bc2ebc80076c731",
   "columns": [
    "Product[Name]",
    "[n]"
@@ -147,7 +147,7 @@
   ]
  },
  "filters-allselected-in-addcolumns": {
-  "hash": "9c658ce9157bc9bd7d76a338b3b240d4c8a7ca4d",
+  "hash": "67ac6e577e9e3cbf8c79109a05e5ef802d21a2b6",
   "columns": [
    "Product[Color]",
    "[pct]"
@@ -164,7 +164,7 @@
   ]
  },
  "filters-allselected-in-sumx": {
-  "hash": "5219261a28f97121ca2d0c85a8aa7aeee6049c98",
+  "hash": "b866d689670f4fa19d7cd3dd87f7b574b995ac52",
   "columns": [
    "[x]"
   ],
@@ -175,7 +175,7 @@
   ]
  },
  "filters-allselected-no-argument-keeps-inner-filter": {
-  "hash": "5483928199fce9a0342f49d8104695da5b93f10b",
+  "hash": "9496f24e7677ef2b0782b940f5d8dc1d67183bfe",
   "columns": [
    "Customer[City]",
    "[x]"
@@ -192,7 +192,7 @@
   ]
  },
  "filters-allselected-product-share-max-count": {
-  "hash": "76af9f47d607dbf2e77bc4d9a28d5e08c7cf0ba0",
+  "hash": "b56188cc1e300897284e168292417a1f03f331d0",
   "columns": [
    "Product[Color]",
    "[s]",
@@ -225,7 +225,7 @@
   ]
  },
  "filters-allselected-shadow-iterating-all-color": {
-  "hash": "e7b8c2c3f58fd53309fbee802d6aeb11b7f37a69",
+  "hash": "c54f316968629bcd00dda93bd5e61511251e49d8",
   "columns": [
    "Product[Color]",
    "[n]"
@@ -246,7 +246,7 @@
   ]
  },
  "filters-allselected-share-of-selected": {
-  "hash": "e482ca3035681f436c96322229c40e5edd99fe94",
+  "hash": "64b81054dfa7933516934168f4fcea13a98bf1da",
   "columns": [
    "Product[Color]",
    "[pct]"
@@ -263,7 +263,7 @@
   ]
  },
  "filters-allselected-summarize-groups-shadow": {
-  "hash": "5845e6cfe92fcd2e46b6ea6bd3274a4da0604fda",
+  "hash": "b6396b8b745f27ebdce7dbaa94940b93426437d8",
   "columns": [
    "Product[Color]",
    "[pct]"
@@ -280,7 +280,7 @@
   ]
  },
  "filters-allselected-without-iterator": {
-  "hash": "6f7a82c32453228202c6a31a5098a85fe6e1fd35",
+  "hash": "9a424144d88c8c0fea925e9672cce2512e29484d",
   "columns": [
    "[t]",
    "[c]"
@@ -293,7 +293,7 @@
   ]
  },
  "filters-category-two-hops": {
-  "hash": "32ba65a6490559573fb6dd2a127594fb1b8cd737",
+  "hash": "d1c9ad7e25289acd66cc817fca29795e3c8e879c",
   "columns": [
    "[s]"
   ],
@@ -304,7 +304,7 @@
   ]
  },
  "filters-filter-all-date-ranges": {
-  "hash": "8fe90609a73dca6e9218713b804652ad15538244",
+  "hash": "ab5625226f4316ff942f9acabe3c2b0f7ae3df4e",
   "columns": [
    "[from]",
    "[upto]",
@@ -319,7 +319,7 @@
   ]
  },
  "filters-filter-all-year-by-measure": {
-  "hash": "99d953e0657623aff84ad7449ec92afc72fc9d0f",
+  "hash": "c4e33153e1debad0f667e5b34447b3b9c81c032d",
   "columns": [
    "[m]"
   ],
@@ -330,7 +330,7 @@
   ]
  },
  "filters-filter-fact-table": {
-  "hash": "9311c4c1d9344f742ce413a2afcedbc800830d87",
+  "hash": "42e7bb25535340e881864c010e08bdddb4042024",
   "columns": [
    "Product[Color]",
    "[big]"
@@ -347,7 +347,7 @@
   ]
  },
  "filters-filters-hasonefilter-hasonevalue": {
-  "hash": "545a0edd764930b2963a08b2b3d174a569abc393",
+  "hash": "82636230f2083cbd76234a2e245066e474f1eff2",
   "columns": [
    "[n]",
    "[one]",
@@ -362,7 +362,7 @@
   ]
  },
  "filters-in-table-variable": {
-  "hash": "cf6411cf819446788feac7dfb34e0799cf99bbb3",
+  "hash": "d2e9be2b5efb7388376005aab4e29a2e94efe0f6",
   "columns": [
    "[s]"
   ],
@@ -373,7 +373,7 @@
   ]
  },
  "filters-keepfilters-treatas": {
-  "hash": "a74c2b4d2c953c7ed7f17785e9321b5e978da46c",
+  "hash": "fcd63cc05888a22c66b743d194a6db2393ba7dce",
   "columns": [
    "[keep]",
    "[replace]"
@@ -386,7 +386,7 @@
   ]
  },
  "filters-nonvisual-not-allselected": {
-  "hash": "d3ee60b76b523e093f4e442efdce00ce702535e8",
+  "hash": "202c6b4b7cf6560eb4bc582af6cb4ec078681d34",
   "columns": [
    "Date[Year]",
    "[Sales]",
@@ -401,7 +401,7 @@
   ]
  },
  "filters-removefilters-no-argument": {
-  "hash": "5b7b2fc6e5c26220131a8b7224fca112d21ec86a",
+  "hash": "187f7246513f80dd3a8796a4e1e89c04365319c5",
   "columns": [
    "[s]"
   ],
@@ -412,7 +412,7 @@
   ]
  },
  "filters-replace-vs-keepfilters": {
-  "hash": "635f8e830b9cf14f2ffdaec00520a20f25192289",
+  "hash": "52a9d3aa6d798105d8046d2f3028f0d81284216a",
   "columns": [
    "Product[Color]",
    "[red]",
@@ -437,7 +437,7 @@
   ]
  },
  "filters-treatas-city": {
-  "hash": "f0bae4bec7f915d69dfe5e41063f99d2daf41dd9",
+  "hash": "21218aba184358debaea19e2bb2763d0344c52bb",
   "columns": [
    "[s]"
   ],
@@ -448,7 +448,7 @@
   ]
  },
  "filters-two-filters-same-column-intersect": {
-  "hash": "9ba89367689b4f121e6cbdb43168c21e21111b68",
+  "hash": "19e37c18571776a31ff8b73e28652e0c9e00aef3",
   "columns": [
    "[s]"
   ],
@@ -459,7 +459,7 @@
   ]
  },
  "filters-visual-filter-allselected": {
-  "hash": "7d557fd94ace28fa75df96cc48db3628bb212d1b",
+  "hash": "45238306b958d3086c31e0603cc0fb9bf783b66d",
   "columns": [
    "Date[Year]",
    "[Sales]",

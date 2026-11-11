@@ -1,6 +1,6 @@
 {
  "dashboard-allduids": {
-  "hash": "e149d287bdc3545a3018568df1f188035c54fdae",
+  "hash": "a4b0dbc6242bf1ff1da9d6c94eb6cc5339d5a815",
   "columns": [
    "[DUID]",
    "[Region]",
@@ -101,11 +101,16 @@
     "TORRB1",
     "SA1",
     "Natural Gas (Pipeline)"
+   ],
+   [
+    "WRSF1",
+    "NSW1",
+    "Solar"
    ]
   ]
  },
  "dashboard-averageprice-1y-all": {
-  "hash": "b32a4e6d0a8fd7b3b884667a9d54ec7fc3cdf53b",
+  "hash": "e4b3114ad3507cffd37b71f9decfaeabce45f4f3",
   "columns": [
    "[avg]"
   ],
@@ -116,7 +121,7 @@
   ]
  },
  "dashboard-averageprice-1y-sa1": {
-  "hash": "b304c16fe20376aedf9cd57cfd56b99cc41d17db",
+  "hash": "30bce7cdda414d0df57ee211444785356c5d0ad8",
   "columns": [
    "[avg]"
   ],
@@ -127,7 +132,7 @@
   ]
  },
  "dashboard-averageprice-1y-solar-units": {
-  "hash": "877c680f109a6cd17806292aac930a7c46eec69a",
+  "hash": "04e8cf635380552f2500a6823fcda8e09031a5bc",
   "columns": [
    "[avg]"
   ],
@@ -138,7 +143,7 @@
   ]
  },
  "dashboard-averageprice-1y-units": {
-  "hash": "10232f1f26c5b5e9e790e8c1fbd094ee74cebccc",
+  "hash": "3ec234816b2524ce191771da68ba53a5cb7119cd",
   "columns": [
    "[avg]"
   ],
@@ -149,7 +154,7 @@
   ]
  },
  "dashboard-averageprice-1y-wind": {
-  "hash": "38319988fc950eba465e25d29dd848f481e1a9ba",
+  "hash": "b6e3d65ca25d61a4f896f43b162ccf3e54fb5a2b",
   "columns": [
    "[avg]"
   ],
@@ -160,7 +165,7 @@
   ]
  },
  "dashboard-averageprice-3d-all": {
-  "hash": "8fd8cb65d8c2f898cd574a9b09acb66dc78a0b44",
+  "hash": "0ef919c1ab4f1028279cfcad24b2e59b92c32a22",
   "columns": [
    "[avg]"
   ],
@@ -171,7 +176,7 @@
   ]
  },
  "dashboard-averageprice-3d-sa1": {
-  "hash": "1276a24a84380dd2f341b67b2f011912b7fdb35f",
+  "hash": "b088053f7ff89583bdbf2530f0dae78c70d947e9",
   "columns": [
    "[avg]"
   ],
@@ -182,7 +187,7 @@
   ]
  },
  "dashboard-averageprice-3d-solar-units": {
-  "hash": "dae19f921166a1096b3eb8bf45dbf41287717dc6",
+  "hash": "72219572cb592d9dc73a15df3eb0b340347d327d",
   "columns": [
    "[avg]"
   ],
@@ -193,7 +198,7 @@
   ]
  },
  "dashboard-averageprice-3d-units": {
-  "hash": "fda35678ee524fb29d4e8386a8170f0a6310014a",
+  "hash": "c02d6b9180b4462eb04cf631197c8bd2d63aa028",
   "columns": [
    "[avg]"
   ],
@@ -204,7 +209,7 @@
   ]
  },
  "dashboard-averageprice-3d-wind": {
-  "hash": "ed5c333f747cfe08c587689ad5fd9a5a5f910e53",
+  "hash": "881fa07b56ab6a39ae0645f211ddfc688eaf3211",
   "columns": [
    "[avg]"
   ],
@@ -215,7 +220,7 @@
   ]
  },
  "dashboard-averages-fuel-1y-all": {
-  "hash": "49590370a37459edfc831b02ff158ce706bea69c",
+  "hash": "6e537d306088eb5cb5b0f1f8ae442f4e7ba6b30d",
   "columns": [
    "[series]",
    "[avg]",
@@ -275,7 +280,7 @@
   ]
  },
  "dashboard-averages-fuel-1y-sa1": {
-  "hash": "470b33897172bc8b135988395263d1291a6dbe42",
+  "hash": "d2a48923e0f4743370053227d04452f9c9ab9b91",
   "columns": [
    "[series]",
    "[avg]",
@@ -310,7 +315,7 @@
   ]
  },
  "dashboard-averages-fuel-1y-solar-units": {
-  "hash": "b70ad0be3844e1bc960b621ac8d90470887cf54d",
+  "hash": "dfe798e8ac543545141163c47b8f79cc16af936d",
   "columns": [
    "[series]",
    "[avg]",
@@ -319,7 +324,7 @@
   "rows": []
  },
  "dashboard-averages-fuel-1y-units": {
-  "hash": "3c3facbb044d046f00c80da46ff84c0997129f1a",
+  "hash": "67e966e8bea3447bc7b8e8a954c6b6ad9e0f9bea",
   "columns": [
    "[series]",
    "[avg]",
@@ -339,7 +344,7 @@
   ]
  },
  "dashboard-averages-fuel-1y-wind": {
-  "hash": "3059ed542b2f08b3804d2139d45e4e7d69b1fc3a",
+  "hash": "d763b90a783f2f80d5a89a1f389f2ecfba774270",
   "columns": [
    "[series]",
    "[avg]",
@@ -354,7 +359,7 @@
   ]
  },
  "dashboard-averages-fuel-3d-all": {
-  "hash": "8d4317fbe4b7502a6d387c926f603a9b87cb0658",
+  "hash": "70d221ed11f7ef6f2d00904ba556c55d6c976725",
   "columns": [
    "[series]",
    "[avg]",
@@ -414,7 +419,7 @@
   ]
  },
  "dashboard-averages-fuel-3d-sa1": {
-  "hash": "bd5bf55ac2d5b89356848d4286eea3996aa4153e",
+  "hash": "54ac6af169c7828b13f7f14a7a378276f2e9e12e",
   "columns": [
    "[series]",
    "[avg]",
@@ -449,7 +454,7 @@
   ]
  },
  "dashboard-averages-fuel-3d-solar-units": {
-  "hash": "b8157042c59e35d7c51ac77024e77354df4dd5db",
+  "hash": "3ed57552c9e229c1fd76bd1703300151d82758ec",
   "columns": [
    "[series]",
    "[avg]",
@@ -458,7 +463,7 @@
   "rows": []
  },
  "dashboard-averages-fuel-3d-units": {
-  "hash": "d75f38a2a2021a325533418a5f4ee7d429dbabbf",
+  "hash": "c48479bbecb4242d965b341789d8a6128e92ed2b",
   "columns": [
    "[series]",
    "[avg]",
@@ -478,7 +483,7 @@
   ]
  },
  "dashboard-averages-fuel-3d-wind": {
-  "hash": "2507fd0c2fb9d3bcf0d61f4dcbb125c9f55172f6",
+  "hash": "6250ff66f4ccf194346be871b6fcd2c063ed1c99",
   "columns": [
    "[series]",
    "[avg]",
@@ -493,7 +498,7 @@
   ]
  },
  "dashboard-averages-station-1y-all": {
-  "hash": "eb6631590154ab43ddc1517e36b86d1d2e5aa654",
+  "hash": "4735d14ebcc3021581c006ed8a27f777ae8ecd62",
   "columns": [
    "[series]",
    "[avg]",
@@ -583,7 +588,7 @@
   ]
  },
  "dashboard-averages-station-1y-sa1": {
-  "hash": "0f502bfe90f3e37486be3a23ad4e89d3588ad21f",
+  "hash": "0db3c3b11603626eb1fc6a9b69782719fa1d2f03",
   "columns": [
    "[series]",
    "[avg]",
@@ -618,7 +623,7 @@
   ]
  },
  "dashboard-averages-station-1y-solar-units": {
-  "hash": "111a7589f9313ffa6f22caff591313d8820c7c9f",
+  "hash": "cc6e3a6d228fb07183c3e55ad0c66bed95521abc",
   "columns": [
    "[series]",
    "[avg]",
@@ -627,7 +632,7 @@
   "rows": []
  },
  "dashboard-averages-station-1y-units": {
-  "hash": "f7c74e0eb19980cd896a31faabfd9cb0cd8edb43",
+  "hash": "0c5c9cec7571af83c50e8be40565bc95cf00b7ca",
   "columns": [
    "[series]",
    "[avg]",
@@ -647,7 +652,7 @@
   ]
  },
  "dashboard-averages-station-1y-wind": {
-  "hash": "6ef70b762565d39c7b7daa5c0168ba31eef05f86",
+  "hash": "97b1abc833777789297067bf0108552a3d573165",
   "columns": [
    "[series]",
    "[avg]",
@@ -667,7 +672,7 @@
   ]
  },
  "dashboard-averages-station-3d-all": {
-  "hash": "27b3e632072276e0d30f98303af3d593abec6600",
+  "hash": "3ecee646d3df18fa1cc14ecf302a939beb796ccb",
   "columns": [
    "[series]",
    "[avg]",
@@ -757,7 +762,7 @@
   ]
  },
  "dashboard-averages-station-3d-sa1": {
-  "hash": "5037f95d8d4c60d30d1b93741cf894847821e4ec",
+  "hash": "cf62d3e97d7822ddcc00c249fa8bb166ed72cf93",
   "columns": [
    "[series]",
    "[avg]",
@@ -792,7 +797,7 @@
   ]
  },
  "dashboard-averages-station-3d-solar-units": {
-  "hash": "e7f6578b9b5574b08fe30cf821a279845fc23580",
+  "hash": "311c5f7f7da00d3f6f4a4c38b42c46ad4e94eb07",
   "columns": [
    "[series]",
    "[avg]",
@@ -801,7 +806,7 @@
   "rows": []
  },
  "dashboard-averages-station-3d-units": {
-  "hash": "6ea1087e89bdff833588ee92df0778b1a56d03c1",
+  "hash": "10fe4a59fc248eba9964b7a1fea90fbc81aba8ff",
   "columns": [
    "[series]",
    "[avg]",
@@ -821,7 +826,7 @@
   ]
  },
  "dashboard-averages-station-3d-wind": {
-  "hash": "c885c62514e0fe3349d03c2465782909160ab92d",
+  "hash": "ec706deb121ab9092e6a667a657bc535a9c5d437",
   "columns": [
    "[series]",
    "[avg]",
@@ -841,7 +846,7 @@
   ]
  },
  "dashboard-batteryday-3d-all": {
-  "hash": "5f5271f65c6253e78d84922f8b321919318b4826",
+  "hash": "d24badd0fb8238ee2b2b4f0fbb7c55d076a5954b",
   "columns": [
    "fct_summary[time]",
    "[discharge]",
@@ -870,7 +875,7 @@
   ]
  },
  "dashboard-batteryday-3d-sa1": {
-  "hash": "8b9426245ec023de40390821a3f88e156993d111",
+  "hash": "67ab8c4ebfe66d8fba7f49ca403ca7cc7441dfd6",
   "columns": [
    "fct_summary[time]",
    "[discharge]",
@@ -899,7 +904,7 @@
   ]
  },
  "dashboard-batteryday-3d-units": {
-  "hash": "af03931c76149f7c0e21abaf2534dbd5448a9f76",
+  "hash": "37be59ae56500e11c7350c35fc9f0534b85f5ae4",
   "columns": [
    "fct_summary[time]",
    "[discharge]",
@@ -928,7 +933,7 @@
   ]
  },
  "dashboard-batteryfleet-3d-all": {
-  "hash": "42081e1971858f96394aeddaaf9ed3d6dfaaa5d5",
+  "hash": "ddb607f1ed5a89fc190fe1f714c4de4452256840",
   "columns": [
    "[units]",
    "[mw]",
@@ -943,7 +948,7 @@
   ]
  },
  "dashboard-batteryfleet-3d-sa1": {
-  "hash": "b2e7f890a6d425699ff864dfba8c4c4a92463349",
+  "hash": "2bb4678e00e7d890648d03cb17216945f130774f",
   "columns": [
    "[units]",
    "[mw]",
@@ -958,7 +963,7 @@
   ]
  },
  "dashboard-batteryfleet-3d-units": {
-  "hash": "8a6a5a23425dd21a9f15ea455c184c1d7ef700af",
+  "hash": "f565a24d88bc1deb2ef928c6fd617ce25cfaa216",
   "columns": [
    "[units]",
    "[mw]",
@@ -973,7 +978,7 @@
   ]
  },
  "dashboard-batteryspread-3d-all": {
-  "hash": "37bdcb0ad65070e903df9a6b291bec9e42098dc2",
+  "hash": "22fde28bbb41744d037c09b632f241ecff5dc0ae",
   "columns": [
    "[sold]",
    "[bought]",
@@ -988,7 +993,7 @@
   ]
  },
  "dashboard-batteryspread-3d-sa1": {
-  "hash": "9a04addb22c2744027f576065d3ad0f1824adf1f",
+  "hash": "6ec614944a60b66b797a6e4452c9da9bbd5ef55d",
   "columns": [
    "[sold]",
    "[bought]",
@@ -1003,7 +1008,7 @@
   ]
  },
  "dashboard-batteryspread-3d-units": {
-  "hash": "ab2afa6c99cd371214d52d1405317a83b6801098",
+  "hash": "d47d58252e60aea9ab494ae439d9f86bc72204db",
   "columns": [
    "[sold]",
    "[bought]",
@@ -1018,7 +1023,7 @@
   ]
  },
  "dashboard-capacityfactor-1y-all": {
-  "hash": "0c21a722cdfcae1f8f9f6ee794a899e30989c2ae",
+  "hash": "f4b08f79b2f03b7eaf942eb2ed3640f097c9374e",
   "columns": [
    "[fuel]",
    "[DUID]",
@@ -1167,7 +1172,7 @@
   ]
  },
  "dashboard-capacityfactor-1y-sa1": {
-  "hash": "e36dba28e84ca8d4dc9fd2f16cec07dde006811a",
+  "hash": "4e2e57e6eef5755590907e742c2230061ee232c3",
   "columns": [
    "[fuel]",
    "[DUID]",
@@ -1228,7 +1233,7 @@
   ]
  },
  "dashboard-capacityfactor-1y-solar-units": {
-  "hash": "92083523abc06be15041d4b8b04f5535dc634ba4",
+  "hash": "3f31049964ee37a3b85c6962c503b59903df8b8c",
   "columns": [
    "[fuel]",
    "[DUID]",
@@ -1240,7 +1245,7 @@
   "rows": []
  },
  "dashboard-capacityfactor-1y-units": {
-  "hash": "239618f7349e21f67cb0a2a339368b6a2ef49567",
+  "hash": "d2d6454de8456bf7536f53793f92cf1adcb2daaf",
   "columns": [
    "[fuel]",
    "[DUID]",
@@ -1269,7 +1274,7 @@
   ]
  },
  "dashboard-capacityfactor-1y-wind": {
-  "hash": "b9897ef1e550125461ba1301eec280d7b66b4385",
+  "hash": "74211abc0682c37b20d91e5f86030df30cc84b46",
   "columns": [
    "[fuel]",
    "[DUID]",
@@ -1306,7 +1311,7 @@
   ]
  },
  "dashboard-capacityfactor-3d-all": {
-  "hash": "ce363363375f8d8b1d2cff20b1b8b6dba30ea0ee",
+  "hash": "b431dc2b9b32ebcd824de97a441681be083e59a4",
   "columns": [
    "[fuel]",
    "[DUID]",
@@ -1455,7 +1460,7 @@
   ]
  },
  "dashboard-capacityfactor-3d-sa1": {
-  "hash": "e810ddd864c5c563f1a77d639de23d78ceda9278",
+  "hash": "06423012ae412a3c236ed8158c054e527bf5091d",
   "columns": [
    "[fuel]",
    "[DUID]",
@@ -1516,7 +1521,7 @@
   ]
  },
  "dashboard-capacityfactor-3d-solar-units": {
-  "hash": "031d7813579cb6d3222f153dffdbce208e9fce20",
+  "hash": "44e8b8dc4459b072ef7b930b9becdce861f18be0",
   "columns": [
    "[fuel]",
    "[DUID]",
@@ -1528,7 +1533,7 @@
   "rows": []
  },
  "dashboard-capacityfactor-3d-units": {
-  "hash": "d4c1cc92f88c02238185118175b5868988b6ba72",
+  "hash": "101db9f4a0b94618d7c5915674a750b450d64305",
   "columns": [
    "[fuel]",
    "[DUID]",
@@ -1557,7 +1562,7 @@
   ]
  },
  "dashboard-capacityfactor-3d-wind": {
-  "hash": "af4d212d5bd99f74a5ec88fac657d18d9db34ed2",
+  "hash": "7bd25dcce0a05931e01ddf6b9fd90ae424b0ac68",
   "columns": [
    "[fuel]",
    "[DUID]",
@@ -1594,7 +1599,7 @@
   ]
  },
  "dashboard-capture-1y-all": {
-  "hash": "107d7a229685fc915cd1a2c37d6449a7341dab70",
+  "hash": "29a0007c5d6ac36f7cf43a2ff7941d78067b00bb",
   "columns": [
    "[fuel]",
    "[capture]",
@@ -1641,7 +1646,7 @@
   ]
  },
  "dashboard-capture-1y-sa1": {
-  "hash": "f39da65370a07d4f23e7756641102b935ec1c222",
+  "hash": "914857def199be27438181aebe5de8f34aa4569d",
   "columns": [
    "[fuel]",
    "[capture]",
@@ -1676,7 +1681,7 @@
   ]
  },
  "dashboard-capture-1y-units": {
-  "hash": "99c192384bc9690411edc5a70ceac66182fa2537",
+  "hash": "19af2bd1f63657a92141e71adf54c9b9a2aa469c",
   "columns": [
    "[fuel]",
    "[capture]",
@@ -1693,7 +1698,7 @@
   ]
  },
  "dashboard-capture-3d-all": {
-  "hash": "5fd50051055d52833719d99d6d2cceda417677f9",
+  "hash": "8df1070f2cd3a8ee0fb9fd3de3eac94cb91c1a87",
   "columns": [
    "[fuel]",
    "[capture]",
@@ -1740,7 +1745,7 @@
   ]
  },
  "dashboard-capture-3d-sa1": {
-  "hash": "cdc4f6594ffd611f6f687363f45fe8446f94e666",
+  "hash": "85af1a27b32a43e9cb4ee6f45f25929039fb2034",
   "columns": [
    "[fuel]",
    "[capture]",
@@ -1775,7 +1780,7 @@
   ]
  },
  "dashboard-capture-3d-units": {
-  "hash": "754b5dfcbb0c76dbafcd23117f79485a5c3bcc5e",
+  "hash": "e5b09ba7d784cd6b419d4d808b43dc66ca07144b",
   "columns": [
    "[fuel]",
    "[capture]",
@@ -1792,7 +1797,7 @@
   ]
  },
  "dashboard-changeemissions-3d-all": {
-  "hash": "5c7460aa752212982ff6b2a73cace24da75f76f3",
+  "hash": "df7981b6f32f8ca6ae3a92cd7c74cb0493c93c87",
   "columns": [
    "[v]"
   ],
@@ -1803,7 +1808,7 @@
   ]
  },
  "dashboard-changeemissions-3d-sa1": {
-  "hash": "cc5944e640c6dff2bd70a88296dce7a98885103a",
+  "hash": "8727a611074e3b5df7fb2b89f2eacaff1ab5e60a",
   "columns": [
    "[v]"
   ],
@@ -1814,7 +1819,7 @@
   ]
  },
  "dashboard-changeemissions-3d-solar-units": {
-  "hash": "04a384927cc96375c1608a9fadfdc8f4f32a4721",
+  "hash": "b6c2e74efe0efa6eb0a79bbff164a3f8769e5dda",
   "columns": [
    "[v]"
   ],
@@ -1825,7 +1830,7 @@
   ]
  },
  "dashboard-changeemissions-3d-units": {
-  "hash": "d7579aca4db16bdb8d202be30f6d80e1cedaf758",
+  "hash": "718d03039e6372b14935469fb902eccf089129e6",
   "columns": [
    "[v]"
   ],
@@ -1836,7 +1841,7 @@
   ]
  },
  "dashboard-changeemissions-3d-wind": {
-  "hash": "3d04619fb3214d5b1c19cab2a01efc5b2a88d210",
+  "hash": "e54d31fda1b8aa5cefc22ed68cc2890a78aca628",
   "columns": [
    "[v]"
   ],
@@ -1847,7 +1852,7 @@
   ]
  },
  "dashboard-changegeneration-3d-all": {
-  "hash": "5a7d45c649c0c3420eec1210886a7fcc57cbfa2b",
+  "hash": "4165c5abec5386858dbe3fb3301b0a1d175a1e48",
   "columns": [
    "[v]"
   ],
@@ -1858,7 +1863,7 @@
   ]
  },
  "dashboard-changegeneration-3d-sa1": {
-  "hash": "84f4aae86067cc0e5c044181df2cfbdeda1d98a5",
+  "hash": "615308a59fa1fb9624be4a488b0c3eab433ae383",
   "columns": [
    "[v]"
   ],
@@ -1869,7 +1874,7 @@
   ]
  },
  "dashboard-changegeneration-3d-solar-units": {
-  "hash": "26ae1abe54f619511b40335e8b7a5da39713d2d0",
+  "hash": "a6b6670527d1527f00232532b7e593e2dbbc4e34",
   "columns": [
    "[v]"
   ],
@@ -1880,7 +1885,7 @@
   ]
  },
  "dashboard-changegeneration-3d-units": {
-  "hash": "2969aed7fcda58b2d382f974530ed352e77481e5",
+  "hash": "27260cc78ea9dd4168a08ff9310514d5e7752a52",
   "columns": [
    "[v]"
   ],
@@ -1891,7 +1896,7 @@
   ]
  },
  "dashboard-changegeneration-3d-wind": {
-  "hash": "c6b595501de4331674766461fede9b316b138d5c",
+  "hash": "58b5be5eaacd7d12159029ed9ef8295b2887902e",
   "columns": [
    "[v]"
   ],
@@ -1902,7 +1907,7 @@
   ]
  },
  "dashboard-changeprice-3d-all": {
-  "hash": "7208ff4e393efa7a85f8b4ed24e58470748051e5",
+  "hash": "4c6855a60ec3b8aab2b318ed7185749e65e48ff0",
   "columns": [
    "[v]"
   ],
@@ -1913,7 +1918,7 @@
   ]
  },
  "dashboard-changeprice-3d-sa1": {
-  "hash": "009104f4c8e04128febe63177487bff16ef75317",
+  "hash": "ec70c85a6dd3a969b313e9b0ea54d72f71c881f3",
   "columns": [
    "[v]"
   ],
@@ -1924,7 +1929,7 @@
   ]
  },
  "dashboard-changeprice-3d-solar-units": {
-  "hash": "5392f901f5d414de29bb06b6c4a8a08f7894547a",
+  "hash": "7af32398b83277f6d368f35b3e83e76000122e85",
   "columns": [
    "[v]"
   ],
@@ -1935,7 +1940,7 @@
   ]
  },
  "dashboard-changeprice-3d-units": {
-  "hash": "d0041410ee8e33171c66c5db4c159c985fd32189",
+  "hash": "8bc74c7f10059a3b2793b1dbe29987e428b162cc",
   "columns": [
    "[v]"
   ],
@@ -1946,7 +1951,7 @@
   ]
  },
  "dashboard-changeprice-3d-wind": {
-  "hash": "112bb433b5c2e10820be45d761ea844c4639e52b",
+  "hash": "8047f1ce827dc35cacf9707a3c14b1ae2b9ffedd",
   "columns": [
    "[v]"
   ],
@@ -1957,7 +1962,7 @@
   ]
  },
  "dashboard-changerenewables-3d-all": {
-  "hash": "992e9933750da5342d81bf33f3825f7ace52d1e5",
+  "hash": "68d1339bfa5a0d0e1457127be05b161a9c6448dc",
   "columns": [
    "[v]"
   ],
@@ -1968,7 +1973,7 @@
   ]
  },
  "dashboard-changerenewables-3d-sa1": {
-  "hash": "361e30bffd170f84bc7d2ccfba5712632e62b740",
+  "hash": "1b55aed36fa445b65e437fbd9ef8a0827f8f00b6",
   "columns": [
    "[v]"
   ],
@@ -1979,7 +1984,7 @@
   ]
  },
  "dashboard-changerenewables-3d-units": {
-  "hash": "fff2d92b6a1a09accab1e9bf1c5185bf0d41cf5f",
+  "hash": "21c399544b2352f74e1ec6eea2d7453f201ce165",
   "columns": [
    "[v]"
   ],
@@ -1990,7 +1995,7 @@
   ]
  },
  "dashboard-curtailedfarms-3d-all": {
-  "hash": "15f03ba734eb6997266657b7a32fae03b1ac8af0",
+  "hash": "70b3658cca2c584b37a44931ba28b17943bf4a89",
   "columns": [
    "[DUID]",
    "[fuel]",
@@ -2021,16 +2026,16 @@
     12.695212189229803
    ],
    [
-    null,
-    null,
-    null,
+    "WRSF1",
+    "Solar",
+    "White Rock Solar Farm",
     11.43,
     3.262917499286326
    ]
   ]
  },
  "dashboard-curtailedfarms-3d-sa1": {
-  "hash": "05629776c890ebc2df401a0d24a5eda7beeb3e3d",
+  "hash": "dc06b3a9c91842981fb7b82bd570fe8b271bf09c",
   "columns": [
    "[DUID]",
    "[fuel]",
@@ -2049,7 +2054,7 @@
   ]
  },
  "dashboard-curtailedfarms-3d-units": {
-  "hash": "438fc05c33a2c13870c09988dbe3c1cf1fb69ed1",
+  "hash": "12ea0fbfc301da5455feda19654eac994a63c5a7",
   "columns": [
    "[DUID]",
    "[fuel]",
@@ -2068,7 +2073,7 @@
   ]
  },
  "dashboard-curtailedfarms-3d-wind": {
-  "hash": "ec488581dafa2348a94682d8ec2bade745ad6af8",
+  "hash": "00fdc3be982f61d312b13bc8a7dfe613e6fb9174",
   "columns": [
    "[DUID]",
    "[fuel]",
@@ -2094,7 +2099,7 @@
   ]
  },
  "dashboard-curtailment-1y-all": {
-  "hash": "0a86531272bb93e781bacda3a9f4294b887cc357",
+  "hash": "5845d31f7d85b99eb90a45318761c0ddd44d5db2",
   "columns": [
    "dim_calendar[year]",
    "dim_calendar[month]",
@@ -2139,7 +2144,7 @@
   ]
  },
  "dashboard-curtailment-1y-sa1": {
-  "hash": "7750919106d3320a3e542ff5908041909da1e9a3",
+  "hash": "fc9e3b76a4c201ee3848178b87bfd0baa810802d",
   "columns": [
    "dim_calendar[year]",
    "dim_calendar[month]",
@@ -2168,7 +2173,7 @@
   ]
  },
  "dashboard-curtailment-1y-units": {
-  "hash": "8cd4fb1b0d488c7f2b7439b2a75944f0780de010",
+  "hash": "5b6c64baf6275cf1507c66e37ed9497beea95aa6",
   "columns": [
    "[year]",
    "[month]",
@@ -2197,7 +2202,7 @@
   ]
  },
  "dashboard-curtailment-1y-wind": {
-  "hash": "3e1d9f8601b911ce2599a33f5a0d4a6ea0321510",
+  "hash": "45f521cabeac25a8a2856d662512ce56a1e6356e",
   "columns": [
    "dim_calendar[year]",
    "dim_calendar[month]",
@@ -2226,7 +2231,7 @@
   ]
  },
  "dashboard-curtailment-3d-all": {
-  "hash": "d050fe528e2ec0df1cc2f3a54107e4371a8d5515",
+  "hash": "35a99ee821d1277c253755bb85bab875e5eea69e",
   "columns": [
    "dim_calendar[date]",
    "fct_curtailment_region[fuel]",
@@ -2280,7 +2285,7 @@
   ]
  },
  "dashboard-curtailment-3d-sa1": {
-  "hash": "17b97038a5117300fdedce7ecc738d4484ccf40e",
+  "hash": "465cdba1c83c7e00e10642c200d0da6f2e7eca86",
   "columns": [
    "dim_calendar[date]",
    "fct_curtailment_region[fuel]",
@@ -2313,7 +2318,7 @@
   ]
  },
  "dashboard-curtailment-3d-units": {
-  "hash": "74f75db33027cba51cd85e955c48ed36939039f5",
+  "hash": "5da62bc7f7d6c0a2213c2280416e9275895215aa",
   "columns": [
    "[date]",
    "[fuel]",
@@ -2346,7 +2351,7 @@
   ]
  },
  "dashboard-curtailment-3d-wind": {
-  "hash": "2b8057b9a2255fc2bc8106c3c2b837408a5361e4",
+  "hash": "9df554331f77955b6af34ed982fdfa86a44c0ef9",
   "columns": [
    "dim_calendar[date]",
    "fct_curtailment_region[fuel]",
@@ -2379,7 +2384,7 @@
   ]
  },
  "dashboard-curtailmentlastday": {
-  "hash": "852f6b490452648586666efef367a43aeec0d4c3",
+  "hash": "b9299313d069395d5c4a438470a3fb0621305fd8",
   "columns": [
    "[d]"
   ],
@@ -2390,7 +2395,7 @@
   ]
  },
  "dashboard-curtailmenttotal-3d-all": {
-  "hash": "d01cff8befa33ceb0f68e6b919ca812a006d9e42",
+  "hash": "f452aec8cebc7661e8e6e444c9782464133b3975",
   "columns": [
    "[cur]",
    "[rate]"
@@ -2403,7 +2408,7 @@
   ]
  },
  "dashboard-curtailmenttotal-3d-sa1": {
-  "hash": "e05a14cd901e95b75d24549f16d8fe0c2ee37ec1",
+  "hash": "f28f9324b67c183d79e128b697cb8e183663b1fc",
   "columns": [
    "[cur]",
    "[rate]"
@@ -2416,7 +2421,7 @@
   ]
  },
  "dashboard-curtailmenttotal-3d-units": {
-  "hash": "f9d916809e611ac040b0746265a3f805c8b1065e",
+  "hash": "dbb10e00fe62b5589ae7986d57093fa29537f1aa",
   "columns": [
    "[cur]",
    "[rate]"
@@ -2429,7 +2434,7 @@
   ]
  },
  "dashboard-curtailmenttotal-3d-wind": {
-  "hash": "690fef4519f9f3bb25a9b139c2a38569a76c3eaf",
+  "hash": "b09c9b20850f0d4abb80ce990a962cd19e4bb6bf",
   "columns": [
    "[cur]",
    "[rate]"
@@ -2442,7 +2447,7 @@
   ]
  },
  "dashboard-cutoff": {
-  "hash": "1ebc32f54b284beb23c1933487fa794036f0ccd9",
+  "hash": "b05124bf19750b3077bdbe9667e225148a5e2713",
   "columns": [
    "[date]",
    "[time]"
@@ -2455,7 +2460,7 @@
   ]
  },
  "dashboard-demand-1y-all": {
-  "hash": "b94241c713f82175332bd4b2f6f414cba217ab40",
+  "hash": "a6c08c00491325d04afb99717482f0ec11c8c4ce",
   "columns": [
    "dim_calendar[date]",
    "[demand]"
@@ -2524,7 +2529,7 @@
   ]
  },
  "dashboard-demand-1y-sa1": {
-  "hash": "7828dcc01229ed6cc48c98480e6e3101d60cf31c",
+  "hash": "0c129a50510100aa236115e53b036339ee111fd5",
   "columns": [
    "dim_calendar[date]",
    "[demand]"
@@ -2593,7 +2598,7 @@
   ]
  },
  "dashboard-demand-3d-all": {
-  "hash": "58550ac12417c0fb60954a3022d7e51d9bd7105e",
+  "hash": "4612cc51b9e7ffe6ba15bb1d004e87ba0bb4dfef",
   "columns": [
    "dim_calendar[date]",
    "dim_time[time]",
@@ -2648,7 +2653,7 @@
   ]
  },
  "dashboard-demand-3d-sa1": {
-  "hash": "08670773362170a91d0f9f64874a6b2358d7879b",
+  "hash": "763ffe7ecaf53d8c974322bb791c7aef95e6d376",
   "columns": [
    "dim_calendar[date]",
    "dim_time[time]",
@@ -2703,7 +2708,7 @@
   ]
  },
  "dashboard-demandpeak-1y-all": {
-  "hash": "e475ca3f4de9e8ddb4e5efb5e9913111c33210c6",
+  "hash": "22c253376c72156f327a967bf53112ad9dc5d60a",
   "columns": [
    "dim_calendar[date]",
    "[demand]"
@@ -2716,7 +2721,7 @@
   ]
  },
  "dashboard-demandpeak-1y-sa1": {
-  "hash": "83a01a835221002249a5819af34082716e509130",
+  "hash": "cdd6265aa8332d9636348feafc7182b124d0c18f",
   "columns": [
    "dim_calendar[date]",
    "[demand]"
@@ -2729,7 +2734,7 @@
   ]
  },
  "dashboard-demandpeak-3d-all": {
-  "hash": "9e9ed5272020de4653d7018b5146cefd6b606137",
+  "hash": "0c99dd47b87ad81c6f8204fef8e58ee0e34942ce",
   "columns": [
    "dim_calendar[date]",
    "dim_time[time]",
@@ -2744,7 +2749,7 @@
   ]
  },
  "dashboard-demandpeak-3d-sa1": {
-  "hash": "55aa790abc024653fb14bcc5d98fdcffe6f98ee4",
+  "hash": "0e4f977335c5716b740d5858fafacd2be9712ead",
   "columns": [
    "dim_calendar[date]",
    "dim_time[time]",
@@ -2759,7 +2764,7 @@
   ]
  },
  "dashboard-emissions-1y-all": {
-  "hash": "b984b60aa1d8e0f7d1140288d385a5d581bb8d24",
+  "hash": "a8eec1df9cfa8c2293e67146f3d87a6d8adf4bc4",
   "columns": [
    "dim_calendar[date]",
    "[all]",
@@ -2866,7 +2871,7 @@
   ]
  },
  "dashboard-emissions-1y-sa1": {
-  "hash": "8a62ebeb38bcf3ab1c26bedab310380e61082226",
+  "hash": "3f5f4804ce16b36594bb2f5f7db2886561727f17",
   "columns": [
    "dim_calendar[date]",
    "[all]",
@@ -2973,7 +2978,7 @@
   ]
  },
  "dashboard-emissions-1y-units": {
-  "hash": "2544b58f06e03ab9734306b1647f956ab01899e3",
+  "hash": "0ad46679f3f3db92cd56353159e4e2da56c76fcc",
   "columns": [
    "dim_calendar[date]",
    "[all]",
@@ -3080,7 +3085,7 @@
   ]
  },
  "dashboard-emissions-1y-wind": {
-  "hash": "00b8a20f00e9ecb8427340fbf50eac149c3f3e72",
+  "hash": "16265d9a99ee681c9e9e771871927969eb6cc175",
   "columns": [
    "dim_calendar[date]",
    "[all]",
@@ -3187,7 +3192,7 @@
   ]
  },
  "dashboard-emissions-3d-all": {
-  "hash": "4a4acfa2d3866696d0e40f65ce8c5dd7aa141b33",
+  "hash": "314b8a21d0d414af114aaef625e623179a2236f3",
   "columns": [
    "fct_summary[date]",
    "fct_summary[time]",
@@ -3269,7 +3274,7 @@
   ]
  },
  "dashboard-emissions-3d-sa1": {
-  "hash": "0013cc1f1136eb6ad8ec54f46b0df38657147f03",
+  "hash": "efc9af8b6be83b6c8cbd5d86dcc2c27f27d74b7d",
   "columns": [
    "fct_summary[date]",
    "fct_summary[time]",
@@ -3351,7 +3356,7 @@
   ]
  },
  "dashboard-emissions-3d-units": {
-  "hash": "eabdf857857447e86af0189ce3a645bc9a7badd2",
+  "hash": "560f7dc402736020544124848b4d07091151f6d3",
   "columns": [
    "fct_summary[date]",
    "fct_summary[time]",
@@ -3433,7 +3438,7 @@
   ]
  },
  "dashboard-emissions-3d-wind": {
-  "hash": "a5147ee93dad7f6dad6bc3a0f3bb6d336d98b3b9",
+  "hash": "349b5dfcf027450222948da499e74e6d83539ca3",
   "columns": [
    "fct_summary[date]",
    "fct_summary[time]",
@@ -3515,7 +3520,7 @@
   ]
  },
  "dashboard-flowgens-3d-all": {
-  "hash": "f713850158e4733105732e96beb46e16a227cfed",
+  "hash": "dfe2608fa81f1b275abfcc102180fec69f60182a",
   "columns": [
    "fct_summary[time]",
    "fct_summary[DUID]",
@@ -3675,7 +3680,7 @@
   ]
  },
  "dashboard-flowgens-3d-sa1": {
-  "hash": "d10322c38cfb94d83b17179e506f33aeaa7fe66e",
+  "hash": "b5b834087655c34781b587ca7c01ab2572ddcfe8",
   "columns": [
    "fct_summary[time]",
    "fct_summary[DUID]",
@@ -3725,7 +3730,7 @@
   ]
  },
  "dashboard-flownow-3d-all": {
-  "hash": "c99e8a7936bf47987847a22b35cd3d3e3fa4993f",
+  "hash": "f957519a6df0b24905d96201df46c85f921a0ee3",
   "columns": [
    "fct_summary[time]",
    "[mw]",
@@ -3750,7 +3755,7 @@
   ]
  },
  "dashboard-flownow-3d-sa1": {
-  "hash": "6af1f96dd9147704f04156f63b2c23eb10bce183",
+  "hash": "7cdf0a2aef87412a8fd15598fb2f9c18fa0dc214",
   "columns": [
    "fct_summary[time]",
    "[mw]",
@@ -3775,7 +3780,7 @@
   ]
  },
  "dashboard-flowprices-3d-all": {
-  "hash": "f12312b4471a47d4bf40338be83767d7b2c0909b",
+  "hash": "c5c16ac2baf970054211d7103054d7f1ae455f34",
   "columns": [
    "[region]",
    "[date]",
@@ -4102,7 +4107,7 @@
   ]
  },
  "dashboard-flows-3d-all": {
-  "hash": "7ca98741e916e845be8a16019f9432f36b880403",
+  "hash": "69218dd634c9128f32c97fd9a7aa9470d97030f3",
   "columns": [
    "[id]",
    "[date]",
@@ -4657,7 +4662,7 @@
   ]
  },
  "dashboard-flows-3d-sa1": {
-  "hash": "e2791e2d426db8f88901d2408bb395dae88d0c23",
+  "hash": "5ae72aecbf68b78efa90eb7bcf6a5fa77f48f14d",
   "columns": [
    "[id]",
    "[date]",
@@ -4852,7 +4857,7 @@
   ]
  },
  "dashboard-flowunits": {
-  "hash": "0f0edc2b0c942348459ebdb18a12b28a4f996edc",
+  "hash": "c26023d77e7cd6e81f319697db2cc8db8e97000c",
   "columns": [
    "[DUID]",
    "[fuel]",
@@ -4993,11 +4998,18 @@
     false,
     null,
     null
+   ],
+   [
+    "WRSF1",
+    "Solar",
+    false,
+    -29.7719,
+    151.5414
    ]
   ]
  },
  "dashboard-fuels": {
-  "hash": "5b4dac004e18abd3897c39931cdea6151ea93ec2",
+  "hash": "7248947eda47d5615a6964e96976116acd9df1b8",
   "columns": [
    "[fuel]"
   ],
@@ -5035,7 +5047,7 @@
   ]
  },
  "dashboard-generation-duid-1y-all": {
-  "hash": "d376f184727f0431ebf1cb7ed2fe76f06c959974",
+  "hash": "0e7db254625498133235eb08419b45e739102c9b",
   "columns": [
    "[date]",
    "[series]",
@@ -6811,7 +6823,7 @@
   ]
  },
  "dashboard-generation-duid-1y-sa1": {
-  "hash": "3abac438ddfcd633882d23635421f4664db69c39",
+  "hash": "89cc6c11aa64ce3d6a26ad3a4e900df5d79961c1",
   "columns": [
    "[date]",
    "[series]",
@@ -7362,7 +7374,7 @@
   ]
  },
  "dashboard-generation-duid-1y-units": {
-  "hash": "db8f0868ca9f029f66f0c17f73edb85d7084c6c8",
+  "hash": "e193170d173150c750b3df92a0f1b91666ef18ce",
   "columns": [
    "[date]",
    "[series]",
@@ -7689,7 +7701,7 @@
   ]
  },
  "dashboard-generation-duid-1y-wind": {
-  "hash": "887546df44048d690d98e2629daa2cdc763f8eea",
+  "hash": "075ba428ed7762139347fc418323f9e3d21e6900",
   "columns": [
    "[date]",
    "[series]",
@@ -8016,7 +8028,7 @@
   ]
  },
  "dashboard-generation-duid-3d-all": {
-  "hash": "57f2564cd6dd21c5c5cbc0b4c65c06c25e414825",
+  "hash": "acf945d989f589353ce624120c6dfa64429e2385",
   "columns": [
    "[date]",
    "[time]",
@@ -8893,7 +8905,7 @@
   ]
  },
  "dashboard-generation-duid-3d-sa1": {
-  "hash": "567d72d15d55d9024c25c3f80dcbb459be3cb277",
+  "hash": "bc361d799fd9fc4ca0cf8dec3ff1a291fab40233",
   "columns": [
    "[date]",
    "[time]",
@@ -9194,7 +9206,7 @@
   ]
  },
  "dashboard-generation-duid-3d-units": {
-  "hash": "8f91c009d3c065289038f4319af0ed2227efe19c",
+  "hash": "f4213df793ec177488c0f499b652ad9009fa55a0",
   "columns": [
    "[date]",
    "[time]",
@@ -9415,7 +9427,7 @@
   ]
  },
  "dashboard-generation-duid-3d-wind": {
-  "hash": "84c9d01d59195e39c49b402ea42a85f1e456770a",
+  "hash": "4b2ad9588afb09bb72b535f2ee6d99461b044713",
   "columns": [
    "[date]",
    "[time]",
@@ -9644,7 +9656,7 @@
   ]
  },
  "dashboard-generation-fuel-1y-all": {
-  "hash": "ecbee24b49eae02b961b38c4fa0e237bf0c18e84",
+  "hash": "ca2daaa25426e3639febbb4538ff75f20dfe2c74",
   "columns": [
    "[date]",
    "[series]",
@@ -10865,7 +10877,7 @@
   ]
  },
  "dashboard-generation-fuel-1y-sa1": {
-  "hash": "e720d2ce66f40743b097667fd1bddb8ba69f33c8",
+  "hash": "4e1364a76ae48c01f86bc48536b23c74f21d6573",
   "columns": [
    "[date]",
    "[series]",
@@ -11494,7 +11506,7 @@
   ]
  },
  "dashboard-generation-fuel-1y-units": {
-  "hash": "65957546ea426486fbf7a477acd8e96302b2d8e8",
+  "hash": "2a1460307bdba427b2cf6f1663db818388d189c8",
   "columns": [
    "[date]",
    "[series]",
@@ -11867,7 +11879,7 @@
   ]
  },
  "dashboard-generation-fuel-1y-wind": {
-  "hash": "60ff952cf73620234d7567c0f5d5a2fb0cfecfc0",
+  "hash": "18262b385ee4fc53eab1d9087dd4621a78bdb935",
   "columns": [
    "[date]",
    "[series]",
@@ -12120,7 +12132,7 @@
   ]
  },
  "dashboard-generation-fuel-3d-all": {
-  "hash": "23e8031eacf9d2d83b8a1ff49715c89f803a9c1b",
+  "hash": "c113ba2dcc2e40dca7dfa849ee0e581d0c603197",
   "columns": [
    "[date]",
    "[time]",
@@ -12755,7 +12767,7 @@
   ]
  },
  "dashboard-generation-fuel-3d-sa1": {
-  "hash": "af8b82d96996dce86fec3ff5a082a4869ffb812f",
+  "hash": "736692bc8af10836eb0eb52e37d922eb48559616",
   "columns": [
    "[date]",
    "[time]",
@@ -13093,7 +13105,7 @@
   ]
  },
  "dashboard-generation-fuel-3d-units": {
-  "hash": "7d6a9085ca3dd1f48cef6c2a7778ae7fa5741891",
+  "hash": "b78c61080fae4e822590af26c3096de5e2930ae9",
   "columns": [
    "[date]",
    "[time]",
@@ -13341,7 +13353,7 @@
   ]
  },
  "dashboard-generation-fuel-3d-wind": {
-  "hash": "fbd4d06cd2283aef54a822ce89c007fa5770baab",
+  "hash": "e0d9df01db05d1b45ecf424c63b0de646f7c168f",
   "columns": [
    "[date]",
    "[time]",
@@ -13517,7 +13529,7 @@
   ]
  },
  "dashboard-generation-station-1y-all": {
-  "hash": "de2c94e65fad5b2fed577ebbebcbab1024ae45cb",
+  "hash": "6681f035db717fa944804a0d81eb57aaf39f3748",
   "columns": [
    "[date]",
    "[series]",
@@ -15216,7 +15228,7 @@
   ]
  },
  "dashboard-generation-station-1y-sa1": {
-  "hash": "155cce1c0ab1293e0a60ef34f672d2cde9e17b88",
+  "hash": "e1e2d3f1a1334d88b47aa437bca491616d33aa03",
   "columns": [
    "[date]",
    "[series]",
@@ -15767,7 +15779,7 @@
   ]
  },
  "dashboard-generation-station-1y-units": {
-  "hash": "53a7038fd8d7ba5b3316337013b4bd6bf91482e2",
+  "hash": "ef97d3b76b53752338b4a2286be8a09663d7d34e",
   "columns": [
    "[date]",
    "[series]",
@@ -16094,7 +16106,7 @@
   ]
  },
  "dashboard-generation-station-1y-wind": {
-  "hash": "a2f1ffcb97533a9d37efd96ca5d4989f0de1e298",
+  "hash": "f97f7bf26a36ea1cb7425317faba4bd0a252f38a",
   "columns": [
    "[date]",
    "[series]",
@@ -16421,7 +16433,7 @@
   ]
  },
  "dashboard-generation-station-3d-all": {
-  "hash": "e709496f6ad6c3edcb0e7b9527e951b1e8c1c15b",
+  "hash": "43ad18b10e59ea5fba8b3236d27219f5861a14ac",
   "columns": [
    "[date]",
    "[time]",
@@ -17226,7 +17238,7 @@
   ]
  },
  "dashboard-generation-station-3d-sa1": {
-  "hash": "3be9bbc8df4a7893b16296660a0048f7c8f38662",
+  "hash": "3a0dae74ac810abdf3cc0acce83e68814ff969a9",
   "columns": [
    "[date]",
    "[time]",
@@ -17527,7 +17539,7 @@
   ]
  },
  "dashboard-generation-station-3d-units": {
-  "hash": "5d219562ed09ffa418d2a8b020c29b2694099f75",
+  "hash": "61914f3594eb29941afcc29a09fc4a1a3b9f39b4",
   "columns": [
    "[date]",
    "[time]",
@@ -17748,7 +17760,7 @@
   ]
  },
  "dashboard-generation-station-3d-wind": {
-  "hash": "17ed339c8f0e0de30e9578d924b24342b638a30e",
+  "hash": "14c8dcbb0250fce8d3db2d1cc61a0b2645326bc7",
   "columns": [
    "[date]",
    "[time]",
@@ -17977,7 +17989,7 @@
   ]
  },
  "dashboard-generationaverage-1y-all": {
-  "hash": "025faf48ec3a6a9e9ec47d0fdeefc7ff423d22e1",
+  "hash": "9b3810d3b5b9b0cd55a7eb441e32594526d4d524",
   "columns": [
    "[avg]"
   ],
@@ -17988,7 +18000,7 @@
   ]
  },
  "dashboard-generationaverage-1y-sa1": {
-  "hash": "cf2d99f55b3402b7cc522850aa1caca49fcc68e6",
+  "hash": "22fd4ce82e1575a7f7f4428165277af8c5c6f325",
   "columns": [
    "[avg]"
   ],
@@ -17999,7 +18011,7 @@
   ]
  },
  "dashboard-generationaverage-1y-solar-units": {
-  "hash": "3058630bae1c4106dfba789ee0a6776561823a56",
+  "hash": "16bd0e0238303bd2a2ad46164a4b3d6b966c6b68",
   "columns": [
    "[avg]"
   ],
@@ -18010,7 +18022,7 @@
   ]
  },
  "dashboard-generationaverage-1y-units": {
-  "hash": "49a3d19740e656420fd20922a2618a11c189b223",
+  "hash": "fc50efb92bf1b54b711bf02630b9610134a9ea2c",
   "columns": [
    "[avg]"
   ],
@@ -18021,7 +18033,7 @@
   ]
  },
  "dashboard-generationaverage-1y-wind": {
-  "hash": "10c3b9a4a836fce15cbf94c41d2e792b21b1fa4e",
+  "hash": "7563fc85a0408f561603fa84f0d2fba9a8078ec6",
   "columns": [
    "[avg]"
   ],
@@ -18032,7 +18044,7 @@
   ]
  },
  "dashboard-generationaverage-3d-all": {
-  "hash": "a4ca9eee657f8b7e666fc82d102bcfdffc919a5b",
+  "hash": "4381e86840e100bb93e856ac85adbcc42a767b9e",
   "columns": [
    "[avg]"
   ],
@@ -18043,7 +18055,7 @@
   ]
  },
  "dashboard-generationaverage-3d-sa1": {
-  "hash": "2721c2a33e7ea9b3f734025584f848fdb7943ed1",
+  "hash": "02e1221a65347b05ec90924d1829bd8a7da558c1",
   "columns": [
    "[avg]"
   ],
@@ -18054,7 +18066,7 @@
   ]
  },
  "dashboard-generationaverage-3d-solar-units": {
-  "hash": "38dcb292c0c49ca6d2df4354cd5d334fcce4a2ca",
+  "hash": "ceb7d97135b19175da594bd1a68f622e964c2ad7",
   "columns": [
    "[avg]"
   ],
@@ -18065,7 +18077,7 @@
   ]
  },
  "dashboard-generationaverage-3d-units": {
-  "hash": "bf7bf5e29fb90c04958af485acb9c0aa4e8756a5",
+  "hash": "79c79665e4b1d5d6293d160322ea68d882e06334",
   "columns": [
    "[avg]"
   ],
@@ -18076,7 +18088,7 @@
   ]
  },
  "dashboard-generationaverage-3d-wind": {
-  "hash": "c60faf767ac5b17954b5a8160cc29b471716d659",
+  "hash": "48a05e8163b8582c5c0221eec50d8f3a103b88e3",
   "columns": [
    "[avg]"
   ],
@@ -18087,7 +18099,7 @@
   ]
  },
  "dashboard-generationnotof-duid-1y-all": {
-  "hash": "9a6e5c71e27d4abd8a4bddd1ec8e963ad91cba5b",
+  "hash": "71fd52680b2b61d1b11d494c099a17da150f1938",
   "columns": [
    "dim_calendar[date]",
    "[output]",
@@ -18172,7 +18184,7 @@
   ]
  },
  "dashboard-generationnotof-duid-1y-sa1": {
-  "hash": "8890637da1f0e3841c416750c70ac1ca97388512",
+  "hash": "e2d82fa806f413a61ac31ed6a841284d89ece684",
   "columns": [
    "dim_calendar[date]",
    "[output]",
@@ -18257,7 +18269,7 @@
   ]
  },
  "dashboard-generationnotof-duid-1y-units": {
-  "hash": "052e306ddac5e6f63bad54994957b85ab414120e",
+  "hash": "79b7fdea49c3bf40f80ffc219676bac0c4e24d8d",
   "columns": [
    "dim_calendar[date]",
    "[output]",
@@ -18266,7 +18278,7 @@
   "rows": []
  },
  "dashboard-generationnotof-duid-1y-wind": {
-  "hash": "c392fccbc2ffc9b2f883076bfbc68acdf4e90346",
+  "hash": "b9593ffc19bdd957e99b462d30f355f6d189f5d1",
   "columns": [
    "dim_calendar[date]",
    "[output]",
@@ -18351,7 +18363,7 @@
   ]
  },
  "dashboard-generationnotof-duid-3d-all": {
-  "hash": "b327c23ddad428c3d4af758ddd7e3599ee5a159c",
+  "hash": "3c75baaf2bd2e28693b7c1bed23550f29f0ea350",
   "columns": [
    "fct_summary[date]",
    "fct_summary[time]",
@@ -18416,7 +18428,7 @@
   ]
  },
  "dashboard-generationnotof-duid-3d-sa1": {
-  "hash": "f17e1c87254dfefce276d316dc08d43fc5e3b40d",
+  "hash": "bd6f98b3591018f4a42f20d2941bb206d1edd0fc",
   "columns": [
    "fct_summary[date]",
    "fct_summary[time]",
@@ -18481,7 +18493,7 @@
   ]
  },
  "dashboard-generationnotof-duid-3d-units": {
-  "hash": "f27588e6a7951e4ca8efb3d79a0f2b80585ff9e3",
+  "hash": "530777c111262392c61ca5f4af268e91ac7d371e",
   "columns": [
    "fct_summary[date]",
    "fct_summary[time]",
@@ -18491,7 +18503,7 @@
   "rows": []
  },
  "dashboard-generationnotof-duid-3d-wind": {
-  "hash": "bf4ee3d14d0c8df338fec880573b966c1c1833ed",
+  "hash": "c99a6f5277b9955a002e335cabf0df14aba19b43",
   "columns": [
    "fct_summary[date]",
    "fct_summary[time]",
@@ -18556,7 +18568,7 @@
   ]
  },
  "dashboard-generationof-fuel-1y-all": {
-  "hash": "13d99790b0218b7db4267d533b7c96fdc99cf1f0",
+  "hash": "dc8c56a292e3f37aadc429974273c3ba6c13ae2b",
   "columns": [
    "dim_calendar[date]",
    "[output]",
@@ -18636,7 +18648,7 @@
   ]
  },
  "dashboard-generationof-fuel-1y-sa1": {
-  "hash": "88c62e3bc2235e5d9dbd1933b4d0a9bed7f7c930",
+  "hash": "559d1ae6261be62aadb9c7398bce8d01e37e5881",
   "columns": [
    "dim_calendar[date]",
    "[output]",
@@ -18656,7 +18668,7 @@
   ]
  },
  "dashboard-generationof-fuel-1y-units": {
-  "hash": "3848b3fe65e0697aded114a0bc6a58c77222cb2d",
+  "hash": "276e7e9df726faa08c99135094344f5d4a45fdb3",
   "columns": [
    "dim_calendar[date]",
    "[output]",
@@ -18665,7 +18677,7 @@
   "rows": []
  },
  "dashboard-generationof-fuel-1y-wind": {
-  "hash": "a2dbc34336c7fc5fa4a25c67b57c07d3b82add0e",
+  "hash": "aaefe86e03fe05570954ef9347d68b6ef4ee66b0",
   "columns": [
    "dim_calendar[date]",
    "[output]",
@@ -18674,7 +18686,7 @@
   "rows": []
  },
  "dashboard-generationof-fuel-3d-all": {
-  "hash": "c9f5519ffe7ac21dbf8c0411e3e7d3e3ca0df341",
+  "hash": "55c73c80536ff92c3cd2de5fbcb01f8436705f0f",
   "columns": [
    "fct_summary[date]",
    "fct_summary[time]",
@@ -18727,7 +18739,7 @@
   ]
  },
  "dashboard-generationof-fuel-3d-sa1": {
-  "hash": "817f186160aad40bcb7b59f9ae3c6da1fa368f71",
+  "hash": "fe65ddcc9b3d1da1fb40de977ecec8ac992feb84",
   "columns": [
    "fct_summary[date]",
    "fct_summary[time]",
@@ -18744,7 +18756,7 @@
   ]
  },
  "dashboard-generationof-fuel-3d-units": {
-  "hash": "f62c867be3d5af478060f21121118af3bbd9f82d",
+  "hash": "7fe28143f5a4185bcb736986c4b305ce154ee7bc",
   "columns": [
    "fct_summary[date]",
    "fct_summary[time]",
@@ -18754,7 +18766,7 @@
   "rows": []
  },
  "dashboard-generationof-fuel-3d-wind": {
-  "hash": "b2d95977b4cb4265421e3b0d0ee94dd85c9f6ce4",
+  "hash": "e89322abe665b2e3e1276576550d37c2833b6923",
   "columns": [
    "fct_summary[date]",
    "fct_summary[time]",
@@ -18764,7 +18776,7 @@
   "rows": []
  },
  "dashboard-generatorcount-1y-all": {
-  "hash": "ae554031610f5f9ad579777db9584ababc18d58a",
+  "hash": "a39ade9dd7b5fcc48c335fec8256191868a7c308",
   "columns": [
    "[cnt]"
   ],
@@ -18775,7 +18787,7 @@
   ]
  },
  "dashboard-generatorcount-1y-sa1": {
-  "hash": "47956edb06bb9fbd9fdcbc92aa0e401b33f4a3b1",
+  "hash": "beed759fc4e0b4de1da74491fe620bbc8dccfed0",
   "columns": [
    "[cnt]"
   ],
@@ -18786,7 +18798,7 @@
   ]
  },
  "dashboard-generatorcount-1y-units": {
-  "hash": "263e0aaea7371a5eecca468772de540ee3cfb120",
+  "hash": "0f1d57abcaaf45a953d4f6e92e482c8c0d1010df",
   "columns": [
    "[cnt]"
   ],
@@ -18797,7 +18809,7 @@
   ]
  },
  "dashboard-generatorcount-1y-wind": {
-  "hash": "da4337b313a835cc94e1ab76aa9769778dd83a40",
+  "hash": "d68e5bc1fb5f75d66f49e2376d25ea52435931b3",
   "columns": [
    "[cnt]"
   ],
@@ -18808,7 +18820,7 @@
   ]
  },
  "dashboard-generatorcount-3d-all": {
-  "hash": "8d6d020e0d3a313099641ba726fff4c721bda54b",
+  "hash": "9d7c93721b5fba3d9226326c03515491b1b23773",
   "columns": [
    "[cnt]"
   ],
@@ -18819,7 +18831,7 @@
   ]
  },
  "dashboard-generatorcount-3d-sa1": {
-  "hash": "31c64929b7730918ff4c0cfd14873f0b1aa4497a",
+  "hash": "1d7267a972e3c7d2d16c17db7b34a47707b80d97",
   "columns": [
    "[cnt]"
   ],
@@ -18830,7 +18842,7 @@
   ]
  },
  "dashboard-generatorcount-3d-units": {
-  "hash": "b3909c7a2a59e3f692da32da29df5f7f71e2e093",
+  "hash": "bfbedeefae76cb523d94cfb0f7b5277d6db585c9",
   "columns": [
    "[cnt]"
   ],
@@ -18841,7 +18853,7 @@
   ]
  },
  "dashboard-generatorcount-3d-wind": {
-  "hash": "f095cabaeb6c5c35407ecb398b7c2daef2256fa0",
+  "hash": "910e0d535ae5791d64fd74e0090612254b91c461",
   "columns": [
    "[cnt]"
   ],
@@ -18852,7 +18864,7 @@
   ]
  },
  "dashboard-heatmap-1y-all": {
-  "hash": "7819db75c58ba20fee94f9fb2f804d0ad93239c8",
+  "hash": "4bdbef3189fbbbc30e315e9126e42ce51a32f211",
   "columns": [
    "[date]",
    "[y]",
@@ -18892,7 +18904,7 @@
   ]
  },
  "dashboard-heatmap-1y-sa1": {
-  "hash": "3abeef4983af4515de7ad040f396f8204abccf4f",
+  "hash": "a550076324583049d764612b7b6951d79a4335cd",
   "columns": [
    "[date]",
    "[y]",
@@ -18932,7 +18944,7 @@
   ]
  },
  "dashboard-heatmap-1y-solar-units": {
-  "hash": "678d4391aa4a0ef9b9cbe4b058980f0c1ea70a91",
+  "hash": "e6c0d95249377caa389c1ed33f048245a776f5da",
   "columns": [
    "[date]",
    "[y]",
@@ -18941,7 +18953,7 @@
   "rows": []
  },
  "dashboard-heatmap-1y-units": {
-  "hash": "70e35c98b88a75dd6462a9b02da71ad4db475e73",
+  "hash": "42e7f6fac80a53240de83e5cb3cd5f5c626e907e",
   "columns": [
    "[date]",
    "[y]",
@@ -18981,7 +18993,7 @@
   ]
  },
  "dashboard-heatmap-1y-wind": {
-  "hash": "aa3d9d9cf7b4bc2dac6d34d792bfbddb0cf9942e",
+  "hash": "3a6026b26da92b7eb4efcaa44260cfe232fa1dff",
   "columns": [
    "[date]",
    "[y]",
@@ -19021,7 +19033,7 @@
   ]
  },
  "dashboard-heatmap-3d-all": {
-  "hash": "135db16d9dc58f59450ee890c31f4a61237e7ee0",
+  "hash": "9904ba0fb540f96f992128ff3f40ac2b43f27e1e",
   "columns": [
    "[date]",
    "[y]",
@@ -19076,7 +19088,7 @@
   ]
  },
  "dashboard-heatmap-3d-sa1": {
-  "hash": "db1b290dcbff722240988fcd39ee96253e682f2c",
+  "hash": "b07069b52ffda3d6f2083fe7556321b56407ea95",
   "columns": [
    "[date]",
    "[y]",
@@ -19131,7 +19143,7 @@
   ]
  },
  "dashboard-heatmap-3d-solar-units": {
-  "hash": "137c58ca7a1789ad648ddef02c83c0b074af1660",
+  "hash": "7ab8bc92e14d2970cdbb675713d194cacd35e725",
   "columns": [
    "[date]",
    "[y]",
@@ -19140,7 +19152,7 @@
   "rows": []
  },
  "dashboard-heatmap-3d-units": {
-  "hash": "cfa9d46b2efaab6ed0dd8833ee887f9bcb756e7f",
+  "hash": "44e5be2bf8c682831e07453893908e807e0e7135",
   "columns": [
    "[date]",
    "[y]",
@@ -19195,7 +19207,7 @@
   ]
  },
  "dashboard-heatmap-3d-wind": {
-  "hash": "57517b4a93e289a3da2fd376740f5c370f7cff07",
+  "hash": "56c670d53956eac6dcc63c3f1d36acd207b69215",
   "columns": [
    "[date]",
    "[y]",
@@ -19250,7 +19262,7 @@
   ]
  },
  "dashboard-historyprice-3d-all": {
-  "hash": "f9eb4818bbad2da442a84c6ed539bae366305f9c",
+  "hash": "92c5037a962d94ddc8c3403c3766fbad548598cd",
   "columns": [
    "dim_calendar[date]",
    "[price]",
@@ -19335,7 +19347,7 @@
   ]
  },
  "dashboard-historyprice-3d-sa1": {
-  "hash": "5e94eead54451973a7ec517667a5164b55460d84",
+  "hash": "cc742135c7a634dd38fded15096b8340d72cc3b4",
   "columns": [
    "dim_calendar[date]",
    "[price]",
@@ -19420,7 +19432,7 @@
   ]
  },
  "dashboard-historyshare-3d-all": {
-  "hash": "7a84c0df8badef4e1b74d2e3580f625d2282bf1c",
+  "hash": "7752e77bcf23780dc14119cba6f7c9d8da356e2a",
   "columns": [
    "dim_calendar[date]",
    "[re]"
@@ -19489,7 +19501,7 @@
   ]
  },
  "dashboard-historyshare-3d-sa1": {
-  "hash": "8411be284ce73d7249f1bef565a2dab68c72217d",
+  "hash": "bd6e77a9fd6f28089089486e9fc03566392ca611",
   "columns": [
    "dim_calendar[date]",
    "[re]"
@@ -19558,7 +19570,7 @@
   ]
  },
  "dashboard-historysolar-3d-all": {
-  "hash": "17969e20e69b55b373487f5c4db36c0af95d14e3",
+  "hash": "bebfff56e6e9dd05cf8090821fa2052a603b31b2",
   "columns": [
    "dim_calendar[date]",
    "[mwh]"
@@ -19627,7 +19639,7 @@
   ]
  },
  "dashboard-historysolar-3d-sa1": {
-  "hash": "683bc72c72f54b935eba0123951e9349521c8b4a",
+  "hash": "7e0e9d4536e624b8460b59124268187c85409895",
   "columns": [
    "dim_calendar[date]",
    "[mwh]"
@@ -19696,7 +19708,7 @@
   ]
  },
  "dashboard-historywind-3d-all": {
-  "hash": "2946059f9f16cae9a15ac715799e431d049c9035",
+  "hash": "a290fe4380e9dc2136f9c1dc398d7793c587a895",
   "columns": [
    "dim_calendar[date]",
    "[mwh]"
@@ -19765,7 +19777,7 @@
   ]
  },
  "dashboard-historywind-3d-sa1": {
-  "hash": "4e5f8ff2b3999754e3bf2d85cad788ad0384e061",
+  "hash": "cc134ab31593c671bb4665d2f96592d14fcc8765",
   "columns": [
    "dim_calendar[date]",
    "[mwh]"
@@ -19834,7 +19846,7 @@
   ]
  },
  "dashboard-interconnectors": {
-  "hash": "d5f2bae10d6ef3f13a1ab7b3746c4d20556bc7a0",
+  "hash": "ddb2c508688589af55facf9dc8b892e6cee95927",
   "columns": [
    "[id]",
    "[from_region]",
@@ -19871,11 +19883,17 @@
     "VIC1",
     "SA1",
     "Murraylink"
+   ],
+   [
+    "N-Q-MNSP1",
+    "NSW1",
+    "QLD1",
+    "Directlink"
    ]
   ]
  },
  "dashboard-mapscatter-1y-all": {
-  "hash": "fcbc7a40e08362d3edbc5814f0972ab79b47aed1",
+  "hash": "0ef04b7807bcb3f8ca5c8bb1077fa7b3189c5dc9",
   "columns": [
    "[DUID]",
    "[fuel]",
@@ -19976,7 +19994,7 @@
   ]
  },
  "dashboard-mapscatter-1y-sa1": {
-  "hash": "66d692c18c2b3880c33c5d2a0c20d052bac90649",
+  "hash": "6fcf9d044f1a11fda1d987ef04ea474e2341cd45",
   "columns": [
    "[DUID]",
    "[fuel]",
@@ -20021,7 +20039,7 @@
   ]
  },
  "dashboard-mapscatter-1y-units": {
-  "hash": "5285af9280099bc59e94d0749ecb04e2b18fb27a",
+  "hash": "6c5b35b64f9752baf95374911a55619b26bba81b",
   "columns": [
    "[DUID]",
    "[fuel]",
@@ -20050,7 +20068,7 @@
   ]
  },
  "dashboard-mapscatter-1y-wind": {
-  "hash": "1d447575a24dd7548a206cacbec714a4b4fb97d6",
+  "hash": "35ef6acbc4648a923c2d5c75e3e9ac859dec11d8",
   "columns": [
    "[DUID]",
    "[fuel]",
@@ -20079,7 +20097,7 @@
   ]
  },
  "dashboard-mapscatter-3d-all": {
-  "hash": "6694c227e1797e2e9c6b9bb51d8efedaed1ebb80",
+  "hash": "6b4513e49d7ae48715adc6031dcfe5d70782c202",
   "columns": [
    "[DUID]",
    "[fuel]",
@@ -20180,7 +20198,7 @@
   ]
  },
  "dashboard-mapscatter-3d-sa1": {
-  "hash": "694eb0ce1163c473ff56c3ed591da57271f4cbcf",
+  "hash": "a2ee72f280ef1e8ed5da8ba07d3176905626fd16",
   "columns": [
    "[DUID]",
    "[fuel]",
@@ -20225,7 +20243,7 @@
   ]
  },
  "dashboard-mapscatter-3d-units": {
-  "hash": "ee2679abd5e474c8fb9c936927e304479d531e65",
+  "hash": "01fa92044c07a04cd441cce09d1f210eced59e51",
   "columns": [
    "[DUID]",
    "[fuel]",
@@ -20254,7 +20272,7 @@
   ]
  },
  "dashboard-mapscatter-3d-wind": {
-  "hash": "f9a0044a44f6e5d76ef7d7460e06ca57af732148",
+  "hash": "4bc87ac907083af3695eef54035f05d060b9266a",
   "columns": [
    "[DUID]",
    "[fuel]",
@@ -20283,7 +20301,7 @@
   ]
  },
  "dashboard-negativeprices-1y-all": {
-  "hash": "5b9a3025ee2c7b43019273607ae2d9c6bfa2d640",
+  "hash": "366097412a8a7e86010f34de80bbd45063ea771d",
   "columns": [
    "[region]",
    "[pct]",
@@ -20318,7 +20336,7 @@
   ]
  },
  "dashboard-negativeprices-1y-sa1": {
-  "hash": "106960d9afc96b4fa0cbb99700b1ce158f1b07c7",
+  "hash": "5e30577e9fe032c8a2d1fd2b7e958d14b291ecfc",
   "columns": [
    "[region]",
    "[pct]",
@@ -20333,7 +20351,7 @@
   ]
  },
  "dashboard-negativeprices-1y-solar-units": {
-  "hash": "bd54f43670971e5571d26fea2a88257c06d2028b",
+  "hash": "56e03717aae4d93f1b53d5dfeed167f34a4d34a1",
   "columns": [
    "[region]",
    "[pct]",
@@ -20342,7 +20360,7 @@
   "rows": []
  },
  "dashboard-negativeprices-1y-units": {
-  "hash": "80425c87b455c5c847cd4bbde15049dba51bd3c9",
+  "hash": "37cce366922dd3ff3540b37b8b94a22b3416b2dd",
   "columns": [
    "[region]",
    "[pct]",
@@ -20362,7 +20380,7 @@
   ]
  },
  "dashboard-negativeprices-1y-wind": {
-  "hash": "efab1296034ef121115d7eff164cdb94d5d39784",
+  "hash": "075b3051e015affbaacd650dc391f8318b5f7789",
   "columns": [
    "[region]",
    "[pct]",
@@ -20382,7 +20400,7 @@
   ]
  },
  "dashboard-negativeprices-3d-all": {
-  "hash": "e380bab1ace8ca6fbb64b01bf78e229bec9acb6e",
+  "hash": "dd87af81edaeac21e71176aa54b76598b757849b",
   "columns": [
    "[region]",
    "[pct]",
@@ -20417,7 +20435,7 @@
   ]
  },
  "dashboard-negativeprices-3d-sa1": {
-  "hash": "4f3079d9aa56ec19af8257f577e14f9ba78260f4",
+  "hash": "e85fb61c838d964078d6ce29ec3d47d93580f6d0",
   "columns": [
    "[region]",
    "[pct]",
@@ -20432,7 +20450,7 @@
   ]
  },
  "dashboard-negativeprices-3d-solar-units": {
-  "hash": "c50f1a905879a9f8dc8d742e4adc1fb871f374f5",
+  "hash": "b31cc9d1e69481e4dca4a43c359210c7c16bd17d",
   "columns": [
    "[region]",
    "[pct]",
@@ -20441,7 +20459,7 @@
   "rows": []
  },
  "dashboard-negativeprices-3d-units": {
-  "hash": "998e47fa45f30a936eb4e6aeade1ae85e68ddaf0",
+  "hash": "766495b6126a4de4c3b42eb01765c455b452df46",
   "columns": [
    "[region]",
    "[pct]",
@@ -20461,7 +20479,7 @@
   ]
  },
  "dashboard-negativeprices-3d-wind": {
-  "hash": "659a6f7d827a2f1f147ea5c8baa6ce245eb62aad",
+  "hash": "edbb67324e7d308cfa9b016e9da80b2cfa5d93b3",
   "columns": [
    "[region]",
    "[pct]",
@@ -20481,7 +20499,7 @@
   ]
  },
  "dashboard-netexports-1y-all": {
-  "hash": "b1e020109293cdab02379a3686d056d15b6a34bd",
+  "hash": "c6550732ed9681122e4062875b9ecbbc29dd4c97",
   "columns": [
    "[date]",
    "[region]",
@@ -20866,7 +20884,7 @@
   ]
  },
  "dashboard-netexports-1y-sa1": {
-  "hash": "1fc4d24f4066b436ce6a01c9440710ee80affc7a",
+  "hash": "b2efe929da71d91cd7354d1f93ae267a490d6de1",
   "columns": [
    "[date]",
    "[region]",
@@ -20951,7 +20969,7 @@
   ]
  },
  "dashboard-netexports-1y-solar-units": {
-  "hash": "083f42ddf7505822ea19f8334e3e9c809d63a19d",
+  "hash": "b83033aa6ebc0e81b9fd6e7951f485e452004b98",
   "columns": [
    "[date]",
    "[region]",
@@ -20960,7 +20978,7 @@
   "rows": []
  },
  "dashboard-netexports-1y-units": {
-  "hash": "8e88149df86ef373fe38fecd4e90c266afd08b35",
+  "hash": "1b3898244c422d66f950d5459421a3db17061488",
   "columns": [
    "[date]",
    "[region]",
@@ -21120,7 +21138,7 @@
   ]
  },
  "dashboard-netexports-1y-wind": {
-  "hash": "953bfda1aa3e822edb4630f43724e11603760992",
+  "hash": "52322e902ae8f618d0a5b4c3d0ccb0ab16d29a0b",
   "columns": [
    "[date]",
    "[region]",
@@ -21280,7 +21298,7 @@
   ]
  },
  "dashboard-netexports-3d-all": {
-  "hash": "c191a3b54ae727ebea0ec6c5f50747a31f833400",
+  "hash": "298f0045f6c329b1f19a4dc94cd04e1f0016ca6b",
   "columns": [
    "[date]",
    "[time]",
@@ -21561,7 +21579,7 @@
   ]
  },
  "dashboard-netexports-3d-sa1": {
-  "hash": "cf4cd7b20408845288e0af6728ed870deaef316e",
+  "hash": "4378d73f597f70040a673a1f70f9349395ff57c8",
   "columns": [
    "[date]",
    "[time]",
@@ -21626,7 +21644,7 @@
   ]
  },
  "dashboard-netexports-3d-solar-units": {
-  "hash": "349c532f4f17427c1ff66d01109f0cdc06e3d482",
+  "hash": "16cbd78a42bd550749f1f9c95d8077d6fb60a9b9",
   "columns": [
    "[date]",
    "[time]",
@@ -21636,7 +21654,7 @@
   "rows": []
  },
  "dashboard-netexports-3d-units": {
-  "hash": "6aa9dd9f043b9e232ab6e7488de730b6891cc04d",
+  "hash": "37c17fb73d29e94a21f41a1e264991b36e3ca1f4",
   "columns": [
    "[date]",
    "[time]",
@@ -21755,7 +21773,7 @@
   ]
  },
  "dashboard-netexports-3d-wind": {
-  "hash": "a68d0ac560d338e575d3091827761de42831f14e",
+  "hash": "b2bbb2a9f4029fce6d92dfb60c4207e40d06c78b",
   "columns": [
    "[date]",
    "[time]",
@@ -21874,7 +21892,7 @@
   ]
  },
  "dashboard-newestdate": {
-  "hash": "b036c10667425a6d3993d9458c85ab87e4cd022e",
+  "hash": "4c4af415e3200c8dde32339ae625b0cb3e76355d",
   "columns": [
    "[d]"
   ],
@@ -21885,7 +21903,7 @@
   ]
  },
  "dashboard-nowbyfuel-3d-all": {
-  "hash": "e17b7c4ac08e082ba689772ea3034c53465461e6",
+  "hash": "80ef165e5a4379e856e465eb6ff604abe0526b5d",
   "columns": [
    "[fuel]",
    "[mw]",
@@ -21953,7 +21971,7 @@
   ]
  },
  "dashboard-nowbyfuel-3d-sa1": {
-  "hash": "ede223b76ebfaccb2bbc314029709861c35de949",
+  "hash": "8545cf7a2c137e175f942456b21de07f56355ccf",
   "columns": [
    "[fuel]",
    "[mw]",
@@ -21993,7 +22011,7 @@
   ]
  },
  "dashboard-nowbyregion-3d-all": {
-  "hash": "ce7cd1283cd5f620b3f1beb789a51067b2b47ab9",
+  "hash": "cb6ddd8c66ec0a811358072f6b0588f40afe9dd3",
   "columns": [
    "[region]",
    "[price]",
@@ -22034,7 +22052,7 @@
   ]
  },
  "dashboard-nowof-3d-all": {
-  "hash": "9e2a8e113e7bf0cf96d6df9150a40da4b2f77fdc",
+  "hash": "ec9e0fe164a6f0c472419d8b129308f81518cdf1",
   "columns": [
    "[mw]"
   ],
@@ -22045,7 +22063,7 @@
   ]
  },
  "dashboard-nowof-3d-sa1": {
-  "hash": "af1201754739a8f6d7fa636cc2f9711cea68b393",
+  "hash": "5b85f479f2523912b050c133bfba7aa3e24d094c",
   "columns": [
    "[mw]"
   ],
@@ -22056,7 +22074,7 @@
   ]
  },
  "dashboard-nowshare-3d-all": {
-  "hash": "38b48420137d6e0d4a5f16bc07d096afb6dbd74a",
+  "hash": "a3fa41c99379fa769648ca329056d8d5f381ebe1",
   "columns": [
    "[share]"
   ],
@@ -22067,7 +22085,7 @@
   ]
  },
  "dashboard-nowshare-3d-sa1": {
-  "hash": "432534b7a0bd110c4989458c90c66387f2fd68fc",
+  "hash": "80f2348b93337357039323071af67df270d116ac",
   "columns": [
    "[share]"
   ],
@@ -22078,7 +22096,7 @@
   ]
  },
  "dashboard-oldestdate": {
-  "hash": "fab37cc69cda8ac2628e0b7da0d72fe994c76fe9",
+  "hash": "5d97d9cb782484c76d6930d3921cf60f0d144380",
   "columns": [
    "[d]"
   ],
@@ -22089,7 +22107,7 @@
   ]
  },
  "dashboard-owners-1y-all": {
-  "hash": "87ce9682174d5961356121b170bd8283c3240f54",
+  "hash": "3a380e0dee028d4a5b44cb143dbfb55914557979",
   "columns": [
    "[owner]",
    "[plant]",
@@ -22213,7 +22231,7 @@
   ]
  },
  "dashboard-owners-1y-sa1": {
-  "hash": "8f13a2e4ad5fd8335adf5ad48c50220efb062d48",
+  "hash": "7763d32b06b1577fad488850128b794a07e1d444",
   "columns": [
    "[owner]",
    "[plant]",
@@ -22260,7 +22278,7 @@
   ]
  },
  "dashboard-owners-1y-units": {
-  "hash": "df0854a9c9dbe42b729e6b2632f2575e02c943e0",
+  "hash": "949891bba88de72cad3f2c64f2bc898237f6d401",
   "columns": [
    "[owner]",
    "[plant]",
@@ -22286,7 +22304,7 @@
   ]
  },
  "dashboard-owners-1y-wind": {
-  "hash": "d890e84039c3130a2802915080c75c4d06eeb27d",
+  "hash": "fc65509ea8e5c7f3875732152e32e3dfd972dfe4",
   "columns": [
    "[owner]",
    "[plant]",
@@ -22312,7 +22330,7 @@
   ]
  },
  "dashboard-owners-3d-all": {
-  "hash": "eaa6c6401735588884b3b396ae72f4908c75fa12",
+  "hash": "0de771a608d536ac184599d29252c2f4f67be02b",
   "columns": [
    "[owner]",
    "[plant]",
@@ -22436,7 +22454,7 @@
   ]
  },
  "dashboard-owners-3d-sa1": {
-  "hash": "7b223608a9777b6206e98d74556c7ec77f0d91d2",
+  "hash": "2cb6469d5ea8488e62f8e998ca89b7ae2e2a2b36",
   "columns": [
    "[owner]",
    "[plant]",
@@ -22483,7 +22501,7 @@
   ]
  },
  "dashboard-owners-3d-units": {
-  "hash": "dc34c484afd97d59a08f1668919501f06d24542a",
+  "hash": "3483830bc6a1a821d4816fa4453740ca7ef4f9bf",
   "columns": [
    "[owner]",
    "[plant]",
@@ -22509,7 +22527,7 @@
   ]
  },
  "dashboard-owners-3d-wind": {
-  "hash": "8f7f26bef66ba25e791932c06920302d4ccece98",
+  "hash": "4a31e0cd7cb800c718924fe032a5f73acdc561a7",
   "columns": [
    "[owner]",
    "[plant]",
@@ -22535,7 +22553,7 @@
   ]
  },
  "dashboard-ownershares-1y-all": {
-  "hash": "67b4f543b58cbf7d527a3f6b6f526fbe45ee194b",
+  "hash": "0f8a63adf97aa42e5188cf1acee96f523faab8e1",
   "columns": [
    "[owner]",
    "[mwh]",
@@ -22605,7 +22623,7 @@
   ]
  },
  "dashboard-ownershares-1y-sa1": {
-  "hash": "faa3a321b87854bf2db521b85b53e084210a8175",
+  "hash": "7303ac1b4f0e8c25544d5326f33617f07de11778",
   "columns": [
    "[owner]",
    "[mwh]",
@@ -22640,7 +22658,7 @@
   ]
  },
  "dashboard-ownershares-1y-units": {
-  "hash": "12975d08040ba6d21f7387bdea91fe74c30d5268",
+  "hash": "21df1931654345f8f2215cb086f26d6498a364ef",
   "columns": [
    "[owner]",
    "[mwh]",
@@ -22660,7 +22678,7 @@
   ]
  },
  "dashboard-ownershares-1y-wind": {
-  "hash": "1a8aebe8e7fa473eb05cc546c5f90e43eb6fe3b8",
+  "hash": "103be3909bae404b2021bc56ca46eff673c362ab",
   "columns": [
    "[owner]",
    "[mwh]",
@@ -22680,7 +22698,7 @@
   ]
  },
  "dashboard-ownershares-3d-all": {
-  "hash": "cef7e811b23440e0026d7fbd1db84cc96397ba57",
+  "hash": "54833cdc413efbe9dcb33820e1a2311abb78d3bb",
   "columns": [
    "[owner]",
    "[mwh]",
@@ -22750,7 +22768,7 @@
   ]
  },
  "dashboard-ownershares-3d-sa1": {
-  "hash": "3597f0ec16b6c817235738e4dc3e06a2b798f225",
+  "hash": "776d6811419653cbfbe1e348a8c333805183a68a",
   "columns": [
    "[owner]",
    "[mwh]",
@@ -22785,7 +22803,7 @@
   ]
  },
  "dashboard-ownershares-3d-units": {
-  "hash": "69d0bdec14163cc3bedbf980be9ad03730c1e29c",
+  "hash": "de58e8ae2d0319579a1b6e04181ce1c8dc78743c",
   "columns": [
    "[owner]",
    "[mwh]",
@@ -22805,7 +22823,7 @@
   ]
  },
  "dashboard-ownershares-3d-wind": {
-  "hash": "5a05b6e854be8d21e0cf12dc1380a35acbe42a0a",
+  "hash": "a7382c204f0e0fcb14e3a151ade0dc5764504ebb",
   "columns": [
    "[owner]",
    "[mwh]",
@@ -22825,7 +22843,7 @@
   ]
  },
  "dashboard-price-1y-all": {
-  "hash": "d41affcea0da6704e63d56cb4d8897ed06bec93d",
+  "hash": "c88b2f4d7fad7131457157dfc518e29b3ff3940e",
   "columns": [
    "dim_calendar[date]",
    "dim_region[Region]",
@@ -23376,7 +23394,7 @@
   ]
  },
  "dashboard-price-1y-sa1": {
-  "hash": "ec1b125960f25fc0c98c6e82a7b5dc36316845ea",
+  "hash": "450a16d3c1ba0240c3bb9086accd50fa60c1d756",
   "columns": [
    "dim_calendar[date]",
    "dim_region[Region]",
@@ -23567,7 +23585,7 @@
   ]
  },
  "dashboard-price-1y-solar-units": {
-  "hash": "e6b274203b6c45a6a8ffc8ae0fbbcc815d7be9c6",
+  "hash": "ee0637f151619374bedaf6b5d8feb8e6410e57b6",
   "columns": [
    "dim_calendar[date]",
    "dim_region[Region]",
@@ -23577,7 +23595,7 @@
   "rows": []
  },
  "dashboard-price-1y-units": {
-  "hash": "ccaa053f52e78ac8328829e4ef28001b76e56ce1",
+  "hash": "2ad18c1c07ba5159d484dd387b9095ca2fe916a2",
   "columns": [
    "dim_calendar[date]",
    "dim_region[Region]",
@@ -23858,7 +23876,7 @@
   ]
  },
  "dashboard-price-1y-wind": {
-  "hash": "a2fbb5e9aae71aa3b39af70ac11f90b41c0daa0a",
+  "hash": "20817918a07df2e4a9060b99d0d9c1a324da2fb9",
   "columns": [
    "dim_calendar[date]",
    "dim_region[Region]",
@@ -24139,7 +24157,7 @@
   ]
  },
  "dashboard-price-3d-all": {
-  "hash": "5c22283ea7e10e5a93fbb8272e75aa377555c2c1",
+  "hash": "595697f9a080d6d9df62fd17132fb027db315299",
   "columns": [
    "[date]",
    "[time]",
@@ -24529,7 +24547,7 @@
   ]
  },
  "dashboard-price-3d-sa1": {
-  "hash": "1f8fb7f4b579cb2d6bd2e254e678ecabc31bdb18",
+  "hash": "f125e33d2edec0cd570302e2805919b3dcb0c7e2",
   "columns": [
    "[date]",
    "[time]",
@@ -24667,7 +24685,7 @@
   ]
  },
  "dashboard-price-3d-solar-units": {
-  "hash": "96b8341fb69008ec62de368eaa6d64bb8a2cb02a",
+  "hash": "6082a95a193f92104df8e8f52b1f8a32fd93a103",
   "columns": [
    "[date]",
    "[time]",
@@ -24678,7 +24696,7 @@
   "rows": []
  },
  "dashboard-price-3d-units": {
-  "hash": "db41a059fde08e599e1d8c5146f6bf9c8343a8bb",
+  "hash": "7cfb57d2f538655922f5f9c326840d2b06a1cf03",
   "columns": [
    "[date]",
    "[time]",
@@ -24879,7 +24897,7 @@
   ]
  },
  "dashboard-price-3d-wind": {
-  "hash": "572445fef2f833a7a77635c3c52cd0336684f742",
+  "hash": "eea3b14425e461b9601723ecd2b19137845e1674",
   "columns": [
    "[date]",
    "[time]",
@@ -25080,7 +25098,7 @@
   ]
  },
  "dashboard-profile-1y-all": {
-  "hash": "a33d3449abe0a88e38f17e212f46b4f366599dd8",
+  "hash": "f18e194247ddb702a936d15eb36a22065006de91",
   "columns": [
    "[fuel]",
    "[hour]",
@@ -25185,7 +25203,7 @@
   ]
  },
  "dashboard-profile-1y-sa1": {
-  "hash": "39f09896d44d9b7aa6611b71ae708ac37487bd0e",
+  "hash": "5060df36325a6970780b07868787840ebebf308c",
   "columns": [
    "[fuel]",
    "[hour]",
@@ -25230,7 +25248,7 @@
   ]
  },
  "dashboard-profile-1y-units": {
-  "hash": "fe4d47225e60bb311518152ebf90adf6863fc62d",
+  "hash": "abbfa42ad44ebfdf9c5b6b5864e9ffa56cfd9717",
   "columns": [
    "[fuel]",
    "[hour]",
@@ -25255,7 +25273,7 @@
   ]
  },
  "dashboard-profile-1y-wind": {
-  "hash": "4910acbfc500f44c4423ed17f59cba9bae5cf736",
+  "hash": "8437e4ae0451a53bb6946b5a4f4ca1897c8cf54a",
   "columns": [
    "[fuel]",
    "[hour]",
@@ -25280,7 +25298,7 @@
   ]
  },
  "dashboard-profile-3d-all": {
-  "hash": "5fa174209705f51b7b6278021e187f8031027096",
+  "hash": "057d10feed708cae513a6be6665c37873348d86a",
   "columns": [
    "[fuel]",
    "[time]",
@@ -25390,7 +25408,7 @@
   ]
  },
  "dashboard-profile-3d-sa1": {
-  "hash": "d891575e05af23dfd7c8fb0bca1247ae9b4d1e49",
+  "hash": "4988731254ab57b5aec474986e5df5081318b84c",
   "columns": [
    "[fuel]",
    "[time]",
@@ -25440,7 +25458,7 @@
   ]
  },
  "dashboard-profile-3d-units": {
-  "hash": "c41aa7cff13a277b475409f9c254158f4e0ed47c",
+  "hash": "ce9c32b47dc47507f7366f9e6f651b99abe70362",
   "columns": [
    "[fuel]",
    "[time]",
@@ -25465,7 +25483,7 @@
   ]
  },
  "dashboard-profile-3d-wind": {
-  "hash": "66c305113e7b360eb9e1113ce6991f6dd597002b",
+  "hash": "6af35d3e1007a07995fa31686d0d4665d5978ae9",
   "columns": [
    "[fuel]",
    "[time]",
@@ -25490,7 +25508,7 @@
   ]
  },
  "dashboard-profilemonths-1y-all": {
-  "hash": "39719b6231cc897b3de8965c966e3ae3d2c7c2da",
+  "hash": "a1ab6ccf77292bdc950815adb9171e507f9611cf",
   "columns": [
    "[first]",
    "[last]"
@@ -25503,7 +25521,7 @@
   ]
  },
  "dashboard-readwholedays-fct-region-daily": {
-  "hash": "3160d0f0b1207809016a0ce34cf47b3dc3ab79b6",
+  "hash": "fe6c7ff3269c037a9e81ee4699b5b96b4d11c118",
   "columns": [
    "[first]",
    "[last]"
@@ -25516,7 +25534,7 @@
   ]
  },
  "dashboard-readwholedays-fct-summary-daily": {
-  "hash": "cc3396792e4b8a98c5debe026be982e0600d51d6",
+  "hash": "8706e7f9c44d8de75f9541dca6d598a7e31983e9",
   "columns": [
    "[first]",
    "[last]"
@@ -25529,7 +25547,7 @@
   ]
  },
  "dashboard-regionnames": {
-  "hash": "b7d6c594dbef586530ed15b7ecfb410756d35963",
+  "hash": "291d802ebee7c08990778d1671200437f29090cb",
   "columns": [
    "[region]",
    "[state]"
@@ -25562,7 +25580,7 @@
   ]
  },
  "dashboard-regionnewestdate": {
-  "hash": "07f4682cdeeb4fc0940831fc6c9c6dda559d1a05",
+  "hash": "6207a1cbd6e2539e7d880f5c2a0f28d74674e628",
   "columns": [
    "[date]"
   ],
@@ -25573,7 +25591,7 @@
   ]
  },
  "dashboard-regionnewesttime": {
-  "hash": "645ba2b57d9cb605036b1e150bdeb3c062a4f3ef",
+  "hash": "82666b703067892bca3998e0641c3ca913c4b937",
   "columns": [
    "[time]"
   ],
@@ -25584,7 +25602,7 @@
   ]
  },
  "dashboard-regions": {
-  "hash": "179d67b6dcb13bddcefe8f344f4cf3d344e2d652",
+  "hash": "fe0542f64c1349ec273d326e91c92a6eadc30a83",
   "columns": [
    "[Region]"
   ],
@@ -25607,7 +25625,7 @@
   ]
  },
  "dashboard-renewablesharebyperiod-1y-sa1": {
-  "hash": "03db60eab775b9b7ae05d4d71c5a1357791ede0d",
+  "hash": "a8e3feb0de08553b1aabd6d204f2be380d64719c",
   "columns": [
    "dim_calendar[date]",
    "[share]"
@@ -25676,7 +25694,7 @@
   ]
  },
  "dashboard-renewablesharebyperiod-1y-units": {
-  "hash": "6c5c1d5bc3e1ec9a256de911a6e7f26846162414",
+  "hash": "2fd03488c95ec5d857fea2b4e632c9f922836143",
   "columns": [
    "dim_calendar[date]",
    "[share]"
@@ -25745,7 +25763,7 @@
   ]
  },
  "dashboard-renewablesharebyperiod-3d-all": {
-  "hash": "9bab00718cc2abe8045cf944f55dc58c1332b784",
+  "hash": "4bd26ad6f09878bc3b4c7a576439467053d1a72e",
   "columns": [
    "fct_summary[date]",
    "fct_summary[time]",
@@ -25800,7 +25818,7 @@
   ]
  },
  "dashboard-renewablesharebyperiod-3d-sa1": {
-  "hash": "f2954f242d14a597a83e0554f98a91b1bb3eea33",
+  "hash": "af62b6676999ea6150dea46097adabe6be1bbffe",
   "columns": [
    "fct_summary[date]",
    "fct_summary[time]",
@@ -25855,7 +25873,7 @@
   ]
  },
  "dashboard-renewablesharebyperiod-3d-units": {
-  "hash": "c22edba323f1c04cae72e08417f264159eb8e3aa",
+  "hash": "b0d508cac48b1f65ab9eaa89306e12cf23de11df",
   "columns": [
    "fct_summary[date]",
    "fct_summary[time]",
@@ -25910,7 +25928,7 @@
   ]
  },
  "dashboard-renewableshareofrange-1y-all": {
-  "hash": "c6b921fdebafd18ece7258035dba8e2728ab263a",
+  "hash": "a7269ad2bbba0550becf871cdfaf9ffc37092d80",
   "columns": [
    "[share]"
   ],
@@ -25921,7 +25939,7 @@
   ]
  },
  "dashboard-renewableshareofrange-1y-sa1": {
-  "hash": "9045c20d8c52ee78ee2b9b4efc0cc7540a21722f",
+  "hash": "0b392d07919c348e89b8fbd4e7c22cb226f53714",
   "columns": [
    "[share]"
   ],
@@ -25932,7 +25950,7 @@
   ]
  },
  "dashboard-renewableshareofrange-1y-units": {
-  "hash": "60851ac372b529c62e9f337236ae41cfaca5113f",
+  "hash": "9a270ef6c621cab779f8bdedbf71754e87164da7",
   "columns": [
    "[share]"
   ],
@@ -25943,7 +25961,7 @@
   ]
  },
  "dashboard-renewableshareofrange-3d-all": {
-  "hash": "4876a593d93a0e58293703ae68609e597d548d69",
+  "hash": "ed52c89126223e05d2a78f821dbc70d856cba085",
   "columns": [
    "[share]"
   ],
@@ -25954,7 +25972,7 @@
   ]
  },
  "dashboard-renewableshareofrange-3d-sa1": {
-  "hash": "5ee6edfd535b70aa6dbb9902257aa53d612ed99b",
+  "hash": "e1967781e6745fbb9ff1324076b0008ce0f0513e",
   "columns": [
    "[share]"
   ],
@@ -25965,7 +25983,7 @@
   ]
  },
  "dashboard-renewableshareofrange-3d-units": {
-  "hash": "2a1c9090af38ef69a782a0ae412b05f92e0a869f",
+  "hash": "070d6c8a1c65f06906d46799b1bec67a1535f0e2",
   "columns": [
    "[share]"
   ],
@@ -25976,7 +25994,7 @@
   ]
  },
  "dashboard-stationunits": {
-  "hash": "63c20185115f6d20a29e89511bd59e36101b93d0",
+  "hash": "552c798d56228dd36508c47b1739e9172c3fa198",
   "columns": [
    "dim_duid[DUID]"
   ],

@@ -113,6 +113,8 @@ export class Dialect {
   // Whether the aggregates an iterator's rows take over their own values are fused into a GROUP BY
   // joined to the rows (emit.js rowFused), for an engine that runs the subqueries as loops.
   fuseRows = false;
+  // Whether a join's ON can read a row of the query around (T-SQL; DuckDB: not in an outer join).
+  correlatedJoin = false;
   // Whether the engine computes again what the SQL writes again (T-SQL): a CTE at each name, a
   // subquery at each copy. The emitter then writes a value once where it can.
   repeats = false;

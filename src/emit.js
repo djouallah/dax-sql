@@ -962,7 +962,7 @@ export class Emitter {
     const fusion = new Fusion(this, row, keyCols.map((_, i) => i), keyCols);
     fusion.ofRows = true;
     // The rows around the iterator: the only ones an aggregate's outer keys can read.
-    fusion.outerRows = new Set(scope.keys());
+    fusion.outerRows = this.d.correlatedJoin ? new Set(scope.keys()) : new Set();
     this.fusions.push(fusion);
     let out;
     try { out = f(); } finally { this.fusions.pop(); }

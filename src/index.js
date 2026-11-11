@@ -123,8 +123,9 @@ export function createCompiler(input, options = {}) {
   // query writes see it (Model.fork). Roles that hide objects together with others that filter
   // rows are an error in Power BI; one role can do both.
   const roles = roleNames.map(name => model.roles.find(r => r.name.toLowerCase() === String(name).toLowerCase()));
-  if (roles.length > 1 && roles.some(r => r.hidden.length) && roles.some(r => r.filters.length))
-    throw semantic('The combination of active roles results in a dynamic security configuration that is currently not supported');
+  // The error is a query's, as in Power BI: the compiler is made, each query refused.
+  const rolesError = roles.length > 1 && roles.some(r => r.hidden.length) && roles.some(r => r.filters.length)
+    ? 'The combination of active roles results in a dynamic security configuration that is currently not supported' : null;
   if (roles.length && roles.every(r => r.hidden.length)) {
     const hides = (r, t, c) => r.hidden.some(h => h.table === t || (c && h.column === c));
     base.hidden = {
@@ -140,6 +141,7 @@ export function createCompiler(input, options = {}) {
   });
   // `dax`: the query's text, or its tree (keyed by `key`, the text it was built from).
   function compileAll(dax, key = dax) {
+    if (rolesError) throw semantic(rolesError);
     let out = cache.get(key);
     if (out) return out;
     out = base.query(dax, emit(options));

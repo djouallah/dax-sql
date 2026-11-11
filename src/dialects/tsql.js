@@ -28,6 +28,7 @@ export class TSqlDialect extends Dialect {
   subqueryInCase = false;
   correlatedSemiJoin = false;
   fuseRows = true;
+  correlatedJoin = true;
   repeats = true;
 
   // Fabric drops a varchar literal's trailing spaces in a query over a table (', ' || x is ",x"),

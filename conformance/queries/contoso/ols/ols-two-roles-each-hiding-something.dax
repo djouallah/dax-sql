@@ -1,0 +1,3 @@
+// note: two roles that hide different objects: what each hides, when the other shows it
+// roles: NoPrice, NoReturns
+EVALUATE ROW("p", MAX(Product[Price]), "r", COUNTROWS(Returns))

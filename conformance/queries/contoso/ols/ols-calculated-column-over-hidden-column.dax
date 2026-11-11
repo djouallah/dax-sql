@@ -1,0 +1,3 @@
+// note: a calculated column of the same table computed from a column the role hides (PriceBand)
+// roles: NoPrice
+EVALUATE SUMMARIZECOLUMNS(Product[PriceBand], "n", [Product Count])

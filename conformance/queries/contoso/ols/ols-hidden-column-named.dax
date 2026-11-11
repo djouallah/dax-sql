@@ -1,0 +1,3 @@
+// note: a column the role hides, named in the query
+// roles: NoPrice
+EVALUATE ROW("p", SUM(Product[Price]))

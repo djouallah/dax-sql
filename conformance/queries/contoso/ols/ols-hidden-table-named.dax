@@ -1,0 +1,3 @@
+// note: a table the role hides, named in the query
+// roles: NoReturns
+EVALUATE ROW("r", COUNTROWS(Returns))

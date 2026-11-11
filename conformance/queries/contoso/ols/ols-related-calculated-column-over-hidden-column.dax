@@ -1,0 +1,3 @@
+// note: a calculated column of another table that RELATEDs a column the role hides (Sales[LineValue])
+// roles: NoPrice
+EVALUATE ROW("v", SUM(Sales[LineValue]))

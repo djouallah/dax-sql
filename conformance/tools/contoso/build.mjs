@@ -3,10 +3,10 @@
 //
 //   Sales (11 rows) -> Product -> Category, Sales -> Customer, Sales -> Date by OrderDate (active)
 //   and by ShipDate (inactive); Returns -> Product, Returns -> Date. Sale 11 is to customer 99,
-//   who is not in Customer. CityTarget <-> Customer many-to-many on the city, Customer filtering it.
+//   Erin of Rome, the city CityTarget has and no other customer. CityTarget <-> Customer many-to-many on the city, Customer filtering it.
 //   Calculated tables Big Products (Sales -> Big Products) and Days (CALENDARAUTO), calculation
 //   groups Time Calc (10) and Scale (20), a field parameter (Fields), roles Paris, RedOnly and
-//   Me (USERPRINCIPALNAME()), and a disconnected parent-child table, Staff.
+//   Me (USERPRINCIPALNAME()), roles with object-level security (NoPrice, NoReturns, ParisNoPrice), and a disconnected parent-child table, Staff.
 //
 // Folded in from tests that extend the fixture: the Sales -> Big Products relationship, Time
 // Calc's Tenfold item, Customer's calculated columns Flag and Total Sales, and Staff.
@@ -120,6 +120,11 @@ const bim = {
       { name: 'Paris', modelPermission: 'read', tablePermissions: [{ name: 'Customer', filterExpression: 'Customer[City] = "Paris"' }] },
       { name: 'RedOnly', modelPermission: 'read', tablePermissions: [{ name: 'Product', filterExpression: 'Product[Color] = "Red"' }] },
       { name: 'Me', modelPermission: 'read', tablePermissions: [{ name: 'Customer', filterExpression: 'Customer[Customer] = USERPRINCIPALNAME()' }] },
+      // Object-level security: a column, a table, and a column beside a row filter.
+      { name: 'NoPrice', modelPermission: 'read', tablePermissions: [{ name: 'Product', columnPermissions: [{ name: 'Price', metadataPermission: 'none' }] }] },
+      { name: 'NoReturns', modelPermission: 'read', tablePermissions: [{ name: 'Returns', metadataPermission: 'none' }] },
+      { name: 'ParisNoPrice', modelPermission: 'read', tablePermissions: [{ name: 'Customer', filterExpression: 'Customer[City] = "Paris"' },
+        { name: 'Product', columnPermissions: [{ name: 'Price', metadataPermission: 'none' }] }] },
     ],
   },
 };
@@ -139,7 +144,7 @@ const data = {
   },
   Customer: {
     columns: [['CustomerKey', 'int64'], ['Customer', 'string'], ['City', 'string']],
-    rows: [[1, 'Alice', 'Paris'], [2, 'Bob', 'London'], [3, 'Chloe', 'Paris'], [4, 'Dan', 'Berlin']],
+    rows: [[1, 'Alice', 'Paris'], [2, 'Bob', 'London'], [3, 'Chloe', 'Paris'], [4, 'Dan', 'Berlin'], [99, 'Erin', 'Rome']],
   },
   Date: { columns: [['Date', 'dateTime'], ['Year', 'int64'], ['Month', 'int64'], ['Quarter', 'int64']], rows: dates },
   Sales: {

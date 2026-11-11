@@ -1,0 +1,3 @@
+// note: a model measure of a table the role hides (Returned = SUM(Returns[ReturnQty]))
+// roles: NoReturns
+EVALUATE ROW("r", [Returned])

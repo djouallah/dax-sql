@@ -1,0 +1,3 @@
+// note: a role with a row filter and a hidden column, the column named
+// roles: ParisNoPrice
+EVALUATE ROW("p", MAX(Product[Price]))

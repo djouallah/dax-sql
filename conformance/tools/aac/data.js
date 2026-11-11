@@ -15,10 +15,9 @@
 //   - fct_region's wind and solar columns are blank before August, as the real ones are
 //     before the intraday record starts (2026-08).
 //   - An interval at 0 MW is not stored in fct_summary; a battery charging is negative.
-//   - Keys: every fct_summary unit is in dim_duid (the model relies on it), as in the real
-//     data; fct_curtailment has a farm dim_duid lacks (WRSF1) and fct_interconnector a link
-//     dim_interconnector lacks (N-Q-MNSP1), the cases the page's compiler adds a dimension's
-//     blank row for. dim_duid has units with no rows (a retired one, a WA one) and
+//   - Keys: every fact's unit is in dim_duid and every link in dim_interconnector (the model
+//     relies on it for fct_summary), as in the real data; WRSF1, a farm only fct_curtailment
+//     has, and N-Q-MNSP1, a link only fct_interconnector has, are in them too. dim_duid has units with no rows (a retired one, a WA one) and
 //     dim_region a region with no prices (WA1).
 //   - The newest interval has no demand yet for TAS1.
 //
@@ -101,7 +100,7 @@ export function generate() {
     ['V-S-MNSP1', 'VIC1', 'SA1', 'Murraylink', 220, -200],
   ];
   const ORPHAN_LINK = ['N-Q-MNSP1', 'NSW1', 'QLD1', 'Directlink', 180, -210];
-  const dim_interconnector = LINKS.map(([interconnector, from_region, to_region, description]) => ({ interconnector, from_region, to_region, description }));
+  const dim_interconnector = [...LINKS, ORPHAN_LINK].map(([interconnector, from_region, to_region, description]) => ({ interconnector, from_region, to_region, description }));
 
   const days = daysFrom(...FACT_DAYS);
   const august = d => d >= '2026-08-01';
@@ -164,6 +163,11 @@ export function generate() {
     }
   };
   const FACT_UNITS = dim_duid.filter(u => u.Region !== 'WA1' && u.DUID !== 'LIDDELL1').map(u => u.DUID);
+  // WRSF1, a farm fct_curtailment has and fct_summary does not, after FACT_UNITS: nothing it generates changes.
+  dim_duid.push({ DUID: 'WRSF1', Region: 'NSW1', State: STATE.NSW1, FuelSourceDescriptor: 'Solar', Participant: 'White Rock Solar Farm Pty Ltd',
+    StationName: 'White Rock Solar Farm', TechnologyType: 'Photovoltaic Tracking Flat panel', Classification: 'Semi-Scheduled', CO2eFactor: 0,
+    Renewable: true, RegCapMW: 20, MaxCapMW: 20, StorageMWh: null, latitude: -29.7719, longitude: 151.5414, Storage: false,
+    Plant: 'White Rock Solar Farm', Owner: 'White Rock Solar Farm Pty Ltd' });
   const fct_summary = [];
   for (const date of days) {
     const written = date <= UNITS_WHOLE ? `${iso(ms(date) + DAY)} 04:00:00` : null;

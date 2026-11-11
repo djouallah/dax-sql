@@ -1,0 +1,3 @@
+// note: a column the role hides, as a CALCULATE filter
+// roles: NoPrice
+EVALUATE CALCULATETABLE(ROW("s", [Sales Amount]), Product[Price] > 100)

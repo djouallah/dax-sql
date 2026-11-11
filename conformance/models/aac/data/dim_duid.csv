@@ -18,3 +18,4 @@
 "ROOFTOP_SA1","SA1","South Australia","Rooftop solar",,,,,,true,,,,,,false,"ROOFTOP_SA1","Rooftop solar (AEMO estimate)"
 "ROOFTOP_TAS1","TAS1","Tasmania","Rooftop solar",,,,,,true,,,,,,false,"ROOFTOP_TAS1","Rooftop solar (AEMO estimate)"
 "ROOFTOP_VIC1","VIC1","Victoria","Rooftop solar",,,,,,true,,,,,,false,"ROOFTOP_VIC1","Rooftop solar (AEMO estimate)"
+"WRSF1","NSW1","New South Wales","Solar","White Rock Solar Farm Pty Ltd","White Rock Solar Farm","Photovoltaic Tracking Flat panel","Semi-Scheduled",0,true,20,20,,-29.7719,151.5414,false,"White Rock Solar Farm","White Rock Solar Farm Pty Ltd"

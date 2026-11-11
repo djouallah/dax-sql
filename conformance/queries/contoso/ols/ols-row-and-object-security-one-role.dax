@@ -1,0 +1,4 @@
+// note: a role with a row filter and a hidden column: its rows, and the column hidden
+// roles: ParisNoPrice
+EVALUATE SUMMARIZECOLUMNS(Customer[City], Product[Color], "s", [Sales Amount])
+ORDER BY Customer[City], Product[Color]

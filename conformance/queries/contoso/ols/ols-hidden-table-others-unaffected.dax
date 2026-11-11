@@ -1,0 +1,4 @@
+// note: the tables a hidden table is related to, with its relationships still in the model
+// roles: NoReturns
+EVALUATE SUMMARIZECOLUMNS(Product[Name], 'Date'[Year], "s", [Sales Amount])
+ORDER BY Product[Name], 'Date'[Year]

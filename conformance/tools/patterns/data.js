@@ -154,7 +154,7 @@ export function generate() {
       sales.push([o, l, order, delivery, p[0], c[0], emp, code, qty, netPrice, cost]);
     }
   }
-  // Rows whose product or customer the dimensions lack: the blank row's business.
+  // Rows of a product and a customer that sell little: 999 and 0, keys out of the others' range.
   sales.push([1251, 1, '2023-05-17', '2023-05-20', 999, 5, 7, 'USD', 2, 45.5, 20]);
   sales.push([1251, 2, '2023-05-17', '2023-05-20', 3, 5, 7, 'USD', 1, 1500, 800]);
   sales.push([1252, 1, '2024-08-09', '2024-08-15', 999, 0, 8, 'EUR', 1, 99, 40]);
@@ -178,6 +178,10 @@ export function generate() {
       inventory.push([d, p[0], onHand]);
     }
   }
+
+  // Product 999 and customer 0, of the sales above, added last so that no draw above changes.
+  products.push([999, 'Clearance Lot', 'Black', 'Litware', 12, 45.5, 20]);
+  customers.push([0, 'Customer 000', 'Paris', 'France', 'F', 1980]);
 
   // --- segments for dynamic segmentation (disconnected) ---
   const segments = [['Low', 0, 1000, 1], ['Medium', 1000, 5000, 2], ['High', 5000, 20000, 3], ['Top', 20000, 1e9, 4]];

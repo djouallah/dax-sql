@@ -1,0 +1,3 @@
+// note: two roles that hide different objects, asked only what both show
+// roles: NoPrice, NoReturns
+EVALUATE ROW("s", [Sales Amount], "n", [Product Count])

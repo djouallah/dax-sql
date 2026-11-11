@@ -1,0 +1,4 @@
+// note: a measure the query defines over a column the role hides
+// roles: NoPrice
+DEFINE MEASURE Sales[Top Price] = MAX(Product[Price])
+EVALUATE ROW("t", [Top Price])

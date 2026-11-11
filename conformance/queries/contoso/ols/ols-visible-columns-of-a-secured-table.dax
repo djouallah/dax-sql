@@ -1,0 +1,4 @@
+// note: the other columns and measures of a table one of whose columns the role hides
+// roles: NoPrice
+EVALUATE SUMMARIZECOLUMNS(Product[Color], "s", [Sales Amount], "n", [Product Count])
+ORDER BY Product[Color]

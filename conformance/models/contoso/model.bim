@@ -675,6 +675,50 @@
             "filterExpression": "Customer[Customer] = USERPRINCIPALNAME()"
           }
         ]
+      },
+      {
+        "name": "NoPrice",
+        "modelPermission": "read",
+        "tablePermissions": [
+          {
+            "name": "Product",
+            "columnPermissions": [
+              {
+                "name": "Price",
+                "metadataPermission": "none"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "NoReturns",
+        "modelPermission": "read",
+        "tablePermissions": [
+          {
+            "name": "Returns",
+            "metadataPermission": "none"
+          }
+        ]
+      },
+      {
+        "name": "ParisNoPrice",
+        "modelPermission": "read",
+        "tablePermissions": [
+          {
+            "name": "Customer",
+            "filterExpression": "Customer[City] = \"Paris\""
+          },
+          {
+            "name": "Product",
+            "columnPermissions": [
+              {
+                "name": "Price",
+                "metadataPermission": "none"
+              }
+            ]
+          }
+        ]
       }
     ]
   }

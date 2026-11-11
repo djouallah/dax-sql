@@ -199,12 +199,16 @@ export class DuckDBDialect extends Dialect {
   agg(fn, x, extra = {}) {
     const f = extra.filter ? ` FILTER (WHERE ${extra.filter})` : '';
     switch (fn) {
-      case 'sum': return `SUM(${x})${f}`;
+      // extra.exact: a sum of floating-point values as a DECIMAL's, the same in any order (a
+      // measure written twice and compared: a RANKX's row and the rows it ranks; 'groups': left a
+      // DECIMAL, for the groups it is added up from).
+      case 'sum': return extra.exact && extra.t === 'double'
+        ? (extra.exact === 'groups' ? `SUM(CAST(${x} AS DECIMAL(38,15)))${f}` : `CAST(SUM(CAST(${x} AS DECIMAL(38,15)))${f} AS DOUBLE)`) : `SUM(${x})${f}`;
       // A sum of fixed decimals (x is the value before it is made one): each rounded to four
       // places, and an error if one is out of range, as currency() does row by row; the range
       // checked once, on the largest.
       case 'sum_currency': return `CASE WHEN MAX(abs(${x}))${f} >= 922337203685477.5808 THEN error('DAX: the result of a conversion or arithmetic operation is too large or too small for a fixed decimal number') ELSE SUM(round(${x}, 4))${f} END`;
-      case 'avg': return `AVG(${x})${f}`;
+      case 'avg': return extra.exact && extra.t === 'double' ? `CAST(AVG(CAST(${x} AS DECIMAL(38,15)))${f} AS DOUBLE)` : `AVG(${x})${f}`;
       case 'min': return `MIN(${x})${f}`;
       case 'max': return `MAX(${x})${f}`;
       case 'count': return `NULLIF(COUNT(${x})${f}, 0)`;

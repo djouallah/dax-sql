@@ -254,6 +254,10 @@ same table, relationship state, keys, and other filters (the filters compared as
   their dates for each month took 12 s, their groups 0.1 s. A sum of floating-point groups
   is added in the values' own order, so that a measure written twice is the same to the last
   digit.
+- **RANKX's two sides** (the row's value and each ranked row's) are the same measure written
+  twice: their sums of floating-point values are added as DECIMALs, the same in any order.
+  DuckDB's threads add a column's values in an order of their own, and over three million
+  rows a row ranked below itself, or sixth of five.
 
 Inside a fused scan, a filter that reads a key the scan is itself filtered to reads the scan's
 own column instead. Its correlation moves from the group to the row, which joins well.

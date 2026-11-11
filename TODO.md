@@ -5,12 +5,6 @@ other than by design), then the speed of the SQL.
 
 # Wave 1: gaps
 
-## Correctness
-
-- **RANKX on a floating-point measure** can rank a row below itself when DuckDB adds the same
-  values in two orders (several threads, millions of rows). Fixed where the measure reads a
-  table grouped first; elsewhere RANKX should compute each value once.
-
 ## Not implemented
 
 - **Object-level security**: a role that hides whole tables or columns (a model's

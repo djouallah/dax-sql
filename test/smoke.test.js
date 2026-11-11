@@ -171,3 +171,14 @@ test('a role with object-level security is refused: reading the model without it
     assert.ok(createCompiler(tmslToModel(m), { roles: 'Paris' }).compile('EVALUATE ROW("s", [Sales Amount])').sql);
   }
 });
+
+test("RANKX's two sides add floating-point values exactly: the same sum wherever the measure is written", async () => {
+  const q = `EVALUATE ADDCOLUMNS(VALUES(Product[Color]), "r", RANKX(ALL(Product[Color]), SUMX(Product, Product[Price] * 1.1)))`;
+  const { sql } = h.dax.compile(q);
+  assert.match(sql, /DECIMAL\(38,15\)/, sql);
+  // A measure outside a RANKX adds up as the engine does.
+  assert.doesNotMatch(h.dax.compile(`EVALUATE ADDCOLUMNS(VALUES(Product[Color]), "s", SUMX(Product, Product[Price] * 1.1))`).sql, /DECIMAL\(38,15\)/);
+  const ranks = (await h.run(q)).map(r => r.r).sort((a, b) => a - b);
+  assert.equal(ranks[0], 1);
+  assert.ok(ranks.every(r => r >= 1 && r <= ranks.length));
+});

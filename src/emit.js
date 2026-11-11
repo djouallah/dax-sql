@@ -33,6 +33,7 @@ export class Emitter {
     // keep no row where the value is blank, SQL -> the value; and those that keep the blank
     // too, SQL -> { base: the comparison alone, col: the value }.
     this.rejects = new Map();
+    this.exact = 0;               // > 0 inside a value whose floating-point sums are added exactly (`same`)
     this.nullArms = new Map();
   }
 
@@ -684,6 +685,12 @@ export class Emitter {
       }
       case 'op': return this.op(x, scope, pred);
       case 'fn': {
+        // A value written twice and compared (RANKX's): its sums of floating-point values are
+        // added exactly, the same in any order (Dialect.agg's extra.exact).
+        if (x.name === 'same') {
+          this.exact++;
+          try { return this.scalar(x.a[0], scope, pred); } finally { this.exact--; }
+        }
         // Values of different kinds together (a number or a text): as text.
         const as = x.t === 'variant' && ['coalesce', 'greatest', 'least'].includes(x.name) ? v => this.variant(v, scope) : v => this.scalar(v, scope);
         return this.d.fn(x.name, x.a.map(as), x.a);
@@ -986,7 +993,9 @@ export class Emitter {
     const unique = table ? [table.key, ...this.model.oneSides(table).map(o => o.one)].filter(Boolean).map(c => `${base}.${this.ident(c.source)}`) : [];
     if (cols.some(c => unique.includes(c))) return null;
     const v = this.ident('dax_a'), inner = b.where.filter(ownOnly);
-    const sql = `SELECT ${cols.join(', ')}, ${this.d.agg(p.fn, p.arg, p.extra)} AS ${v} FROM ${b.from}${inner.length ? ` WHERE ${inner.join(' AND ')}` : ''} GROUP BY ${cols.join(', ')}`;
+    // Sums to be added exactly stay DECIMALs in the groups, and their sum is the exact one.
+    const exactly = p.extra?.exact && p.fn === 'sum' && p.extra.t === 'double';
+    const sql = `SELECT ${cols.join(', ')}, ${this.d.agg(p.fn, p.arg, exactly ? { ...p.extra, exact: 'groups' } : p.extra)} AS ${v} FROM ${b.from}${inner.length ? ` WHERE ${inner.join(' AND ')}` : ''} GROUP BY ${cols.join(', ')}`;
     const key = `grouped|${canonical(sql)}`;
     let name = this.memo.get(key);
     if (!name) {
@@ -999,6 +1008,7 @@ export class Emitter {
     // A sum of floating-point groups in their own order: the same to the last digit wherever
     // the measure is written again (a RANKX's row and the rows it ranks), whatever order the
     // engine's threads read the groups in.
+    if (exactly) return `CAST(SUM(${base}.${v}) AS DOUBLE)`;
     const exact = p.fn === 'sum' && p.extra?.t !== 'int' && p.extra?.t !== 'decimal';
     return exact ? `SUM(${base}.${v} ORDER BY ${base}.${v})` : OVER[p.fn](`${base}.${v}`);
   }
@@ -1028,7 +1038,7 @@ export class Emitter {
       return { fn: 'sum_currency', arg: this.scalar(x.arg.a[0], scope), extra: {} };
     const arg = x.arg ? this.scalar(x.arg, scope) : null;
     // `t`, its argument's type: an engine adds up floating-point values its own way (tsql.js).
-    const extra = { t: x.arg?.t };
+    const extra = { t: x.arg?.t, ...(this.exact ? { exact: true } : {}) };
     if (x.fn === 'concat') {
       extra.delim = this.scalar(x.a[0], scope);
       const keys = (x.order ?? []).map(o => ({ sql: this.scalar(o.expr, scope), desc: o.desc }));
@@ -1390,7 +1400,7 @@ class Fusion {
     const em = this.em, b = g.block, base = scanAlias(g);
     if (!em.d.aggBelowJoins || !base || g.edge || g.readsKeys || !g.keyExprs.length || !b.joins.length) return null;
     if (!b.joins.every(j => b.hops?.has(j)) || owns.some(Boolean)) return null;
-    if (!g.aggs.every(a => OVER[a.parts.fn] && !partsQuery(a.parts) && !a.parts.keys?.length)) return null;
+    if (!g.aggs.every(a => OVER[a.parts.fn] && !partsQuery(a.parts) && !a.parts.keys?.length && !a.parts.extra?.exact)) return null;
     if ([...g.keyExprs, ...b.joins, ...b.where].some(isQuery)) return null;
     const joined = [...b.joins.join(' ').matchAll(/\bAS (\w+) ON\b/g)].map(m => m[1]);
     const readsJoined = s => joined.some(a => new RegExp(`\\b${a}\\.`).test(s ?? ''));

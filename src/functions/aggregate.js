@@ -242,9 +242,12 @@ function earlier(c, args, env, ast) {
 }
 
 function rankX(c, args, env) {
-  const { src, row, arg, inner } = overTable(c, args, env);
-  void inner;
-  const value = args[2] && args[2].k !== 'empty' ? c.scalar(args[2], env) : c.scalar(args[1], env);
+  const over = overTable(c, args, env), { src, row } = over;
+  // The two values compared are the same measure written twice: their floating-point sums are
+  // added exactly (emit.js `same`), or a row could rank below itself by a last digit.
+  const same = x => (x.k === 'lit' ? x : ir.fn('same', [x], x.t, { nn: x.nn }));
+  const arg = same(over.arg);
+  const value = same(args[2] && args[2].k !== 'empty' ? c.scalar(args[2], env) : c.scalar(args[1], env));
   const desc = isDesc(args[3], true);
   const dense = args[4] && args[4].k === 'name' && args[4].name.toUpperCase() === 'DENSE';
   const ahead = ir.op(desc ? 'gt' : 'lt', arg, value);

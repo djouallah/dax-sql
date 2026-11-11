@@ -1203,6 +1203,19 @@ class Fusion {
 
   add(x, scope) {
     const em = this.em, S = x.src;
+    // MIN or MAX over the distinct values of a scan's column (VALUES, MAX of the visible dates):
+    // over the scan's rows, the same values.
+    if ((x.fn === 'min' || x.fn === 'max') && S.k === 'distinct' && S.src.k === 'project' && !S.src.keep && S.src.src.k === 'scan'
+      && x.arg?.k === 'col' && x.arg.row === x.row) {
+      const at = typeof x.arg.ref === 'number' ? x.arg.ref : S.cols.findIndex(c => c.lineage === x.arg.ref);
+      const item = S.src.items[at];
+      if (item?.expr.k === 'col' && item.expr.row === S.src.row) {
+        const y = { ...x, src: S.src.src, row: S.src.row, arg: item.expr };
+        const out = this.add(y, scope);
+        if (out) em.fusedIn.set(x, em.fusedIn.get(y));
+        return out;
+      }
+    }
     if (S.k !== 'scan' || x.fn === 'single') return null;
     const kid = this.keyRow?.id;
     // An iterator's row (ofRows): a bind of one of the scan's columns to a column of an outer row

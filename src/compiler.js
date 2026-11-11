@@ -394,11 +394,6 @@ export class Compiler {
     return { ...env, rows: [...env.rows, row], shadows };
   }
 
-  // The relationships that give a table DAX's blank row: none, there is no such row (DESIGN.md).
-  blankRowRels() {
-    return [];
-  }
-
   // Context transition: each row context becomes filters on its columns.
   transition(env, ctx = env.ctx) {
     for (const row of env.rows) ctx = this.transitionRow(ctx, row);
@@ -728,7 +723,7 @@ export class Compiler {
       byTable.get(c.table).push(c);
     }
     for (const [t, cs] of byTable) {
-      const src = ir.values(t, sctx, cs, (tb, x) => this.scan(tb, x), this.blankRowRels(t).length > 0);
+      const src = ir.values(t, sctx, cs, (tb, x) => this.scan(tb, x));
       ctx = ctx.add({ kind: 'rel', cols: cs, src, idx: cs.map((_, i) => i), base: null });
     }
     return ctx;
@@ -757,7 +752,7 @@ function parse(text, what) {
 // table's rows, with columns added or not), or null.
 function valuesCtx(x) {
   for (;;) {
-    if (x.k === 'distinct' || x.k === 'withblank' || x.k === 'shared') x = x.src;
+    if (x.k === 'distinct' || x.k === 'shared') x = x.src;
     else if (x.k === 'project' && (x.keep || x.items.every(i => i.expr.k === 'col' && i.expr.row === x.row))) x = x.src;
     else break;
   }

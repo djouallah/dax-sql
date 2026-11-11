@@ -68,7 +68,7 @@ function windowArgs(c, args, env, fn) {
     if (unique.some(x => x.table !== unique[0].table)) throw semantic(`${fn} with no relation: the columns must be of one table`);
     // ALLSELECTED of the columns, as a table: their values under the last shadow on them.
     const ctx = c.allSelected(env.ctx.removeAll(), env, new Set(unique), true);
-    rel = ir.values(unique[0].table, ctx, unique, (t, x) => c.scan(t, x), c.blankRowRels(unique[0].table).length > 0);
+    rel = ir.values(unique[0].table, ctx, unique, (t, x) => c.scan(t, x));
   }
   const row = visual ? visual.row : ir.rowOf(rel, 'table'), inner = c.iter(env, row);
   const index = (a, what) => {
@@ -121,8 +121,8 @@ function currentRow(c, env, rel, idx) {
       if (!byTable.has(l.table)) byTable.set(l.table, []);
       byTable.get(l.table).push(i);
     }
-    // Their values as VALUES has them: the table's blank row is one, when it has one.
-    const parts = [...byTable].map(([t, is]) => ir.values(t, env.ctx, is.map(i => rel.cols[i].lineage), (tb, x) => c.scan(tb, x), c.blankRowRels(t).length > 0));
+    // Their values as VALUES has them.
+    const parts = [...byTable].map(([t, is]) => ir.values(t, env.ctx, is.map(i => rel.cols[i].lineage), (tb, x) => c.scan(tb, x)));
     const order = [...byTable.values()].flat();
     const table = parts.length === 1 ? parts[0] : { k: 'cross', srcs: parts, cols: parts.flatMap(p => p.cols), base: null };
     unbound = { table, idx: order };

@@ -34,14 +34,7 @@ export class Emitter {
     // too, SQL -> { base: the comparison alone, col: the value }.
     this.rejects = new Map();
     this.nullArms = new Map();
-    this.reads = new Set();       // the tables the statement reads, the blank row's check aside
-    this.checks = 0;             // > 0 while writing that check (orphans, lacking)
-    this.blanks = false;          // whether a table got a blank row
   }
-
-  // Whether the statement reads one table only, and gave it a blank row: index.js compiles
-  // it again without one.
-  readsOneTable() { return this.blanks && this.reads.size === 1; }
 
   alias(p) { return `${p}${++this.n}`; }
   ident(n) { return this.d.ident(n); }
@@ -198,18 +191,6 @@ export class Emitter {
       }
       case 'sc': return this.summarizeColumns(x, scope);
       case 'window': return this.windowRows(x, scope);
-      case 'withblank': {
-        // VALUES, ALL: the rows, and the table's blank row when it has one.
-        const b = this.table(x.src, scope), names = b.names();
-        const blank = this.blankRow(x.table, x.ctx, scope, bb => {
-          bb.setOut(x.cols, x.lineage.map(l => bb.res.meta(l)));
-          bb._names = names;
-          bb.out.forEach((o, i) => { o.name = names[i]; });
-          return bb.render();
-        }, null, x.unmatched !== false);
-        if (!blank) return b;
-        return this.fromSql(`(${b.render()} UNION ${blank})`, x.cols, names);
-      }
       case 'prefix': {
         const b = this.wrap(this.table(x.src, scope));
         const vals = x.vals.map(v => this.scalar(v, scope));
@@ -233,13 +214,10 @@ export class Emitter {
   // The rows of a model table the filter context keeps.
   // `self` ([row, columns]): the row's columns are this scan's own (a group key the scan is
   // filtered to), read off its rows.
-  // `from`: another source for the table's rows (its blank row); `unmatched`: blankRow's.
-  scanBlock(table, ctx, scope, excluded = null, self = null, from = null, unmatched = true) {
+  scanBlock(table, ctx, scope, excluded = null, self = null) {
     const a = this.alias('t');
-    const b = new Block(this, `${from ?? this.source(table)} AS ${a}`, table.columns.map(c => ({ name: c.name, lineage: c, t: c.type })));
+    const b = new Block(this, `${this.source(table)} AS ${a}`, table.columns.map(c => ({ name: c.name, lineage: c, t: c.type })));
     b.res = new ScanRes(this, b, table, a, this.model.state(ctx.mods));
-    b.res.blankRow = !!from;
-    b.res.unmatched = !from || unmatched;
     if (self) {
       const [row, cols] = self, res = b.res;
       scope = withRow(scope, row, { col: i => res.meta(cols[i]), meta: m => res.meta(m) });
@@ -274,7 +252,6 @@ export class Emitter {
   }
 
   source(table) {
-    if (!this.checks) this.reads.add(table);
     if (table.calc) return this.calcTableSource(table);
     if (table.calcGroup) return this.calcGroupSource(table);
     if (this.options.tableSource) return this.options.tableSource(table);
@@ -540,11 +517,7 @@ export class Emitter {
       // Filters that arrive over bidirectional and many-to-many relationships: X's rows the
       // filter context keeps, when it filters X at all. Row-level security alone is no such
       // filter (it reaches the scan as securityConds says), so whether X is filtered is
-      // decided without it; the rows that filter are X's visible ones, with its blank row
-      // when the context keeps it (it is blank in the key: the scan's blank row matches it).
-      // X's rows whose key the scan's side lacks belong to that side's blank row: they keep
-      // it (and the rows read through it), but for a blank row that only counts the table's
-      // rows (res.unmatched).
+      // decided without it; the rows that filter are X's visible ones.
       for (const name of exp.keys()) {
         for (const e of this.model.inbound(this.model.table(name), state)) {
           const X = e.there.table;
@@ -555,21 +528,10 @@ export class Emitter {
           const key = b => { b.setOut([{ name: 'k', lineage: null }], [b.res.meta(e.there)]); return b.render(); };
           const sub = key(this.scanBlock(X, ctx, scope, skip));
           // A many-to-many relationship matches its columns' values, a blank meeting a blank: a
-          // NULL stored on one side, or a blank row, meets one on the other.
+          // NULL stored on one side meets one on the other.
           const mm = e.rel.fromCard === 'many' && e.rel.toCard === 'many';
-          const here = res.meta(e.here), side = mm || this.blankSide(table, e.here, res, state);
-          const blank = side && this.blankRow(X, ctx, scope, key, skip);
-          const one = e.here === e.rel.to && e.rel.fromCard === 'many' && e.rel.toCard === 'one' && !e.rel.ri;
-          const lacked = side && one && res.unmatched !== false && this.hasBlankRow(e.here.table)
-            ? ` OR ${here} IS NULL AND ${this.lacking(e.rel.to, `(${sub})`)}` : '';
-          const a = this.alias('r');
-          if (!blank) {
-            if (mm) { out.push(this.member([here], [`${a}.k`], `(${sub}) AS ${a}`, true, false)); continue; }
-            out.push(lacked ? `(${here} IN (${sub})${lacked})` : `${here} IN (${sub})`);
-            continue;
-          }
-          const s = this.member([here], [`${a}.k`], `(${sub} UNION ALL ${blank}) AS ${a}`, true);
-          out.push(lacked ? `(${s}${lacked})` : s);
+          const here = res.meta(e.here), a = this.alias('r');
+          out.push(mm ? this.member([here], [`${a}.k`], `(${sub}) AS ${a}`, true, false) : `${here} IN (${sub})`);
         }
       }
     } finally { this.fusions.pop(); }
@@ -681,11 +643,10 @@ export class Emitter {
     return listed.length < vals.length ? `(${s} OR ${L} IS NULL)` : s;
   }
 
-  // Whether a scan of `table` can read a blank in column c: on its blank row, or through a
+  // Whether a scan of `table` can read a blank in column c: through a
   // relationship (not relying on referential integrity) for rows that match no row of c's
   // table. (A NULL stored in a column is mayHoldNull's.)
   blankSide(table, c, res, state) {
-    if (res?.blankRow) return true;
     if (c.table === table) return false;
     const path = this.model.expand(table, state, null, true).get(c.table.name);
     return !path || path.some(h => !(h.rel.ri || this.options.assumeIntegrity));
@@ -756,10 +717,6 @@ export class Emitter {
         const cols = [...names.slice(0, x.rel.cols.length), col].map(n => `${c}.${this.ident(n)}`).join(', ');
         const d = this.alias('d');
         return `(SELECT CASE WHEN COUNT(*) = 1 THEN MIN(${d}.${col}) END FROM (SELECT DISTINCT ${cols} FROM (${cur}) AS ${c}) AS ${d})`;
-      }
-      case 'blankexists': {
-        const sql = this.blankRow(x.table, x.ctx, scope, b => { b.setOut([{ name: 'one', lineage: null }], ['1']); return b.render(); }, null, x.unmatched !== false);
-        return sql ? `EXISTS (${sql})` : this.d.never;
       }
       case 'insub': {
         const b = this.isolated(() => this.table(x.src, scope)), names = b.names(), a = this.alias('i');
@@ -1185,77 +1142,10 @@ export class Emitter {
         return b.render();
       };
       const ctx = new Ctx(this.keyFilters(x, t).map(k => k.f), x.ctx0.mods);
-      const rows = out(this.isolated(() => this.scanBlock(t, ctx, scope)));
-      const blank = this.blankRow(t, ctx, scope, out);
-      return blank ? `${rows} UNION ${blank}` : rows;
+      return out(this.isolated(() => this.scanBlock(t, ctx, scope)));
     });
     if (parts.length === 1) return parts[0];
     return `SELECT * FROM ${parts.map(p => `(${p}) AS ${this.alias('c')}`).join(' CROSS JOIN ')}`;
-  }
-
-  // The blank row DAX adds to a table on the one side of a relationship when rows of the
-  // many side match none of its rows: with the filters on it (it is blank in every column),
-  // when there are such rows. None where the relationship relies on referential integrity.
-  // `excluded`: as scanBlock's. `unmatched`: whether a filter that comes back from a many side
-  // keeps the row when the many side's rows it keeps have keys the table lacks (VALUES), or
-  // never (DISTINCTCOUNT: those rows filter the table's rows by their keys, and the blank
-  // row's is none of them).
-  blankRow(table, ctx, scope, out, excluded = null, unmatched = true) {
-    if (!this.hasBlankRow(table)) return null;
-    const nulls = table.columns.filter(c => !c.expr).map(c => `${c.type === 'variant' ? 'NULL' : this.d.cast('NULL', c.type)} AS ${this.ident(c.source)}`);
-    const b = this.isolated(() => this.scanBlock(table, ctx, scope, excluded, null, `(SELECT ${nulls.join(', ')})`, unmatched));
-    b.where.push(`(${this.orphans(table, this.model.state(ctx.mods))})`);
-    this.blanks = true;
-    return out(b);
-  }
-
-  // Whether a table has DAX's blank row (for the fact rows with a key it lacks): never. A
-  // dimension is expected to hold every key its facts use (DESIGN.md).
-  hasBlankRow() {
-    return false;
-  }
-
-  // Whether some of `keys` (SQL of rows with the column k) is a key that `one` (the one side of
-  // a relationship) lacks: those rows belong to its table's blank row.
-  lacking(one, keys) {
-    const f = this.alias('o'), d = this.alias('o'), k = this.stored(d, one);
-    this.checks++;
-    try {
-      return `EXISTS (SELECT 1 FROM ${keys} AS ${f} LEFT JOIN ${this.source(one.table)} AS ${d} ON ${k} = ${f}.k WHERE ${d}.${this.ident(one.source)} IS NULL)`;
-    } finally { this.checks--; }
-  }
-
-  // Whether the table has a blank row: some row on the other side of a relationship it is the
-  // one side of has a key it lacks, or that table has a blank row itself (whose key matches
-  // nothing: a sale of an unknown product is in the blank category too). Whether the row is
-  // there is the model's, as at refresh: row-level security, which filters the rows, does not
-  // remove it. But over a relationship that filters the table back from that side (`state`:
-  // both ways, CROSSFILTER), the row is reached through that side's rows, so there the rows
-  // are those security keeps: a row it removes puts no blank row in the table.
-  orphans(table, state, seen = new Set()) {
-    this.checks++;
-    try { return this.orphanChecks(table, state, seen); } finally { this.checks--; }
-  }
-
-  orphanChecks(table, state, seen) {
-    seen.add(table);
-    const parts = [];
-    const back = rel => state.some(s => s.rel === rel && s.active && (s.cross === 'both' || s.cross === 'reverse'));
-    for (const { rel, one, many } of this.model.oneSides(table)) {
-      const o = this.alias('o');
-      let keys = `(SELECT ${this.stored(o, many)} AS k FROM ${this.source(many.table)} AS ${o})`;
-      if (this.options.security?.length && !this.insecure && back(rel)) {
-        const b = this.isolated(() => this.scanBlock(many.table, EMPTY, new Map()));
-        b.setOut([{ name: 'k', lineage: null }], [b.res.meta(many)]);
-        keys = `(${b.render()})`;
-      }
-      parts.push(this.lacking(one, keys));
-      if (!seen.has(many.table)) {
-        const inner = this.orphanChecks(many.table, state, seen);
-        if (inner) parts.push(inner);
-      }
-    }
-    return parts.join(' OR ');
   }
 
   // ROW(...): one row, its aggregates fused where they can be.
@@ -1355,17 +1245,9 @@ class Fusion {
       m._names = [...via.map((_, j) => `g${j}`), 'y'];
       m.distinct = true;
       const ma = em.alias('m');
-      // Across a many-to-many relationship a blank meets a blank (conds): the pairs include the
-      // blank row, and the join is null-safe.
+      // Across a many-to-many relationship a blank meets a blank (conds): the join is null-safe.
       const mm = edge.rel.fromCard === 'many' && edge.rel.toCard === 'many';
-      let pairs = m.render();
-      if (mm) {
-        const blank = em.blankRow(edge.there.table, new Ctx(rest, S.ctx.mods), new Map(), b => {
-          b.setOut([...via.map((_, j) => ({ name: `g${j}` })), { name: 'y' }], [...via.map(v => b.res.meta(v.col)), b.res.meta(edge.there)]);
-          return b.render();
-        }, new Set(exp.keys()));
-        if (blank) pairs = `${pairs} UNION ${blank}`;
-      }
+      const pairs = m.render();
       const on = mm ? em.d.isNotDistinct(block.res.meta(edge.here), `${ma}.y`) : `${block.res.meta(edge.here)} = ${ma}.y`;
       block.joins.push(`JOIN (${pairs}) AS ${ma} ON ${on}`);
       via.forEach((v, j) => { keys.add(v.ref); keyExpr.set(v.ref, `${ma}.g${j}`); });
@@ -1791,9 +1673,7 @@ class Res {
     if (!m.expr) return this.em.stored(alias, m);
     // A calculated column: its expression on this row, in an empty filter context and without
     // row-level security, as computed at refresh. A column the query defines is computed when
-    // the query runs, under the roles' security. Blank on the blank row (a join that found no
-    // row, or the blank row itself).
-    if (alias === this.alias && this.blankRow) return this.em.d.cast('NULL', m.type);
+    // the query runs, under the roles' security. Blank where a join found no row.
     const { row, expr } = this.em.options.calcColumn(m);
     const res = new ScanRes(this.em, this.block, m.table, alias, this.state);
     // One that needs its own values (a window function over its own table) cannot be written.
@@ -1862,7 +1742,7 @@ function isCond(x, em) {
   if (x.shared && !em.inCte && !ir.freeRows(x).size) return false;
   if (x.k === 'op') return COND_OPS.has(x.op);
   if (x.k === 'fn') return COND_FNS.has(x.name);
-  return x.k === 'exists' || x.k === 'insub' || x.k === 'blankexists';
+  return x.k === 'exists' || x.k === 'insub';
 }
 
 // Whether a model column may hold a NULL, a blank that a blank in a table filter matches: any
@@ -1870,10 +1750,9 @@ function isCond(x, em) {
 // says is not nullable.
 const mayHoldNull = c => !c.unique && c.nullable !== false;
 
-// Whether a table can hold the blank row (and so a key matched against it can be blank).
 // Whether column i of table x can hold a blank, as far as the compiler can tell: a constant
-// is one or not; a model table's own column is not (a NULL stored in it aside); the blank row
-// is; anything else may be.
+// is one or not; a model table's own column is not (a NULL stored in it aside); anything else
+// may be.
 function mayBeBlank(x, i) {
   if (i == null || i < 0) return true;
   const lit = v => v?.k === 'lit' && v.v !== null;

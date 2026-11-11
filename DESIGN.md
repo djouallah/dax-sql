@@ -161,8 +161,7 @@ every key its facts use; `VALUES` and `ALL` are its rows.
 
 Fact rows with a key the dimension lacks are still read: they count in totals, and under a
 blank value where the groups are the measure's own rows (the joins to the one side are
-`LEFT JOIN`s). The code that wrote the row (`withblank`, `blankexists`, `blankRow`,
-`orphans`, `lacking`) is unused, and to be removed (TODO.md).
+`LEFT JOIN`s).
 
 A blank in a table filter must match the fact rows that have no row of the table, and a NULL
 stored in a column, so membership (`member`) is null-safe where both sides can be blank
@@ -195,9 +194,9 @@ semi-join, recursively, without returning to where it came from.
 - **Scalars:** `lit`, `col`, `op`, `fn`, `case`, `agg`, `exists`, `insub`.
 - **Tables:** `scan`, `filter`, `project`, `distinct`, `group`, `topn`, `cross`, the set
   operations, `rows`, `series`, `generate`, `sc` (SUMMARIZECOLUMNS), `shared` (a table VAR),
-  `onerow`, `prefix`, `withblank` (a table and its blank row) and `window` (INDEX, OFFSET,
+  `onerow`, `prefix`, and `window` (INDEX, OFFSET,
   WINDOW).
-- **Scalars added for those:** `blankexists`, and `wrank` (RANK, ROWNUMBER).
+- **Scalars added for those:** `wrank` (RANK, ROWNUMBER).
 
 A row is a `RowRef`; an expression names a row's column through it. `freeRows(x)` says which
 rows from outside an expression or table it reads, which is the correlation of its SQL.

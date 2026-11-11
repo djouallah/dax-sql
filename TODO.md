@@ -53,9 +53,5 @@ Nothing here blocks a release: tests and both conformance runs are green on `mai
 
 ## Code
 
-- The blank row's code is unused since there is no blank row: `withblank` and `blankexists`
-  (ir.js, emit.js), `blankRow`, `orphans`, `lacking`, `readsOneTable` and `compileAll`'s
-  second compile (index.js), `blankRowRels` and its callers (functions/). Remove it.
-
 - The dialects' differences are flags read through `emit.js`; they could be steps that rewrite
   the intermediate form before it is written, one per flag.

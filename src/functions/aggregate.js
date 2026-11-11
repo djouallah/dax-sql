@@ -44,8 +44,7 @@ function countRows(c, args, env) {
   // COUNTROWS(VALUES(T[c])) and COUNTROWS(SUMMARIZE(T, cols)) count distinct values: the
   // same aggregate as DISTINCTCOUNT, over the table.
   if (a.k === 'call' && (a.fn === 'VALUES' || a.fn === 'DISTINCT') && a.args.length === 1 && a.args[0].k === 'col' && a.args[0].table
-    && c.model.findColumn(a.args[0].table, a.args[0].name)
-    && (a.fn === 'DISTINCT' || !c.blankRowRels(c.model.findColumn(a.args[0].table, a.args[0].name).table).length)) {
+    && c.model.findColumn(a.args[0].table, a.args[0].name)) {
     const { src, row, arg } = overColumn(c, a.args[0], env);
     return ir.agg('dcount', src, row, arg, 'int');
   }
@@ -59,15 +58,9 @@ function countRows(c, args, env) {
   return ir.agg('countrows', src, ir.rowOf(src), null, 'int');
 }
 
-// DISTINCTCOUNT(T[c]) is COUNTROWS(VALUES(T[c])): the blank row counts, when the table has one.
-// It counts the values of T's rows, though: a filter that comes back to T from a many side
-// keeps the rows whose keys its rows hold, and the blank row that VALUES adds for those it
-// lacks is not one of them.
+// DISTINCTCOUNT(T[c]): the distinct values of T's rows, a blank one of them.
 function distinctCount(c, args, env) {
-  const col = c.modelColumn(args[0], env);
-  if (!c.blankRowRels(col.table).length) return column('dcount', int)(c, args, env);
-  const src = ir.values(col.table, env.ctx, [col], (tb, ctx) => c.scan(tb, ctx), true, false);
-  return ir.agg('countrows', src, ir.rowOf(src), null, 'int');
+  return column('dcount', int)(c, args, env);
 }
 
 function minMax(fn) {
@@ -166,14 +159,9 @@ function isSubtotal(c, args, env) {
 }
 
 // The visible values of a column: one of them, or whether there is exactly one.
-// The values of a column in the filter context (HASONEVALUE, SELECTEDVALUE): its table's rows,
-// or VALUES with the blank row when the table has one.
+// The values of a column in the filter context (HASONEVALUE, SELECTEDVALUE): its table's rows.
 function valuesOf(c, ast, env) {
   const col = c.modelColumn(ast, env);
-  if (c.blankRowRels(col.table).length) {
-    const src = ir.values(col.table, env.ctx, [col], (t, x) => c.scan(t, x), true), row = ir.rowOf(src, 'table');
-    return { src, row, col, value: ir.col(row, 0) };
-  }
   const src = c.scan(col.table, env.ctx), row = ir.rowOf(src);
   return { src, row, col, value: ir.col(row, col) };
 }

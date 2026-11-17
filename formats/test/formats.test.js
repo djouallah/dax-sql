@@ -5,7 +5,10 @@
 //   - a measure is SQL where it says the same there, and DAX where not;
 //   - the POWER_BI extension holds only what something needs;
 //   - conformance/models/aac/ossie.yaml is its model.bim as Ossie;
-//   - a file written before (every TMSL property in the extension) reads as it did;
+//   - a file written before (every TMSL property in the extension) reads as it did, and so does
+//     a file of the spec before (custom_extensions, their data a JSON string);
+//   - a measure made of two tables' measures is the model's, each as AGG(dataset.metric);
+//   - AGG, source.column and ROUND read as DAX;
 //   - an Ossie file whose metrics and fields are SQL reads as DAX;
 //   - an Ossie metric comes back where it was, as the SQL it was written in while unchanged.
 import { test } from 'node:test';
@@ -107,7 +110,7 @@ test('aac: TMSL -> Ossie -> TMSL answers as the TMSL, every measure', async () =
 
 const metricsOf = doc => [...doc.datasets.flatMap(d => (d.metrics ?? []).map(m => ({ ...m, dataset: d.name }))), ...(doc.metrics ?? [])];
 const byName = doc => new Map(metricsOf(doc).map(m => [m.name, m]));
-const extOf = o => (o.custom_extensions ? JSON.parse(o.custom_extensions[0].data) : {});
+const extOf = o => o.nonportable_extensions?.[0].data ?? {};
 
 test('a measure is SQL where it says the same there, DAX where not', () => {
   const m = byName(tmslToOssie(contoso));
@@ -119,21 +122,26 @@ test('a measure is SQL where it says the same there, DAX where not', () => {
   assert.equal(sql('Avg Price'), 'AVG(Price)');
   assert.equal(sql('Line Value Column'), 'SUM(LineValue)');
   // CALCULATE, time intelligence, RELATED, measures of two tables: DAX.
-  for (const n of ['All Sales', 'Red Sales', 'Red Sales Kept', 'Sales YTD', 'Line Value', 'Return Rate', 'Best Customer Sales']) {
+  for (const n of ['All Sales', 'Red Sales', 'Red Sales Kept', 'Sales YTD', 'Line Value', 'Best Customer Sales']) {
     assert.equal(m.get(n).expression.sql, undefined, n);
     assert.equal(m.get(n).expression.dialects[0].dialect, 'DAX', n);
   }
   // Named like a column of its table: the model's, its table in the extension.
   assert.equal(m.get('Target').dataset, undefined);
   assert.equal(extOf(m.get('Target')).table, 'CityTarget');
+  // A ratio of two tables' measures: the model's, each measure evaluated where it is a metric.
+  assert.equal(sql('Return Rate'), 'CAST(AGG(Returns.Returned) AS DOUBLE) / NULLIF(AGG(Sales.Quantity), 0)');
+  assert.equal(m.get('Return Rate').dataset, undefined);
+  assert.equal(extOf(m.get('Return Rate')).table, 'Sales');
 
   const a = byName(tmslToOssie(aac));
   assert.equal(a.get('Curtailment rate').expression.sql, 'CAST(100 * SUM(curtailed_mwh) AS DOUBLE) / NULLIF(SUM(available_mwh), 0)');
   assert.equal(a.get('Regional wind curtailed MWh').expression.sql, 'CAST(SUM(wind_curtailed) AS DOUBLE) / 12');
   assert.equal(a.get('Price at hour').expression.sql, 'CAST(SUM(price * intervals) AS DOUBLE) / NULLIF(SUM(intervals), 0)');
   assert.equal(a.get('Registered units').expression.sql, 'NULLIF(COUNT(*), 0)');
-  // Two tables, IF, VAR, a two-argument MAX: DAX.
-  for (const n of ['Average MW at hour', 'Demand MW', 'Generation MWh', 'Generation MW']) assert.equal(a.get(n).expression.sql, undefined, n);
+  assert.equal(a.get('Average MW at hour').expression.sql, 'CAST(AGG(fct_summary_hourly."Output MWh hourly") AS DOUBLE) / NULLIF(AGG(dim_month."Month days"), 0)');
+  // IF, VAR, a two-argument MAX: DAX.
+  for (const n of ['Demand MW', 'Generation MWh', 'Generation MW']) assert.equal(a.get(n).expression.sql, undefined, n);
 });
 
 test('the POWER_BI extension holds only what something needs', () => {
@@ -171,8 +179,8 @@ const directLake = () => {
 test('a Direct Lake model: one partition and its expression for the model, nothing per table', () => {
   const url = URL_;
   const doc = tmslToOssie(directLake());
-  for (const d of doc.datasets) assert.equal(d.custom_extensions, undefined, d.name);
-  for (const d of doc.datasets) for (const f of d.fields) assert.equal(f.custom_extensions, undefined, f.name);
+  for (const d of doc.datasets) assert.equal(d.nonportable_extensions, undefined, d.name);
+  for (const d of doc.datasets) for (const f of d.fields) assert.equal(f.nonportable_extensions, undefined, f.name);
   assert.deepEqual(extOf(doc), {
     model: { defaultMode: 'directLake', expressions: [{ name: 'DatabaseQuery', kind: 'm', expression: url }],
       roles: [{ name: 'r', tablePermissions: [{ name: 'a', filterExpression: 'a[id] = 1' }] }] },
@@ -188,7 +196,7 @@ test('a table named in full: the name is its source, with no partition or expres
   const name = t => `lakehouse."my ws".nem.dbo.${t.name}`;
   const doc = tmslToOssie(directLake(), 'dl', { source: name });
   assert.deepEqual(doc.datasets.map(d => d.source), ['lakehouse."my ws".nem.dbo.a', 'lakehouse."my ws".nem.dbo.b']);
-  for (const d of doc.datasets) assert.equal(d.custom_extensions, undefined, d.name);
+  for (const d of doc.datasets) assert.equal(d.nonportable_extensions, undefined, d.name);
   // Left: the role alone. No expression, no partition, no storage mode.
   assert.deepEqual(extOf(doc), { model: { roles: [{ name: 'r', tablePermissions: [{ name: 'a', filterExpression: 'a[id] = 1' }] }] } });
   const back = ossieToTmsl(doc);
@@ -218,9 +226,68 @@ test('a file written before, every TMSL property in the extension, reads as it d
   }
 });
 
+test('a file of the spec before, custom_extensions with their data a JSON string, reads the same', () => {
+  const before = v => (Array.isArray(v) ? v.map(before)
+    : v && typeof v === 'object' ? Object.fromEntries(Object.entries(v).map(([k, x]) => (k === 'nonportable_extensions'
+      ? ['custom_extensions', x.map(e => ({ vendor_name: e.vendor_name, data: JSON.stringify(e.data) }))] : [k, before(x)])))
+    : v);
+  for (const bim of [contoso, aac]) {
+    const doc = tmslToOssie(bim);
+    const old = { ...before(doc), version: '0.2.0.dev0' };
+    assert.ok(old.custom_extensions || old.datasets.some(d => d.custom_extensions));
+    assert.deepEqual(ossieToTmsl(old), ossieToTmsl(doc));
+    // Written again, it is the spec's of now.
+    assert.deepEqual(tmslToOssie(ossieToTmsl(old), doc.name), doc);
+  }
+});
+
+test('AGG(dataset.metric), source.column and ROUND read as DAX', () => {
+  const doc = {
+    version: '0.3.0.dev0',
+    name: 'shop',
+    datasets: [
+      { name: 'orders', source: 'sales.orders', fields: [{ name: 'amount', expression: { sql: 'amt' }, datatype: 'Decimal' }], metrics: [
+        { name: 'total', expression: { sql: 'SUM(source.amt)' } },
+        { name: 'order count', expression: { sql: 'COUNT(*)' } },
+      ] },
+      { name: 'returns', source: 'sales.returns', fields: [{ name: 'qty', expression: { sql: 'qty' }, datatype: 'Integer' }], metrics: [
+        { name: 'returned', expression: { sql: 'SUM(qty)' } },
+      ] },
+    ],
+    metrics: [
+      { name: 'average', expression: { sql: 'ROUND(AGG(orders.total) / AGG(orders."order count"), 2)' } },
+      { name: 'return rate', expression: { sql: 'AGG(returns.returned) / NULLIF(AGG(orders."order count"), 0)' } },
+    ],
+  };
+  const bim = ossieToTmsl(doc);
+  const dax = Object.fromEntries(bim.model.tables.flatMap(t => (t.measures ?? []).map(m => [m.name, [t.name, m.expression]])));
+  assert.deepEqual(dax, {
+    total: ['orders', "SUM('orders'[amount])"],
+    'order count': ['orders', "COUNTROWS('orders')"],
+    returned: ['returns', "SUM('returns'[qty])"],
+    average: ['orders', 'ROUND(DIVIDE([total], [order count]), 2)'],
+    'return rate': ['returns', 'DIVIDE([returned], [order count])'],
+  });
+  // Back: each where it was, as it was written.
+  const back = tmslToOssie(bim, 'shop');
+  assert.deepEqual(back.metrics.map(m => [m.name, m.expression]), doc.metrics.map(m => [m.name, m.expression]));
+  assert.deepEqual(back.datasets[0].metrics.map(m => [m.name, m.expression]), doc.datasets[0].metrics.map(m => [m.name, m.expression]));
+  assert.ok(createCompiler(tmslToModel(bim)).compile('EVALUATE ROW("a", [average], "r", [return rate])').sql);
+  // AGG is the model's alone, takes one dataset.metric and no FILTER; source.column is a declared field's column.
+  const refused = (where, sql) => {
+    const d = JSON.parse(JSON.stringify(doc));
+    (where === 'model' ? d.metrics : d.datasets[0].metrics).push({ name: 'x', expression: { sql } });
+    assert.throws(() => ossieToTmsl(d), /metric 'x' has no DAX expression, and its SQL is beyond what dax-sql reads/, sql);
+  };
+  refused('dataset', 'AGG(orders.total)');
+  refused('model', 'AGG(orders.amount)');
+  refused('model', 'AGG(orders.total) FILTER (WHERE orders.amount > 1)');
+  refused('dataset', 'SUM(source.missing)');
+});
+
 test('an Ossie file whose metrics and fields are SQL reads as DAX', () => {
   const doc = {
-    version: '0.2.0.dev0',
+    version: '0.3.0.dev0',
     name: 'shop',
     datasets: [
       { name: 'orders', source: 'sales.orders', primary_key: ['order_id'], fields: [
@@ -257,7 +324,7 @@ test('an Ossie file whose metrics and fields are SQL reads as DAX', () => {
 
 test("an Ossie metric comes back where it was, as its SQL while its DAX is what that SQL read as", () => {
   const doc = {
-    version: '0.2.0.dev0',
+    version: '0.3.0.dev0',
     name: 'm0',
     datasets: [{ name: 'sales', source: 'samples.sales.orders', fields: [
       { name: 'amount', expression: { sql: 'amount' }, datatype: 'Decimal' },

@@ -1,10 +1,10 @@
 name: Ossie
 
 # The Apache Ossie dax-sql writes, checked with Ossie's own tools (https://github.com/apache/ossie,
-# at OSSIE_REF), by formats/test/ossie-docs.mjs's documents:
+# its main as it is that day), by formats/test/ossie-docs.mjs's documents:
 #   - validation/validate.py: Ossie's JSON Schema, unique names, relationships that resolve, SQL
-#     that parses, on every model here written as Ossie, the ossie.yaml files kept here, and what
-#     the ladder below comes back as;
+#     that parses, on every model here written as Ossie, the ossie.yaml kept here, and what the
+#     ladder below comes back as;
 #   - the portability ladder (compliance/portability): each fixture read and written back, graded
 #     by grader/grade.py. Every element must come back PORTABLE: the expression it was given, in
 #     the dialect it was given, word for word. Anything else fails (rewritten, relabeled, lost,
@@ -13,11 +13,15 @@ name: Ossie
 # A release needs it green: publish.yml runs it first, and OneLake Studio's build runs it on the
 # dax-sql it pins (`version`, a published one: its formats/ against this repo's models).
 #
-# OSSIE_REF is a commit, not main: Ossie changes every day, and its schema takes one version
-# (formats/ossie.js VERSION). Move it on purpose, with VERSION when the spec's changes.
+# Ossie's main, not a commit: dax-sql writes the spec of now. It changes most days, so this also
+# runs every morning: a run that fails with no change here is the spec having moved, and
+# formats/ossie.js follows it (VERSION, and whatever else changed), still reading what it wrote
+# before. The summary names the Ossie commit a run checked.
 
 on:
   push:
+  schedule:
+    - cron: "17 5 * * *"
   workflow_dispatch:
   workflow_call:
     inputs:
@@ -28,7 +32,6 @@ on:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  OSSIE_REF: f505f0a9ce835bf1b52d0b0ceb3872e6c724d15f
 
 permissions:
   contents: read
@@ -45,8 +48,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: apache/ossie
-          ref: ${{ env.OSSIE_REF }}
           path: .ossie
+      - name: The Ossie checked
+        run: echo "Apache Ossie at $(git -C .ossie rev-parse HEAD), $(git -C .ossie log -1 --format=%cs)" | tee -a "$GITHUB_STEP_SUMMARY"
       - uses: actions/setup-node@v4
         with:
           node-version: "24"

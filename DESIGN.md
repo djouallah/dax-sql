@@ -380,13 +380,16 @@ package: they are not exported and the compiler never imports them.
   take parsed objects, so the YAML is the caller's to parse. A column is a field whose `sql` is
   its source column; a measure is a metric of the dataset it reads, in Ossie's portable SQL
   when it says the same there (`formats/ossie-sql.js`: SUM, AVERAGE, COUNTROWS, DIVIDE, ... over
-  one table, BLANK as NULL), and in the DAX dialect when not. Back, a metric or a field in that
+  one table, BLANK as NULL), and in the DAX dialect when not. A measure made only of measures
+  that are such metrics, a ratio of two tables' measures say, is the model's own metric, each of
+  them `AGG(dataset.metric)`. Back, a metric or a field in that
   SQL reads as DAX, so a model another tool wrote in SQL opens too. Such a measure keeps, in an
   `Ossie` annotation, its SQL, the DAX it read as and where it was (a dataset, or the model's
   own `metrics`): `tmslToOssie` puts it back there, as that SQL while its DAX is unchanged (SQL's
   `COUNT` is 0 over no rows, DAX's `COUNTA` blank: the DAX is close, the SQL is what was
-  written). A measure changed in Power BI since is translated afresh. The `POWER_BI` custom
-  extension keeps only what Ossie has no place for and something needs: what changes an answer
+  written). A measure changed in Power BI since is translated afresh. The `POWER_BI` extension
+  (`nonportable_extensions`, its `data` an object; a file of the spec before, with
+  `custom_extensions` and a JSON string, reads the same) keeps only what Ossie has no place for and something needs: what changes an answer
   (a relationship's filter direction, a date table, a calculation group, roles, ...), the
   Direct Lake expression, and what a user sees (hidden, format strings, folders, hierarchies).
   `ossieToTmsl(tmslToOssie(bim))` answers every query as the bim does; it is not the bim.
@@ -924,8 +927,10 @@ npm test
 - `formats/test/formats.test.js`: TMSL to Ossie and back answers every measure as the TMSL
   does, on DuckDB, for contoso and aac (`conformance/models/aac`, whose `ossie.yaml` is its
   `model.bim` as Ossie); which measures are SQL and which DAX; what the extension may hold; a
-  file of the earlier shape reads as it did; an Ossie model in SQL reads as DAX.
-- `.github/workflows/ossie.yml`, in CI only (it needs Python and an Ossie checkout): what
+  file of the earlier shape, and one of the spec before, reads as it did; an Ossie model in SQL
+  reads as DAX, `AGG`, `source.column` and `ROUND` included.
+- `.github/workflows/ossie.yml`, in CI only (it needs Python and an Ossie checkout, of Ossie's
+  main: the spec of the day, checked every morning too): what
   `formats/ossie.js` writes for every model here passes Ossie's own validator
   (`validation/validate.py`), and Ossie's portability ladder (`compliance/portability`) comes
   back from dax-sql PORTABLE, every element, as its grader scores it. A release waits for it.

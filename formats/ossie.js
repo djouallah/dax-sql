@@ -1,4 +1,4 @@
-// An Apache Ossie semantic model (https://github.com/apache/ossie, core-spec 0.2.0.dev0) and
+// An Apache Ossie semantic model (https://github.com/apache/ossie, core-spec 0.3.0.dev0) and
 // TMSL, either way, and as dax-sql's model object. Not part of the package: a reader of one
 // format. It takes and gives parsed objects; parsing YAML is the caller's.
 //   tmslToOssie(bim)    a model.bim as Ossie
@@ -9,13 +9,14 @@
 // calculated column is in Ossie's portable SQL when it says the same there (ossie-sql.js), and
 // in the DAX dialect when not.
 //
-// The POWER_BI custom extension holds only what Ossie has no place for and something needs: what
+// The POWER_BI extension (`nonportable_extensions`, its `data` an object) holds only what Ossie has no place for and something needs: what
 // changes an answer (a relationship's filter direction, an inactive relationship, a date table,
 // a calculation group, a calculated table's DAX, roles, a column that holds no blank), what
 // finds the data (the Direct Lake expression), and what a model's user sees (hidden, format
 // strings, display folders, hierarchies, sort-by columns). Lineage tags, annotations,
 // summarizeBy and the like go: ossieToTmsl(tmslToOssie(bim)) answers as the bim does, it is not
-// the bim. Files written with every TMSL property in the extension read as they always did.
+// the bim. Files written with every TMSL property in the extension read as they always did, and
+// so do files of the spec before (`custom_extensions`, its `data` a JSON string).
 //
 // A dataset's `source` is schema.table, its partition's, unless the caller names its table in
 // full (tmslToOssie's `source`, a catalog's name such as lakehouse.schema.table): then
@@ -24,13 +25,14 @@
 import { tmslToModel } from './tmsl.js';
 import { measureSql, columnSql, parseDax, metricDax, fieldDax, sourceColumnOf, dialectSourceOf, sqlName } from './ossie-sql.js';
 
-const VERSION = '0.2.0.dev0';
+const VERSION = '0.3.0.dev0';
 const VENDOR = 'POWER_BI';
 // What Ossie wrote, kept in an `Ossie` annotation so that it comes back as it was written. A
 // measure: where it was (its dataset, or null for the model's own; `home`, the table it was put
 // on) and, when it was SQL, its expression as written, its datatype and the DAX it was read as.
 // A column whose expression tmslToOssie would not write the same: that expression and what it
-// was read as (`as`). While the TMSL is still what was read, the expression is the one written,
+// was read as (`as`). `placed`: a model's own metric in SQL whose table the extension named.
+// While the TMSL is still what was read, the expression is the one written,
 // in its dialect, word for word: COUNT stays COUNT, a CASE a CASE, ANSI_SQL ANSI_SQL. Changed
 // since (in Power BI, say), it is translated.
 const OSSIE = 'Ossie';
@@ -45,10 +47,12 @@ const TO_TMSL = { String: 'string', Integer: 'int64', Decimal: 'decimal', Float:
 // A dateTime column whose format has no time of day is a date.
 const datatype = c => (c.dataType === 'dateTime' ? (/[Hhms]/.test(c.formatString ?? 'H') ? 'DateTime' : 'Date') : TO_OSSIE[c.dataType]);
 
-const ext = data => (Object.keys(data).length ? { custom_extensions: [{ vendor_name: VENDOR, data: JSON.stringify(data) }] } : {});
+// `data` is JSON: a copy, with nothing undefined in it.
+const ext = data => (Object.keys(data).length ? { nonportable_extensions: [{ vendor_name: VENDOR, data: JSON.parse(JSON.stringify(data)) }] } : {});
 function powerBi(o) {
-  const e = (o.custom_extensions ?? []).find(x => String(x.vendor_name).toUpperCase() === VENDOR);
-  return e ? JSON.parse(e.data) : {};
+  const e = (o.nonportable_extensions ?? o.custom_extensions ?? []).find(x => String(x.vendor_name).toUpperCase() === VENDOR);
+  if (!e?.data) return {};
+  return typeof e.data === 'string' ? JSON.parse(e.data) : JSON.parse(JSON.stringify(e.data));
 }
 const optional = (k, v) => (v == null ? {} : { [k]: v });
 // The properties of `o` named in `keep` that `when` takes (by default: any value).
@@ -140,9 +144,15 @@ export function tmslToOssie(bim, name = 'model', { source = () => null } = {}) {
 
   // Each measure on the dataset it reads when it is SQL, on its own table's when it is DAX. A
   // dataset's fields and metrics share its names: a measure named like a column of the dataset
-  // it would be on is the model's, in DAX, with its table in the extension.
+  // it would be on is the model's, in DAX, with its table in the extension. A measure that is
+  // not SQL on one dataset, and is made of measures that are (a ratio of two tables' measures):
+  // the model's, in SQL, each of them as AGG(dataset.metric).
   const metricsOf = new Map(m.tables.map(t => [lc(t.name), []]));
   const modelMetrics = [];
+  // The measures that are a dataset's metric in SQL, which AGG evaluates: name -> where.
+  const sqlMetrics = new Map();
+  const isSql = (ms, dataset, type) => sqlMetrics.set(lc(ms.name), { dataset: tables.get(lc(dataset)).name, name: ms.name, type });
+  const inDax = [];
   for (const t of m.tables) {
     for (const ms of t.measures ?? []) {
       const ast = measures.get(lc(ms.name)).ast;
@@ -151,15 +161,36 @@ export function tmslToOssie(bim, name = 'model', { source = () => null } = {}) {
       if (was && (was.dataset == null || tables.has(lc(was.dataset)))) {
         const kept = was.expression != null && was.dax === text(ms.expression);
         if (kept) sql = { expression: was.expression, table: was.home, type: was.datatype };
+        // The model's own, no longer what was read: its SQL here is a dataset's, names unqualified.
+        else if (was.dataset == null) sql = null;
         const at = was.dataset == null ? (kept ? was.home : sql?.table) : was.dataset;
-        (was.dataset == null ? modelMetrics : metricsOf.get(lc(was.dataset))).push(metric(ms, t.name, sql, lc(at ?? '') !== lc(t.name)));
+        (was.dataset == null ? modelMetrics : metricsOf.get(lc(was.dataset))).push(metric(ms, t.name, sql, lc(at ?? '') !== lc(t.name) || (kept && was.placed === true)));
+        if (sql && was.dataset != null) isSql(ms, was.dataset, sql.type);
         continue;
       }
       if (sql && tables.get(lc(sql.table)).columns.has(lc(ms.name))) sql = null;
-      if (sql || !tables.get(lc(t.name)).columns.has(lc(ms.name))) metricsOf.get(lc(sql ? sql.table : t.name)).push(metric(ms, t.name, sql));
-      else modelMetrics.push(metric(ms, t.name, null, true));
+      if (sql) {
+        metricsOf.get(lc(sql.table)).push(metric(ms, t.name, sql));
+        isSql(ms, sql.table, sql.type);
+        continue;
+      }
+      const own = !tables.get(lc(t.name)).columns.has(lc(ms.name));
+      const list = own ? metricsOf.get(lc(t.name)) : modelMetrics;
+      const written = metric(ms, t.name, null, !own);
+      list.push(written);
+      if (ast) inDax.push({ ms, home: t.name, ast, list, written });
     }
   }
+  for (const { ms, home, ast, list, written } of inDax) {
+    const sql = measureSql(ast, tables, measures, name => sqlMetrics.get(lc(name)));
+    if (!sql) continue;
+    const now = metric(ms, home, sql, true);
+    if (list === modelMetrics) list[list.indexOf(written)] = now;
+    else { list.splice(list.indexOf(written), 1); modelMetrics.push(now); }
+  }
+  // The model's metrics in the order of their measures, whichever way each got there.
+  const order = new Map(m.tables.flatMap(t => t.measures ?? []).map((ms, i) => [ms.name, i]));
+  modelMetrics.sort((a, b) => order.get(a.name) - order.get(b.name));
 
   const expressionsUsed = new Set();
   if (defaults.expressionSource) expressionsUsed.add(defaults.expressionSource);
@@ -299,9 +330,10 @@ export function ossieToTmsl(doc) {
   const place = (m, table, code, dataset) => {
     const home = table == null ? tables[0] : byName.get(String(table).toLowerCase());
     if (!home) throw new Error(`metric '${m.name}': the model has no table '${table}'`);
-    const { table: _, ...extra } = powerBi(m);
+    const { table: named, ...extra } = powerBi(m);
     const sql = dax(m) == null ? sqlOf(m) : null;
-    const was = { dataset, home: home.name, ...(sql != null ? { expression: m.expression, dax: code, ...optional('datatype', m.datatype) } : {}) };
+    const was = { dataset, home: home.name, ...(sql != null ? { expression: m.expression, dax: code, ...optional('datatype', m.datatype) } : {}),
+      ...(sql != null && dataset == null && named != null ? { placed: true } : {}) };
     extra.annotations = [...(extra.annotations ?? []).filter(a => a.name !== OSSIE), { name: OSSIE, value: JSON.stringify(was) }];
     (home.measures ??= []).push(tmsl({ name: m.name, description: m.description, expression: code }, extra));
   };

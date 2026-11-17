@@ -1,6 +1,7 @@
 // DAX and Apache Ossie's portable SQL (OSSIE_SQL_2026), both ways, for formats/ossie.js. Not
 // part of the package's API.
 //   measureSql(ast, tables, measures)     a measure as a dataset-scoped metric, or null
+//   measureSql(ast, tables, measures, at) a measure of other measures as a model-scoped metric
 //   columnSql(ast, table)                 a calculated column as a field expression, or null
 //   metricDax(sql, dataset, datasets)     a metric's SQL as the DAX of a measure
 //   fieldDax(sql, table, columns)         a field's SQL as the DAX of a calculated column
@@ -8,14 +9,18 @@
 // else is null, and the caller keeps the DAX. So:
 //   - a measure reads the columns of one table only, which is the metric's dataset;
 //   - SUM, AVERAGE, MIN, MAX, COUNT, COUNTA, COUNTROWS, DISTINCTCOUNT, DISTINCTCOUNTNOBLANK,
-//     their X forms over that table, DIVIDE, * and a division by a number, and a measure
-//     reference (inlined: a metric cannot reference another);
+//     their X forms over that table, DIVIDE, * and a division by a number, ROUND to a number
+//     of places (both round a half away from zero), and a measure reference (inlined: a
+//     dataset's metric cannot reference another);
+//   - a measure made only of measures that are a dataset's metric in SQL is the model's, each
+//     of them AGG(dataset.metric): the one place a metric may evaluate another;
 //   - not + or -: BLANK + 1 is 1 in DAX and NULL + 1 is NULL in SQL;
 //   - not CALCULATE: a filter argument replaces the filter on its column, which no SQL
 //     aggregate says; nor VAR, IF, time intelligence, RELATED...
 // A count over no rows is BLANK in DAX and 0 in SQL, hence NULLIF(COUNT(..), 0); a division is
 // a double in DAX whatever its operands, hence CAST(.. AS DOUBLE). The way back reads that
-// subset as it is written, and the plain forms other tools write (COUNT(*), a / b, a + b).
+// subset as it is written, and the plain forms other tools write (COUNT(*), a / b, a + b), and
+// in a dataset's metric a column of its source, source.column, as the field that is that column.
 import { parseExpression } from '../src/parser.js';
 
 // SQL's reserved words that are also likely column names; such a name is quoted.
@@ -39,8 +44,11 @@ const toDouble = x => (x.type === 'Float' && !x.bin ? x.sql : `CAST(${x.sql} AS 
 
 // `tables`: Map(lower-cased name -> { name, columns: Map(lower-cased name -> { name, type,
 // source }) }); `measures`: Map(lower-cased name -> { ast }). The result is { sql, type, table }:
-// `table` the one table it reads, the metric's dataset.
-export function measureSql(ast, tables, measures) {
+// `table` the one table it reads, the metric's dataset. With `metricAt` (a measure's name -> the
+// { dataset, name, type } of the dataset's metric it is in SQL, or nothing), a measure reference
+// is AGG(dataset.metric) and the measure reads no column itself: the result is the model's
+// metric, its `table` null.
+export function measureSql(ast, tables, measures, metricAt) {
   const reads = new Set();
   const seen = new Set();
   const column = (c, t) => {
@@ -92,6 +100,10 @@ export function measureSql(ast, tables, measures) {
   function expr(a) {
     if (!a) return null;
     if (num(a)) return { sql: numText(a), type: /^-?\d+$/.test(numText(a)) ? 'Integer' : 'Float', lit: true };
+    if (a.k === 'col' && a.table == null && metricAt) {
+      const at = metricAt(a.name);
+      return at ? { sql: `AGG(${sqlName(at.dataset)}.${sqlName(at.name)})`, type: NUMERIC.includes(at.type) ? at.type : 'Float', agg: true } : null;
+    }
     if (a.k === 'col' && a.table == null) {
       const m = measures.get(lc(a.name));
       if (!m || seen.has(lc(a.name))) return null;
@@ -130,6 +142,10 @@ export function measureSql(ast, tables, measures) {
       reads.add(t.name);
       return { sql: 'NULLIF(COUNT(*), 0)', type: 'Integer', agg: true };
     }
+    if (a.fn === 'ROUND' && args.length === 2 && num(args[1]) && /^-?\d+$/.test(numText(args[1]))) {
+      const x = expr(args[0]);
+      return x?.agg ? { sql: `ROUND(${x.sql}, ${numText(args[1])})`, type: x.type, agg: true } : null;
+    }
     if (a.fn === 'DIVIDE' && (args.length === 2 || (args.length === 3 && num(args[2])))) {
       const l = expr(args[0]), r = expr(args[1]);
       if (!l || !r || !(l.agg || r.agg)) return null;
@@ -141,6 +157,7 @@ export function measureSql(ast, tables, measures) {
     return null;
   }
   const x = expr(ast);
+  if (metricAt) return x?.agg && reads.size === 0 ? { sql: x.sql, type: x.type, table: null } : null;
   if (!x?.agg || reads.size !== 1) return null;
   return { sql: x.sql, type: x.type, table: [...reads][0] };
 }
@@ -277,8 +294,9 @@ const isZero = e => e?.k === 'num' && Number(e.v) === 0;
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 const unCast = e => (e?.k === 'cast' && (e.type === 'DOUBLE' || e.type === 'FLOAT') ? e.e : e);
 
-// `resolve(parts)`: the { table, column } an identifier names, or null.
-function toDax(root, resolve) {
+// `resolve(parts)`: the { table, column } an identifier names, or null. `metric(parts)`: the
+// { dataset, name } of the dataset's metric AGG evaluates, or null.
+function toDax(root, resolve, metric = () => null) {
   const tables = new Set();
   const col = e => {
     const c = e?.k === 'id' ? resolve(e.parts) : null;
@@ -343,6 +361,15 @@ function toDax(root, resolve) {
           }
           return `IF(${dax(a)} = 0, BLANK(), ${dax(a)})`;
         }
+        if (e.fn === 'AGG') {
+          const m = e.args.length === 1 && !e.distinct && e.args[0].k === 'id' ? metric(e.args[0].parts) : null;
+          if (!m) throw new Error('AGG evaluates one dataset.metric, in a model-scoped metric');
+          tables.add(m.dataset);
+          return `[${String(m.name).replace(/]/g, ']]')}]`;
+        }
+        if (e.fn === 'ROUND' && !e.distinct && (e.args.length === 1 || e.args.length === 2)) {
+          return `ROUND(${dax(e.args[0])}, ${e.args[1] ? dax(e.args[1]) : '0'})`;
+        }
         const names = AGG[e.fn];
         if (names && e.args.length === 1 && !e.distinct) {
           const arg = unCast(e.args[0]);
@@ -396,13 +423,20 @@ function toDax(root, resolve) {
 
 // A metric's SQL as DAX. `dataset`: the dataset it is declared on ({ name, fields }), or null
 // for a model-scoped one; `datasets`: every dataset. Its home table is the dataset's, or else
-// the first one it reads. Throws when the SQL is beyond this subset.
+// the first one it reads. In a dataset's metric, source.column is the field that is that column
+// of the source (unless the dataset has a field named source); in the model's, AGG(dataset.metric)
+// is that measure. Throws when the SQL is beyond this subset.
 export function metricDax(sql, dataset, datasets) {
   const fieldIn = (d, name) => (d.fields ?? []).find(f => lc(f.name) === lc(name));
   const byName = new Map(datasets.map(d => [lc(d.name), d]));
+  const sourceField = (d, column) => (d.fields ?? []).find(f => lc(sourceColumnOf(f.expression?.sql ?? '') ?? '') === lc(column));
   const resolve = parts => {
     if (parts.length === 1 && dataset) {
       const f = fieldIn(dataset, parts[0]);
+      return f ? { table: dataset.name, column: f.name } : null;
+    }
+    if (parts.length === 2 && dataset && lc(parts[0]) === 'source' && !fieldIn(dataset, 'source')) {
+      const f = sourceField(dataset, parts[1]);
       return f ? { table: dataset.name, column: f.name } : null;
     }
     // A model-scoped metric's bare name: the field of that name, when one dataset has it.
@@ -417,7 +451,12 @@ export function metricDax(sql, dataset, datasets) {
     }
     return null;
   };
-  const { dax, tables } = toDax(parseSql(sql), resolve).run(dataset?.name);
+  const metric = parts => {
+    const d = !dataset && parts.length === 2 ? byName.get(lc(parts[0])) : null;
+    const m = (d?.metrics ?? []).find(x => lc(x.name) === lc(parts[1]));
+    return m ? { dataset: d.name, name: m.name } : null;
+  };
+  const { dax, tables } = toDax(parseSql(sql), resolve, metric).run(dataset?.name);
   return { dax, table: dataset?.name ?? [...tables][0] ?? null };
 }
 

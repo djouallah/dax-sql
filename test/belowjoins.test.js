@@ -74,3 +74,30 @@ test("SUMMARIZE's extension columns: the group's rows are conditions on the scan
     FROM "Sales" s LEFT JOIN "Date" d ON d."Date" = s."OrderDate" LEFT JOIN "Product" p ON p."ProductKey" = s."ProductKey" GROUP BY 1, 2`));
   assert.deepEqual(got.map(Object.values), want.map(Object.values));
 });
+
+// A dimension's condition (a Report's slicer: WHERE over the model) is the grouped scan's too, as its
+// key IN the dimension's rows the condition keeps, so the engine skips the fact's rows no group keeps.
+const keptInScan = sql => /FROM "Sales" AS \w+ WHERE [^()]*\w+\."CustomerKey" IN \(SELECT \w+\."CustomerKey" FROM "Customer" AS \w+ WHERE /.test(sql);
+
+test("a condition on a dimension one join away is the grouped scan's too, as its key IN the rows it keeps", async () => {
+  const q = `SELECT "Product"."Color" AS c, AGG("Sales Amount") AS s FROM model WHERE "Customer"."City" IN ('Paris', 'Berlin') GROUP BY ALL`;
+  const { sql } = h.dax.compile(q);
+  assert.ok(/\) AS p\d+ LEFT JOIN/.test(sql) && keptInScan(sql), sql);
+  const got = sorted(await h.run(q));
+  const want = sorted(await h.sql(`SELECT p."Color" AS c, SUM(s."Amount") AS s FROM "Sales" s
+    LEFT JOIN "Product" p ON p."ProductKey" = s."ProductKey" LEFT JOIN "Customer" c ON c."CustomerKey" = s."CustomerKey"
+    WHERE c."City" IN ('Paris', 'Berlin') GROUP BY 1`));
+  assert.deepEqual(got.map(Object.values), want.map(Object.values));
+});
+
+test("a condition a blank passes stays outside the scan: the sale to a customer not in Customer is still in it", async () => {
+  const q = `SELECT "Product"."Color" AS c, AGG("Sales Amount") AS s FROM model WHERE "Customer"."City" IS NULL GROUP BY ALL`;
+  const { sql } = h.dax.compile(q);
+  assert.ok(!keptInScan(sql), sql);
+  const got = sorted(await h.run(q));
+  const want = sorted(await h.sql(`SELECT p."Color" AS c, SUM(s."Amount") AS s FROM "Sales" s
+    LEFT JOIN "Product" p ON p."ProductKey" = s."ProductKey" LEFT JOIN "Customer" c ON c."CustomerKey" = s."CustomerKey"
+    WHERE c."City" IS NULL GROUP BY 1`));
+  assert.ok(want.length > 0, "customer 99's sale");
+  assert.deepEqual(got.map(Object.values), want.map(Object.values));
+});

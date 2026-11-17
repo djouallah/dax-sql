@@ -234,7 +234,7 @@ test('a file of the spec before, custom_extensions with their data a JSON string
   for (const bim of [contoso, aac]) {
     const doc = tmslToOssie(bim);
     const old = { ...before(doc), version: '0.2.0.dev0' };
-    assert.ok(old.custom_extensions || old.datasets.some(d => d.custom_extensions));
+    assert.ok(/"custom_extensions"/.test(JSON.stringify(old)) && !/"nonportable_extensions"/.test(JSON.stringify(old)));
     assert.deepEqual(ossieToTmsl(old), ossieToTmsl(doc));
     // Written again, it is the spec's of now.
     assert.deepEqual(tmslToOssie(ossieToTmsl(old), doc.name), doc);

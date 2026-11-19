@@ -839,12 +839,117 @@ export class SqlTranslator {
       return { alias: [...alias][0],
         dax: D.call('TREATAS', D.call('SELECTCOLUMNS', sq.table, ...s.pairs.flatMap(p => [D.str(name(p.y)), D.ref(name(p.y))])), ...cols.map(D.col)) };
     });
-    // One dataset, grouped by its columns: SUMMARIZECOLUMNS. Anything else: the joined rows.
+    // One dataset, or a star of them (star()), grouped by their columns: SUMMARIZECOLUMNS.
+    // Anything else: the joined rows.
     const plain = e => e.k === 'name' || hasAgg(e) || isConstant(e) || isGrouping(e);
     const byColumns = !Array.isArray(flat.groupBy) || flat.groupBy.every(g => g.k === 'name' || g.k === 'num' || (g.k === 'call' && g.fn === 'ROLLUP'));
-    if (rels.size > 1 || !flat.select.every(s => plain(s.e)) || !byColumns) return t.joined(flat, rels, filters);
-    t.ossie = { root: [...rels.values()][0].table, filters: filters.map(f => f.dax), distinctOk: !!this.distinctOk };
-    return t.aggregate(flat);
+    const simple = flat.select.every(s => plain(s.e)) && byColumns;
+    const star = simple && rels.size > 1 ? this.star(rels, flat) : null;
+    if (!simple || (rels.size > 1 && !star)) return t.joined(flat, rels, filters);
+    const list = [...rels.values()];
+    t.ossie = { root: (star?.root ?? list[0]).table, filters: [...filters.map(f => f.dax), ...(star?.filters ?? [])], distinctOk: !!this.distinctOk };
+    if (star) {
+      // Each AGG(r.m) as the star reads it.
+      t.aggDax = function (e, ctx) {
+        const d = SqlTranslator.prototype.aggDax.call(this, e, ctx);
+        const parts = e.args[0].parts;
+        const r = parts.length === 2 ? rels.get(lc(parts[0])) : list.find(x => x.table === this.measure(parts).table);
+        return star.measure(r, d, this);
+      };
+    }
+    return t.aggregate(star ? { ...flat, where: andOf(flat.where, star.where) } : flat);
+  }
+
+  // Joins along the model's relationships, from the many side to the one side, that repeat no
+  // row of a measure: SUMMARIZECOLUMNS, as a DAX query over the model, gives Ossie's answers.
+  // Two shapes, else null (the joined rows, joined()):
+  //   - a star (or snowflake) from one root: every other relation is the one side of one ON
+  //     that is a relationship's columns, by INNER JOIN or by a LEFT JOIN that adds it. The
+  //     root's rows are the groups'; another relation's measure is CALCULATE(m, root), its
+  //     rows those the root's reach. An INNER JOIN keeps the root's rows that have a match:
+  //     the one side's key is not blank (its blank row holds the others). Other conditions
+  //     of an INNER JOIN's ON are the WHERE's.
+  //   - o LEFT JOIN m, o the one side: o's rows are the groups', and every column outside an
+  //     AGG is o's; m's measures read the rows of m that the ON's other conditions keep.
+  // An aggregate of a column (SUM(x)) over a join is not such a query.
+  star(rels, q) {
+    const list = [...rels.values()];
+    if (new Set(list.map(r => r.table)).size !== list.length) return null;
+    const plainAgg = e => someExpr(e, x => isAggCall(x) && x.fn !== 'AGG' && x.fn !== 'MEASURE');
+    if ([...q.select.map(s => s.e), q.having, ...q.orderBy.map(o => o.e)].some(e => e && plainAgg(e))) return null;
+    const colRel = parts => {
+      if (parts.length === 2) {
+        const r = rels.get(lc(parts[0])), c = r?.table.colMap.get(lc(parts[1]));
+        return c ? { r, c } : null;
+      }
+      const found = parts.length === 1 ? list.map(r => ({ r, c: r.table.colMap.get(lc(parts[0])) })).filter(x => x.c) : [];
+      return found.length === 1 ? found[0] : null;
+    };
+    const conjuncts = e => {
+      const out = [];
+      const split = x => (x.k === 'bin' && x.op === 'AND' ? (split(x.l), split(x.r)) : out.push(x));
+      split(e);
+      return out;
+    };
+    const edges = [];
+    let where = null;
+    const extra = new Map();
+    for (const [i, r] of list.entries()) {
+      if (i === 0) continue;
+      if (r.type !== 'inner' && r.type !== 'left') return null;
+      let edge = null;
+      const rest = [];
+      for (const c of conjuncts(r.on)) {
+        if (!edge && c.k === 'bin' && c.op === '=' && c.l.k === 'name' && c.r.k === 'name') {
+          const a = colRel(c.l.parts), b = colRel(c.r.parts);
+          const other = a && b && (a.r === r) !== (b.r === r) ? (a.r === r ? b.r : a.r) : null;
+          const rel = other && list.indexOf(other) < i ? this.model.relationships.find(x => x.active && !x.self
+            && x.fromCard === 'many' && x.toCard === 'one' && ((x.from === a.c && x.to === b.c) || (x.from === b.c && x.to === a.c))) : null;
+          if (rel) {
+            const many = rel.from === a.c ? a.r : b.r;
+            edge = { many, one: many === a.r ? b.r : a.r, type: r.type, rel, added: r };
+            continue;
+          }
+        }
+        rest.push(c);
+      }
+      if (!edge) return null;
+      edges.push(edge);
+      if (rest.length && r.type === 'inner') where = rest.reduce(andOf, where);
+      else if (rest.length) extra.set(r, rest.reduce(andOf));
+    }
+    // Names outside an AGG, of the query's own columns.
+    const outside = [];
+    const walk = e => {
+      if (!e) return;
+      if (e.k === 'name') outside.push(e);
+      if (isAggCall(e)) return;
+      kids(e).forEach(walk);
+    };
+    [...q.select.map(s => s.e), q.where, ...(Array.isArray(q.groupBy) ? q.groupBy : []), q.having, ...q.orderBy.map(o => o.e)].forEach(walk);
+
+    const [o, m] = list;
+    if (list.length === 2 && edges[0].type === 'left' && edges[0].many === m) {
+      // o LEFT JOIN m: groups of o; m's measures under the ON's other conditions, all on m.
+      const cond = extra.get(m);
+      const ofM = e => someExpr(e, x => x.k === 'name' && colRel(x.parts)?.r === m);
+      const ofO = e => someExpr(e, x => x.k === 'name' && colRel(x.parts)?.r === o);
+      if (outside.some(x => colRel(x.parts)?.r === m) || (cond && ofO(cond)) || (cond && !ofM(cond))) return null;
+      return {
+        root: o, where, filters: [],
+        measure: (r, d, t) => (r === m && cond ? D.call('CALCULATE', d, t.dax(cond, { mode: 'where' })) : d),
+      };
+    }
+    // A star: a LEFT JOIN adds a one side, and no ON says more than its relationship's columns.
+    if (extra.size || edges.some(e => e.type === 'left' && e.one !== e.added)) return null;
+    const roots = list.filter(r => !edges.some(e => e.one === r));
+    if (roots.length !== 1 || list.some(r => edges.filter(e => e.one === r).length > 1)) return null;
+    const [root] = roots;
+    return {
+      root, where,
+      filters: edges.filter(e => e.type === 'inner').map(e => D.not(D.call('ISBLANK', D.col(e.rel.to)))),
+      measure: (r, d) => (r === root ? d : D.call('CALCULATE', d, D.word(root.table.name))),
+    };
   }
 
   // A FROM of datasets joined in any way, as spec Section 9's reference strategy, in DAX. The

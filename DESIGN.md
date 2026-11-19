@@ -803,7 +803,13 @@ they differ from a DAX query's:
   `GROUP BY` takes expressions (`EXTRACT(YEAR FROM hiredate)`).
 
 One table grouped by its columns is the `SUMMARIZECOLUMNS` above, with the table's rows
-counted beside the measures so that the groups are its rows'. Anything else follows the
+counted beside the measures so that the groups are its rows'. So is a star: joins along the
+model's relationships from one root to their one sides (`emp JOIN dept ON e.deptno =
+d.deptno`), by `INNER JOIN` or a `LEFT JOIN` that adds a one side, which repeat no row of the
+root. The root's rows are the groups'; another table's measure is `CALCULATE(m, root)`, its
+rows those the root's reach; an `INNER JOIN` keeps the root's rows whose key the one side
+has. `one LEFT JOIN many` is one too, grouped by the one side's columns, the many side's
+measures under the `ON`'s other conditions. Anything else follows the
 spec's reference strategy (Section 9), in DAX: the joined rows are a variable of the query
 (`GENERATE`, `GENERATEALL` of `FILTER`s on each `ON`, each relation's columns named
 `alias.column`), the groups their distinct values, and each measure a `CALCULATE` of it under

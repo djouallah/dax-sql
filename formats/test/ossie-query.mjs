@@ -20,6 +20,10 @@ import { createCompiler } from '../../src/index.js';
 import { ossieToModel } from '../ossie.js';
 
 const PENDING = new Set([]);
+// The joins along the model's relationships, from many to one (a star): their query is
+// SUMMARIZECOLUMNS, not the joined rows. Each case's path is in the report.
+const STAR = new Set(['B1', 'B2', 'B4', 'B14', 'B15', 'B16', 'B17', 'B18', 'B20']);
+const pathOf = daxText => (/TREATAS\(SELECTCOLUMNS\(FILTER\(__v/.test(daxText) ? 'joined rows' : 'SUMMARIZECOLUMNS');
 
 const ossie = process.argv[2];
 if (!ossie) throw new Error('usage: ossie-query.mjs <ossie checkout>');
@@ -161,7 +165,9 @@ for (const file of readdirSync(dir).filter(f => f.endsWith('.ost')).sort()) {
       outcome = e.code === 'UNSUPPORTED' ? 'unsupported' : 'error';
       detail = `${e.code ? `${e.code}: ` : ''}${e.message.split('\n')[0]}`;
     }
-    results.push({ ...c, outcome, detail, sql });
+    let path = '';
+    try { path = pathOf(dax.sqlToDax(c.query).dax); } catch { /* SQL with a model SELECT in it */ }
+    results.push({ ...c, outcome, detail, sql, path });
   }
 }
 
@@ -172,15 +178,17 @@ for (const r of results) {
   if (r.outcome === 'fail') bad.push(`${r.id}: wrong rows: ${r.detail}`);
   else if (r.outcome === 'match' && PENDING.has(r.id)) bad.push(`${r.id} matches now: take it off PENDING`);
   else if (r.outcome !== 'match' && !PENDING.has(r.id)) bad.push(`${r.id}: ${r.outcome}, ${r.detail}`);
+  if (STAR.has(r.id) && r.path !== 'SUMMARIZECOLUMNS') bad.push(`${r.id}: a star join, answered by the joined rows`);
 }
+for (const id of STAR) if (!results.some(r => r.id === id)) bad.push(`${id} is on STAR but no case has that id`);
 const ids = new Set(results.map(r => r.id));
 for (const id of PENDING) if (!ids.has(id)) bad.push(`${id} is on PENDING but no case has that id`);
 
 const counts = Object.groupBy(results, r => r.outcome);
 const summary = [
   `### Ossie query compliance: ${counts.match?.length ?? 0} of ${results.length} match`, '',
-  '| case | outcome | detail |', '|---|---|---|',
-  ...results.map(r => `| ${r.id} | ${r.outcome} | ${r.detail.replaceAll('|', '\\|')} |`), '',
+  '| case | outcome | path | detail |', '|---|---|---|---|',
+  ...results.map(r => `| ${r.id} | ${r.outcome} | ${r.path} | ${r.detail.replaceAll('|', '\\|')} |`), '',
 ].join('\n');
 console.log(summary);
 // What each case that does not match was translated to: its DAX, and its SQL.

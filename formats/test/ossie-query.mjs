@@ -19,10 +19,7 @@ import { parse } from 'yaml';
 import { createCompiler } from '../../src/index.js';
 import { ossieToModel } from '../ossie.js';
 
-const PENDING = new Set([
-  'A8', 'A10', 'B1', 'B2', 'B4', 'B5', 'B5a', 'B6', 'B7', 'B8', 'B8a', 'B8b', 'B9', 'B9a', 'B10', 'B10a',
-  'B11', 'B11a', 'B12', 'B12a', 'B13', 'B13a', 'B14', 'B15', 'B16', 'B17', 'B18', 'B19', 'B20',
-]);
+const PENDING = new Set([]);
 
 const ossie = process.argv[2];
 if (!ossie) throw new Error('usage: ossie-query.mjs <ossie checkout>');

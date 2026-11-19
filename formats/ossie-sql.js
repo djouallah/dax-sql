@@ -276,6 +276,14 @@ function parseSql(src) {
       const args = [];
       if (!op(')')) do args.push(level(0)); while (eat(','));
       need(')');
+      // agg(x) FILTER (WHERE cond): the aggregate over the rows where cond is true.
+      if (kw('FILTER') && toks[i + 1]?.t === 'op' && toks[i + 1].v === '(') {
+        i += 2;
+        need('WHERE');
+        const filter = level(0);
+        need(')');
+        return { k: 'call', fn: t.up, args, distinct, filter };
+      }
       return { k: 'call', fn: t.up, args, distinct };
     }
     const parts = [t.v];
@@ -343,6 +351,34 @@ function toDax(root, resolve, metric = () => null) {
         return `CONVERT(${dax(e.e)}, ${to})`;
       }
       case 'call': {
+        // agg(x) FILTER (WHERE cond): its X form over the rows of its table that cond keeps.
+        if (e.filter) {
+          const names = AGG[e.fn] ?? (e.fn === 'COUNT' && !e.distinct ? ['COUNT', e.star ? 'COUNTROWS' : 'COUNTAX'] : null);
+          if (!names || e.distinct) throw new Error(`${e.fn}(${e.distinct ? 'DISTINCT ' : ''}...) FILTER (WHERE ...)`);
+          const t = e.star ? home() : firstTable(unCast(e.args[0]));
+          if (!t) throw new Error(`${e.fn} reads no field`);
+          const rows = `FILTER(${daxTable(t)}, ${dax(e.filter)})`;
+          return e.star ? `COUNTROWS(${rows})` : `${names[1]}(${rows}, ${dax(unCast(e.args[0]))})`;
+        }
+        // Dates, blank where SQL's are NULL (DAX's YEAR of a blank is 1899).
+        const orBlank = (args, x) => `IF(${args.map(a => `ISBLANK(${a})`).join(' || ')}, BLANK(), ${x})`;
+        if (['YEAR', 'MONTH', 'DAY'].includes(e.fn) && e.args.length === 1 && !e.distinct) {
+          const d = dax(e.args[0]);
+          return orBlank([d], `${e.fn}(${d})`);
+        }
+        if (e.fn === 'DATE_TRUNC' && e.args.length === 2 && e.args[0].k === 'str') {
+          const d = dax(e.args[1]), unit = e.args[0].v.toLowerCase();
+          const start = { year: `DATE(YEAR(${d}), 1, 1)`, quarter: `DATE(YEAR(${d}), (QUARTER(${d}) - 1) * 3 + 1, 1)`,
+            month: `DATE(YEAR(${d}), MONTH(${d}), 1)`, day: `DATE(YEAR(${d}), MONTH(${d}), DAY(${d}))` }[unit];
+          if (!start) throw new Error(`DATE_TRUNC('${e.args[0].v}', ...)`);
+          return orBlank([d], start);
+        }
+        if (e.fn === 'DATEDIFF' && e.args.length === 3 && e.args[0].k === 'id' && e.args[0].parts.length === 1) {
+          const unit = e.args[0].parts[0].toUpperCase();
+          if (!['DAY', 'WEEK', 'MONTH', 'QUARTER', 'YEAR', 'HOUR', 'MINUTE', 'SECOND'].includes(unit)) throw new Error(`DATEDIFF(${unit}, ...)`);
+          const a = dax(e.args[1]), b = dax(e.args[2]);
+          return orBlank([a, b], `DATEDIFF(${a}, ${b}, ${unit})`);
+        }
         if (e.fn === 'COUNT') return count(e);
         if (e.fn === 'NULLIF' && e.args.length === 2 && isZero(e.args[1])) {
           const a = e.args[0];

@@ -779,16 +779,49 @@ LIMIT 10
 - A measure keeps its definition: nothing changes the filter context but `WHERE`. `SELECT *`,
   `DISTINCT`, joins, subqueries, `UNION`, window functions and `COUNT(*)` are not supported.
 
+**Over the model's datasets.** A `FROM` that names the model's tables (`emp`, or
+`scott_model.emp`, each with an optional alias) instead of the model reads them as the
+relations of Apache Ossie's
+[Relational Query Interface](https://github.com/apache/ossie/blob/main/core-spec/relational_semantics.md):
+each table's measures are columns of it, evaluated by `AGG(e.m)`. The rules are SQL's, where
+they differ from a DAX query's:
+
+- The groups are those of the rows: a group whose measures are all blank is kept. A measure
+  that counts (`COUNTROWS`, `COUNT`, `DISTINCTCOUNT`, ...) is 0 over no rows, not blank.
+- A comparison (`=`, `<`, `IN`, `BETWEEN`, ...) with a NULL is not true, in `WHERE`, `ON` and
+  `HAVING`: DAX's blank equals blank, 0 and `""`, so a manager-less employee would join a pet
+  with no owner.
+- Joins (`JOIN`, `LEFT`, `RIGHT`, `FULL`, `CROSS`, on any condition, a table joined to itself)
+  never repeat a row of a measure: `AGG(e.m)` is `m` over the rows of `e`'s table that the
+  group's joined rows come from, each once, and none for the rows an outer join pads.
+- `WITH`'s queries, and subqueries in `FROM` that only pass rows through, are put in place:
+  their relations join the query's, their `WHERE` is its, and a measure keeps its identity
+  when renamed. A join to a subquery whose columns only its `ON` reads is a filter of the
+  other side (a top N, a list of keys). A scalar subquery is computed once, outside the query's
+  filters; `IN (SELECT ...)` too.
+- `ROLLUP` needs no `GROUPING` in the `SELECT`; `NULLS FIRST` and `NULLS LAST` sort either way;
+  `GROUP BY` takes expressions (`EXTRACT(YEAR FROM hiredate)`).
+
+One table grouped by its columns is the `SUMMARIZECOLUMNS` above, with the table's rows
+counted beside the measures so that the groups are its rows'. Anything else follows the
+spec's reference strategy (Section 9), in DAX: the joined rows are a variable of the query
+(`GENERATE`, `GENERATEALL` of `FILTER`s on each `ON`, each relation's columns named
+`alias.column`), the groups their distinct values, and each measure a `CALCULATE` of it under
+`TREATAS` of its table's primary key, as the group's rows hold it. A table in a join needs a
+key: its dataset's `primary_key`. Apache Ossie's query compliance cases (`compliance/query`)
+run against this in `.github/workflows/ossie-query.yml`.
+
 **In a statement of the engine's SQL** (`compileStatement`), a `SELECT` over the model is a
 relation: in parentheses, wherever the engine takes a subquery (a `WITH`'s query, `FROM`, an
-arm of a `UNION`, `IN`). Each one is compiled as above and its SQL put in its place; the rest
-is the engine's SQL, passed through as written, so it can join, union, window or filter what
-the model answers with its own tables. The model is not a table: a measure has no value until
-the groups are chosen, so there is no view of it, and it is named only as the `FROM` of such a
-`SELECT` (`JOIN model`, or a `SELECT ... FROM model` that is an arm of a `UNION` without
-parentheses, is an error). The scanner reads only what nesting depends on (strings, quoted
-names, `$$` strings, comments, parentheses), so `FROM model` in a string or a comment is text.
-A `SELECT` over the model reads no column of the statement around it.
+arm of a `UNION`, `IN`), or an arm of a `UNION` without them (up to the `ORDER BY` of the
+whole, after the last arm). Each one is compiled as above and its SQL put in its place; the
+rest is the engine's SQL, passed through as written, so it can join, union, window or filter
+what the model answers with its own tables. The model is not a table: a measure has no value
+until the groups are chosen, so there is no view of it, and it is named only as the `FROM` of
+such a `SELECT` (`JOIN model` is an error); `model.dataset` names the model too. The scanner
+reads only what nesting depends on (strings, quoted names, `$$` strings, comments,
+parentheses), so `FROM model` in a string or a comment is text. A `SELECT` over the model
+reads no column of the statement around it.
 
 ```sql
 WITH m AS (SELECT Product.Color, AGG(Orders) AS orders FROM model GROUP BY ALL)

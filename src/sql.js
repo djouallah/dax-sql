@@ -602,6 +602,14 @@ export class SqlTranslator {
       if (hit) return hit;
     }
     const sub = x => this.dax(x, ctx);
+    // Over datasets, SQL's NULLs: a comparison with one is not true (DAX's blank equals blank,
+    // 0 and ""). Each operand that is not a constant is known not to be blank.
+    const known = (pairs, x) => {
+      if (!this.sqlNulls) return x;
+      const guards = pairs.filter(([s]) => !isConstant(s)).map(([, d]) => D.not(D.call('ISBLANK', d)));
+      return [x, ...guards].reduce((a, b) => D.bin('&&', a, b));
+    };
+    const CMP = new Set(['=', '<>', '<', '<=', '>', '>=']);
     switch (e.k) {
       case 'num': return D.num(e.v);
       case 'str': return D.str(e.v);
@@ -619,16 +627,17 @@ export class SqlTranslator {
       case 'bin': {
         const l = sub(e.l), r = sub(e.r);
         if (e.op === '%') return D.call('MOD', l, r);
+        if (CMP.has(e.op)) return known([[e.l, l], [e.r, r]], D.bin(e.op, l, r));
         return D.bin({ AND: '&&', OR: '||', '||': '&' }[e.op] ?? e.op, l, r);
       }
       case 'isnull': return e.not ? D.not(D.call('ISBLANK', sub(e.e))) : D.call('ISBLANK', sub(e.e));
       case 'in': {
-        const x = D.in(sub(e.e), e.list.map(sub));
-        return e.not ? D.not(x) : x;
+        const v = sub(e.e), x = D.in(v, e.list.map(sub));
+        return known([[e.e, v]], e.not ? D.not(x) : x);
       }
       case 'between': {
-        const x = sub(e.e), b = D.bin('&&', D.bin('>=', x, sub(e.lo)), D.bin('<=', x, sub(e.hi)));
-        return e.not ? D.not(b) : b;
+        const x = sub(e.e), lo = sub(e.lo), hi = sub(e.hi), b = D.bin('&&', D.bin('>=', x, lo), D.bin('<=', x, hi));
+        return known([[e.e, x], [e.lo, lo], [e.hi, hi]], e.not ? D.not(b) : b);
       }
       case 'like': {
         if (e.pat.k !== 'str') throw sqlUnsupported('LIKE with a pattern that is not a constant');
@@ -779,7 +788,7 @@ export class SqlTranslator {
       if (pairs) { semis.push({ q: l.rel.q, pairs }); continue; }
       const sq = l.rel.q;
       if (sq.groupBy || sq.having || sq.limit != null || sq.offset != null || sq.ties != null || sq.orderBy.length || sq.orderAll
-        || sq.select.some(s => hasAgg(s.e)) || sq.with?.length)
+        || sq.select.some(s => hasAgg(s.e)))
         throw sqlUnsupported(`${l.rel.src}: a subquery in FROM that aggregates, other than a filter of a join`);
       if (sq.from.kind === 'sub' || sq.from.kind === 'join') throw sqlUnsupported(`${l.rel.src}: a subquery of a subquery or of a join in FROM`);
       // Its names, of its one relation.
@@ -818,6 +827,7 @@ export class SqlTranslator {
     }
     const t = Object.create(this);
     t.scope = { rels };
+    t.sqlNulls = true;
     // A join's filters: each subquery's rows, on the columns its ON matches them to (of one
     // relation).
     const filters = semis.map(s => {

@@ -20,8 +20,7 @@ import { createCompiler } from '../../src/index.js';
 import { ossieToModel } from '../ossie.js';
 
 const PENDING = new Set([
-  'A2', 'A3', 'A4', 'A5', 'A6', 'A7', 'A8', 'A9', 'A10', 'A11', 'A12',
-  'B1', 'B2', 'B3', 'B4', 'B5', 'B5a', 'B6', 'B7', 'B8', 'B8a', 'B8b', 'B9', 'B9a', 'B10', 'B10a',
+  'A8', 'A10', 'B1', 'B2', 'B4', 'B5', 'B5a', 'B6', 'B7', 'B8', 'B8a', 'B8b', 'B9', 'B9a', 'B10', 'B10a',
   'B11', 'B11a', 'B12', 'B12a', 'B13', 'B13a', 'B14', 'B15', 'B16', 'B17', 'B18', 'B19', 'B20',
 ]);
 
@@ -187,8 +186,11 @@ const summary = [
   ...results.map(r => `| ${r.id} | ${r.outcome} | ${r.detail.replaceAll('|', '\\|')} |`), '',
 ].join('\n');
 console.log(summary);
-for (const r of results.filter(x => x.outcome === 'fail' || (x.outcome !== 'match' && x.sql))) {
-  console.log(`--- ${r.id} (${r.file})\n${r.query}\n--- SQL\n${r.sql}\n`);
+// What each case that does not match was translated to: its DAX, and its SQL.
+for (const r of results.filter(x => x.outcome !== 'match')) {
+  let daxText;
+  try { daxText = dax.sqlToDax(r.query).dax; } catch (e) { daxText = `(${e.message.split('\n')[0]})`; }
+  console.log(`--- ${r.id} (${r.file}): ${r.outcome}\n${r.query}\n--- DAX\n${daxText}\n--- SQL\n${r.sql ?? '(none)'}\n`);
 }
 if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, summary + '\n');
 for (const b of bad) console.log(`::error::${b}`);

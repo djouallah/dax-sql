@@ -118,7 +118,7 @@ test('SQL errors carry their codes', async () => {
   await fails('SELECT Color, AGG(Orders) AS Color FROM m GROUP BY ALL', 'SEMANTIC');
   await fails('SELECT * FROM m', 'UNSUPPORTED');
   await fails('SELECT DISTINCT Color FROM m', 'UNSUPPORTED');
-  await fails('SELECT Color FROM Sales JOIN Product ON 1 = 1 GROUP BY ALL', 'UNSUPPORTED');
+  await fails('SELECT Color FROM Sales JOIN Product ON 1 = 1', 'UNSUPPORTED');
   await fails('SELECT COUNT(*) FROM m', 'UNSUPPORTED');
   await fails('SELECT UPPER(Color), AGG(Orders) FROM m GROUP BY ALL', 'UNSUPPORTED');
   await fails(`SELECT AGG(Orders) FROM m WHERE Product.Name LIKE 'a_c'`, 'UNSUPPORTED');

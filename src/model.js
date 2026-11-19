@@ -70,7 +70,7 @@ export class Model {
         unique: !!c.key, nullable: c.nullable !== false, dataCategory: c.dataCategory ?? null,
         fieldParameter: !!c.fieldParameter,
       };
-      if (c.key) table.key = col;
+      if (c.key) { table.key = col; (table.keys ??= []).push(col); }
       table.columns.push(col);
       table.colMap.set(lc(c.name), col);
     }
@@ -88,7 +88,10 @@ export class Model {
     const from = this.column(r.from.table, r.from.column), to = this.column(r.to.table, r.to.column);
     return {
       name: r.name ?? `rel${i}`, from, to,
-      active: r.active !== false,
+      // A table related to itself (Ossie has them, an employee's manager): DAX has no such
+      // relationship, so it filters nothing and nothing activates it.
+      self: from.table === to.table,
+      active: r.active !== false && from.table !== to.table,
       cross: r.crossFilter === 'both' ? 'both' : 'single',
       fromCard: r.fromCardinality ?? 'many',
       toCard: r.toCardinality ?? 'one',
@@ -178,7 +181,7 @@ export class Model {
     if (!s) {
       s = this.relationships.map(rel => {
         let active = rel.active, cross = rel.cross;
-        if (mods?.active.has(rel.name)) active = mods.active.get(rel.name);
+        if (mods?.active.has(rel.name) && !rel.self) active = mods.active.get(rel.name);
         if (mods?.cross.has(rel.name)) cross = mods.cross.get(rel.name);
         // A one-to-one relationship filters both ways.
         if (rel.fromCard === 'one' && rel.toCard === 'one' && cross === 'single') cross = 'both';
@@ -295,7 +298,7 @@ export class Model {
   oneSides(table) {
     const out = [];
     for (const r of this.relationships) {
-      if (r.ri || r.toCard !== 'one') continue;
+      if (r.ri || r.toCard !== 'one' || r.self) continue;
       if (r.to.table === table) out.push({ rel: r, one: r.to, many: r.from });
       if (r.fromCard === 'one' && r.from.table === table) out.push({ rel: r, one: r.from, many: r.to });
     }

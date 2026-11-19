@@ -547,7 +547,7 @@ function leavesOf(from) {
 const COUNTS = /^\s*(?:COUNTROWS|COUNTA?|COUNTAX|COUNTX|DISTINCTCOUNT|DISTINCTCOUNTNOBLANK)\s*\(/i;
 
 export class SqlTranslator {
-  constructor(model) { this.model = model; }
+  constructor(model) { this.model = model; this.base = this; this.defines = []; }
 
   // A column by its parts: [table, column] or [column], of the one table that has it. Over the
   // datasets of a FROM (`scope`), [alias, column] or [column] of one of them.
@@ -659,7 +659,7 @@ export class SqlTranslator {
         return this.variable(D.call('MAXX', sq.table, D.ref(sq.names[0])));
       }
       case 'insub': {
-        const sq = this.subquery(e.q);
+        const sq = this.subquery(e.q, { distinct: true });
         if (sq.names.length !== 1) throw sqlSemantic(`IN (SELECT ...) has one column: ${e.src}`);
         const x = { k: 'in', e: sub(e.e), set: D.call('SELECTCOLUMNS', sq.table, D.str(sq.names[0]), D.ref(sq.names[0])) };
         return e.not ? D.not(x) : x;
@@ -732,10 +732,12 @@ export class SqlTranslator {
 
   // A query of its own, inside this one: { table, names, oneRow }. LIMIT is TOPN, so it keeps
   // the rows tied with the last one.
-  subquery(q) {
-    const t = Object.create(this);
+  subquery(q, { distinct = false } = {}) {
+    // From the translator itself: not the names of the query around it.
+    const t = Object.create(this.base);
     t.scope = null;
     t.ossie = null;
+    t.distinctOk = distinct;
     const r = t.translateQuery(q);
     const [ev] = r.query.evaluates;
     let table = ev.e;
@@ -816,16 +818,203 @@ export class SqlTranslator {
     }
     const t = Object.create(this);
     t.scope = { rels };
-    // A join's filters: each subquery's rows, on the columns its ON matches them to.
+    // A join's filters: each subquery's rows, on the columns its ON matches them to (of one
+    // relation).
     const filters = semis.map(s => {
       const sq = this.subquery(s.q, { distinct: true });
       const name = y => sq.names.find(n => lc(n) === lc(y)) ?? (() => { throw sqlSemantic(`the subquery has no column ${y}`); })();
       const cols = s.pairs.map(p => t.needColumn(p.other));
-      return D.call('TREATAS', D.call('SELECTCOLUMNS', sq.table, ...s.pairs.flatMap(p => [D.str(name(p.y)), D.ref(name(p.y))])), ...cols.map(D.col));
+      const alias = new Set(s.pairs.map(p => lc(p.other.parts[0])));
+      if (alias.size > 1) throw sqlUnsupported('a join to a subquery on the columns of several relations');
+      return { alias: [...alias][0],
+        dax: D.call('TREATAS', D.call('SELECTCOLUMNS', sq.table, ...s.pairs.flatMap(p => [D.str(name(p.y)), D.ref(name(p.y))])), ...cols.map(D.col)) };
     });
-    if (rels.size > 1) throw sqlUnsupported('a join of datasets');
-    t.ossie = { root: [...rels.values()][0].table, filters, distinctOk: !!this.distinctOk };
+    // One dataset, grouped by its columns: SUMMARIZECOLUMNS. Anything else: the joined rows.
+    const plain = e => e.k === 'name' || hasAgg(e) || isConstant(e) || isGrouping(e);
+    const byColumns = !Array.isArray(flat.groupBy) || flat.groupBy.every(g => g.k === 'name' || g.k === 'num' || (g.k === 'call' && g.fn === 'ROLLUP'));
+    if (rels.size > 1 || !flat.select.every(s => plain(s.e)) || !byColumns) return t.joined(flat, rels, filters);
+    t.ossie = { root: [...rels.values()][0].table, filters: filters.map(f => f.dax), distinctOk: !!this.distinctOk };
     return t.aggregate(flat);
+  }
+
+  // A FROM of datasets joined in any way, as spec Section 9's reference strategy, in DAX. The
+  // joined rows are a variable, each relation's columns in it named alias.column; the groups
+  // are their distinct values (a variable); each AGG(r.m) is the measure over the rows of r's
+  // table whose key the group's rows hold (TREATAS): each row once, however often the join
+  // repeats it, and none for the rows an outer join pads. A relation's key is its dataset's
+  // primary_key.
+  joined(q, rels, filters) {
+    const list = [...rels.values()];
+    const keysOf = r => {
+      const ks = r.table.keys ?? (r.table.key ? [r.table.key] : []);
+      if (!ks.length) throw sqlUnsupported(`a join of ${r.alias}, whose dataset has no primary_key`);
+      return ks;
+    };
+    const jn = (r, c) => `${r.alias}.${c.name}`;
+    const colOf = parts => {
+      if (parts.length === 2) {
+        const r = rels.get(lc(parts[0])), c = r?.table.colMap.get(lc(parts[1]));
+        return c ? { r, c } : null;
+      }
+      if (parts.length !== 1) return null;
+      const found = list.map(r => ({ r, c: r.table.colMap.get(lc(parts[0])) })).filter(x => x.c);
+      if (found.length > 1) throw sqlSemantic(`column ${parts[0]} is in several relations (${found.map(x => x.r.alias).join(', ')}); name its relation`);
+      return found[0] ?? null;
+    };
+    const measureOf = parts => {
+      const m = parts.length <= 2 ? this.model.measure(parts[parts.length - 1]) : null;
+      if (!m) return null;
+      if (parts.length === 2) {
+        const r = rels.get(lc(parts[0]));
+        return r && r.table === m.table ? { r, m } : null;
+      }
+      const found = list.filter(r => r.table === m.table);
+      if (found.length > 1) throw sqlSemantic(`measure ${parts[0]} is in several relations (${found.map(r => r.alias).join(', ')}); name its relation`);
+      return found.length ? { r: found[0], m } : null;
+    };
+    // The columns each relation brings: its key, and those the query names.
+    const need = new Map(list.map(r => [r, new Set(keysOf(r))]));
+    const exprs = [...q.select.map(s => s.e), q.where, ...(Array.isArray(q.groupBy) ? q.groupBy : []), q.having,
+      ...q.orderBy.map(o => o.e), ...list.map(r => r.on)];
+    for (const e of exprs) someExpr(e, x => {
+      if (x.k === 'name') { const hit = colOf(x.parts); if (hit) need.get(hit.r).add(hit.c); }
+      return false;
+    });
+    const rowsOf = r => {
+      const t = D.call('SELECTCOLUMNS', D.word(r.table.name), ...[...need.get(r)].flatMap(c => [D.str(jn(r, c)), D.col(c)]));
+      const own = filters.filter(f => f.alias === lc(r.alias)).map(f => f.dax);
+      return own.length ? D.call('CALCULATETABLE', t, ...own) : t;
+    };
+
+    // Expressions over the joined rows ('where': a row's) or over a group's row (the others,
+    // where a column is a group's and AGG a measure of the group).
+    const groups = [], measures = [];
+    const base = SqlTranslator.prototype;
+    const g = Object.create(this);
+    g.scope = null;
+    g.nameDax = function (e, ctx) {
+      const hit = colOf(e.parts);
+      if (!hit) {
+        if (measureOf(e.parts)) throw sqlSemantic(`${e.src} is a measure: aggregate it with AGG(${e.src})`);
+        throw sqlSemantic(`no relation of the FROM has a column ${e.src}`);
+      }
+      const ref = D.ref(jn(hit.r, hit.c));
+      if (ctx.mode === 'where') return ref;
+      const gr = groups.find(x => x.key === printDax(ref));
+      if (!gr) throw sqlSemantic(`column ${e.src} must be in GROUP BY`);
+      return D.ref(gr.name);
+    };
+    g.dax = function (e, ctx) {
+      if (ctx.mode !== 'where' && !hasAgg(e) && !isConstant(e) && e.k !== 'name' && e.k !== 'subquery') {
+        const gr = groups.find(x => x.key === printDax(base.dax.call(g, e, { ...ctx, mode: 'where' })));
+        if (gr) return D.ref(gr.name);
+      }
+      return base.dax.call(g, e, ctx);
+    };
+    g.aggDax = function (e, ctx) {
+      if (ctx.mode === 'where') throw sqlSemantic(`an aggregate in WHERE (${e.src}): use HAVING`);
+      if (e.fn !== 'AGG' && e.fn !== 'MEASURE') throw sqlUnsupported(`${e.src}: an aggregate of a column over a join (AGG a measure)`);
+      const arg = e.args[0];
+      if (e.args.length !== 1 || e.distinct || arg.k !== 'name') throw sqlSemantic(`${e.fn} takes a measure: ${e.src}`);
+      const hit = measureOf(arg.parts);
+      if (!hit) throw sqlSemantic(`no relation of the FROM has a measure ${arg.src}`);
+      const key = `${lc(hit.r.alias)}|${lc(hit.m.name)}`;
+      let x = measures.find(y => y.key === key);
+      if (!x) measures.push(x = { key, name: `__m${measures.length + 1}`, ...hit });
+      return D.ref(x.name);
+    };
+    const w = e => g.dax(e, { mode: 'where' });
+
+    // The joined rows, left to right. RIGHT JOIN keeps the columns' order, for a UNION after it.
+    let J = rowsOf(list[0]);
+    const names = [...need.get(list[0])].map(c => jn(list[0], c));
+    for (const r of list.slice(1)) {
+      const B = rowsOf(r), mine = [...need.get(r)].map(c => jn(r, c));
+      const on = r.on ? w(r.on) : null;
+      const keep = t => D.call('SELECTCOLUMNS', t, ...[...names, ...mine].flatMap(n => [D.str(n), D.ref(n)]));
+      if (r.type === 'cross') J = D.call('GENERATE', J, B);
+      else if (r.type === 'inner') J = D.call('GENERATE', J, D.call('FILTER', B, on));
+      else if (r.type === 'left') J = D.call('GENERATEALL', J, D.call('FILTER', B, on));
+      else if (r.type === 'right') J = keep(D.call('GENERATEALL', B, D.call('FILTER', J, on)));
+      else {
+        const onlyB = D.call('SELECTCOLUMNS', D.call('FILTER', B, D.call('ISEMPTY', D.call('FILTER', J, on))),
+          ...names.flatMap(n => [D.str(n), D.call('BLANK')]), ...mine.flatMap(n => [D.str(n), D.ref(n)]));
+        J = D.call('UNION', D.call('GENERATEALL', J, D.call('FILTER', B, on)), onlyB);
+      }
+      names.push(...mine);
+    }
+    const all = this.variable(J);
+    const rows = q.where ? this.variable(D.call('FILTER', all, w(q.where))) : all;
+
+    // The items, and the groups: GROUP BY's expressions, each named by the item it is.
+    const itemName = s => s.alias ?? (s.e.k === 'name' ? s.e.parts[s.e.parts.length - 1] : s.e.src);
+    const items = q.select.map(s => ({ e: s.e, name: itemName(s), agg: hasAgg(s.e), constant: isConstant(s.e) }));
+    const seen = new Set();
+    for (const it of items) {
+      if (isGrouping(it.e)) throw sqlUnsupported(`${it.e.src}: GROUPING over a join`);
+      if (seen.has(lc(it.name))) throw sqlSemantic(`two columns of the result are named ${it.name}`);
+      seen.add(lc(it.name));
+    }
+    if (!q.groupBy && !q.having && !items.some(it => it.agg)) throw sqlUnsupported('the rows of a join, with no aggregate');
+    const fields = items.filter(it => !it.agg && !it.constant);
+    const groupExprs = q.groupBy === 'all' ? fields.map(it => it.e) : (q.groupBy ?? []).map(x => {
+      if (x.k === 'num' && /^\d+$/.test(x.v)) {
+        const it = items[Number(x.v) - 1];
+        if (!it || it.agg) throw sqlSemantic(`GROUP BY ${x.v} is not a column of the SELECT`);
+        return it.e;
+      }
+      if (x.k === 'call' && x.fn === 'ROLLUP') throw sqlUnsupported('ROLLUP over a join');
+      if (x.k === 'name' && x.parts.length === 1 && !colOf(x.parts)) {
+        const it = fields.find(f => lc(f.name) === lc(x.parts[0]));
+        if (it) return it.e;
+      }
+      return x;
+    });
+    for (const x of groupExprs) {
+      const dax = w(x), key = printDax(dax);
+      if (!groups.some(gr => gr.key === key)) groups.push({ dax, key, name: null });
+    }
+    for (const it of fields) {
+      const gr = groups.find(x => x.key === printDax(w(it.e)));
+      if (!gr) throw sqlSemantic(`${it.e.src} must be in GROUP BY`);
+      it.group = gr;
+      gr.name ??= it.name;
+    }
+    groups.forEach((gr, i) => { gr.name ??= `__g${i + 1}`; });
+    const spine = this.variable(groups.length
+      ? D.call('DISTINCT', D.call('SELECTCOLUMNS', rows, ...groups.flatMap(gr => [D.str(gr.name), gr.dax])))
+      : D.call('ROW', D.str('__all'), D.num(1)));
+
+    const out = items.map(it => (it.group ? D.ref(it.group.name) : g.dax(it.e, { mode: 'agg' })));
+    const having = q.having && g.dax(q.having, { mode: 'having' });
+    const orderBy = q.orderAll ? items.map((_, i) => ({ e: { k: 'num', v: String(i + 1), src: String(i + 1) }, ...q.orderAll })) : q.orderBy;
+    const order = orderBy.flatMap(o => {
+      let i = -1;
+      if (o.e.k === 'num' && /^\d+$/.test(o.e.v)) i = Number(o.e.v) - 1;
+      else if (o.e.k === 'name' && o.e.parts.length === 1) i = items.findIndex(it => lc(it.name) === lc(o.e.parts[0]));
+      if (i < 0) { const d = printDax(g.dax(o.e, { mode: 'agg' })); i = out.findIndex(x => printDax(x) === d); }
+      if (i < 0 || i >= items.length) throw sqlUnsupported(`ORDER BY ${o.e.src}: order by a column of the result`);
+      const key = { e: D.ref(items[i].name), desc: o.desc };
+      if (!o.nulls || o.nulls === (o.desc ? 'last' : 'first')) return [key];
+      return [{ e: D.call('ISBLANK', key.e), desc: o.nulls === 'first' }, key];
+    });
+
+    // Each measure, on each group: its relation's keys among the group's rows, none padded.
+    const value = x => {
+      const ks = keysOf(x.r);
+      const padded = ks.map(c => D.call('ISBLANK', D.ref(jn(x.r, c)))).reduce((a, b) => D.bin('&&', a, b));
+      const cond = [D.not(padded), ...groups.map(gr => D.bin('==', gr.dax, D.ref(gr.name)))].reduce((a, b) => D.bin('&&', a, b));
+      const keys = D.call('SELECTCOLUMNS', D.call('FILTER', rows, cond), ...ks.flatMap((c, i) => [D.str(`__k${i + 1}`), D.ref(jn(x.r, c))]));
+      const v = D.call('CALCULATE', this.measureRef(x.m), D.call('REMOVEFILTERS'), D.call('TREATAS', keys, ...ks.map(D.col)));
+      return COUNTS.test(x.m.text) ? D.call('COALESCE', v, D.num(0)) : v;
+    };
+    let table = D.call('ADDCOLUMNS', spine, ...measures.flatMap(x => [D.str(x.name), value(x)]));
+    if (having) table = D.call('FILTER', table, having);
+    table = D.call('SELECTCOLUMNS', table, ...items.flatMap((it, k) => [D.str(it.name), out[k]]));
+    return {
+      query: { defines: [], evaluates: [{ e: table, order, start: [] }] }, limit: q.limit, offset: q.offset,
+      names: items.map(it => it.name), oneRow: !groups.length && !q.having,
+    };
   }
   // A join's ON as [{ other, y }] when it is equalities of a column of `alias` (y) to a column
   // of another relation (other); null otherwise.
@@ -1031,6 +1220,8 @@ export class SqlTranslator {
 }
 
 export const isSql = text => /^\s*(?:(?:--[^\n]*\n|\/\*[\s\S]*?\*\/)\s*)*SELECT\b/i.test(text);
+// What compile() takes as SQL: a SELECT, or a WITH's queries and then one.
+export const isSqlQuery = text => /^\s*(?:(?:--[^\n]*\n|\/\*[\s\S]*?\*\/)\s*)*(?:SELECT|WITH)\b/i.test(text);
 
 // --- a statement with the model in it ------------------------------------------------------
 // Any SQL of the engine in which a SELECT over the model is a relation: in parentheses,

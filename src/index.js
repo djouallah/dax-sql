@@ -33,7 +33,7 @@ import { Dialect } from './dialects/base.js';
 import { newRow } from './ir.js';
 import { DaxError, semantic, unsupported } from './errors.js';
 import { Ctx } from './context.js';
-import { SqlTranslator, isSql, printDaxQuery, modelRelations } from './sql.js';
+import { SqlTranslator, isSql, isSqlQuery, printDaxQuery, modelRelations } from './sql.js';
 
 export { DaxError } from './errors.js';
 export { Dialect } from './dialects/base.js';
@@ -193,7 +193,7 @@ export function createCompiler(input, options = {}) {
     dialect,
     // One EVALUATE, or a SELECT over the model -> { sql, columns: [{ name, dax, type, lineage }] }.
     compile(dax) {
-      if (isSql(dax)) return compileSql(dax);
+      if (isSqlQuery(dax)) return compileSql(dax);
       const out = compileAll(dax);
       if (out.length !== 1) throw new DaxError(`the query has ${out.length} EVALUATE statements; use compileAll`);
       return out[0];

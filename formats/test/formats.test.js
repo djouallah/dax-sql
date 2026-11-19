@@ -367,8 +367,13 @@ test("an Ossie metric comes back where it was, as its SQL while its DAX is what 
 
 test('a metric with neither DAX nor SQL dax-sql reads is refused, saying why', () => {
   const doc = tmslToOssie(contoso);
-  doc.metrics = [{ name: 'x', expression: { sql: 'SUM(Sales.Amount) FILTER (WHERE Sales.Qty > 1)' } }];
+  doc.metrics = [{ name: 'x', expression: { sql: 'MEDIAN(Sales.Amount)' } }];
   assert.throws(() => ossieToTmsl(doc), /metric 'x' has no DAX expression, and its SQL is beyond what dax-sql reads/);
+  // A FILTER clause reads: the aggregate's X form over the rows it keeps.
+  const sales = doc.datasets.find(d => d.name === 'Sales'), [f1, f2] = sales.fields.filter(f => /^[A-Za-z_]+$/.test(f.name));
+  doc.metrics = [{ name: 'z', expression: { sql: `SUM(Sales.${f1.name}) FILTER (WHERE Sales.${f2.name} IS NOT NULL)` } }];
+  const z = ossieToTmsl(doc).model.tables.flatMap(t => t.measures ?? []).find(m => m.name === 'z');
+  assert.match(z.expression, /^SUMX\(FILTER\('Sales', NOT ISBLANK\('Sales'\[/);
   doc.metrics = [{ name: 'y', expression: { dialects: [{ dialect: 'SNOWFLAKE', expression: 'SUM(a)' }] } }];
   assert.throws(() => ossieToTmsl(doc), /metric 'y' has no DAX expression and no SQL/);
 });

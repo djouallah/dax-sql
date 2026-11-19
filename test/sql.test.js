@@ -157,6 +157,11 @@ test('a SELECT over the model is a relation of any SQL', async () => {
   const both = await run(`(SELECT Color AS k, AGG(Orders) v FROM model GROUP BY ALL)
     UNION ALL (SELECT Category.Category, AGG(Orders) FROM model GROUP BY ALL)`);
   assert.equal(both.length, byColor.length + (await h.run(`SELECT Category.Category, AGG(Orders) FROM model GROUP BY ALL`)).length);
+  // Arms with no parentheses: the ORDER BY after the last one is the whole's.
+  const bare = await run(`SELECT Color AS k, AGG(Orders) v FROM model GROUP BY ALL
+    UNION ALL SELECT Category.Category, AGG(Orders) FROM model GROUP BY ALL ORDER BY 2 DESC`);
+  assert.equal(bare.length, both.length);
+  assert.ok(bare.every((r, i) => i === 0 || (bare[i - 1].v ?? -Infinity) >= (r.v ?? -Infinity)));
   // Arms that label their row with a constant.
   const [o] = await h.run(`SELECT AGG(Orders) n FROM model`), [q] = await h.run(`SELECT AGG(Quantity) n FROM model`);
   assert.deepEqual(sorted(await run(`(SELECT 'orders' AS what, AGG(Orders) n FROM model) UNION ALL (SELECT 'quantity', AGG(Quantity) FROM model)`)),
@@ -182,7 +187,6 @@ test('a SELECT over the model is a relation of any SQL', async () => {
 test('the model is named only as a relation', () => {
   const fails = (text, code) => assert.throws(() => h.dax.compileStatement(text), e => e.name === 'DaxError' && e.code === code, text);
   fails('SELECT * FROM "Product" JOIN model ON 1 = 1', 'SEMANTIC');
-  fails('SELECT Color, AGG(Orders) FROM model GROUP BY ALL UNION ALL SELECT 1, 2', 'SEMANTIC');
   fails('WITH x AS (SELECT 1) SELECT Color, AGG(Orders) FROM model GROUP BY ALL', 'SEMANTIC');
   fails('SELECT * FROM (SELECT Nope, AGG(Orders) FROM model GROUP BY ALL)', 'SEMANTIC');
   fails('SELECT * FROM (SELECT 1', 'SYNTAX');

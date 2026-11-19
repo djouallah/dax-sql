@@ -185,7 +185,7 @@ export function createCompiler(input, options = {}) {
     }
     let sql = text;
     const out = relations.map(r => ({ ...r, ...relation(r.text) }));
-    for (const r of [...out].reverse()) sql = `${sql.slice(0, r.start)}\n${r.sql}\n${sql.slice(r.end)}`;
+    for (const r of [...out].reverse()) sql = `${sql.slice(0, r.start)}${r.arm ? 'SELECT * FROM (' : ''}\n${r.sql}\n${r.arm ? ') ' : ''}${sql.slice(r.end)}`;
     return { sql, relations: out.map(({ text: t, dax, sql: s }) => ({ text: t, dax, sql: s })) };
   }
   return {

@@ -1,0 +1,42 @@
+name: Ossie queries
+
+# Apache Ossie's query compliance cases (https://github.com/apache/ossie, compliance/query),
+# answered by dax-sql's SQL: formats/test/ossie-query.mjs. Its own workflow, not a job of
+# ossie.yml, which OneLake Studio's build calls.
+#
+# The cases are on apache/ossie#769 until it merges: OSSIE_REF is its head. Once merged, set it
+# to main. Runs every morning too, as the cases change with the spec.
+
+on:
+  push:
+  schedule:
+    - cron: "37 5 * * *"
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  OSSIE_REF: refs/pull/769/head
+
+permissions:
+  contents: read
+
+jobs:
+  queries:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: apache/ossie
+          ref: ${{ env.OSSIE_REF }}
+          path: .ossie
+      - name: The Ossie checked
+        run: echo "Apache Ossie at $(git -C .ossie rev-parse HEAD) ($OSSIE_REF)" | tee -a "$GITHUB_STEP_SUMMARY"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: The cases
+        run: node formats/test/ossie-query.mjs .ossie

@@ -22,7 +22,7 @@ import { ossieToModel } from '../ossie.js';
 const PENDING = new Set([]);
 // The joins along the model's relationships, from many to one (a star): their query is
 // SUMMARIZECOLUMNS, not the joined rows. Each case's path is in the report.
-const STAR = new Set(['B1', 'B2', 'B4', 'B14', 'B15', 'B16', 'B17', 'B18', 'B20']);
+const STAR = new Set(['B1', 'B2', 'B4', 'B10a', 'B14', 'B15', 'B16', 'B17', 'B18', 'B20']);
 const pathOf = daxText => (/TREATAS\(SELECTCOLUMNS\(FILTER\(__v/.test(daxText) ? 'joined rows' : 'SUMMARIZECOLUMNS');
 
 const ossie = process.argv[2];

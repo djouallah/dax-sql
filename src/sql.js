@@ -870,7 +870,8 @@ export class SqlTranslator {
   //     the one side's key is not blank (its blank row holds the others). Other conditions
   //     of an INNER JOIN's ON are the WHERE's.
   //   - o LEFT JOIN m, o the one side: o's rows are the groups', and every column outside an
-  //     AGG is o's; m's measures read the rows of m that the ON's other conditions keep.
+  //     AGG is o's; m's measures read the rows of m that match a row of o and that the ON's
+  //     other conditions keep.
   // An aggregate of a column (SUM(x)) over a join is not such a query.
   star(rels, q) {
     const list = [...rels.values()];
@@ -935,9 +936,12 @@ export class SqlTranslator {
       const ofM = e => someExpr(e, x => x.k === 'name' && colRel(x.parts)?.r === m);
       const ofO = e => someExpr(e, x => x.k === 'name' && colRel(x.parts)?.r === o);
       if (outside.some(x => colRel(x.parts)?.r === m) || (cond && ofO(cond)) || (cond && !ofM(cond))) return null;
+      // m's rows are those that match a row of o: its key is not blank (a pet with no owner
+      // is no row of emp LEFT JOIN pet).
+      const matched = D.not(D.call('ISBLANK', D.col(edges[0].rel.to)));
       return {
         root: o, where, filters: [],
-        measure: (r, d, t) => (r === m && cond ? D.call('CALCULATE', d, t.dax(cond, { mode: 'where' })) : d),
+        measure: (r, d, t) => (r === m ? D.call('CALCULATE', d, matched, ...(cond ? [t.dax(cond, { mode: 'where' })] : [])) : d),
       };
     }
     // A star: a LEFT JOIN adds a one side, and no ON says more than its relationship's columns.

@@ -809,7 +809,8 @@ d.deptno`), by `INNER JOIN` or a `LEFT JOIN` that adds a one side, which repeat 
 root. The root's rows are the groups'; another table's measure is `CALCULATE(m, root)`, its
 rows those the root's reach; an `INNER JOIN` keeps the root's rows whose key the one side
 has. `one LEFT JOIN many` is one too, grouped by the one side's columns, the many side's
-measures under the `ON`'s other conditions. Anything else follows the
+measures over its rows that match one (the one side's key not blank) and that the `ON`'s
+other conditions keep. Anything else follows the
 spec's reference strategy (Section 9), in DAX: the joined rows are a variable of the query
 (`GENERATE`, `GENERATEALL` of `FILTER`s on each `ON`, each relation's columns named
 `alias.column`), the groups their distinct values, and each measure a `CALCULATE` of it under

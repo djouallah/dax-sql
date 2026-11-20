@@ -383,7 +383,9 @@ package: they are not exported and the compiler never imports them.
   one table, BLANK as NULL), and in the DAX dialect when not. A measure made only of measures
   that are such metrics, a ratio of two tables' measures say, is the model's own metric, each of
   them `AGG(dataset.metric)`. Back, a metric or a field in that
-  SQL reads as DAX, so a model another tool wrote in SQL opens too. Such a measure keeps, in an
+  SQL reads as DAX, so a model another tool wrote in SQL opens too. A metric or a field with no
+  DAX and no SQL dax-sql reads (another engine's dialect alone, say) is left out, not the model
+  refused: `ossieToTmsl(doc, { onSkip })` calls `onSkip({ kind, name, dataset, why })` for each. Such a measure keeps, in an
   `Ossie` annotation, its SQL, the DAX it read as and where it was (a dataset, or the model's
   own `metrics`): `tmslToOssie` puts it back there, as that SQL while its DAX is unchanged (SQL's
   `COUNT` is 0 over no rows, DAX's `COUNTA` blank: the DAX is close, the SQL is what was

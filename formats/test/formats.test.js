@@ -274,10 +274,18 @@ test('AGG(dataset.metric), source.column and ROUND read as DAX', () => {
   assert.deepEqual(back.datasets[0].metrics.map(m => [m.name, m.expression]), doc.datasets[0].metrics.map(m => [m.name, m.expression]));
   assert.ok(createCompiler(tmslToModel(bim)).compile('EVALUATE ROW("a", [average], "r", [return rate])').sql);
   // AGG is the model's alone, takes one dataset.metric and no FILTER; source.column is a declared field's column.
+  // Each is left out, the model read without it, and onSkip says why.
   const refused = (where, sql) => {
     const d = JSON.parse(JSON.stringify(doc));
     (where === 'model' ? d.metrics : d.datasets[0].metrics).push({ name: 'x', expression: { sql } });
-    assert.throws(() => ossieToTmsl(d), /metric 'x' has no DAX expression, and its SQL is beyond what dax-sql reads/, sql);
+    const skipped = [];
+    const out = ossieToTmsl(d, { onSkip: s => skipped.push(s) });
+    const names = out.model.tables.flatMap(t => (t.measures ?? []).map(m => m.name));
+    assert.ok(!names.includes('x') && names.includes('average'), sql);
+    assert.equal(skipped.length, 1, sql);
+    assert.equal(skipped[0].kind, 'metric');
+    assert.equal(skipped[0].name, 'x');
+    assert.match(skipped[0].why, /metric 'x' has no DAX expression, and its SQL is beyond what dax-sql reads/, sql);
   };
   refused('dataset', 'AGG(orders.total)');
   refused('model', 'AGG(orders.amount)');
@@ -365,15 +373,27 @@ test("an Ossie metric comes back where it was, as its SQL while its DAX is what 
   assert.deepEqual(back.metrics.map(m => m.name), ['total_amount', 'completed']);
 });
 
-test('a metric with neither DAX nor SQL dax-sql reads is refused, saying why', () => {
+test('a metric with neither DAX nor SQL dax-sql reads is left out, saying why', () => {
   const doc = tmslToOssie(contoso);
   doc.metrics = [{ name: 'x', expression: { sql: 'MEDIAN(Sales.Amount)' } }];
-  assert.throws(() => ossieToTmsl(doc), /metric 'x' has no DAX expression, and its SQL is beyond what dax-sql reads/);
+  let skipped = [];
+  const measures = d => ossieToTmsl(d, { onSkip: s => skipped.push(s) }).model.tables.flatMap(t => (t.measures ?? []).map(m => m.name));
+  assert.ok(!measures(doc).includes('x'));
+  assert.match(skipped[0].why, /metric 'x' has no DAX expression, and its SQL is beyond what dax-sql reads/);
   // A FILTER clause reads: the aggregate's X form over the rows it keeps.
   const sales = doc.datasets.find(d => d.name === 'Sales'), [f1, f2] = sales.fields.filter(f => /^[A-Za-z_]+$/.test(f.name));
   doc.metrics = [{ name: 'z', expression: { sql: `SUM(Sales.${f1.name}) FILTER (WHERE Sales.${f2.name} IS NOT NULL)` } }];
   const z = ossieToTmsl(doc).model.tables.flatMap(t => t.measures ?? []).find(m => m.name === 'z');
   assert.match(z.expression, /^SUMX\(FILTER\('Sales', NOT ISBLANK\('Sales'\[/);
-  doc.metrics = [{ name: 'y', expression: { dialects: [{ dialect: 'SNOWFLAKE', expression: 'SUM(a)' }] } }];
-  assert.throws(() => ossieToTmsl(doc), /metric 'y' has no DAX expression and no SQL/);
+  // Another engine's metric alone (a Databricks window, say) beside DAX ones: the model reads, without it.
+  doc.metrics = [
+    { name: 'y', expression: { dialects: [{ dialect: 'SNOWFLAKE', expression: 'SUM(a)' }] } },
+    { name: 'w', expression: { dialects: [{ dialect: 'DAX', expression: 'COUNTROWS(Sales)' }, { dialect: 'DATABRICKS', expression: 'COUNT(1)' }] } },
+  ];
+  skipped = [];
+  const names = measures(doc);
+  assert.ok(names.includes('w') && !names.includes('y'));
+  assert.deepEqual(skipped.map(s => [s.kind, s.name, s.dataset, s.why]), [['metric', 'y', null, "metric 'y' has no DAX expression and no SQL"]]);
+  // No onSkip: left out all the same.
+  assert.ok(!ossieToTmsl(doc).model.tables.flatMap(t => (t.measures ?? []).map(m => m.name)).includes('y'));
 });

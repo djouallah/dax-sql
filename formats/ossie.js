@@ -2,8 +2,10 @@
 // TMSL, either way, and as dax-sql's model object. Not part of the package: a reader of one
 // format. It takes and gives parsed objects; parsing YAML is the caller's.
 //   tmslToOssie(bim)    a model.bim as Ossie
-//   ossieToTmsl(doc)    the model.bim an Ossie document stands for
-//   ossieToModel(doc)   dax-sql's model object (createCompiler takes it)
+//   ossieToTmsl(doc, { onSkip })   the model.bim an Ossie document stands for
+//   ossieToModel(doc, { onSkip })  dax-sql's model object (createCompiler takes it)
+// A metric or a field it cannot say in DAX (one in another engine's dialect alone, or SQL beyond
+// what dax-sql reads) is left out, not the model refused: onSkip({ kind, name, dataset, why }) hears of each.
 // Tables are datasets, columns fields (`sql`: the source column), key columns the primary key,
 // relationships relationships, measures the metrics of their table's dataset. A measure or a
 // calculated column is in Ossie's portable SQL when it says the same there (ossie-sql.js), and
@@ -275,12 +277,12 @@ const measureDax = (m, dataset, datasets) => {
   const code = dax(m);
   if (code != null) return { dax: code, table: null };
   const sql = sqlOf(m);
-  if (sql == null) throw new Error(`metric '${m.name}' has no DAX expression and no SQL`);
+  if (sql == null) return { skip: `metric '${m.name}' has no DAX expression and no SQL` };
   try { return metricDax(sql, dataset, datasets); }
-  catch (e) { throw new Error(`metric '${m.name}' has no DAX expression, and its SQL is beyond what dax-sql reads: ${e.message}`); }
+  catch (e) { return { skip: `metric '${m.name}' has no DAX expression, and its SQL is beyond what dax-sql reads: ${e.message}` }; }
 };
 
-export function ossieToTmsl(doc) {
+export function ossieToTmsl(doc, { onSkip = () => {} } = {}) {
   // `partition`: the one a dataset with none of its own has. The rest is the TMSL's.
   const { model: modelExtra = {}, partition: defaults = {}, ...docExtra } = powerBi(doc);
   const tables = doc.datasets.map(d => {
@@ -298,24 +300,27 @@ export function ossieToTmsl(doc) {
       return { f, e, code, sql, source };
     });
     const dataColumns = fields.filter(x => x.source != null && !x.e.type).map(x => ({ name: x.f.name, source: x.source }));
-    const columns = fields.map(({ f, e, code, sql, source }) => {
+    const columns = fields.flatMap(({ f, e, code, sql, source }) => {
       let def;
       if (code != null) def = { type: 'calculated', expression: code };
       else if (source != null || e.type) def = { sourceColumn: source ?? sql };
       else {
         try { def = { type: 'calculated', expression: fieldDax(sql, d.name, dataColumns) }; }
-        catch (err) { throw new Error(`field '${d.name}.${f.name}': its SQL is beyond what dax-sql reads: ${err.message}`); }
+        catch (err) {
+          onSkip({ kind: 'field', name: f.name, dataset: d.name, why: `field '${d.name}.${f.name}': its SQL is beyond what dax-sql reads: ${err.message}` });
+          return [];
+        }
       }
       // An expression tmslToOssie writes the same needs nothing kept: a source column's `sql`,
       // or DAX alone.
       const same = def.sourceColumn != null && !e.type ? f.expression?.sql === sqlName(def.sourceColumn) && !f.expression.dialects
         : code != null && Object.keys(f.expression).length === 1 && f.expression.dialects.length === 1;
       const col = tmsl({ name: f.name, description: f.description, dataType: TO_TMSL[f.datatype], ...def }, {});
-      return tmsl({
+      return [tmsl({
         ...col,
         ...(keys.has(f.name) ? { isKey: true } : {}),
         ...(same ? {} : { annotations: [{ name: OSSIE, value: JSON.stringify({ expression: f.expression, as: readAs(col) }) }] }),
-      }, e);
+      }, e)];
     });
     const partition = { name: d.name, ...(own.mode ? { mode: own.mode } : {}),
       source: tmsl({ type: 'entity', entityName, schemaName: schema, expressionSource: own.expressionSource }, {}) };
@@ -339,13 +344,15 @@ export function ossieToTmsl(doc) {
   };
   for (const d of doc.datasets) {
     for (const m of d.metrics ?? []) {
-      const { dax: code } = measureDax(m, d, doc.datasets);
-      place(m, powerBi(m).table ?? d.name, code, d.name);
+      const { dax: code, skip } = measureDax(m, d, doc.datasets);
+      if (skip) onSkip({ kind: 'metric', name: m.name, dataset: d.name, why: skip });
+      else place(m, powerBi(m).table ?? d.name, code, d.name);
     }
   }
   for (const m of doc.metrics ?? []) {
-    const { dax: code, table } = measureDax(m, null, doc.datasets);
-    place(m, powerBi(m).table ?? table, code, null);
+    const { dax: code, table, skip } = measureDax(m, null, doc.datasets);
+    if (skip) onSkip({ kind: 'metric', name: m.name, dataset: null, why: skip });
+    else place(m, powerBi(m).table ?? table, code, null);
   }
   const relationships = doc.relationships?.map(r => {
     if (r.from_columns.length !== 1 || r.to_columns.length !== 1) throw new Error(`relationship '${r.name}': TMSL joins one column`);
@@ -358,4 +365,4 @@ export function ossieToTmsl(doc) {
   }, {});
 }
 
-export const ossieToModel = doc => tmslToModel(ossieToTmsl(doc));
+export const ossieToModel = (doc, opts) => tmslToModel(ossieToTmsl(doc, opts));

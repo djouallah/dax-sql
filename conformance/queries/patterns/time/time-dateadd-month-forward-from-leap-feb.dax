@@ -1,0 +1,10 @@
+// note: DATEADD by +1 MONTH day by day through a leap February, into a longer March: the leap day alone moves to March 29 only
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Date],
+    TREATAS({202402}, 'Date'[YearMonth]),
+    "Days", COUNTROWS(DATEADD('Date'[Date], 1, MONTH)),
+    "First", CALCULATE(MIN('Date'[Date]), DATEADD('Date'[Date], 1, MONTH)),
+    "Last", CALCULATE(MAX('Date'[Date]), DATEADD('Date'[Date], 1, MONTH))
+)
+ORDER BY 'Date'[Date]

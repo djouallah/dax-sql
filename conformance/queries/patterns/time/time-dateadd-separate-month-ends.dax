@@ -1,0 +1,10 @@
+// note: DATEADD by -1 MONTH of two month ends with no day before either in the filter: each moves to its own day, neither to the moved month's end
+EVALUATE
+CALCULATETABLE(
+    ROW(
+        "Days", COUNTROWS(DATEADD('Date'[Date], -1, MONTH)),
+        "First", CALCULATE(MIN('Date'[Date]), DATEADD('Date'[Date], -1, MONTH)),
+        "Last", CALCULATE(MAX('Date'[Date]), DATEADD('Date'[Date], -1, MONTH))
+    ),
+    TREATAS({dt"2024-02-29", dt"2024-04-30"}, 'Date'[Date])
+)

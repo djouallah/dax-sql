@@ -1,0 +1,11 @@
+// note: DATEADD by +1 YEAR day by day through February 2023: Feb 28 alone moves to Feb 28 2024 only, not to the leap day too
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Date],
+    TREATAS({202302}, 'Date'[YearMonth]),
+    "Days", COUNTROWS(DATEADD('Date'[Date], 1, YEAR)),
+    "First", CALCULATE(MIN('Date'[Date]), DATEADD('Date'[Date], 1, YEAR)),
+    "Last", CALCULATE(MAX('Date'[Date]), DATEADD('Date'[Date], 1, YEAR)),
+    "Next Year Sales", CALCULATE([Sales Amount], DATEADD('Date'[Date], 1, YEAR))
+)
+ORDER BY 'Date'[Date]

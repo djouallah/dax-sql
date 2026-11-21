@@ -23,6 +23,8 @@
 //   roles          the names of the model's roles to query as (row-level security): every
 //                  table's rows are those some role keeps
 //   params         the values of query parameters (@name), by name
+//   optimize       false: every aggregate its own subquery, none fused or shared (much slower;
+//                  for checking that the rewrites change no answer, as CI does)
 import { Model } from './model.js';
 import { Compiler } from './compiler.js';
 import { Emitter } from './emit.js';

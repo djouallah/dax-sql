@@ -17,6 +17,8 @@ import { join } from 'node:path';
 import { DuckDBInstance } from '@duckdb/node-api';
 import { parse } from 'yaml';
 import { createCompiler } from '../../src/index.js';
+// DAXSQL_OPTIMIZE=0: the SQL with none of the emitter's rewrites (CI runs this both ways).
+const OPTIMIZE = process.env.DAXSQL_OPTIMIZE === '0' ? { optimize: false } : {};
 import { ossieToModel } from '../ossie.js';
 import { table, ordered, compare, rows } from './ossie-compare.mjs';
 
@@ -87,7 +89,7 @@ const con = await db.connect();
 await con.run(readFileSync(join(dir, 'scott', 'scott.sql'), 'utf8'));
 let dax;
 try {
-  dax = createCompiler(ossieToModel(parse(readFileSync(join(dir, 'scott', 'scott_model.ossie.yaml'), 'utf8'))));
+  dax = createCompiler(ossieToModel(parse(readFileSync(join(dir, 'scott', 'scott_model.ossie.yaml'), 'utf8'))), OPTIMIZE);
 } catch (e) {
   console.log(`::error::the SCOTT model does not read: ${e.message}`);
   process.exit(1);

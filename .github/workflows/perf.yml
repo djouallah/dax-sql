@@ -1,0 +1,45 @@
+name: Speed
+
+# Every query of the conformance suite timed by this commit and by the one before it, on the
+# same runner and the same DuckDB (conformance/engines/dax-sql/bench.mjs): a commit that makes
+# the suite more than 10% slower, or one query more than twice as slow (and 250 ms more), fails.
+# The summary lists the queries that changed most.
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  contents: read
+
+jobs:
+  bench:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          path: head
+      - name: The commit before
+        id: base
+        run: |
+          set -euo pipefail
+          before="${{ github.event.pull_request.base.sha || github.event.before }}"
+          if [ -z "$before" ] || ! git -C head cat-file -e "$before^{commit}" 2>/dev/null; then before=$(git -C head rev-parse HEAD~1); fi
+          git -C head worktree add --detach ../base "$before"
+          echo "Against $(git -C base log -1 --format='%h %s')" | tee -a "$GITHUB_STEP_SUMMARY"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - run: npm ci --no-audit --no-fund
+        working-directory: head
+      - run: npm ci --no-audit --no-fund
+        working-directory: base
+      - name: Both, query by query
+        working-directory: head
+        run: node conformance/engines/dax-sql/bench.mjs ../base . --rounds 3

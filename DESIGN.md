@@ -159,9 +159,10 @@ table for the keys the dimension lacks, in every query that lists a dimension's 
 checks over the conformance queries, a third of their SQL. A dimension is expected to hold
 every key its facts use; `VALUES` and `ALL` are its rows.
 
-Fact rows with a key the dimension lacks are still read: they count in totals, and under a
-blank value where the groups are the measure's own rows (the joins to the one side are
-`LEFT JOIN`s).
+Fact rows with a key the dimension lacks are still read: they count in totals, and in no
+group by the dimension's columns. Where the groups are read off the measures' own grouped rows
+(fused, the joins to the one side `LEFT JOIN`s), a group's key of another table is one that
+table has (`EXISTS`): fused or not, the groups are the same.
 
 A blank in a table filter must match the fact rows that have no row of the table, and a NULL
 stored in a column, so membership (`member`) is null-safe where both sides can be blank
@@ -586,7 +587,7 @@ and gives each aggregate the filters that reach its table.
   matches no row of a dimension, DAX adds a blank row to the dimension. Here `VALUES`, `ALL`,
   `ALLSELECTED` and the groups of SUMMARIZECOLUMNS are the dimension's own rows, so
   `ALLNOBLANKROW` is `ALL` and `DISTINCT` is `VALUES`. Such fact rows still count in a total,
-  and under a blank value of a measure grouped by the dimension's columns. A blank in a table
+  and in no group by the dimension's columns. A blank in a table
   filter matches a NULL stored in a column (`TREATAS({BLANK()}, Sales[CustomerKey])` keeps the
   sales with no customer key).
 - **TOPN** keeps rows tied with the last one. **ORDER BY** puts blanks first when ascending.
@@ -982,6 +983,14 @@ npm test
   `model.bim` as Ossie); which measures are SQL and which DAX; what the extension may hold; a
   file of the earlier shape, and one of the spec before, reads as it did; an Ossie model in SQL
   reads as DAX, `AGG`, `source.column` and `ROUND` included.
+- `conformance/engines/dax-sql/agree.mjs` (`conformance.yml`): every query of the suite
+  compiled with the emitter's rewrites (fusion, shared scans, grouping before joins, ...) and
+  with `optimize: false` (each aggregate its own subquery, as the filter context says it), run
+  on one DuckDB: the rows must be the same, on the known queries too. The Ossie checks below run
+  both ways as well (`DAXSQL_OPTIMIZE=0`).
+- `conformance/engines/dax-sql/bench.mjs` (`perf.yml`): every query timed by the commit and by
+  the one before, on one runner, the fastest of three rounds each: more than 10% slower in all,
+  or a query twice as slow and 250 ms more, fails.
 - `.github/workflows/ossie-query.yml`, in CI only (Python and Ossie's main): Ossie SQL held to
   Ossie as DAX is to Power BI. Ossie's query cases (`formats/test/ossie-query.mjs`: main's, and
   those on the view expander's branch until it merges), the wide table cases' Layer 2 queries

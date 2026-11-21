@@ -147,12 +147,13 @@ test('no blank row: a dimension lists its own rows, with no scan of the facts fo
   const rows = await h.run(q);
   const cities = (await h.sql(`SELECT DISTINCT "City" FROM "Customer"`)).map(r => r.City);
   assert.deepEqual(sorted(rows).map(r => Object.values(r)[0]), sorted(cities.map(City => ({ City }))).map(r => r.City));
-  // Its sales still count in the total, and under a blank city of a measure grouped by city.
+  // Its sales still count in the total, but in no group of a measure grouped by city, fused or
+  // not (by design: no blank row).
   const [all] = await h.run(`EVALUATE ROW("s", [Sales Amount])`);
   const [sum] = await h.sql(`SELECT SUM("Amount") AS s FROM "Sales"`);
   assert.equal(Object.values(all)[0], sum.s);
   const byCity = await h.run(`EVALUATE SUMMARIZECOLUMNS(Customer[City], "s", [Sales Amount])`);
-  assert.ok(byCity.some(r => Object.values(r)[0] == null));
+  assert.ok(!byCity.some(r => Object.values(r)[0] == null));
 });
 
 test('text given as a date is the date it reads as', async () => {

@@ -45,5 +45,11 @@
   {"id":"edges/relationships/relationships-null-vs-missing-product-key","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"},
   {"id":"edges/relationships/relationships-one-to-one-format-filters-store","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"},
   {"id":"edges/relationships/relationships-ship-date-blank-row","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"},
-  {"id":"edges/relationships/relationships-snowflake-related-column-vs-filter","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"}
+  {"id":"edges/relationships/relationships-snowflake-related-column-vs-filter","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"},
+  {"id":"contoso/relationships/relationships-to-calculated-table","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"},
+  {"id":"edges/filters/filters-calcgroup-per-customer-by-store","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"},
+  {"id":"edges/relationships/relationships-one-to-one-profile-gaps","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"},
+  {"id":"edges/relationships/relationships-ship-date-userelationship-by-month","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"},
+  {"id":"edges/relationships/relationships-snowflake-region-country-rollup","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"},
+  {"id":"edges/relationships/relationships-unknown-store-keys-blank-row","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"}
 ]

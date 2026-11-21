@@ -72,6 +72,15 @@ jobs:
         run: node formats/test/ossie-wide.mjs .ossie
       - name: Against the view expander
         run: node formats/test/ossie-expand.mjs .ossie "$EXPANDER" --report "$RUNNER_TEMP/expand.json"
+      # The same, with none of the emitter's rewrites: they change no answer.
+      - name: Without the rewrites
+        env:
+          DAXSQL_OPTIMIZE: "0"
+        run: |
+          set -euo pipefail
+          node formats/test/ossie-query.mjs .ossie
+          node formats/test/ossie-wide.mjs .ossie
+          node formats/test/ossie-expand.mjs .ossie "$EXPANDER"
       - uses: actions/upload-artifact@v4
         if: always()
         with:

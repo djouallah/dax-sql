@@ -24,6 +24,11 @@ export class Emitter {
     // The dialect, with this statement's aliases for what it declares itself (bind).
     this.d = Object.create(dialect, { alias: { value: p => this.alias(p) } });
     this.options = options;
+    // optimize: false (a check, not a mode to run): every aggregate its own subquery, as the
+    // filter context says it, with none of the rewrites below that fuse, share or narrow them
+    // (Fusion, rowFused, groupedFirst, once, nonBlank, sum_currency). The answers must be the
+    // same; CI runs the suites both ways.
+    this.optimize = options.optimize !== false;
     this.n = 0;
     this.ctes = [];
     this.memo = new Map();        // shared IR -> CTE name
@@ -245,6 +250,7 @@ export class Emitter {
   // v does: `OR v IS NULL` goes, and COALESCE(v, <a blank>) is v. What is left compares the
   // column itself, which lets the engine skip the rows it rules out.
   nonBlank(where) {
+    if (!this.optimize) return where;
     const inner = w => (w.startsWith('(') && w.endsWith(')') ? w.slice(1, -1) : w);
     const cols = new Set(where.map(w => this.rejects.get(inner(w))).filter(Boolean));
     if (!cols.size) return where;
@@ -919,7 +925,7 @@ export class Emitter {
   // --- aggregates --------------------------------------------------------------------------
 
   agg(x, scope) {
-    const fusion = this.fusions.at(-1);
+    const fusion = this.optimize ? this.fusions.at(-1) : null;
     if (fusion) {
       const s = fusion.add(x, scope);
       if (s) return s;
@@ -970,6 +976,7 @@ export class Emitter {
   // Only rows that read no outer row: their GROUP BY is then written once, where one inside a
   // correlated subquery is written again for each outer row (a CTE is not kept).
   rowFused(b, src, row, f, scope = new Map()) {
+    if (!this.optimize) return f();
     // A row of a few columns (VALUES, ALL, SUMMARIZE of some): a whole fact row is a GROUP BY by
     // every column, slower than the loop (8 s, and over a minute so).
     // The rows can read an outer row (VALUES of a column under a group's filters): an aggregate
@@ -1008,6 +1015,7 @@ export class Emitter {
   // group's CTE). For sums, counts, minima and maxima of the table's own columns, over joins
   // to the one side, by three columns at most.
   groupedFirst(b, p, table) {
+    if (!this.optimize) return null;
     const base = isQuery(b.from) ? null : / AS (\w+)$/.exec(b.from ?? '')?.[1];
     if (!this.d.aggBelowJoins || !base || !OVER[p.fn] || partsQuery(p) || p.keys?.length || p.extra?.filter) return null;
     if (b.group || b.distinct || b.qualify || !b.joins.every(j => b.hops?.has(j))) return null;
@@ -1050,6 +1058,7 @@ export class Emitter {
   // A subquery that reads nothing of the query around it, written once: the same SQL (up to
   // its aliases) anywhere in the query is one CTE.
   once(sql) {
+    if (!this.optimize) return `(${sql})`;
     const key = `once|${canonical(sql)}`;
     let name = this.memo.get(key);
     if (!name) {
@@ -1068,7 +1077,7 @@ export class Emitter {
   // What an aggregate is written from: its function, its argument and the rest, as SQL.
   aggParts(x, scope) {
     // A sum of fixed decimals: the range checked on the largest, not on every row.
-    if (x.fn === 'sum' && x.arg?.k === 'fn' && x.arg.name === 'currency' && this.d.sumCurrency)
+    if (x.fn === 'sum' && x.arg?.k === 'fn' && x.arg.name === 'currency' && this.d.sumCurrency && this.optimize)
       return { fn: 'sum_currency', arg: this.scalar(x.arg.a[0], scope), extra: {} };
     const arg = x.arg ? this.scalar(x.arg, scope) : null;
     // `t`, its argument's type: an engine adds up floating-point values its own way (tsql.js).
@@ -1131,12 +1140,29 @@ export class Emitter {
     if (active.length && counted.length && supports.every(s => s && [...s].every(full))) {
       const gs = [...new Set(supports.flatMap(s => [...s]))];
       const cols = g => active.map(ki => `${g.alias}.g${g.keys.indexOf(ki)} AS ${this.ident(keyNames[ki])}`).join(', ');
+      // No blank row (by design): a group of the fact's rows whose key the dimension lacks is
+      // no group, as with every combination of the keys' values below. A group's key of a
+      // table other than its own is one of that table's rows' (the group is under the filters).
+      const all = gs.length ? this.keyValues(x, L, keyNames, scope, true) : [];
+      const baseOf = g => (g.over ?? g).tables?.split('|')[0];
+      const dimsOf = g => all.filter(p => p.table.name !== baseOf(g));
+      const kept = g => {
+        const dims = dimsOf(g);
+        if (!dims.length) return '';
+        const has = dims.map(p => {
+          const v = this.alias('v');
+          const eq = p.cols.map(c => this.d.isNotDistinct(`${v}.${this.ident(keyNames[x.keyCols.indexOf(c)])}`, `${g.alias}.g${g.keys.indexOf(x.keyCols.indexOf(c))}`));
+          return `EXISTS (SELECT 1 FROM (${p.sql}) AS ${v} WHERE ${eq.join(' AND ')})`;
+        });
+        return ` WHERE ${has.join(' AND ')}`;
+      };
+      const dims = gs.flatMap(dimsOf);
       keys = gs.length
-        ? gs.map(g => `SELECT ${cols(g)} FROM ${g.alias}`).join(' UNION ')
+        ? gs.map(g => `SELECT ${cols(g)} FROM ${g.alias}${kept(g)}`).join(' UNION ')
         : `SELECT ${active.map(ki => `NULL AS ${this.ident(keyNames[ki])}`).join(', ')} WHERE ${this.d.never}`;
       // One group, whose keys are distinct (its GROUP BY): its rows are the groups, read once
       // where the engine reads a CTE again at each name (T-SQL), not joined to themselves.
-      if (gs.length === 1 && this.d.repeats) from = { g: gs[0], sql: `${gs[0].alias}${this.d.lateral(`SELECT ${cols(gs[0])}`, k, false)}` };
+      if (gs.length === 1 && !dims.length && this.d.repeats) from = { g: gs[0], sql: `${gs[0].alias}${this.d.lateral(`SELECT ${cols(gs[0])}`, k, false)}` };
     } else if (active.length) {
       keys = this.keyCombinations(x, L, keyNames, scope);
     } else keys = 'SELECT 1 AS one';
@@ -1182,22 +1208,28 @@ export class Emitter {
   // Every combination of the grouping columns' values: within a table those it holds, under
   // the filters on it (keyFilters); across tables, all.
   keyCombinations(x, L, keyNames, scope) {
+    const parts = this.keyValues(x, L, keyNames, scope).map(p => p.sql);
+    if (parts.length === 1) return parts[0];
+    return `SELECT * FROM ${parts.map(p => `(${p}) AS ${this.alias('c')}`).join(' CROSS JOIN ')}`;
+  }
+
+  // Each table's values of the grouping columns it holds, under the filters on it (keyFilters),
+  // or with `all`, all its rows': [{ table, cols, sql }].
+  keyValues(x, L, keyNames, scope, all = false) {
     const byTable = new Map();
     for (const c of L.active) {
       if (!byTable.has(c.table)) byTable.set(c.table, []);
       byTable.get(c.table).push(c);
     }
-    const parts = [...byTable].map(([t, cols]) => {
+    return [...byTable].map(([t, cols]) => {
       const out = b => {
         b.setOut(cols.map(c => ({ name: keyNames[x.keyCols.indexOf(c)], lineage: c })), cols.map(c => b.res.meta(c)));
-        b.distinct = true;
+        b.distinct = !all;
         return b.render();
       };
-      const ctx = new Ctx(this.keyFilters(x, t).map(k => k.f), x.ctx0.mods);
-      return out(this.isolated(() => this.scanBlock(t, ctx, scope)));
+      const ctx = new Ctx(all ? [] : this.keyFilters(x, t).map(k => k.f), x.ctx0.mods);
+      return { table: t, cols, sql: out(this.isolated(() => this.scanBlock(t, ctx, scope))) };
     });
-    if (parts.length === 1) return parts[0];
-    return `SELECT * FROM ${parts.map(p => `(${p}) AS ${this.alias('c')}`).join(' CROSS JOIN ')}`;
   }
 
   // ROW(...): one row, its aggregates fused where they can be.

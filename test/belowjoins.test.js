@@ -12,15 +12,16 @@ before(async () => { h = await harness(bim, setup); });
 // The fused group's CTE: its scan of Sales grouped inside, then joined.
 const groupedFirst = sql => /FROM "Sales" AS \w+ GROUP BY \w+\."(?:CustomerKey|ProductKey)"\) AS p\d+ LEFT JOIN/.test(sql);
 
-test("by a column of a table one join away: grouped by the key first, the blank group kept", async () => {
+test("by a column of a table one join away: grouped by the key first, no blank group", async () => {
   const q = `EVALUATE SUMMARIZECOLUMNS(Customer[City], "s", [Sales Amount], "q", [Quantity], "o", [Orders])`;
   const { sql } = h.dax.compile(q);
   assert.ok(groupedFirst(sql), sql);
   const got = sorted(await h.run(q));
+  // No blank row (by design): customer 99, with sales and no row in Customer, is in no group.
   const want = sorted(await h.sql(`SELECT c."City" AS "City", SUM(s."Amount") AS s, SUM(s."Qty") AS q, COUNT(*) AS o
-    FROM "Sales" s LEFT JOIN "Customer" c ON c."CustomerKey" = s."CustomerKey" GROUP BY 1`));
+    FROM "Sales" s JOIN "Customer" c ON c."CustomerKey" = s."CustomerKey" GROUP BY 1`));
   assert.deepEqual(got.map(Object.values), want.map(Object.values));
-  assert.ok(got.some(r => r[Object.keys(r)[0]] == null), "customer 99 is in the blank group");
+  assert.ok(!got.some(r => r[Object.keys(r)[0]] == null), "no blank group");
 });
 
 test("by a column two joins away (Sales > Product > Category), and a min and a max", async () => {

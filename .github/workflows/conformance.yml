@@ -2,7 +2,9 @@ name: Conformance
 
 # Runs the conformance suite (conformance/) against this repo through its adapter and prints the
 # scoreboard. The engine is a black box: the runner gives the adapter the models, their data and
-# the queries, and compares the rows it answers with Power BI's (conformance/golden/).
+# the queries, and compares the rows it answers with Power BI's (conformance/golden/). And every
+# query compiled with the emitter's rewrites and without, run on one DuckDB, must give the same
+# rows (engines/dax-sql/agree.mjs): the rewrites change no answer, the known ones included.
 
 on:
   push:
@@ -38,3 +40,19 @@ jobs:
         with:
           name: dax-sql-report
           path: ${{ runner.temp }}/dax-sql.json
+
+  agree:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      # Named, so that called from another workflow it still checks out this repository.
+      - uses: actions/checkout@v4
+        with:
+          repository: djouallah/dax-sql
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: With the rewrites and without
+        run: node conformance/engines/dax-sql/agree.mjs .

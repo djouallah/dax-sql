@@ -82,7 +82,10 @@ function datesInPeriod(c, args, env) {
   return dates(c, col, env, v => ir.kase([[ir.op('lt', n, ir.lit(0)), back(v)]], fwd(v), 'bool'));
 }
 
-// DATEADD: each visible date moved; from the last day of a month, to the end of the moved one.
+// DATEADD: each visible date moved. By months, quarters or years, the last day of a month whose
+// day before is visible too moves to the end of the moved month: all of February 2021 back a year
+// is all of February 2020, leap day included, but February 28 2021 alone is February 28 2020 alone
+// (Power BI's answers; the same for April 30 alone back a month, which is March 30).
 function dateAdd(c, args, env, ast) {
   const { col, visible } = datesOf(c, args[0], env, ast.fn);
   const n = ast.fn === 'SAMEPERIODLASTYEAR' ? ir.lit(-1) : c.scalar(args[1], env);
@@ -93,7 +96,8 @@ function dateAdd(c, args, env, ast) {
     let p = { k: 'insub', e: [a], src: moved, t: 'bool', nn: true };
     if (unit === 'month' || unit === 'quarter' || unit === 'year') {
       const erow = ir.rowOf(visible, 'table'), e = ir.col(erow, 0), to = shift(e, n, unit);
-      const tail = ir.exists(ir.filter(visible, erow, and(ir.op('eq', e, endOf(e, 'month')), ir.op('gt', a, to), ir.op('le', a, endOf(to, 'month')))));
+      const dayBefore = { k: 'insub', e: [shift(e, -1, 'day')], src: visible, t: 'bool', nn: true };
+      const tail = ir.exists(ir.filter(visible, erow, and(ir.op('eq', e, endOf(e, 'month')), dayBefore, ir.op('gt', a, to), ir.op('le', a, endOf(to, 'month')))));
       p = ir.op('or', p, tail);
     }
     return p;

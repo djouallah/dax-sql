@@ -692,7 +692,9 @@ and gives each aggregate the filters that reach its table.
 - **Time intelligence:**
   - `DATESYTD/QTD/MTD`, `TOTALYTD/QTD/MTD`, `DATESBETWEEN`, `DATESINPERIOD`;
   - `DATEADD` and `DATESINPERIOD` (from the last day of a month to the end of the moved
-    month), `SAMEPERIODLASTYEAR`, `PARALLELPERIOD`, `PREVIOUS/NEXT DAY/MONTH/QUARTER/YEAR`;
+    month; for `DATEADD` and `SAMEPERIODLASTYEAR`, only a month end whose day before is in
+    the dates too: February 28 alone moves to February 28), `SAMEPERIODLASTYEAR`,
+    `PARALLELPERIOD`, `PREVIOUS/NEXT DAY/MONTH/QUARTER/YEAR`;
   - `STARTOF…`, `ENDOF…`, `FIRSTDATE`, `LASTDATE`, `OPENING/CLOSINGBALANCE…`;
   - a year end (`"6/30"`) on the functions of a year that take one.
 - **Values:** logic (`IF`, `SWITCH`, `COALESCE`, `DIVIDE`, …), math, text, dates, `CONVERT`,

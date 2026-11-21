@@ -46,3 +46,13 @@ period's range beside one by shifted dates, and each one the mapping takes out i
   of a table's rows (SUMMARIZE's extension columns): `context-summarize-sameperiodlastyear`,
   `segmentation-customer-bands-calc-group`;
 - past 30 s: `segmentation-calc-group-name-ordinal-filter`, `segmentation-summarize-sply-quarter-band`.
+
+# Found by the view expander's grid
+
+- **REMOVEFILTERS() inside a CALCULATE on a row of a variable built by GENERATE** keeps the
+  filters the row transitions (its columns' lineage), with a TREATAS beside it: `ADDCOLUMNS(v,
+  "m", CALCULATE(COUNTROWS(emp), REMOVEFILTERS(), TREATAS(keys, emp[empno])))`, `v` the
+  distinct (job, comm) of a self-join, is blank where DAX counts the keys. The SQL front end's
+  joined-rows path gives its groups no lineage, so it does not meet it; a DAX query can.
+- When apache/ossie#769 (the view expander) merges, `ossie-query.yml` takes the expander from
+  main by itself; drop its step of the branch's `.ost` cases if main's `cases/` go.

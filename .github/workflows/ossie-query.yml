@@ -1,21 +1,29 @@
 name: Ossie queries
 
-# Apache Ossie's query compliance cases (https://github.com/apache/ossie, compliance/query),
-# answered by dax-sql's SQL: formats/test/ossie-query.mjs. Its own workflow, not a job of
-# ossie.yml, which OneLake Studio's build calls.
+# dax-sql's Ossie SQL, held to Apache Ossie (https://github.com/apache/ossie) as its main is that
+# day, as DAX is held to Power BI (conformance.yml). A release needs it green: publish.yml runs
+# it first.
+#   - compliance/query: the query cases, the SCOTT data and model (formats/test/ossie-query.mjs);
+#   - compliance/wide_table: each case's Layer 2 query (formats/test/ossie-wide.mjs);
+#   - Ossie's view expander (ost/src/ossie_ost/expander.py) as an oracle: a grid of queries over
+#     every model here and Ossie's, each answered by the expander's SQL and by dax-sql's, on the
+#     same DuckDB (formats/test/ossie-expand.mjs).
 #
-# The cases are on apache/ossie#769 until it merges: OSSIE_REF is its head. Once merged, set it
-# to main. Runs every morning too, as the cases change with the spec.
+# The expander and the query cases written as .ost scripts are on apache/ossie#769 until it
+# merges: the PR's head is checked out beside main, and its .ost cases run too. Once main has the
+# expander, main's is used and the PR is not checked out: no change here. Runs every morning
+# too: a run that fails with no change here is Ossie having moved.
 
 on:
   push:
   schedule:
     - cron: "37 5 * * *"
   workflow_dispatch:
+  workflow_call:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  OSSIE_REF: refs/pull/769/head
+  EXPANDER_PR: refs/pull/769/head
 
 permissions:
   contents: read
@@ -23,20 +31,50 @@ permissions:
 jobs:
   queries:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 25
     steps:
+      # Named, so that called from another workflow it still checks out this repository.
       - uses: actions/checkout@v4
+        with:
+          repository: djouallah/dax-sql
       - uses: actions/checkout@v4
         with:
           repository: apache/ossie
-          ref: ${{ env.OSSIE_REF }}
           path: .ossie
+      - name: The expander
+        run: |
+          set -euo pipefail
+          if [ -f .ossie/ost/src/ossie_ost/expander.py ]; then
+            echo "EXPANDER=.ossie" >> "$GITHUB_ENV"
+          else
+            git clone --quiet --depth 1 https://github.com/apache/ossie.git .ossie-pr
+            git -C .ossie-pr fetch --quiet --depth 1 origin "$EXPANDER_PR"
+            git -C .ossie-pr checkout --quiet FETCH_HEAD
+            echo "EXPANDER=.ossie-pr" >> "$GITHUB_ENV"
+          fi
       - name: The Ossie checked
-        run: echo "Apache Ossie at $(git -C .ossie rev-parse HEAD) ($OSSIE_REF)" | tee -a "$GITHUB_STEP_SUMMARY"
+        run: |
+          {
+            echo "Apache Ossie main at $(git -C .ossie rev-parse HEAD), $(git -C .ossie log -1 --format=%cs)"
+            [ "$EXPANDER" = .ossie ] || echo "The expander from $EXPANDER_PR at $(git -C "$EXPANDER" rev-parse HEAD)"
+          } | tee -a "$GITHUB_STEP_SUMMARY"
       - uses: actions/setup-node@v4
         with:
           node-version: "24"
-          cache: npm
       - run: npm ci --no-audit --no-fund
-      - name: The cases
+      - uses: astral-sh/setup-uv@v6
+      - name: The query cases
         run: node formats/test/ossie-query.mjs .ossie
+      - name: The query cases of the expander's branch
+        if: env.EXPANDER != '.ossie'
+        run: node formats/test/ossie-query.mjs "$EXPANDER"
+      - name: The wide table cases' Layer 2 queries
+        run: node formats/test/ossie-wide.mjs .ossie
+      - name: Against the view expander
+        run: node formats/test/ossie-expand.mjs .ossie "$EXPANDER" --report "$RUNNER_TEMP/expand.json"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ossie-expand-report
+          path: ${{ runner.temp }}/expand.json
+          if-no-files-found: ignore

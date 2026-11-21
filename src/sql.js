@@ -545,6 +545,13 @@ function leavesOf(from) {
 }
 // A measure that counts: 0 over no rows in SQL, where DAX's count is blank.
 const COUNTS = /^\s*(?:COUNTROWS|COUNTA?|COUNTAX|COUNTX|DISTINCTCOUNT|DISTINCTCOUNTNOBLANK)\s*\(/i;
+// Whether a measure is a count, 0 over no rows over datasets: its SQL's COUNT when it was read
+// from SQL (an Ossie metric: NULLIF(COUNT(..), 0) is NULL there), else its DAX's.
+const isCount = m => (m.sql != null ? /^\s*COUNT\s*\(/i.test(m.sql) : COUNTS.test(m.text));
+// Whether a DAX tree can be other than blank where what it aggregates is: a COALESCE, IF,
+// SWITCH or ISBLANK in it.
+const fills = x => !!x && typeof x === 'object' && ((x.k === 'call' && ['COALESCE', 'IF', 'SWITCH', 'ISBLANK'].includes(x.fn))
+  || Object.values(x).some(v => (Array.isArray(v) ? v.some(fills) : fills(v))));
 
 export class SqlTranslator {
   constructor(model) { this.model = model; this.base = this; this.defines = []; }
@@ -598,7 +605,7 @@ export class SqlTranslator {
   // `ctx.items` (having) maps the DAX of the SELECT's aggregates to their columns.
   dax(e, ctx) {
     if (ctx.items && hasAgg(e)) {
-      const hit = ctx.items.get(printDax(this.dax(e, { ...ctx, items: null })));
+      const hit = ctx.items.get(printDax(this.dax(e, { ...ctx, items: null, zero: false })));
       if (hit) return hit;
     }
     const sub = x => this.dax(x, ctx);
@@ -623,12 +630,19 @@ export class SqlTranslator {
       }
       case 'name': return this.nameDax(e, ctx);
       case 'neg': return D.neg(sub(e.e));
-      case 'not': return D.not(sub(e.e));
+      case 'not': return this.sqlNulls ? this.falseDax(e.e, ctx) : D.not(sub(e.e));
       case 'bin': {
         const l = sub(e.l), r = sub(e.r);
         if (e.op === '%') return D.call('MOD', l, r);
         if (CMP.has(e.op)) return known([[e.l, l], [e.r, r]], D.bin(e.op, l, r));
-        return D.bin({ AND: '&&', OR: '||', '||': '&' }[e.op] ?? e.op, l, r);
+        const x = D.bin({ AND: '&&', OR: '||', '||': '&' }[e.op] ?? e.op, l, r);
+        // Over datasets, SQL's NULLs: NULL + 1 is NULL (DAX's BLANK + 1 is 1), and so are
+        // NULL - 1, 1 / NULL and NULL || 'a'.
+        if (this.sqlNulls && ['+', '-', '/', '||'].includes(e.op)) {
+          const blanks = [[e.l, l], [e.r, r]].filter(([s]) => !isConstant(s)).map(([, d]) => D.call('ISBLANK', d));
+          if (blanks.length) return D.call('IF', blanks.reduce((a, b) => D.bin('||', a, b)), D.call('BLANK'), x);
+        }
+        return x;
       }
       case 'isnull': return e.not ? D.not(D.call('ISBLANK', sub(e.e))) : D.call('ISBLANK', sub(e.e));
       case 'in': {
@@ -681,10 +695,50 @@ export class SqlTranslator {
           throw sqlSemantic(`${e.src}: GROUPING is a column of the SELECT, of a column a ROLLUP of the GROUP BY rolls up`);
         }
         if (e.star || e.distinct) throw sqlSyntax(`${e.fn} is not an aggregate`, e.pos, e.src);
+        // NULLIF(a, b): NULL where a is b. == is DAX's equality in which BLANK is only BLANK.
+        if (e.fn === 'NULLIF') {
+          if (e.args.length !== 2) throw sqlSemantic(`NULLIF takes two arguments: ${e.src}`);
+          const [a, b] = e.args.map(sub);
+          return D.call('IF', D.bin('==', a, b), D.call('BLANK'), a);
+        }
         return D.call(FUNCS[e.fn] ?? e.fn, ...e.args.map(sub));
       }
     }
     throw sqlUnsupported(e.src);
+  }
+
+  // Over datasets, where a condition is false, not unknown: NOT of it is true there only (SQL's
+  // NOT of a comparison with a NULL is not true either).
+  falseDax(e, ctx) {
+    const sub = x => this.dax(x, ctx);
+    const known = (pairs, x) => [x, ...pairs.filter(([s]) => !isConstant(s)).map(([, d]) => D.not(D.call('ISBLANK', d)))]
+      .reduce((a, b) => D.bin('&&', a, b));
+    const NEG = { '=': '<>', '<>': '=', '<': '>=', '<=': '>', '>': '<=', '>=': '<' };
+    switch (e.k) {
+      case 'not': return sub(e.e);
+      case 'bool': return D.call(e.v ? 'FALSE' : 'TRUE');
+      case 'null': return D.call('FALSE');
+      case 'isnull': return e.not ? D.call('ISBLANK', sub(e.e)) : D.not(D.call('ISBLANK', sub(e.e)));
+      case 'bin':
+        if (e.op === 'AND') return D.bin('||', this.falseDax(e.l, ctx), this.falseDax(e.r, ctx));
+        if (e.op === 'OR') return D.bin('&&', this.falseDax(e.l, ctx), this.falseDax(e.r, ctx));
+        if (NEG[e.op]) {
+          const l = sub(e.l), r = sub(e.r);
+          return known([[e.l, l], [e.r, r]], D.bin(NEG[e.op], l, r));
+        }
+        break;
+      case 'in': {
+        const v = sub(e.e), x = D.in(v, e.list.map(sub));
+        return known([[e.e, v]], e.not ? x : D.not(x));
+      }
+      case 'between': {
+        const x = sub(e.e), lo = sub(e.lo), hi = sub(e.hi), b = D.bin('&&', D.bin('>=', x, lo), D.bin('<=', x, hi));
+        return known([[e.e, x], [e.lo, lo], [e.hi, hi]], e.not ? b : D.not(b));
+      }
+    }
+    // Anything else: false where it is neither true nor blank.
+    const x = sub(e);
+    return D.bin('&&', D.not(x), D.not(D.call('ISBLANK', x)));
   }
 
   nameDax(e, ctx) {
@@ -706,7 +760,8 @@ export class SqlTranslator {
       if (e.args.length !== 1 || e.distinct || arg.k !== 'name') throw sqlSemantic(`${e.fn} takes a measure: ${e.src}`);
       const m = this.measure(arg.parts);
       if (!m) throw sqlSemantic(`the model has no measure ${arg.src}`);
-      return this.measureRef(m);
+      const ref = this.measureRef(m);
+      return ctx.zero && isCount(m) ? D.call('COALESCE', ref, D.num(0)) : ref;
     }
     if (e.star) throw sqlUnsupported(`${e.src}: a model has no single table to count; COUNT a column, or AGG a measure`);
     if (e.args.length !== 1 || arg.k !== 'name') throw sqlUnsupported(`${e.src}: an aggregate of something other than a column`);
@@ -715,11 +770,12 @@ export class SqlTranslator {
       if (this.measure(arg.parts)) throw sqlSemantic(`${arg.src} is a measure: use AGG(${arg.src})`);
       throw sqlSemantic(`the model has no column ${arg.src}`);
     }
+    const zero = x => (ctx.zero && e.fn === 'COUNT' ? D.call('COALESCE', x, D.num(0)) : x);
     if (e.distinct) {
       if (e.fn !== 'COUNT') throw sqlUnsupported(`${e.fn}(DISTINCT …)`);
-      return D.call('DISTINCTCOUNTNOBLANK', D.col(c));
+      return zero(D.call('DISTINCTCOUNTNOBLANK', D.col(c)));
     }
-    return D.call(AGGS[e.fn], D.col(c));
+    return zero(D.call(AGGS[e.fn], D.col(c)));
   }
 
   // The query -> { query (the DAX query's tree), limit, offset }.
@@ -937,11 +993,11 @@ export class SqlTranslator {
       const ofO = e => someExpr(e, x => x.k === 'name' && colRel(x.parts)?.r === o);
       if (outside.some(x => colRel(x.parts)?.r === m) || (cond && ofO(cond)) || (cond && !ofM(cond))) return null;
       // m's rows are those that match a row of o: its key is not blank (a pet with no owner
-      // is no row of emp LEFT JOIN pet).
-      const matched = D.not(D.call('ISBLANK', D.col(edges[0].rel.to)));
+      // is no row of emp LEFT JOIN pet). KEEPFILTERS: the group's own filter on that key stays.
+      const matched = D.call('KEEPFILTERS', D.not(D.call('ISBLANK', D.col(edges[0].rel.to))));
       return {
         root: o, where, filters: [],
-        measure: (r, d, t) => (r === m ? D.call('CALCULATE', d, matched, ...(cond ? [t.dax(cond, { mode: 'where' })] : [])) : d),
+        measure: (r, d, t) => (r === m ? D.call('CALCULATE', d, matched, ...(cond ? [D.call('KEEPFILTERS', t.dax(cond, { mode: 'where' }))] : [])) : d),
       };
     }
     // A star: a LEFT JOIN adds a one side, and no ON says more than its relationship's columns.
@@ -1100,8 +1156,11 @@ export class SqlTranslator {
       gr.name ??= it.name;
     }
     groups.forEach((gr, i) => { gr.name ??= `__g${i + 1}`; });
+    // The groups' values, with no lineage: a measure's CALCULATE on a group's row then has no
+    // filter of the row to transition (its REMOVEFILTERS would not remove all of them: TODO.md).
+    const unlinked = x => (x.k === 'col' ? D.call('IF', D.call('ISBLANK', x), D.call('BLANK'), x) : x);
     const spine = this.variable(groups.length
-      ? D.call('DISTINCT', D.call('SELECTCOLUMNS', rows, ...groups.flatMap(gr => [D.str(gr.name), gr.dax])))
+      ? D.call('DISTINCT', D.call('SELECTCOLUMNS', rows, ...groups.flatMap(gr => [D.str(gr.name), unlinked(gr.dax)])))
       : D.call('ROW', D.str('__all'), D.num(1)));
 
     const out = items.map(it => (it.group ? D.ref(it.group.name) : g.dax(it.e, { mode: 'agg' })));
@@ -1125,7 +1184,7 @@ export class SqlTranslator {
       const cond = [D.not(padded), ...groups.map(gr => D.bin('==', gr.dax, D.ref(gr.name)))].reduce((a, b) => D.bin('&&', a, b));
       const keys = D.call('SELECTCOLUMNS', D.call('FILTER', rows, cond), ...ks.flatMap((c, i) => [D.str(`__k${i + 1}`), D.ref(jn(x.r, c))]));
       const v = D.call('CALCULATE', this.measureRef(x.m), D.call('REMOVEFILTERS'), D.call('TREATAS', keys, ...ks.map(D.col)));
-      return COUNTS.test(x.m.text) ? D.call('COALESCE', v, D.num(0)) : v;
+      return isCount(x.m) ? D.call('COALESCE', v, D.num(0)) : v;
     };
     let table = D.call('ADDCOLUMNS', spine, ...measures.flatMap(x => [D.str(x.name), value(x)]));
     if (having) table = D.call('FILTER', table, having);
@@ -1171,12 +1230,14 @@ export class SqlTranslator {
         const c = this.needColumn(e);
         return { e, col: c, name: alias ?? c.name, renamed: alias != null && alias !== c.name };
       }
-      const ast = this.dax(e, { mode: 'agg' });
+      const plain = this.dax(e, { mode: 'agg' });
       const m = isAggCall(e) && (e.fn === 'AGG' || e.fn === 'MEASURE') ? this.measure(e.args[0].parts) : null;
-      // Over datasets, a count is 0 over no rows (SQL's), in the result: in SUMMARIZECOLUMNS it
-      // stays blank there, so that the groups are those of the rows.
-      const count = !!ossie && (m ? COUNTS.test(m.text) : isAggCall(e) && e.fn === 'COUNT');
-      return { e, ast, key: printDax(ast), name: alias ?? m?.name ?? e.src, count };
+      // Over datasets, a count is 0 over no rows (SQL's). An item that is one: 0 in the result,
+      // as in SUMMARIZECOLUMNS it stays blank, so that the groups are those of the rows. A count
+      // inside an expression: 0 there, and the expression blank where the group has no rows.
+      const count = !!ossie && (m ? isCount(m) : isAggCall(e) && e.fn === 'COUNT');
+      const ast = ossie && !isAggCall(e) ? this.dax(e, { mode: 'agg', zero: true }) : plain;
+      return { e, ast, key: printDax(plain), name: alias ?? m?.name ?? e.src, count, filled: !!ossie && !isAggCall(e) && fills(ast) };
     });
     for (const it of items) {
       if (names.has(lc(it.name))) throw sqlSemantic(`two columns of the result are named ${it.name}`);
@@ -1240,12 +1301,16 @@ export class SqlTranslator {
 
     // HAVING's names: the SELECT's, on the groups' rows.
     const itemRef = it => it.col ? D.col(it.col) : it.constant ?? D.ref(it.name);
-    const aliases = new Map(items.map(it => [lc(it.name), itemRef(it)]));
-    const aggItems = new Map(aggs.map(it => [it.key, D.ref(it.name)]));
+    const zeroRef = it => (it.count ? D.call('COALESCE', itemRef(it), D.num(0)) : itemRef(it));
+    const aliases = new Map(items.map(it => [lc(it.name), zeroRef(it)]));
+    const aggItems = new Map(aggs.map(it => [it.key, zeroRef(it)]));
     const groupings = new Map(rollups.flat().flatMap(l => l.cols.map(c => [c, D.ref(l.flag.name)])));
-    const having = q.having && this.dax(q.having, { mode: 'having', groups: grouped, aliases, items: aggItems, groupings });
+    const having = q.having && this.dax(q.having, { mode: 'having', groups: grouped, aliases, items: aggItems, groupings, zero: !!ossie });
 
-    const aggArgs = aggs.flatMap(it => [D.str(it.name), it.ast]);
+    // An expression that is not blank over no rows (a count made 0, COALESCE): blank where the
+    // group has none of the root's rows, so that it makes no group of its own.
+    const guard = it => (it.filled && grouped.length ? D.call('IF', D.call('ISBLANK', D.call('COUNTROWS', D.word(ossie.root.name))), D.call('BLANK'), it.ast) : it.ast);
+    const aggArgs = aggs.flatMap(it => [D.str(it.name), guard(it)]);
     const rollupArgs = rollups.map(levels => D.call('ROLLUPADDISSUBTOTAL', ...levels.flatMap(l => [
       l.cols.length > 1 ? D.call('ROLLUPGROUP', ...l.cols.map(D.col)) : D.col(l.cols[0]), D.str(l.flag.name)])));
     // Over datasets, a group is one the rows have: the root's rows counted beside the
@@ -1272,6 +1337,9 @@ export class SqlTranslator {
           kids(x).forEach(walk);
         };
         walk(e);
+        // A condition on no column (WHERE FALSE), over datasets: on the rows of the root, all
+        // of them or none.
+        if (!cols.length && ossie) return D.call('FILTER', D.call('ALL', D.word(ossie.root.name)), dax);
         if (!cols.length) throw sqlUnsupported(`WHERE ${e.src}: a condition on no column`);
         if (new Set(cols.map(c => c.table)).size === 1) return dax;
         const all = c => D.call('ALL', D.col(c));

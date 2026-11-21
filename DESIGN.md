@@ -359,7 +359,9 @@ What the README leaves out: the API, what the compiler does, and how.
   - `columns`: `{ name, type, source, dax, key, nullable, dataCategory, fieldParameter }`.
     `type` is one of `string int double decimal datetime bool variant`. `source` is the
     stored column (its name by default) and `dax` a calculated column's expression.
-  - `measures`: `{ name, dax, formatString }`.
+  - `measures`: `{ name, dax, formatString, sql }`; `sql`, optional, the SQL of the Ossie
+    metric the measure was read from, whose rules a query over the datasets follows (its
+    `COUNT` is 0 over no rows, `NULLIF(COUNT(..), 0)` is not).
   - `calculationGroup`: `{ precedence, items: [{ name, ordinal, dax, formatString }],
     multipleOrEmpty, noSelection }`.
 - `relationships`: `{ name, from: { table, column }, to: { table, column }, active,
@@ -380,7 +382,11 @@ package: they are not exported and the compiler never imports them.
   take parsed objects, so the YAML is the caller's to parse. A column is a field whose `sql` is
   its source column; a measure is a metric of the dataset it reads, in Ossie's portable SQL
   when it says the same there (`formats/ossie-sql.js`: SUM, AVERAGE, COUNTROWS, DIVIDE, ... over
-  one table, BLANK as NULL), and in the DAX dialect when not. A measure made only of measures
+  one table, BLANK as NULL), and in the DAX dialect when not. Where DAX rounds a fixed decimal
+  to four places (`AVERAGE` of one, one divided by a number or times a decimal number), the SQL
+  says so: `ROUND(AVG(x), 4)`, `ROUND(SUM(x) / 12, 4)`; back, SQL's own decimals are not rounded
+  (`AVG(x)` is the average of `x` as doubles, `SUM(x) / 12` divides a double), and those
+  `ROUND(.., 4)` read as DAX's fixed decimal again. A measure made only of measures
   that are such metrics, a ratio of two tables' measures say, is the model's own metric, each of
   them `AGG(dataset.metric)`. Back, a metric or a field in that
   SQL reads as DAX, so a model another tool wrote in SQL opens too. A metric or a field with no
@@ -791,10 +797,13 @@ each table's measures are columns of it, evaluated by `AGG(e.m)`. The rules are 
 they differ from a DAX query's:
 
 - The groups are those of the rows: a group whose measures are all blank is kept. A measure
-  that counts (`COUNTROWS`, `COUNT`, `DISTINCTCOUNT`, ...) is 0 over no rows, not blank.
+  that counts (`COUNTROWS`, `COUNT`, `DISTINCTCOUNT`, ...; an Ossie metric whose SQL is a
+  `COUNT`) is 0 over no rows, not blank, in the result and inside an expression or `HAVING`
+  alike; an expression of aggregates makes no group of its own.
 - A comparison (`=`, `<`, `IN`, `BETWEEN`, ...) with a NULL is not true, in `WHERE`, `ON` and
   `HAVING`: DAX's blank equals blank, 0 and `""`, so a manager-less employee would join a pet
-  with no owner.
+  with no owner. `NOT` of one is not true either (three-valued logic); `NULL + 1`, `NULL - 1`,
+  `1 / NULL` and `NULL || 'a'` are NULL; `NULLIF` and `WHERE FALSE` work as SQL's.
 - Joins (`JOIN`, `LEFT`, `RIGHT`, `FULL`, `CROSS`, on any condition, a table joined to itself)
   never repeat a row of a measure: `AGG(e.m)` is `m` over the rows of `e`'s table that the
   group's joined rows come from, each once, and none for the rows an outer join pads.
@@ -973,6 +982,16 @@ npm test
   `model.bim` as Ossie); which measures are SQL and which DAX; what the extension may hold; a
   file of the earlier shape, and one of the spec before, reads as it did; an Ossie model in SQL
   reads as DAX, `AGG`, `source.column` and `ROUND` included.
+- `.github/workflows/ossie-query.yml`, in CI only (Python and Ossie's main): Ossie SQL held to
+  Ossie as DAX is to Power BI. Ossie's query cases (`formats/test/ossie-query.mjs`: main's, and
+  those on the view expander's branch until it merges), the wide table cases' Layer 2 queries
+  (`ossie-wide.mjs`), and Ossie's view expander as an oracle (`ossie-expand.mjs`): a grid of
+  about 2,500 queries over SCOTT, Ossie's retail and stores, and every model in
+  `conformance/models` written as Ossie (totals, groups, `WHERE`, `HAVING`, `ROLLUP`, CTEs,
+  scalar operators over `AGG`, stars, fan-outs, chasm traps, snowflakes), each answered by the
+  expander's SQL and by dax-sql's on one DuckDB. Values come from the data, with a fixed seed.
+  A different answer fails the run; one that is only the blank row this package does not have
+  is counted apart. A release waits for it, and for the conformance suite.
 - `.github/workflows/ossie.yml`, in CI only (it needs Python and an Ossie checkout, of Ossie's
   main: the spec of the day, checked every morning too): what
   `formats/ossie.js` writes for every model here passes Ossie's own validator

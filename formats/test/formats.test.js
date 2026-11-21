@@ -136,10 +136,11 @@ test('a measure is SQL where it says the same there, DAX where not', () => {
 
   const a = byName(tmslToOssie(aac));
   assert.equal(a.get('Curtailment rate').expression.sql, 'CAST(100 * SUM(curtailed_mwh) AS DOUBLE) / NULLIF(SUM(available_mwh), 0)');
-  assert.equal(a.get('Regional wind curtailed MWh').expression.sql, 'CAST(SUM(wind_curtailed) AS DOUBLE) / 12');
-  assert.equal(a.get('Price at hour').expression.sql, 'CAST(SUM(price * intervals) AS DOUBLE) / NULLIF(SUM(intervals), 0)');
+  // A fixed decimal divided by a number is one in DAX, rounded to four places; SQL's is not.
+  assert.equal(a.get('Regional wind curtailed MWh').expression.sql, 'ROUND(SUM(wind_curtailed) / 12, 4)');
+  assert.equal(a.get('Price at hour').expression.sql, 'ROUND(SUM(price * intervals) / NULLIF(SUM(intervals), 0), 4)');
   assert.equal(a.get('Registered units').expression.sql, 'NULLIF(COUNT(*), 0)');
-  assert.equal(a.get('Average MW at hour').expression.sql, 'CAST(AGG(fct_summary_hourly."Output MWh hourly") AS DOUBLE) / NULLIF(AGG(dim_month."Month days"), 0)');
+  assert.equal(a.get('Average MW at hour').expression.sql, 'ROUND(AGG(fct_summary_hourly."Output MWh hourly") / NULLIF(AGG(dim_month."Month days"), 0), 4)');
   // IF, VAR, a two-argument MAX: DAX.
   for (const n of ['Demand MW', 'Generation MWh', 'Generation MW']) assert.equal(a.get(n).expression.sql, undefined, n);
 });
@@ -319,7 +320,7 @@ test('an Ossie file whose metrics and fields are SQL reads as DAX', () => {
   const dax = Object.fromEntries(orders.measures.map(m => [m.name, m.expression]));
   assert.deepEqual(dax, {
     order_count: "COUNTROWS('orders')",
-    avg_order: "DIVIDE(SUM('orders'[amount]), DISTINCTCOUNTNOBLANK('orders'[order_id]))",
+    avg_order: "DIVIDE(CONVERT(SUM('orders'[amount]), DOUBLE), DISTINCTCOUNTNOBLANK('orders'[order_id]))",
     per_item: "SUMX('orders', 'orders'[amount] * 'orders'[qty])",
     revenue: "SUM('orders'[amount])",
   });

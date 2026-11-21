@@ -9,6 +9,17 @@ const TYPES = { string: 'string', int64: 'int', double: 'double', decimal: 'deci
 
 const text = e => (Array.isArray(e) ? e.join('\n') : e ?? '');
 const expr = e => (e == null ? null : text(e.expression ?? e));
+// The SQL of the Apache Ossie metric a measure was read from (formats/ossie.js keeps it in an
+// `Ossie` annotation), while its DAX is still the one it was read as: a query over the model's
+// datasets follows its rules (a COUNT is 0 over no rows, NULLIF(COUNT(..), 0) is not).
+function ossieSql(m) {
+  const a = (m.annotations ?? []).find(x => x.name === 'Ossie');
+  let was;
+  try { was = a ? JSON.parse(a.value) : null; } catch { return null; }
+  const e = was?.expression;
+  if (!e || was.dax !== text(m.expression)) return null;
+  return e.sql ?? e.dialects?.find(d => d.dialect !== 'DAX')?.expression ?? null;
+}
 
 function table(t) {
   const out = { name: t.name, hidden: !!t.isHidden };
@@ -27,7 +38,10 @@ function table(t) {
     // Power BI marks the fields column of a field parameter in its extended properties.
     fieldParameter: (c.extendedProperties ?? []).some(p => p.name === 'ParameterMetadata'),
   }));
-  out.measures = (t.measures ?? []).map(m => ({ name: m.name, dax: text(m.expression), formatString: m.formatString ?? null }));
+  out.measures = (t.measures ?? []).map(m => {
+    const sql = ossieSql(m);
+    return { name: m.name, dax: text(m.expression), formatString: m.formatString ?? null, ...(sql != null ? { sql } : {}) };
+  });
   const g = t.calculationGroup;
   if (g) out.calculationGroup = {
     precedence: g.precedence ?? 0,

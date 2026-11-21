@@ -72,19 +72,31 @@ export function measureSql(ast, tables, measures, metricAt) {
       const c = colRef(a, row);
       return c && NUMERIC.includes(c.type) ? { sql: sqlName(c.name), type: c.type } : null;
     }
+    // CONVERT(T[x], DOUBLE): x as a double, as SQL's AVG makes any number (AVG(x) is it).
+    if (a.k === 'call' && a.fn === 'CONVERT' && a.args.length === 2 && a.args[1].k === 'name' && /^DOUBLE$/i.test(a.args[1].name)) {
+      const x = rowExpr(a.args[0], row);
+      return x && !x.lit && !x.bin ? { sql: toDouble(x), type: 'Float', bin: x.type !== 'Float', of: x } : null;
+    }
     return arith(a, x => rowExpr(x, row));
   }
   // * of two, or / by a number other than 0: the operators with the same BLANK rules as NULL.
+  // A fixed decimal times a decimal number, or divided by a number, is a fixed decimal in DAX,
+  // rounded to four places: ROUND(.., 4) in SQL. Two fixed decimals multiplied are a decimal
+  // number; times a whole number, a fixed decimal, exact.
   function arith(a, sub) {
     if (a.k !== 'bin') return null;
     if (a.op === '*') {
       const l = sub(a.l), r = sub(a.r);
       if (!l || !r || (l.lit && r.lit)) return null;
-      return { sql: `${paren(l)} * ${paren(r)}`, type: wider(l.type, r.type), bin: true, agg: l.agg || r.agg };
+      const sql = `${paren(l)} * ${paren(r)}`, agg = l.agg || r.agg;
+      const dec = [l.type, r.type];
+      if (dec.includes('Decimal') && dec.includes('Float')) return { sql: `ROUND(${sql}, 4)`, type: 'Decimal', agg };
+      return { sql, type: dec[0] === 'Decimal' && dec[1] === 'Decimal' ? 'Float' : wider(l.type, r.type), bin: true, agg };
     }
     if (a.op === '/' && num(a.r) && Number(numText(a.r)) !== 0) {
       const l = sub(a.l);
       if (!l || l.lit) return null;
+      if (l.type === 'Decimal') return { sql: `ROUND(${paren(l)} / ${numText(a.r)}, 4)`, type: 'Decimal', agg: l.agg };
       return { sql: `${toDouble(l)} / ${numText(a.r)}`, type: 'Float', bin: true, agg: l.agg };
     }
     return null;
@@ -93,9 +105,12 @@ export function measureSql(ast, tables, measures, metricAt) {
   const AGGX = { SUMX: 'SUM', AVERAGEX: 'AVG', MINX: 'MIN', MAXX: 'MAX' };
   function aggregate(fn, inner) {
     if ((fn === 'SUM' || fn === 'AVG') && !NUMERIC.includes(inner.type)) return null;
+    // An average of a double: AVG of the number, which SQL's AVG makes a double.
+    if (fn === 'AVG' && inner.of) inner = { ...inner.of, type: 'Float', double: true };
     const arg = fn === 'AVG' && inner.type === 'Integer' ? `CAST(${inner.sql} AS DOUBLE)` : inner.sql;
-    const type = fn === 'AVG' ? (inner.type === 'Decimal' ? 'Decimal' : 'Float') : inner.type;
-    return { sql: `${fn}(${arg})`, type, agg: true };
+    // DAX's average of fixed decimals is one, rounded to four places; SQL's is not rounded.
+    if (fn === 'AVG' && inner.type === 'Decimal') return { sql: `ROUND(AVG(${arg}), 4)`, type: 'Decimal', agg: true };
+    return { sql: `${fn}(${arg})`, type: fn === 'AVG' ? 'Float' : inner.type, agg: true };
   }
   function expr(a) {
     if (!a) return null;
@@ -149,10 +164,17 @@ export function measureSql(ast, tables, measures, metricAt) {
     if (a.fn === 'DIVIDE' && (args.length === 2 || (args.length === 3 && num(args[2])))) {
       const l = expr(args[0]), r = expr(args[1]);
       if (!l || !r || !(l.agg || r.agg)) return null;
-      const sql = args.length === 2
-        ? `${toDouble(l)} / NULLIF(${r.sql}, 0)`
-        : `CASE WHEN ${paren(r)} IS NULL OR ${paren(r)} = 0 THEN ${numText(args[2])} ELSE ${toDouble(l)} / ${paren(r)} END`;
-      return { sql, type: 'Float', bin: args.length === 2, agg: true };
+      // A fixed decimal divided by a number: one, rounded to four places.
+      const fixed = l.type === 'Decimal' && (r.type === 'Integer' || r.type === 'Float');
+      const q = fixed ? `ROUND(${paren(l)} / NULLIF(${r.sql}, 0), 4)` : `${toDouble(l)} / NULLIF(${r.sql}, 0)`;
+      const sql = args.length === 2 ? q
+        : `CASE WHEN ${paren(r)} IS NULL OR ${paren(r)} = 0 THEN ${numText(args[2])} ELSE ${fixed ? `ROUND(${paren(l)} / ${paren(r)}, 4)` : `${toDouble(l)} / ${paren(r)}`} END`;
+      return { sql, type: fixed ? 'Decimal' : 'Float', bin: args.length === 2 && !fixed, agg: true };
+    }
+    // CONVERT(x, DOUBLE) of an aggregate: CAST, so a fixed decimal is not rounded after it.
+    if (a.fn === 'CONVERT' && args.length === 2 && args[1].k === 'name' && /^DOUBLE$/i.test(args[1].name)) {
+      const x = expr(args[0]);
+      return x?.agg ? { sql: toDouble(x), type: 'Float', agg: true } : null;
     }
     return null;
   }
@@ -323,6 +345,32 @@ function toDax(root, resolve, metric = () => null) {
     return null;
   };
   const AGG = { SUM: ['SUM', 'SUMX'], AVG: ['AVERAGE', 'AVERAGEX'], MIN: ['MIN', 'MINX'], MAX: ['MAX', 'MAXX'] };
+  // An aggregate's argument without its CAST to a double, which says nothing in DAX (a double
+  // already, or an integer that AVERAGE makes one); but a fixed decimal's stays a CONVERT, as
+  // DAX's aggregates of one are fixed decimals: AVG(CAST(sal AS DOUBLE)) is not AVERAGE(sal).
+  const aggArg = a => (a?.k === 'cast' && (a.type === 'DOUBLE' || a.type === 'FLOAT') && a.e?.k === 'id' && col(a.e)?.type === 'Decimal' ? a : unCast(a));
+  // Whether an expression is a fixed decimal in DAX: a Decimal field, its SUM, MIN or MAX, a
+  // CAST to DECIMAL, and + or - of those and whole numbers.
+  const isDec = e => {
+    if (!e) return false;
+    if (e.k === 'id') return col(e)?.type === 'Decimal';
+    if (e.k === 'call') return ['SUM', 'MIN', 'MAX'].includes(e.fn) && e.args.length === 1 && !e.distinct && !e.filter && isDec(e.args[0]);
+    if (e.k === 'cast') return e.type === 'DECIMAL' || e.type === 'NUMERIC';
+    if (e.k === 'neg') return isDec(e.e);
+    const whole = x => isDec(x) || (x?.k === 'num' && /^\d+$/.test(x.v)) || (x?.k === 'id' && col(x)?.type === 'Integer');
+    return e.k === 'bin' && (e.op === '+' || e.op === '-') && (isDec(e.l) || isDec(e.r)) && whole(e.l) && whole(e.r);
+  };
+  // Whether one is a decimal number (a double): times a fixed decimal, DAX rounds the product.
+  const isDbl = e => (e?.k === 'num' && !/^\d+$/.test(e.v)) || (e?.k === 'id' && col(e)?.type === 'Float')
+    || (e?.k === 'cast' && (e.type === 'DOUBLE' || e.type === 'FLOAT'));
+  // A fixed decimal SQL divides or multiplies by a decimal number: a double first, as SQL's is
+  // not rounded (DAX's would be, to four places).
+  const asDouble = e => (isDec(e) ? `CONVERT(${dax(e)}, DOUBLE)` : null);
+  // AVG of a fixed decimal is SQL's, a double not rounded: the average of its doubles.
+  const avgArg = (fn, a) => {
+    const x = aggArg(a);
+    return fn === 'AVG' && x.k === 'id' && col(x)?.type === 'Decimal' ? { k: 'cast', e: x, type: 'DOUBLE' } : x;
+  };
   function count(e) {
     if (e?.k !== 'call' || e.fn !== 'COUNT') return null;
     if (e.star) {
@@ -355,10 +403,10 @@ function toDax(root, resolve, metric = () => null) {
         if (e.filter) {
           const names = AGG[e.fn] ?? (e.fn === 'COUNT' && !e.distinct ? ['COUNT', e.star ? 'COUNTROWS' : 'COUNTAX'] : null);
           if (!names || e.distinct) throw new Error(`${e.fn}(${e.distinct ? 'DISTINCT ' : ''}...) FILTER (WHERE ...)`);
-          const t = e.star ? home() : firstTable(unCast(e.args[0]));
+          const t = e.star ? home() : firstTable(aggArg(e.args[0]));
           if (!t) throw new Error(`${e.fn} reads no field`);
           const rows = `FILTER(${daxTable(t)}, ${dax(e.filter)})`;
-          return e.star ? `COUNTROWS(${rows})` : `${names[1]}(${rows}, ${dax(unCast(e.args[0]))})`;
+          return e.star ? `COUNTROWS(${rows})` : `${names[1]}(${rows}, ${dax(avgArg(e.fn, e.args[0]))})`;
         }
         // Dates, blank where SQL's are NULL (DAX's YEAR of a blank is 1899).
         const orBlank = (args, x) => `IF(${args.map(a => `ISBLANK(${a})`).join(' || ')}, BLANK(), ${x})`;
@@ -403,12 +451,30 @@ function toDax(root, resolve, metric = () => null) {
           tables.add(m.dataset);
           return `[${String(m.name).replace(/]/g, ']]')}]`;
         }
+        // ROUND(.., 4) of what DAX rounds so itself: DAX's fixed decimal. ROUND(AVG(x), 4) is
+        // AVERAGE(x); ROUND(x / n, 4), ROUND(x / NULLIF(y, 0), 4) and ROUND(x * 1.5, 4) are
+        // x / n, DIVIDE(x, y) and x * 1.5, of a fixed decimal x.
+        if (e.fn === 'ROUND' && !e.distinct && e.args.length === 2 && e.args[1].k === 'num' && e.args[1].v === '4') {
+          const a = e.args[0];
+          if (a.k === 'call' && a.fn === 'AVG' && a.args.length === 1 && !a.distinct) {
+            const x = aggArg(a.args[0]);
+            const c = x.k === 'id' && col(x)?.type === 'Decimal' ? col(x) : null;
+            if (c && !a.filter) return `AVERAGE(${daxCol(c.table, c.column)})`;
+            if (c) return `AVERAGEX(FILTER(${daxTable(c.table)}, ${dax(a.filter)}), ${daxCol(c.table, c.column)})`;
+          }
+          if (a.k === 'bin' && a.op === '/' && isDec(unCast(a.l))) {
+            const l = unCast(a.l);
+            if (a.r.k === 'num' && !isZero(a.r)) return `${wrap(l)} / ${a.r.v}`;
+            if (a.r.k === 'call' && a.r.fn === 'NULLIF' && a.r.args.length === 2 && isZero(a.r.args[1])) return `DIVIDE(${dax(l)}, ${dax(a.r.args[0])})`;
+          }
+          if (a.k === 'bin' && a.op === '*' && ((isDec(a.l) && isDbl(a.r)) || (isDbl(a.l) && isDec(a.r)))) return `${wrap(unCast(a.l))} * ${wrap(unCast(a.r))}`;
+        }
         if (e.fn === 'ROUND' && !e.distinct && (e.args.length === 1 || e.args.length === 2)) {
           return `ROUND(${dax(e.args[0])}, ${e.args[1] ? dax(e.args[1]) : '0'})`;
         }
         const names = AGG[e.fn];
         if (names && e.args.length === 1 && !e.distinct) {
-          const arg = unCast(e.args[0]);
+          const arg = avgArg(e.fn, e.args[0]);
           const c = arg.k === 'id' ? col(arg) : null;
           if (c) return `${names[0]}(${daxCol(c.table, c.column)})`;
           const t = firstTable(arg);
@@ -420,10 +486,13 @@ function toDax(root, resolve, metric = () => null) {
       case 'bin': {
         // a / NULLIF(b, 0), and a / b: DIVIDE; a / 12 stays a division.
         if (e.op === '/') {
-          const l = unCast(e.l);
-          if (e.r.k === 'call' && e.r.fn === 'NULLIF' && e.r.args.length === 2 && isZero(e.r.args[1])) return `DIVIDE(${dax(l)}, ${dax(e.r.args[0])})`;
-          if (e.r.k === 'num' && !isZero(e.r)) return `${wrap(l)} / ${e.r.v}`;
-          return `DIVIDE(${dax(l)}, ${dax(e.r)})`;
+          const l = unCast(e.l), ld = asDouble(l);
+          if (e.r.k === 'call' && e.r.fn === 'NULLIF' && e.r.args.length === 2 && isZero(e.r.args[1])) return `DIVIDE(${ld ?? dax(l)}, ${dax(e.r.args[0])})`;
+          if (e.r.k === 'num' && !isZero(e.r)) return `${ld ?? wrap(l)} / ${e.r.v}`;
+          return `DIVIDE(${ld ?? dax(l)}, ${dax(e.r)})`;
+        }
+        if (e.op === '*' && ((isDec(e.l) && isDbl(e.r)) || (isDbl(e.l) && isDec(e.r)))) {
+          return `${asDouble(e.l) ?? wrap(e.l)} * ${asDouble(e.r) ?? wrap(e.r)}`;
         }
         const ops = { '*': '*', '+': '+', '-': '-', '||': '&', '=': '=', '<>': '<>', '<': '<', '<=': '<=', '>': '>', '>=': '>=', AND: '&&', OR: '||' };
         if (!ops[e.op]) throw new Error(`the operator ${e.op}`);
@@ -469,21 +538,22 @@ export function metricDax(sql, dataset, datasets) {
   const resolve = parts => {
     if (parts.length === 1 && dataset) {
       const f = fieldIn(dataset, parts[0]);
-      return f ? { table: dataset.name, column: f.name } : null;
+      return f ? { table: dataset.name, column: f.name, type: f.datatype } : null;
     }
     if (parts.length === 2 && dataset && lc(parts[0]) === 'source' && !fieldIn(dataset, 'source')) {
       const f = sourceField(dataset, parts[1]);
-      return f ? { table: dataset.name, column: f.name } : null;
+      return f ? { table: dataset.name, column: f.name, type: f.datatype } : null;
     }
     // A model-scoped metric's bare name: the field of that name, when one dataset has it.
     if (parts.length === 1) {
       const has = datasets.filter(d => fieldIn(d, parts[0]));
-      return has.length === 1 ? { table: has[0].name, column: fieldIn(has[0], parts[0]).name } : null;
+      const f = has.length === 1 ? fieldIn(has[0], parts[0]) : null;
+      return f ? { table: has[0].name, column: f.name, type: f.datatype } : null;
     }
     if (parts.length === 2) {
       const d = byName.get(lc(parts[0]));
       const f = d && fieldIn(d, parts[1]);
-      return f ? { table: d.name, column: f.name } : null;
+      return f ? { table: d.name, column: f.name, type: f.datatype } : null;
     }
     return null;
   };

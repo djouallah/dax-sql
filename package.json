@@ -3,7 +3,7 @@
   "version": "0.2.4",
   "license": "MIT",
   "author": "N.S. Devaraj (https://github.com/nsdevaraj)",
-  "description": "A DAX to SQL compiler for Tabular (TMSL) semantic models, with DAX semantics; tested on DuckDB",
+  "description": "DAX and Apache Ossie SQL queries over semantic models (TMSL, Ossie) compiled to one SQL SELECT; tested on DuckDB",
   "keywords": [
     "dax",
     "sql",

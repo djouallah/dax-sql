@@ -74,14 +74,19 @@ export class Model {
       table.columns.push(col);
       table.colMap.set(lc(c.name), col);
     }
+    // A key of several columns (`keys`, a row's identity): none of them is unique on its own.
+    if (table.keys?.length > 1) {
+      for (const k of table.keys) k.unique = false;
+      table.key = null;
+    }
     if (t.calculationGroup) table.calcGroup = calcGroupOf(t.calculationGroup, table);
     this.tables.set(lc(t.name), table);
-    for (const ms of t.measures ?? []) this.addMeasure(table, ms.name, ms.dax, ms.formatString);
+    for (const ms of t.measures ?? []) this.addMeasure(table, ms.name, ms.dax, ms.formatString, ms.sql);
     return table;
   }
 
-  addMeasure(table, name, expression, formatString = null) {
-    this.measures.set(lc(name), { name, table, text: expression, ast: null, formatString: formatString ?? null });
+  addMeasure(table, name, expression, formatString = null, sql = null) {
+    this.measures.set(lc(name), { name, table, text: expression, ast: null, formatString: formatString ?? null, sql: sql ?? null });
   }
 
   relationship(r, i) {

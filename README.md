@@ -1,7 +1,7 @@
 # dax-sql
 
-A DAX to SQL compiler for Power BI / Tabular semantic models: a DAX query in, one SQL `SELECT`
-out, with DAX's semantics. Tested on DuckDB against Power BI's own answers. No dependencies.
+A compiler for semantic models (Power BI / Tabular, Apache Ossie) that supports two languages
+alike: a DAX query or an Ossie SQL query in, one SQL `SELECT` out, each with its own semantics. No dependencies.
 
 Initially written by [N.S. Devaraj](https://github.com/nsdevaraj).
 
@@ -28,7 +28,7 @@ const { sql, columns } = dax.compile(`
 - **Out:** one SQL `SELECT` and its columns; for a statement, its SQL with each of them compiled in place.
 - **SQL:** DuckDB's by default; `dialect: 'tsql'` writes T-SQL for Microsoft Fabric's SQL analytics endpoint and Warehouse, with what it can't do listed in [DESIGN.md](DESIGN.md#t-sql).
 - **Errors:** `SYNTAX`, `SEMANTIC`, `UNSUPPORTED`.
-- **Tested:** against Power BI's own answers, in [conformance/](conformance/README.md).
+- **Tested:** DAX against Power BI's own answers ([conformance/](conformance/README.md)); Ossie SQL against Apache Ossie's compliance cases and its view expander (`.github/workflows/ossie-query.yml`). Both block a release.
 
 ## Not implemented
 

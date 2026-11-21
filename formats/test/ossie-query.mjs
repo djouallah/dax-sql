@@ -1,23 +1,24 @@
 // Apache Ossie's query compliance cases (compliance/query in an Ossie checkout), answered by
 // dax-sql: .github/workflows/ossie-query.yml.
 //   node formats/test/ossie-query.mjs <ossie checkout>
-// Each case is a script, <case>.ost: the query is the argument of executeExpand(...), and the
-// expected rows the table after its expansion (`|_} : string`). The SCOTT data
-// (scott/scott.sql) is loaded into DuckDB, the model (scott/scott_model.ossie.yaml) read with
-// formats/ossie.js, and the query compiled as a host compiles one: compile(), or, for SQL with
-// a model SELECT in it, compileStatement(). The rows are compared as the cases' README says:
-// columns by position (names without regard to case), rows as a multiset, in order when the
-// query has an ORDER BY of its own; a number equal, or equal once rounded to 2 places (an
-// approximate one, as the cases round them); NULL only to NULL.
+// The cases are in either of two layouts, and this reads whichever the checkout has:
+//   - cases/<case>/query.ossie.sql and expected.sql (Ossie's main): the expected rows are what
+//     DuckDB answers to expected.sql;
+//   - <case>.ost, a script (apache/ossie#769, the view expander's): the query is the argument of
+//     executeExpand(...), and the expected rows the table after its expansion (`|_} : string`).
+// The SCOTT data (scott/scott.sql) is loaded into DuckDB, the model (scott/scott_model.ossie.yaml)
+// read with formats/ossie.js, and the query compiled as a host compiles one: compile(), or, for
+// SQL with a model SELECT in it, compileStatement(). Rows are compared as ossie-compare.mjs does.
 // Outcomes: match, fail (other rows), unsupported (dax-sql's UNSUPPORTED), error (any other).
 // A fail always fails the run. PENDING lists the cases not answered yet: those may be
 // unsupported or an error, and one that matches must leave the list.
-import { readFileSync, readdirSync, appendFileSync } from 'node:fs';
+import { readFileSync, readdirSync, appendFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { DuckDBInstance } from '@duckdb/node-api';
 import { parse } from 'yaml';
 import { createCompiler } from '../../src/index.js';
 import { ossieToModel } from '../ossie.js';
+import { table, ordered, compare, rows } from './ossie-compare.mjs';
 
 const PENDING = new Set([]);
 // The joins along the model's relationships, from many to one (a star): their query is
@@ -30,7 +31,7 @@ if (!ossie) throw new Error('usage: ossie-query.mjs <ossie checkout>');
 const dir = join(ossie, 'compliance', 'query');
 const MODEL = 'scott_model';
 
-// --- the scripts ---------------------------------------------------------------------------
+// --- the cases ----------------------------------------------------------------------------
 
 // The text from `open` (just after a "(") to its ")", by depth, outside strings and quoted names.
 function closing(s, open) {
@@ -44,16 +45,10 @@ function closing(s, open) {
   throw new Error('executeExpand( with no closing ")"');
 }
 
-// An ost table: header, rows; an empty cell is NULL, a "quoted" cell the text in the quotes.
-function table(lines) {
-  const cells = l => l.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map(c => c.trim());
-  const body = lines.filter(l => l.startsWith('|'));
-  const [head, ...rows] = body;
-  const cell = c => (c === '' ? null : /^".*"$/.test(c) ? c.slice(1, -1).replaceAll('""', '"') : c);
-  return { columns: cells(head), rows: rows.map(r => cells(r).map(cell)) };
-}
+const caseId = id => id.replace(/^([AB])0*(\d)/, '$1$2');
 
-function cases(file) {
+// The cases of an .ost script.
+function scriptCases(file) {
   const src = readFileSync(join(dir, file), 'utf8').replace(/\r\n/g, '\n');
   const out = [];
   let from = 0;
@@ -63,66 +58,26 @@ function cases(file) {
     const open = at + 'executeExpand('.length;
     const close = closing(src, open);
     const ids = [...src.slice(0, at).matchAll(/^# ([AB]\d+[a-z]?)\. /gm)];
-    const id = ids.length ? ids[ids.length - 1][1].replace(/^([AB])0*(\d)/, '$1$2') : `${file}#${out.length + 1}`;
+    const id = ids.length ? caseId(ids[ids.length - 1][1]) : `${file}#${out.length + 1}`;
     const tail = src.slice(close);
     const end = tail.indexOf('|_}');
     if (end < 0) throw new Error(`${id}: no expansion`);
     const lines = tail.slice(end).split('\n').slice(1);
     const stop = lines.findIndex(l => !l.startsWith('+') && !l.startsWith('|'));
-    out.push({ id, file, query: src.slice(open, close).trim(), expected: table(lines.slice(0, stop < 0 ? undefined : stop)) });
+    const expected = table(lines.slice(0, stop < 0 ? undefined : stop));
+    out.push({ id, file, query: src.slice(open, close).trim(), expected: async () => expected, round: true });
     from = close;
   }
 }
 
-// Whether the query orders its own rows: an ORDER BY outside parentheses.
-function ordered(q) {
-  let depth = 0, top = '';
-  for (let i = 0; i < q.length; i++) {
-    const c = q[i];
-    if (c === "'") { const e = q.indexOf("'", i + 1); i = e < 0 ? q.length : e; top += ' '; continue; }
-    if (c === '(') depth++;
-    else if (c === ')') depth--;
-    else if (!depth) top += c;
-  }
-  return /\bORDER\s+BY\b/i.test(top);
-}
-
-// --- comparing -----------------------------------------------------------------------------
-
-const round2 = x => Math.sign(x) * Math.round(Math.abs(x) * 100 + 1e-9) / 100;
-function same(got, want) {
-  if (want === null || got === null || got === undefined) return want === null && (got === null || got === undefined);
-  if (typeof got === 'bigint') got = Number(got);
-  if (typeof got === 'number' || (typeof got === 'object' && got !== null && 'toDouble' in got)) {
-    const g = typeof got === 'number' ? got : got.toDouble();
-    const w = Number(want);
-    if (Number.isNaN(w)) return false;
-    return g === w || round2(g) === w;
-  }
-  if (got instanceof Date) return got.toISOString().slice(0, 10) === want || got.toISOString().replace('T', ' ').replace(/\.000Z$/, '') === want;
-  if (typeof got === 'boolean') return String(got) === lcs(want);
-  return String(got) === want;
-}
-const lcs = s => String(s).toLowerCase();
-const show = v => (v === null || v === undefined ? 'NULL' : typeof v === 'bigint' ? String(v) : typeof v === 'object' && 'toDouble' in v ? String(v.toDouble()) : String(v));
-
-function compare(got, want, inOrder) {
-  if (got.columns.length !== want.columns.length) return `${got.columns.length} columns (${got.columns.join(', ')}), not ${want.columns.length} (${want.columns.join(', ')})`;
-  const names = got.columns.map((c, i) => [c, want.columns[i]]).filter(([g, w]) => lcs(g) !== lcs(w));
-  if (names.length) return `columns named ${got.columns.join(', ')}, not ${want.columns.join(', ')}`;
-  if (got.rows.length !== want.rows.length) return `${got.rows.length} rows, not ${want.rows.length}`;
-  const eq = (g, w) => g.every((v, i) => same(v, w[i]));
-  if (inOrder) {
-    const i = got.rows.findIndex((r, k) => !eq(r, want.rows[k]));
-    return i < 0 ? null : `row ${i + 1} is ${got.rows[i].map(show).join(' | ')}, not ${want.rows[i].map(show).join(' | ')}`;
-  }
-  const left = [...want.rows];
-  for (const r of got.rows) {
-    const k = left.findIndex(w => eq(r, w));
-    if (k < 0) return `row ${r.map(show).join(' | ')} is not expected`;
-    left.splice(k, 1);
-  }
-  return null;
+// A case of cases/<case>/: its query, and expected.sql's rows.
+function dirCase(name) {
+  const at = join(dir, 'cases', name);
+  const query = readFileSync(join(at, 'query.ossie.sql'), 'utf8').replace(/\r\n/g, '\n');
+  const head = query.match(/^-- ([AB]\d+[a-z]?)\. /m);
+  const id = caseId(head ? head[1] : name.split('_')[0].toUpperCase());
+  const expected = readFileSync(join(at, 'expected.sql'), 'utf8');
+  return { id, file: `cases/${name}`, query: query.trim(), expected: () => rows(con, expected), round: false };
 }
 
 // --- running -------------------------------------------------------------------------------
@@ -150,15 +105,19 @@ function compileCase(q) {
   }
 }
 
+const all = [
+  ...(existsSync(join(dir, 'cases')) ? readdirSync(join(dir, 'cases')).filter(d => existsSync(join(dir, 'cases', d, 'query.ossie.sql'))).sort().map(dirCase) : []),
+  ...readdirSync(dir).filter(f => f.endsWith('.ost')).sort().flatMap(scriptCases),
+];
+if (!all.length) { console.log(`::error::no query cases in ${dir}`); process.exit(1); }
 const results = [];
-for (const file of readdirSync(dir).filter(f => f.endsWith('.ost')).sort()) {
-  for (const c of cases(file)) {
+{
+  for (const c of all) {
     let outcome, detail = '', sql = null;
     try {
       sql = compileCase(c.query);
-      const r = await con.runAndReadAll(sql);
-      const got = { columns: r.columnNames(), rows: r.getRowsJS() };
-      const diff = compare(got, c.expected, ordered(c.query));
+      const got = await rows(con, sql);
+      const diff = compare(got, await c.expected(), ordered(c.query), { round: c.round });
       outcome = diff ? 'fail' : 'match';
       detail = diff ?? '';
     } catch (e) {
@@ -167,7 +126,7 @@ for (const file of readdirSync(dir).filter(f => f.endsWith('.ost')).sort()) {
     }
     let path = '';
     try { path = pathOf(dax.sqlToDax(c.query).dax); } catch { /* SQL with a model SELECT in it */ }
-    results.push({ ...c, outcome, detail, sql, path });
+    results.push({ ...c, expected: undefined, outcome, detail, sql, path });
   }
 }
 
@@ -180,7 +139,8 @@ for (const r of results) {
   else if (r.outcome !== 'match' && !PENDING.has(r.id)) bad.push(`${r.id}: ${r.outcome}, ${r.detail}`);
   if (STAR.has(r.id) && r.path !== 'SUMMARIZECOLUMNS') bad.push(`${r.id}: a star join, answered by the joined rows`);
 }
-for (const id of STAR) if (!results.some(r => r.id === id)) bad.push(`${id} is on STAR but no case has that id`);
+// B10a is one of #769's cases, not yet main's.
+for (const id of STAR) if (!results.some(r => r.id === id) && !/[a-z]$/.test(id)) bad.push(`${id} is on STAR but no case has that id`);
 const ids = new Set(results.map(r => r.id));
 for (const id of PENDING) if (!ids.has(id)) bad.push(`${id} is on PENDING but no case has that id`);
 

@@ -400,7 +400,7 @@ datasets:
               formatString: "#,##0"
       - name: Average MW
         expression:
-          sql: AVG(mw)
+          sql: ROUND(AVG(mw), 4)
         description: "A unit's average MW over the 5-minute intervals it ran in, always from fct_summary: an interval at 0 MW has no row and is not counted. Read it per unit."
         datatype: Decimal
         nonportable_extensions:
@@ -418,7 +418,7 @@ datasets:
               formatString: "#,##0"
       - name: Price seen
         expression:
-          sql: AVG(price)
+          sql: ROUND(AVG(price), 4)
         description: "The plain average of the price on the units' rows, $/MWh, always from fct_summary: the price the units in the selection saw while they ran, not weighted by their output."
         datatype: Decimal
         nonportable_extensions:
@@ -825,36 +825,36 @@ datasets:
               formatString: "#,##0"
       - name: Regional wind curtailed MWh
         expression:
-          sql: CAST(SUM(wind_curtailed) AS DOUBLE) / 12
+          sql: ROUND(SUM(wind_curtailed) / 12, 4)
         description: Semi-scheduled wind not dispatched, from AEMO's regional figures (2026-08 on, up to the newest interval).
-        datatype: Float
+        datatype: Decimal
         nonportable_extensions:
           - vendor_name: POWER_BI
             data:
               formatString: "#,##0"
       - name: Regional wind available MWh
         expression:
-          sql: CAST(SUM(wind_available) AS DOUBLE) / 12
+          sql: ROUND(SUM(wind_available) / 12, 4)
         description: What the region's semi-scheduled wind could have made.
-        datatype: Float
+        datatype: Decimal
         nonportable_extensions:
           - vendor_name: POWER_BI
             data:
               formatString: "#,##0"
       - name: Regional solar curtailed MWh
         expression:
-          sql: CAST(SUM(solar_curtailed) AS DOUBLE) / 12
+          sql: ROUND(SUM(solar_curtailed) / 12, 4)
         description: Semi-scheduled solar not dispatched, from AEMO's regional figures (2026-08 on, up to the newest interval).
-        datatype: Float
+        datatype: Decimal
         nonportable_extensions:
           - vendor_name: POWER_BI
             data:
               formatString: "#,##0"
       - name: Regional solar available MWh
         expression:
-          sql: CAST(SUM(solar_available) AS DOUBLE) / 12
+          sql: ROUND(SUM(solar_available) / 12, 4)
         description: What the region's semi-scheduled solar could have made.
-        datatype: Float
+        datatype: Decimal
         nonportable_extensions:
           - vendor_name: POWER_BI
             data:
@@ -912,7 +912,7 @@ datasets:
     metrics:
       - name: Flow MW
         expression:
-          sql: AVG(mw)
+          sql: ROUND(AVG(mw), 4)
         description: Average flow on a link, MW. Read it per link.
         datatype: Decimal
         nonportable_extensions:
@@ -1354,9 +1354,9 @@ datasets:
     metrics:
       - name: Price at hour
         expression:
-          sql: CAST(SUM(price * intervals) AS DOUBLE) / NULLIF(SUM(intervals), 0)
+          sql: ROUND(SUM(price * intervals) / NULLIF(SUM(intervals), 0), 4)
         description: "Average price at an hour of day over the months in the selection: the monthly averages weighted by their intervals."
-        datatype: Float
+        datatype: Decimal
         nonportable_extensions:
           - vendor_name: POWER_BI
             data:
@@ -1531,9 +1531,9 @@ relationships:
 metrics:
   - name: Average MW at hour
     expression:
-      sql: CAST(AGG(fct_summary_hourly."Output MWh hourly") AS DOUBLE) / NULLIF(AGG(dim_month."Month days"), 0)
+      sql: ROUND(AGG(fct_summary_hourly."Output MWh hourly") / NULLIF(AGG(dim_month."Month days"), 0), 4)
     description: "Average output at an hour of day over the months in the selection, MW: the energy at that hour over the days of those months. Read it per hour."
-    datatype: Float
+    datatype: Decimal
     nonportable_extensions:
       - vendor_name: POWER_BI
         data:

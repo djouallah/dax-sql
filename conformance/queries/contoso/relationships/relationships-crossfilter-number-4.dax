@@ -1,0 +1,3 @@
+// note: CROSSFILTER's direction as the number 4
+EVALUATE ROW("products bought in Paris", CALCULATE(COUNTROWS(Product), CROSSFILTER(Sales[ProductKey], Product[ProductKey], 4), Customer[City] = "Paris"),
+    "sales of red products", CALCULATE(COUNTROWS(Sales), CROSSFILTER(Sales[ProductKey], Product[ProductKey], 4), Product[Color] = "Red"))

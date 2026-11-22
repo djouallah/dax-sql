@@ -1,0 +1,4 @@
+// note: CROSSFILTER OneWay_RightFiltersLeft on the one-to-one StoreProfile <-> Store (both directions in the model): which side filters the other
+EVALUATE ROW("profiles of country 2", CALCULATE(COUNTROWS(StoreProfile), CROSSFILTER(StoreProfile[StoreKey], Store[StoreKey], OneWay_RightFiltersLeft), Store[CountryKey] = 2),
+    "stores of flagships", CALCULATE(COUNTROWS(Store), CROSSFILTER(StoreProfile[StoreKey], Store[StoreKey], OneWay_RightFiltersLeft), StoreProfile[Format] = "Flagship"),
+    "profiles, both", CALCULATE(COUNTROWS(StoreProfile), Store[CountryKey] = 2))

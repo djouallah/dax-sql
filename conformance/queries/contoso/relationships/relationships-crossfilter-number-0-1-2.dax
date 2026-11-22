@@ -1,0 +1,4 @@
+// note: CROSSFILTER's direction as a number: 0 None, 1 OneWay, 2 Both
+EVALUATE ROW("none", CALCULATE(COUNTROWS(Sales), CROSSFILTER(Sales[ProductKey], Product[ProductKey], 0), Product[Color] = "Red"),
+    "oneway", CALCULATE(COUNTROWS(Product), CROSSFILTER(Sales[ProductKey], Product[ProductKey], 1), Customer[City] = "Paris"),
+    "both", CALCULATE(COUNTROWS(Product), CROSSFILTER(Sales[ProductKey], Product[ProductKey], 2), Customer[City] = "Paris"))

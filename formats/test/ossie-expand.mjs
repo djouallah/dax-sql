@@ -303,16 +303,19 @@ function expandAll(requests) {
   return lines;
 }
 
-// How many of a grid query's SELECT items are its groups: those before the first AGG.
-function groupCount(sql) {
+// A grid query's groups that are columns of a relation an outer join adds (`LEFT JOIN x AS o`):
+// the positions, among the SELECT items before the first AGG, of those named `o.`.
+function paddedGroups(sql) {
+  const added = [...sql.matchAll(/\bLEFT JOIN\s+.+?\s+AS\s+(\w+)\s+ON\b/gi)].map(m => m[1]);
   const list = sql.slice(sql.search(/\bSELECT\b/i) + 6, sql.search(/\bFROM\b/i));
-  let depth = 0, n = 0, item = '';
+  const items = [];
+  let depth = 0, item = '';
   for (const c of list + ',') {
     if (c === '(') depth++;
     if (c === ')') depth--;
-    if (c === ',' && !depth) { if (/\bAGG\s*\(/i.test(item)) return n; n++; item = ''; } else item += c;
+    if (c === ',' && !depth) { if (/\bAGG\s*\(/i.test(item)) break; items.push(item.trim()); item = ''; } else item += c;
   }
-  return n;
+  return items.map((it, i) => (added.some(a => it.startsWith(`${a}.`)) ? i : -1)).filter(i => i >= 0);
 }
 
 function compileCase(dax, model, q) {
@@ -368,11 +371,12 @@ for (const { m, con, dax, doc, queries } of loaded) {
       const diff = compare(got, want, ordered(q.sql));
       Object.assign(r, { outcome: diff ? 'fail' : 'match', detail: diff ?? '' });
       // By design, no blank row (README): an outer join's group of fact rows whose key the
-      // dimension lacks (or is NULL) is not there. The rest must be the expander's rows.
-      if (diff && /\bLEFT JOIN\b/.test(q.sql)) {
-        const k = groupCount(q.sql);
-        const kept = { ...want, rows: want.rows.filter(w => !w.slice(0, k).every(v => v === null || v === undefined)) };
-        if (k && kept.rows.length < want.rows.length && !compare(got, kept, ordered(q.sql))) Object.assign(r, { outcome: 'blank row', detail: diff });
+      // dimension lacks (or is NULL), its columns of the dimension all NULL, is not there. The
+      // rest must be the expander's rows.
+      const padded = diff ? paddedGroups(q.sql) : [];
+      if (padded.length) {
+        const kept = { ...want, rows: want.rows.filter(w => !padded.every(i => w[i] === null || w[i] === undefined)) };
+        if (kept.rows.length < want.rows.length && !compare(got, kept, ordered(q.sql))) Object.assign(r, { outcome: 'blank row', detail: diff });
       }
     } catch (e) {
       Object.assign(r, { outcome: 'gap', detail: `${e.code ? `${e.code}: ` : ''}${e.message.split('\n')[0]}` });

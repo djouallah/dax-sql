@@ -1,0 +1,11 @@
+// note: a variable of a self-join (each staff member with their manager), its distinct (manager's name, report's manager key) pairs: per pair, the reports among the joined rows by both columns, counted with REMOVEFILTERS and TREATAS of their keys; a pair holds values of two different rows of Staff
+DEFINE
+    VAR Joined = GENERATE(
+        SELECTCOLUMNS(Staff, "e.StaffKey", Staff[StaffKey], "e.ManagerKey", Staff[ManagerKey]),
+        FILTER(SELECTCOLUMNS(Staff, "m.StaffKey", Staff[StaffKey], "m.Name", Staff[Name]), [e.ManagerKey] = [m.StaffKey]))
+    VAR Pairs = DISTINCT(SELECTCOLUMNS(Joined, "Manager", [m.Name], "MK", [e.ManagerKey]))
+EVALUATE
+ADDCOLUMNS(Pairs, "Reports",
+    CALCULATE(COUNTROWS(Staff), REMOVEFILTERS(),
+        TREATAS(SELECTCOLUMNS(FILTER(Joined, [m.Name] == [Manager] && [e.ManagerKey] == [MK]), "k", [e.StaffKey]), Staff[StaffKey])))
+ORDER BY [Manager]

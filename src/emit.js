@@ -989,6 +989,7 @@ export class Emitter {
     const keyCols = row.cols.map(c => c.lineage);
     const fusion = new Fusion(this, row, keyCols.map((_, i) => i), keyCols);
     fusion.ofRows = true;
+    fusion.src = src;
     fusion.mappedOnly = mappedOnly;
     // The rows around the iterator: the only ones an aggregate's outer keys can read.
     fusion.outerRows = new Set(scope.keys());
@@ -1476,17 +1477,22 @@ class Fusion {
   // (v), computed once: f's table under each key's values (a LATERAL join). Its name.
   mapping(f, refs, c, state) {
     const em = this.em;
+    // A table's key columns together, the combinations its rows hold, where the key row's values
+    // of them are of one row of it: a level's keys (their combinations), an iterator over a
+    // table's own rows. An iterator's row that can join two rows of a table (a self-join's,
+    // GENERATE's) holds pairs no row has: each column's values apart.
+    const together = !this.ofRows || ownRows(this.src);
     const byTable = new Map();
     for (const i of refs) {
-      const t = this.keyCols[i].table;
+      const t = together ? this.keyCols[i].table : i;
       if (!byTable.has(t)) byTable.set(t, []);
       byTable.get(t).push(i);
     }
     // Each key table's values under the filters that decide the level's combinations (a level's
     // seven dates, not the calendar's): its groups are joined to those combinations.
     const dom = this.domain.length && em.d.mapDomain ? new Ctx(this.domain) : EMPTY;
-    const parts = [...byTable].map(([t, is]) => {
-      const b = em.isolated(() => em.scanBlock(t, dom, new Map()));
+    const parts = [...byTable].map(([, is]) => {
+      const b = em.isolated(() => em.scanBlock(this.keyCols[is[0]].table, dom, new Map()));
       b.setOut(is.map(i => ({ name: `k${i}`, lineage: null })), is.map(i => b.res.meta(this.keyCols[i])));
       b.distinct = true;
       return `(${b.render()}) AS ${em.alias('c')}`;
@@ -1768,6 +1774,16 @@ const OVER = {
 
 // The fused groups without whose rows an expression is blank, or null if it can be
 // non-blank without any: whether SUMMARIZECOLUMNS can take its groups from them.
+// Whether each row of table x is of one row of each model table its columns come from: the
+// rows of a scan (its expanded table's), filtered, projected, distinct, ordered, or a variable
+// of those. Not a join, GENERATE or a constructor's.
+function ownRows(x) {
+  if (!x) return false;
+  if (x.k === 'scan') return true;
+  if (['filter', 'project', 'distinct', 'topn', 'topnskip', 'shared', 'window'].includes(x.k)) return ownRows(x.src);
+  return false;
+}
+
 function support(x, fusedIn) {
   const all = xs => {
     const out = new Set();

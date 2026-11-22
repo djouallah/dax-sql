@@ -1,0 +1,12 @@
+// note: as context-self-join-rows-treatas-keys, without REMOVEFILTERS: the pair's row transitions to filters on Staff[Name] and Staff[ManagerKey], which no report's row holds together with its key
+DEFINE
+    VAR Joined = GENERATE(
+        SELECTCOLUMNS(Staff, "e.StaffKey", Staff[StaffKey], "e.ManagerKey", Staff[ManagerKey]),
+        FILTER(SELECTCOLUMNS(Staff, "m.StaffKey", Staff[StaffKey], "m.Name", Staff[Name]), [e.ManagerKey] = [m.StaffKey]))
+    VAR Pairs = DISTINCT(SELECTCOLUMNS(Joined, "Manager", [m.Name], "MK", [e.ManagerKey]))
+EVALUATE
+ADDCOLUMNS(Pairs, "Reports",
+    CALCULATE(COUNTROWS(Staff),
+        TREATAS(SELECTCOLUMNS(FILTER(Joined, [m.Name] == [Manager] && [e.ManagerKey] == [MK]), "k", [e.StaffKey]), Staff[StaffKey])),
+    "All staff", CALCULATE(COUNTROWS(Staff), REMOVEFILTERS()))
+ORDER BY [Manager]

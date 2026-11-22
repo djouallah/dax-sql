@@ -1156,11 +1156,8 @@ export class SqlTranslator {
       gr.name ??= it.name;
     }
     groups.forEach((gr, i) => { gr.name ??= `__g${i + 1}`; });
-    // The groups' values, with no lineage: a measure's CALCULATE on a group's row then has no
-    // filter of the row to transition (its REMOVEFILTERS would not remove all of them: TODO.md).
-    const unlinked = x => (x.k === 'col' ? D.call('IF', D.call('ISBLANK', x), D.call('BLANK'), x) : x);
     const spine = this.variable(groups.length
-      ? D.call('DISTINCT', D.call('SELECTCOLUMNS', rows, ...groups.flatMap(gr => [D.str(gr.name), unlinked(gr.dax)])))
+      ? D.call('DISTINCT', D.call('SELECTCOLUMNS', rows, ...groups.flatMap(gr => [D.str(gr.name), gr.dax])))
       : D.call('ROW', D.str('__all'), D.num(1)));
 
     const out = items.map(it => (it.group ? D.ref(it.group.name) : g.dax(it.e, { mode: 'agg' })));

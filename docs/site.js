@@ -33,7 +33,8 @@ function moveInd() {
   ind.style.transform = `translateX(${a.offsetLeft - 4}px)`;
 }
 function show() {
-  const id = (location.hash || '#problem').slice(1);
+  let id = (location.hash || '#limitations').slice(1);
+  if (id === 'limits') id = 'limitations';
   const view = views.find(v => v.id === id) ?? views[0];
   for (const v of views) v.classList.toggle('on', v === view);
   for (const a of [...navLinks, $('#aboutlink')]) {
@@ -264,6 +265,16 @@ let saved = null;
 try { saved = localStorage.getItem('pg'); } catch { /* none */ }
 pgIn.value = saved ?? ex.playground[0][1];
 const pgRows = rowsBox($('#pg-rows'), () => pg.compiled?.sql, { auto: true });
+// Two tabs: the model, and the live query.
+function pgTab(k) {
+  for (const b of $$('#pg-tabs button')) b.setAttribute('aria-selected', String(b.dataset.k === k));
+  for (const p of $$('#play [data-pane]')) p.classList.toggle('on', p.dataset.pane === k);
+  try { localStorage.setItem('pgTab', k); } catch { /* none */ }
+}
+$('#pg-tabs').addEventListener('click', e => { const b = e.target.closest('button'); if (b) pgTab(b.dataset.k); });
+let pgTab0 = 'model';
+try { pgTab0 = localStorage.getItem('pgTab') ?? 'model'; } catch { /* none */ }
+pgTab(pgTab0);
 function pgUpdate() {
   const text = pgIn.value;
   try { localStorage.setItem('pg', text); } catch { /* none */ }
@@ -334,8 +345,9 @@ function insert(text) {
     const [c, r] = place[t.name];
     return card(t).replace('<div class="mt', `<div style="grid-column:${c};grid-row:${r}" class="mt`);
   }).join('')}`;
-  $('#pg-others').innerHTML = tables.filter(t => !inGraph.includes(t)).map(card).join('');
-  for (const el of [graph, $('#pg-others')]) el.addEventListener('click', e => { const b = e.target.closest('.ins'); if (b) insert(b.dataset.t); });
+  const others = tables.filter(t => !inGraph.includes(t));
+  if (others.length) graph.insertAdjacentHTML('beforeend', `<div class="mg-others" style="grid-column:5;grid-row:1 / span 3"><h4>Also in the model</h4>${others.map(card).join('')}</div>`);
+  graph.addEventListener('click', e => { const b = e.target.closest('.ins'); if (b) { pgTab('query'); insert(b.dataset.t); } });
 
   // The relationships: a line from card to card, clipped at their borders; 1 and * at its ends.
   const svg = $('svg', graph);

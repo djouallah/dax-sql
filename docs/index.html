@@ -207,7 +207,7 @@ ol.steps b { color: var(--ink); }
 
 /* playground */
 .mgwrap { overflow-x: auto; padding-bottom: 4px; }
-.mg { position: relative; display: grid; grid-template-columns: repeat(4, minmax(180px, 1fr)); gap: 64px 64px; min-width: 900px; padding: 8px; align-items: start; }
+.mg { position: relative; display: grid; grid-template-columns: repeat(4, minmax(170px, 1fr)) minmax(170px, .9fr); gap: 26px 52px; min-width: 1080px; padding: 4px; align-items: start; }
 .mg-lines { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
 .mg-lines line { stroke: var(--ink-2); stroke-width: 1.5; opacity: .6; }
 .mg-lines line.inactive { stroke-dasharray: 5 4; opacity: .45; }
@@ -218,21 +218,44 @@ ol.steps b { color: var(--ink); }
 .mt.fact { border-color: var(--k-dax); box-shadow: 0 0 20px -8px var(--k-dax); }
 .mt header { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 6px 10px; background: var(--sunken); border-radius: 10px 10px 0 0; font: 700 13px var(--mono); }
 .mt header span { font: 11px system-ui, sans-serif; color: var(--muted); }
-.mt .names { display: flex; flex-wrap: wrap; gap: 4px; padding: 8px; }
-.mg-others { display: flex; flex-wrap: wrap; gap: 12px; }
-.mg-others .mt { width: 220px; }
+.mt .names { display: flex; flex-wrap: wrap; gap: 3px; padding: 6px; }
+#play .ins { font-size: 11px; padding: 1px 5px; }
+#play .card[data-pane] { padding: 12px; }
+.mg-others { position: relative; z-index: 1; display: grid; gap: 8px; align-content: start; }
+.mg-others h4 { margin: 0; }
+.mg-others .mt header { padding: 4px 9px; font-size: 12px; }
+.mg-others .mt .names { padding: 6px; }
 .ins { font: 11.5px var(--mono); border: 1px solid var(--line); background: var(--sunken); color: var(--ink-2); border-radius: 6px; padding: 2px 6px; cursor: pointer; }
 .ins:hover { color: var(--ink); border-color: var(--line-2); }
 .ins.ms { color: var(--k-ctx); }
-textarea#pg-in { width: 100%; min-height: 220px; resize: vertical; font: 13px/1.55 var(--mono); color: var(--ink); background: var(--sunken);
+textarea#pg-in { width: 100%; flex: 0 0 38%; min-height: 120px; resize: none; font: 13px/1.55 var(--mono); color: var(--ink); background: var(--sunken);
   border: 1px solid var(--line-2); border-left: 3px solid color-mix(in srgb, var(--k-dax) 70%, transparent); border-radius: 10px; padding: 12px 14px; tab-size: 2; }
 textarea#pg-in:focus { outline: none; border-color: var(--k-dax); }
 select { font: inherit; font-size: 13.5px; color: var(--ink); background: var(--surface); border: 1px solid var(--line-2); border-radius: 8px; padding: 6px 8px; max-width: 100%; }
 .colchip { display: inline-flex; gap: 5px; font: 12px var(--mono); padding: 2px 8px; border-radius: 6px; background: var(--sunken); color: var(--muted); margin: 0 4px 4px 0; }
 .colchip b { color: var(--ink); font-weight: 600; }
+#play.view.on { gap: 14px; padding: 18px 0 12px; }
+.playbar { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+.subtabs { display: flex; gap: 4px; padding: 4px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
+.subtabs button { font: inherit; font-size: 14px; font-weight: 600; border: 0; background: none; color: var(--ink-2); padding: 7px 16px; border-radius: 8px; cursor: pointer; }
+.subtabs button[aria-selected="true"] { background: var(--sunken); color: var(--ink); box-shadow: inset 0 0 0 1px var(--line-2), 0 0 18px -6px var(--k-dax); }
+[data-pane]:not(.on) { display: none !important; }
+[data-pane].on { animation: rise .3s cubic-bezier(.2,.8,.2,1) both; }
+.qgrid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 16px; height: calc(100vh - 218px); min-height: 440px; }
+.qleft, .qright { display: flex; flex-direction: column; gap: 10px; min-height: 0; }
+.qans { flex: 1; min-height: 0; overflow: auto; }
+#pg-dax pre { max-height: 110px; }
+#pg-sql { flex: 1; min-height: 0; } #pg-sql pre { height: 100%; max-height: none; }
 kbd { font: 11px var(--mono); border: 1px solid var(--line-2); border-bottom-width: 2px; border-radius: 4px; padding: 0 4px; }
 
 /* about */
+.plain { display: grid; gap: 12px; }
+.plain > p { max-width: 95ch; }
+.plain p, .plain li { color: var(--ink-2); font-size: 15px; line-height: 1.55; }
+.plain .grid2 { gap: 28px; }
+.plain b { color: var(--ink); }
+.plain h3 { margin-top: 4px; }
+.plain ol { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
 .about { max-width: 78ch; display: grid; gap: 14px; }
 .about h3 { margin-top: 8px; }
 .about p { color: var(--ink-2); font-size: 15.5px; line-height: 1.65; }
@@ -243,7 +266,8 @@ kbd { font: 11px var(--mono); border: 1px solid var(--line-2); border-bottom-wid
   .flow { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 860px) {
-  .grid2, .live-grid { grid-template-columns: 1fr; }
+  .grid2, .live-grid, .qgrid { grid-template-columns: 1fr; }
+  .qgrid { height: auto; } #pg-sql pre { height: auto; max-height: 60vh; } textarea#pg-in { min-height: 180px; }
   .stage { grid-template-columns: 1fr; } .stage .arrow { transform: rotate(90deg); }
 }
 @media (max-width: 600px) {
@@ -260,7 +284,7 @@ kbd { font: 11px var(--mono); border: 1px solid var(--line-2); border-bottom-wid
 
 <div class="top"><div class="wrap">
   <div class="tophead">
-    <a class="brand" href="#problem"><span class="logo" aria-hidden="true"></span>dax-sql</a>
+    <a class="brand" href="#limitations"><span class="logo" aria-hidden="true"></span>dax-sql</a>
     <span class="tagline">a compiler for semantic models</span>
     <div class="toplinks">
       <a href="#about" id="aboutlink">About</a>
@@ -270,14 +294,50 @@ kbd { font: 11px var(--mono); border: 1px solid var(--line-2); border-bottom-wid
   </div>
   <nav id="nav">
     <span class="ind" aria-hidden="true"></span>
+    <a href="#limitations">Limitations</a>
     <a href="#problem">The problem</a>
     <a href="#how">How it works</a>
     <a href="#play">Playground</a>
-    <a href="#limits">Limits</a>
   </nav>
 </div></div>
 
 <main class="wrap">
+
+<!-- ============================== 0. limitations -->
+<section id="limitations" class="view">
+  <div class="card plain">
+    <h2>Limitations</h2>
+    <p>dax-sql returns the same answers as Power BI, except in the cases below. All of them are <b>by design</b>: dax-sql
+      follows plain SQL rules there, not Power BI's. They are not bugs, and they will not be "fixed".</p>
+
+    <div class="grid2">
+    <div class="stack">
+    <h3>By design, always</h3>
+    <ol>
+      <li><b>Text is case-sensitive.</b> <code>"Red"</code> and <code>"red"</code> are two different values. Power BI treats them as one.</li>
+      <li><b>Text sorts by the engine's rules.</b> On DuckDB that is character code order, not Power BI's language-aware order.</li>
+      <li><b>Trailing spaces count.</b> <code>"a "</code> and <code>"a"</code> are two different values. Power BI removes trailing spaces when it loads data.</li>
+      <li><b>There is no blank row.</b> Every key in a fact table must exist in its dimension. A sale whose key is missing from the dimension still counts in the total, but appears under no value of that dimension.</li>
+      <li><b>A column that mixes numbers and text comes back as text.</b></li>
+      <li><b><code>IFERROR</code> returns its first argument.</b> SQL has no error values.</li>
+      <li><b>Values come back unformatted.</b> Applying a measure's format string is up to you. <code>FORMAT</code> works in English (en-US) with a fixed pattern only.</li>
+    </ol>
+    </div>
+    <div class="stack">
+    <h3>By design, on Microsoft Fabric (T-SQL) only</h3>
+    <ol>
+      <li><b><code>1 / BLANK()</code> is blank,</b> not infinity. T-SQL has no infinity.</li>
+      <li><b>Sums of floating-point numbers are computed exactly,</b> so they can differ from Power BI's in the last digit.</li>
+      <li><b><code>PATH</code> functions are not available.</b> Fabric has no recursive queries.</li>
+    </ol>
+
+    <h3>Not supported</h3>
+    <p>Anything not listed in <a href="https://github.com/djouallah/dax-sql/blob/main/DESIGN.md#what-it-does">DESIGN.md</a>.
+      dax-sql then stops with an <code>UNSUPPORTED</code> error. It never returns a guessed answer.</p>
+    </div>
+    </div>
+  </div>
+</section>
 
 <!-- ============================== 1. the problem -->
 <section id="problem" class="view">
@@ -461,66 +521,29 @@ kbd { font: 11px var(--mono); border: 1px solid var(--line-2); border-bottom-wid
 
 <!-- ============================== 3. playground -->
 <section id="play" class="view">
-  <header class="head">
-    <h2>Playground</h2>
-    <p class="lead">Write DAX, or a SQL <code>SELECT</code> over the model (<code>FROM contoso</code>, measures as
-      <code>AGG([Sales Amount])</code>). It compiles as you type, and DuckDB answers it in this tab.</p>
-  </header>
-  <div class="card stack">
-    <div class="sqlhead"><h3>The semantic model</h3><span class="sub">Click a column or a measure to put it in the query; hover a measure for its DAX.</span></div>
-    <div class="mgwrap"><div class="mg" id="pg-graph"></div></div>
-    <h4>Also in the model</h4>
-    <div class="mg-others" id="pg-others"></div>
-  </div>
-  <div class="stack">
-    <div class="demo-bar"><select id="pg-ex" aria-label="Examples"></select></div>
-    <textarea id="pg-in" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Query"></textarea>
-    <div id="pg-err"></div>
-    <div id="pg-dax"></div>
-    <div class="live-grid">
-      <div class="stack"><h4>The answer</h4><div id="pg-rows"></div><div id="pg-cols"></div></div>
-      <div class="stack">
-        <div class="sqlhead"><h4>The SQL dax-sql emitted</h4><span class="meta" id="pg-meta"></span><button class="btn" type="button" id="pg-copy">Copy SQL</button></div>
-        <div id="pg-sql"></div>
-        <p class="sub tiny">Laid out on lines to read; Copy SQL gives it exactly as emitted.</p>
-      </div>
+  <div class="playbar">
+    <div class="subtabs" id="pg-tabs" role="tablist">
+      <button type="button" role="tab" data-k="model">Model</button>
+      <button type="button" role="tab" data-k="query">Live query</button>
     </div>
+    <span class="sub">DAX, or SQL over the model (<code>SELECT Color, AGG([Sales Amount]) FROM contoso GROUP BY ALL</code>), answered by DuckDB in this tab.</span>
   </div>
-</section>
 
-<!-- ============================== 4. limits -->
-<section id="limits" class="view">
-  <header class="head">
-    <h2>What it does not do</h2>
-    <p class="lead">Where plain SQL and Power BI disagree, dax-sql follows plain SQL, on purpose. These are the departures,
-      all by design, and what it refuses.</p>
-  </header>
-  <div class="card stack">
-    <h3>Departures from DAX</h3>
-    <div class="tw"><table class="wrapcell">
-      <tr><th>Departure</th><th>Why</th></tr>
-      <tr><td>Text is compared, grouped and sorted as the engine does it: on DuckDB <code>"red"</code> is not <code>"Red"</code>.</td><td>Power BI's case-insensitive, culture-aware rules would wrap every comparison of text. On T-SQL, the database's collation decides.</td></tr>
-      <tr><td>Text keeps its trailing spaces: <code>"a "</code> and <code>"a"</code> are two values.</td><td>Power BI drops them on load; here the data is read as it is. Trim them in the data if they matter.</td></tr>
-      <tr><td>No blank row: a dimension is expected to hold every key its facts use.</td><td>Knowing whether Power BI's row of blanks is there takes a scan of every such fact table in every query that lists a dimension's values: 3,908 checks over the conformance queries, a third of their SQL. Fact rows with a key the dimension lacks still count in totals.</td></tr>
-      <tr><td>A column that mixes numbers and text comes back as text.</td><td>A SQL column has one type.</td></tr>
-      <tr><td><code>IFERROR</code> returns its first argument.</td><td>SQL has no error values.</td></tr>
-      <tr><td>Values come back unformatted; <code>FORMAT</code> is en-US, with a constant pattern.</td><td>A measure's format string is the caller's to apply, as with a DAX query.</td></tr>
-    </table></div>
+  <div class="card" data-pane="model">
+    <div class="mgwrap"><div class="mg" id="pg-graph"></div></div>
   </div>
-  <div class="grid2">
-    <div class="card stack">
-      <h3>On T-SQL, by design</h3>
-      <ul class="sub" style="margin:0;padding-left:18px;display:grid;gap:6px">
-        <li><code>1 / BLANK()</code> is blank: T-SQL has no infinity.</li>
-        <li>A sum of floating-point values is an exact decimal sum, the same in any order: Fabric adds FLOATs in an order of its own.</li>
-        <li>PATH and the PATH functions are refused: they need a recursive CTE, which Fabric lacks.</li>
-      </ul>
+
+  <div class="qgrid" data-pane="query">
+    <div class="qleft">
+      <select id="pg-ex" aria-label="Examples"></select>
+      <textarea id="pg-in" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Query"></textarea>
+      <div id="pg-err"></div>
+      <div id="pg-dax"></div>
+      <div class="qans"><h4>The answer</h4><div id="pg-rows"></div><div id="pg-cols"></div></div>
     </div>
-    <div class="card stack">
-      <h3>Not implemented</h3>
-      <p class="sub">Anything not listed in <a href="https://github.com/djouallah/dax-sql/blob/main/DESIGN.md#what-it-does">DESIGN.md, What it does</a>.
-        It is refused with <code>UNSUPPORTED</code>, never approximated. The slow queries still left are in
-        <a href="https://github.com/djouallah/dax-sql/blob/main/TODO.md">TODO.md</a>.</p>
+    <div class="qright">
+      <div class="sqlhead"><h4>The SQL dax-sql emitted</h4><span class="meta" id="pg-meta"></span><button class="btn" type="button" id="pg-copy">Copy SQL</button></div>
+      <div id="pg-sql"></div>
     </div>
   </div>
 </section>

@@ -154,7 +154,7 @@ export class TSqlDialect extends Dialect {
   }
 
   fn(name, a, nodes = []) {
-    const TEXT = { left: [0], right: [0], mid: [0], len: [0], upper: [0], lower: [0], trim: [0], substitute: [0, 1, 2], replace: [0, 3],
+    const TEXT = { left: [0], right: [0], mid: [0], len: [0], upper: [0], lower: [0], trim: [0], trim_ends: [0], substitute: [0, 1, 2], replace: [0, 3],
       search: [0, 1], find: [0, 1], rept: [0], exact: [0, 1], unicode: [0], containsstring: [0, 1], containsstringexact: [0, 1],
       pathlength: [0], pathitem: [0], pathitemreverse: [0], pathcontains: [0, 1] };
     if (TEXT[name]) a = a.map((v, i) => (TEXT[name].includes(i) && nodes[i] && nodes[i].t !== 'string' && nodes[i].t !== 'blank' ? this.text(v, nodes[i].t) : v));
@@ -211,6 +211,7 @@ export class TSqlDialect extends Dialect {
       case 'upper': return `UPPER(${x})`;
       case 'lower': return `LOWER(${x})`;
       case 'trim': return `REGEXP_REPLACE(TRIM(${x}), ' {2,}', ' ')`;
+      case 'trim_ends': return `TRIM(${x})`;
       case 'substitute':
         if (w === undefined) return `REPLACE(${x} COLLATE ${BIN}, ${y}, ${z})`;
         return this.substituteAt(x, y, z, nodes[3]);

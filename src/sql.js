@@ -717,8 +717,8 @@ export class SqlTranslator {
         }
         // LOG(b, x): SQL's base comes first, DAX's last.
         if (e.fn === 'LOG' && e.args.length === 2) return D.call('LOG', sub(e.args[1]), sub(e.args[0]));
-        // DAX's TRIM also makes each run of spaces inside one space; SQL's only trims the ends.
-        if (e.fn === 'TRIM') throw sqlUnsupported(`TRIM (DAX's TRIM also collapses the spaces inside the text): ${e.src}`);
+        // SQL's TRIM trims the ends only (DAX's also makes each run of spaces inside one space).
+        if (e.fn === 'TRIM') return { ...D.call('TRIM', ...e.args.map(sub)), ends: true };
         return D.call(FUNCS[e.fn] ?? e.fn, ...e.args.map(sub));
       }
     }

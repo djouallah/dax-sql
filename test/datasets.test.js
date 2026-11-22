@@ -174,14 +174,15 @@ test('IN and NOT IN a subquery with a NULL in it', async () => {
     await same(`SELECT AGG(emp_count) AS n FROM m.emp WHERE ${c}`, `SELECT COUNT(*) FROM s.emp WHERE ${c.replaceAll('m.', 's.')}`);
 });
 
-test("CAST AS DATE drops the time; %, LOG(b, x) and || as SQL has them", async () => {
+test("CAST AS DATE drops the time; %, LOG(b, x), || and TRIM as SQL has them", async () => {
   await same("SELECT AGG(events) AS n FROM m.ev WHERE CAST(ts AS DATE) = DATE '2024-01-02'",
     "SELECT COUNT(*) FROM s.ev WHERE CAST(ts AS DATE) = DATE '2024-01-02'");
   await same('SELECT CAST(ts AS DATE) AS d, AGG(events) AS n FROM m.ev GROUP BY CAST(ts AS DATE)',
     'SELECT CAST(ts AS DATE), COUNT(*) FROM s.ev GROUP BY 1');
   await same('SELECT id, n % 3 AS r, LOG(2, id * 4) AS l, label || 1 + 2 AS t, AGG(events) AS c FROM m.ev GROUP BY ALL',
     'SELECT id, n % 3, LOG(2, id * 4), label || 1 + 2, COUNT(*) FROM s.ev GROUP BY ALL');
-  assert.throws(() => dax.compile('SELECT TRIM(label) AS t, AGG(events) AS n FROM m.ev GROUP BY label'), e => e.code === 'UNSUPPORTED');
+  await same("SELECT TRIM('  a   b  ' || label) AS t, AGG(events) AS n FROM m.ev GROUP BY ALL",
+    "SELECT TRIM('  a   b  ' || label), COUNT(*) FROM s.ev GROUP BY ALL");
 });
 
 test('over a join: FETCH WITH TIES; a subquery whose WHERE a RIGHT JOIN would pad', async () => {

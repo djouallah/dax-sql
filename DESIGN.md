@@ -808,9 +808,9 @@ LIMIT 10
 - Conditions: comparisons, `AND`, `OR`, `NOT`, `IN`, `BETWEEN`, `IS NULL` (`ISBLANK`), `LIKE`
   (`'x'`, `'x%'`, `'%x'`, `'%x%'`), `CASE`, `CAST` (`AS DATE` drops the time), `DATE '…'`,
   `TIMESTAMP '…'`, `||` (below `+` and `-`, as in PostgreSQL), `%` (SQL's remainder, the sign of
-  the dividend), `LOG(base, x)`; other functions are DAX's of the same name, but `TRIM`, which
-  in DAX also collapses the spaces inside, is not supported. Values compare as in DAX: text by
-  case (as the engine compares it), a blank equal to 0 or `""`.
+  the dividend), `LOG(base, x)`, `TRIM` (the ends only, as SQL's); other functions are DAX's of
+  the same name. Values compare as in DAX: text by case (as the engine compares it), a blank
+  equal to 0 or `""`.
 - A measure keeps its definition: nothing changes the filter context but `WHERE`. Over the
   model (`FROM model`), `SELECT *`, `DISTINCT`, joins, subqueries, `UNION`, window functions
   and `COUNT(*)` are not supported; over its datasets, joins and subqueries are (below).

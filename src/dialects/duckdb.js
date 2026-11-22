@@ -48,7 +48,7 @@ export class DuckDBDialect extends Dialect {
 
   fn(name, a, nodes = []) {
     // A text function given a number reads it as text, as DAX converts it.
-    const TEXT = { left: [0], right: [0], mid: [0], len: [0], upper: [0], lower: [0], trim: [0], substitute: [0, 1, 2], replace: [0, 3],
+    const TEXT = { left: [0], right: [0], mid: [0], len: [0], upper: [0], lower: [0], trim: [0], trim_ends: [0], substitute: [0, 1, 2], replace: [0, 3],
       search: [0, 1], find: [0, 1], rept: [0], exact: [0, 1], unicode: [0], containsstring: [0, 1], containsstringexact: [0, 1],
       pathlength: [0], pathitem: [0], pathitemreverse: [0], pathcontains: [0, 1] };
     if (TEXT[name]) a = a.map((v, i) => (TEXT[name].includes(i) && nodes[i] && nodes[i].t !== 'string' && nodes[i].t !== 'blank' ? this.text(v, nodes[i].t) : v));
@@ -113,6 +113,7 @@ export class DuckDBDialect extends Dialect {
       case 'upper': return `upper(${x})`;
       case 'lower': return `lower(${x})`;
       case 'trim': return `regexp_replace(trim(${x}), ' {2,}', ' ', 'g')`;
+      case 'trim_ends': return `trim(${x})`;
       case 'substitute': {
         if (w === undefined) return `replace(${x}, ${y}, ${z})`;
         // The w-th occurrence only: it starts after the first w pieces of the text split on the

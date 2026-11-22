@@ -268,7 +268,8 @@ export const scalar = {
   // text
   CONCATENATE: concatenate, COMBINEVALUES: combineValues, LEFT: plain('left', 'string'), RIGHT: plain('right', 'string'),
   MID: plain('mid', 'string', { arity: 3 }), LEN: plain('len', 'int'), UPPER: plain('upper', 'string'), LOWER: plain('lower', 'string'),
-  TRIM: plain('trim', 'string'), SUBSTITUTE: substitute, REPLACE: plain('replace', 'string', { arity: 4 }),
+  // TRIM from SQL (`ends`): the ends only, as SQL's.
+  TRIM: (c, args, env, ast) => plain(ast?.ends ? 'trim_ends' : 'trim', 'string')(c, args, env), SUBSTITUTE: substitute, REPLACE: plain('replace', 'string', { arity: 4 }),
   SEARCH: search('search'), FIND: search('find'), REPT: plain('rept', 'string'),
   EXACT: plain('exact', 'bool', { strict: false, nn: true }), UNICHAR: plain('unichar', 'string'), UNICODE: plain('unicode', 'int'),
   CONTAINSSTRING: plain('containsstring', 'bool', { strict: false, nn: true }),

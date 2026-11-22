@@ -7,7 +7,9 @@ Nothing here blocks a release. DAX on DuckDB first; T-SQL is the last wave.
 - **Speed** (1.1M sales: patterns' Sales repeated 292 times): RANKX over a measure
   (`segmentation-rankx-growth-blank-zero-negative`, 136 scans): 3.7 s. It compares the
   measure for each pair of rows; row fusion, which computes the ranked rows' values once,
-  measured slower on DuckDB as a whole (62 s to 96 s over 139 queries).
+  measured slower on DuckDB as a whole (62 s to 96 s over 139 queries). Binding a value an
+  expression names twice once, in a row it reads (the measure's VARs), took it to 2.7 s, but made
+  the suite 12% slower (the aac dashboard's change measures 3x) and changed a cumulative total.
 
 # Wave 2: T-SQL
 

@@ -331,6 +331,14 @@ kbd { font: 11px var(--mono); border: 1px solid var(--line-2); border-bottom-wid
       <li><b><code>PATH</code> functions are not available.</b> Fabric has no recursive queries.</li>
     </ol>
 
+    <h3>DAX and Ossie SQL differ, by design</h3>
+    <ol>
+      <li><b>A blank in arithmetic:</b> DAX treats it as 0 (<code>[Sales] - [Returns]</code> is Sales). SQL keeps it: <code>NULL + 1</code> is NULL.</li>
+      <li><b>A count of no rows:</b> blank in DAX, 0 in SQL.</li>
+      <li><b>Fixed decimals:</b> DAX rounds to 4 places. SQL does not round.</li>
+      <li><b>Distinct counts:</b> DAX counts a blank as a value. SQL's <code>COUNT(DISTINCT)</code> skips NULL.</li>
+    </ol>
+
     <h3>Not supported</h3>
     <p>Anything not listed in <a href="https://github.com/djouallah/dax-sql/blob/main/DESIGN.md#what-it-does">DESIGN.md</a>.
       dax-sql then stops with an <code>UNSUPPORTED</code> error. It never returns a guessed answer.</p>

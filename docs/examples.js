@@ -66,11 +66,6 @@ export const problem = [
     checks: checks2,
     say: 'The same question, asked by name: the year, [Sales Amount], and a filter on Category. No joins in it. The model knows how Category reaches Sales, so the query only says what it wants.',
   },
-  {
-    title: 'No magic',
-    lang: 'sql', write: sql2, sql: sql2, dax: dax2, compare: true,
-    say: 'There is no magic in DAX. Every name stands for SQL you could write by hand: the compiled SQL has the joins you wrote. SQL engines do not take these questions only because nobody had done the work of compiling them. dax-sql is one example of that work, and there will be more: Apache Ossie gives semantic models an open format, and AI makes compilers like this cheap to write.',
-  },
 ];
 
 // The playground's time intelligence example.

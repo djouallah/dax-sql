@@ -72,13 +72,6 @@ SUMMARIZECOLUMNS(
 )
 ORDER BY [Sales] DESC`;
 
-// It refuses rather than guesses: the three kinds of error.
-export const refused = [
-  ['SYNTAX', 'EVALUATE ROW("Sales", SUM(Sales[Amount])'],
-  ['SEMANTIC', 'EVALUATE ROW("Sales", [Sales Amont])'],
-  ['UNSUPPORTED', 'EVALUATE ROW("Sales", FORMAT([Sales Amount], "#,0.00", "fr-FR"))'],
-];
-
 // The playground's examples.
 export const playground = [
   ['Sales by year', sc(1)],

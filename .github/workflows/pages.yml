@@ -49,11 +49,8 @@ jobs:
           for (const dialect of ['duckdb', 'tsql']) for (const optimize of [true, false]) {
             const c = createCompiler(tmslToModel(bim), { dialect, optimize });
             for (const q of all) c.compile(q);
-            for (const [code, q] of ex.refused) {
-              try { c.compile(q); throw new Error(`no ${code} error: ${q}`); } catch (e) { if (e.code !== code) throw e; }
-            }
           }
-          console.log(`${all.length} examples compile; ${ex.refused.length} refusals refused`);
+          console.log(`${all.length} examples compile`);
           EOF
           node /tmp/check.mjs "$PWD/_site"
       - uses: actions/configure-pages@v5

@@ -45,18 +45,6 @@ function show() {
 addEventListener('hashchange', () => { show(); scrollTo({ top: 0 }); });
 addEventListener('resize', moveInd);
 
-// Subtabs: <div class="subtabs" id="x"><button data-k> ... and [data-pane-of="x"][data-k] panes.
-function subtabs(id, onPick) {
-  const bar = $(`#${id}`);
-  const pick = k => {
-    for (const b of $$('button', bar)) b.setAttribute('aria-selected', String(b.dataset.k === k));
-    for (const p of $$(`[data-pane-of="${id}"]`)) p.classList.toggle('on', p.dataset.k === k);
-    onPick?.(k);
-  };
-  bar.addEventListener('click', e => { const b = e.target.closest('button'); if (b) pick(b.dataset.k); });
-  pick($('button', bar).dataset.k);
-}
-
 // A segmented toggle: <div class="seg" data-name><button data-v>...; calls back with the value.
 function seg(el, value, onChange) {
   const set = v => { for (const b of $$('button', el)) b.setAttribute('aria-selected', String(b.dataset.v === v)); };
@@ -160,39 +148,6 @@ function rowsBox(el, getSql, { dialect = 'duckdb' } = {}) {
   return render;
 }
 
-// A live example: its query, the SQL compiled from it, and its rows; toggles for the rewrites and
-// the dialect.
-function live(el, query, { optimize = true, dialect = 'duckdb', showQuery = true } = {}) {
-  const st = { optimize, dialect, query };
-  el.classList.add('live');
-  el.innerHTML = `
-    <div class="live-bar">
-      <div class="seg" data-name="opt"><button type="button" data-v="off">rewrites off</button><button type="button" data-v="on">rewrites on</button></div>
-      <div class="seg" data-name="dia"><button type="button" data-v="duckdb">DuckDB</button><button type="button" data-v="tsql">T-SQL</button></div>
-      <span class="meta"></span>
-    </div>
-    <div class="live-grid">
-      <div class="stack">${showQuery ? '<div class="q"></div>' : ''}<div class="rows"></div></div>
-      <div class="out"></div>
-    </div>`;
-  const out = $('.out', el), meta = $('.meta', el), q = $('.q', el);
-  let compiled;
-  const rows = rowsBox($('.rows', el), () => compiled?.sql, { dialect: () => st.dialect });
-  function update() {
-    compiled = compile(st.query, st);
-    if (q) q.innerHTML = `<h4>The query</h4>${/^\s*SELECT/i.test(st.query) ? sqlBlock(st.query) : daxBlock(st.query)}`;
-    if (compiled.error) { out.innerHTML = errBlock(compiled.error); meta.textContent = ''; rows(); return; }
-    const s = stats(compiled.sql);
-    meta.textContent = `${plural(s.lines, 'line')} · ${plural(s.selects, 'SELECT')}`;
-    out.innerHTML = `<h4>The SQL, compiled in your browser</h4>${sqlBlock(compiled.sql)}`;
-    rows();
-  }
-  seg($('[data-name=opt]', el), st.optimize ? 'on' : 'off', v => { st.optimize = v === 'on'; update(); });
-  seg($('[data-name=dia]', el), st.dialect, v => { st.dialect = v; update(); });
-  update();
-  return st;
-}
-
 // ---------------------------------------------------------------- 1. the problem
 {
   const steps = ex.problem;
@@ -233,32 +188,8 @@ function live(el, query, { optimize = true, dialect = 'duckdb', showQuery = true
   render();
 }
 
-// ---------------------------------------------------------------- 2. why a compiler
-live($('#why-unseen'), ex.unseen);
-{
-  const bar = $('#st-refused');
-  bar.innerHTML = ex.refused.map(([code]) => `<button type="button" data-k="${code}">${code}</button>`).join('');
-  const pane = $('#refused');
-  subtabs('st-refused', k => {
-    const [, q] = ex.refused.find(([c]) => c === k);
-    const c = compile(q);
-    pane.innerHTML = `<div class="grid2 tight"><div>${daxBlock(q)}</div><div>${c.error ? errBlock(c.error) : sqlBlock(c.sql)}</div></div>`;
-  });
-}
-{
-  const c = compiler();
-  const { dax } = c.sqlToDax(ex.sql);
-  const fromSql = compile(ex.sql), fromDax = compile(dax);
-  $('#why-sql').innerHTML = sqlBlock(ex.sql);
-  $('#why-dax').innerHTML = daxBlock(dax.replace(/^EVALUATE /, 'EVALUATE\n').replace(/ ORDER BY /, '\nORDER BY '));
-  const same = !fromSql.error && fromSql.sql === fromDax.sql;
-  $('#why-same').innerHTML = same
-    ? `<span class="chip match"><i>=</i>the same SQL</span> <span class="sub">both compile to the same ${plural(stats(fromSql.sql).lines, 'line')}, character for character.</span>`
-    : '<span class="chip partial"><i>~</i>different SQL</span>';
-  live($('#why-sql-live'), ex.sql, { showQuery: false });
-}
 
-// ---------------------------------------------------------------- 3. how it works
+// ---------------------------------------------------------------- 2. how it works
 {
   $('#how-dax').innerHTML = daxBlock(ex.how);
   // The syntax tree, one node a line.
@@ -323,7 +254,7 @@ live($('#why-unseen'), ex.unseen);
   pick(0);
 }
 
-// ---------------------------------------------------------------- 5. the playground
+// ---------------------------------------------------------------- 3. the playground
 const pgIn = $('#pg-in'), pgEx = $('#pg-ex');
 const pg = { optimize: true, dialect: 'duckdb', compiled: null };
 pgEx.innerHTML = ex.playground.map(([name], k) => `<option value="${k}">${esc(name)}</option>`).join('');

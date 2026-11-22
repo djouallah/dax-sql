@@ -40,7 +40,7 @@ function show() {
     if (a.getAttribute('href') === `#${view.id}`) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
   }
   moveInd();
-  if (view.id === 'play') pgUpdate();
+  if (view.id === 'play') { loadEngine(); pgUpdate(); }
 }
 addEventListener('hashchange', () => { show(); scrollTo({ top: 0 }); });
 addEventListener('resize', moveInd);
@@ -121,13 +121,14 @@ function rowsTable({ names, rows }) {
 }
 
 // The rows of some SQL, or a button that loads the engine.
-function rowsBox(el, getSql, { dialect = 'duckdb' } = {}) {
+function rowsBox(el, getSql, { dialect = () => 'duckdb', auto = false } = {}) {
   let token = 0;
   async function render() {
     const sql = getSql();
     const my = ++token;
     if (dialect() !== 'duckdb') { el.innerHTML = '<p class="sub">T-SQL runs on Fabric. This page runs DuckDB: switch to DuckDB to see the rows.</p>'; return; }
     if (!sql) { el.innerHTML = ''; return; }
+    if (auto && engineState === 'off') loadEngine();
     if (engineState === 'off' || engineState === 'failed') {
       el.innerHTML = `<div class="runbox"><button class="btn run" type="button">&#9654; Run it</button>
         <span class="sub">${engineState === 'failed' ? 'DuckDB-WASM did not load. Try again?' : 'Loads DuckDB-WASM into this tab once (about 35 MB), then runs every example on this page.'}</span></div>`;
@@ -255,17 +256,18 @@ function rowsBox(el, getSql, { dialect = 'duckdb' } = {}) {
 }
 
 // ---------------------------------------------------------------- 3. the playground
+// The query, the SQL the compiler emits (DuckDB's, with its rewrites, as it ships), and DuckDB's answer.
 const pgIn = $('#pg-in'), pgEx = $('#pg-ex');
-const pg = { optimize: true, dialect: 'duckdb', compiled: null };
+const pg = { compiled: null };
 pgEx.innerHTML = ex.playground.map(([name], k) => `<option value="${k}">${esc(name)}</option>`).join('');
 let saved = null;
 try { saved = localStorage.getItem('pg'); } catch { /* none */ }
 pgIn.value = saved ?? ex.playground[0][1];
-const pgRows = rowsBox($('#pg-rows'), () => pg.compiled?.sql, { dialect: () => pg.dialect });
+const pgRows = rowsBox($('#pg-rows'), () => pg.compiled?.sql, { auto: true });
 function pgUpdate() {
   const text = pgIn.value;
   try { localStorage.setItem('pg', text); } catch { /* none */ }
-  pg.compiled = compile(text, pg);
+  pg.compiled = compile(text);
   const isSql = /^\s*(?:--[^\n]*\n\s*)*(SELECT|WITH)\b/i.test(text);
   const daxEl = $('#pg-dax');
   if (isSql) {
@@ -281,21 +283,19 @@ function pgUpdate() {
   } else {
     $('#pg-err').innerHTML = '';
     const s = stats(pg.compiled.sql);
-    $('#pg-meta').textContent = `${plural(s.lines, 'line')} · ${plural(s.selects, 'SELECT')} · ${plural(s.chars, 'character')}`;
+    $('#pg-meta').textContent = `${plural(s.lines, 'line')} · ${plural(s.chars, 'character')}`;
     $('#pg-sql').innerHTML = sqlBlock(pg.compiled.sql);
     $('#pg-cols').innerHTML = pg.compiled.columns.map(c => `<span class="colchip"><b>${esc(c.name)}</b> ${esc(c.type)}</span>`).join('');
   }
   pgRows();
 }
 let pgTimer;
-pgIn.addEventListener('input', () => { clearTimeout(pgTimer); pgTimer = setTimeout(pgUpdate, 200); });
+pgIn.addEventListener('input', () => { clearTimeout(pgTimer); pgTimer = setTimeout(pgUpdate, 250); });
 pgIn.addEventListener('keydown', e => {
   if (e.key === 'Tab') { e.preventDefault(); insert('  '); }
-  if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); clearTimeout(pgTimer); if (engineState !== 'ready') loadEngine(); else pgUpdate(); }
+  if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); clearTimeout(pgTimer); pgUpdate(); }
 });
 pgEx.addEventListener('change', () => { pgIn.value = ex.playground[Number(pgEx.value)][1]; pgUpdate(); });
-seg($('#pg-opt'), 'on', v => { pg.optimize = v === 'on'; pgUpdate(); });
-seg($('#pg-dia'), 'duckdb', v => { pg.dialect = v; pgUpdate(); });
 $('#pg-copy').onclick = async () => {
   if (!pg.compiled) return;
   try { await navigator.clipboard.writeText(pg.compiled.sql); $('#pg-copy').textContent = 'Copied'; setTimeout(() => { $('#pg-copy').textContent = 'Copy SQL'; }, 1200); } catch { /* no clipboard */ }
@@ -305,23 +305,91 @@ function insert(text) {
   pgIn.value = value.slice(0, a) + text + value.slice(b);
   pgIn.selectionStart = pgIn.selectionEnd = a + text.length;
   pgIn.focus();
-  clearTimeout(pgTimer); pgTimer = setTimeout(pgUpdate, 200);
-}
-// The model, from the fixture: click a name to insert it.
-{
-  const q = t => (/^[A-Za-z_][A-Za-z0-9_]*$/.test(t) ? t : `'${t.replace(/'/g, "''")}'`);
-  const html = bim.model.tables.map(t => {
-    const kind = t.calculationGroup ? 'calculation group' : t.partitions?.[0]?.source?.type === 'calculated' ? 'calculated table' : '';
-    const cols = t.columns.filter(c => !(t.calculationGroup && c.name === 'Ordinal'))
-      .map(c => `<button type="button" class="ins col" data-t="${esc(`${q(t.name)}[${c.name}]`)}">${esc(c.name)}</button>`).join('');
-    const ms = (t.measures ?? []).map(m => `<button type="button" class="ins ms" data-t="${esc(`[${m.name}]`)}" title="${esc(m.expression)}">${esc(m.name)}</button>`).join('');
-    return `<details${['Sales', 'Product', 'Date', 'Customer'].includes(t.name) ? ' open' : ''}><summary><b>${esc(t.name)}</b>${kind ? ` <span class="muted">${kind}</span>` : ''}</summary><div class="names">${cols}${ms}</div></details>`;
-  }).join('');
-  const side = $('#pg-model');
-  side.innerHTML = `<h4>The model</h4>${html}<p class="sub tiny">Measures in pink: hover for the DAX. Click a name to insert it.</p>`;
-  side.addEventListener('click', e => { const b = e.target.closest('.ins'); if (b) insert(b.dataset.t); });
+  clearTimeout(pgTimer); pgTimer = setTimeout(pgUpdate, 250);
 }
 
+// The semantic model as a graph, from the model itself: its tables, their columns and measures, and
+// its relationships. Click a name to insert it.
+{
+  const tables = bim.model.tables;
+  const rels = bim.model.relationships ?? [];
+  // Where each related table sits (column, row); the fact spans two rows. Tables in no relationship
+  // (calculated tables, calculation groups, the field parameter) go below.
+  const place = { Category: [1, 1], Product: [2, 1], Sales: [3, '1 / span 2'], Customer: [4, 1], CityTarget: [4, 2], Returns: [2, 3], Date: [3, 3] };
+  const related = new Set(rels.flatMap(r => [r.fromTable, r.toTable]));
+  const q = t => (/^[A-Za-z_][A-Za-z0-9_]*$/.test(t) ? t : `'${t.replace(/'/g, "''")}'`);
+  const kindOf = t => t.calculationGroup ? 'calculation group' : t.partitions?.[0]?.source?.type === 'calculated'
+    ? (t.columns.some(c => c.extendedProperties?.some(p => p.name === 'ParameterMetadata')) ? 'field parameter' : 'calculated table') : '';
+  const card = t => {
+    const cols = t.columns.filter(c => !(t.calculationGroup && c.name === 'Ordinal'))
+      .map(c => `<button type="button" class="ins col" data-t="${esc(`${q(t.name)}[${c.name}]`)}">${esc(c.name)}</button>`).join('');
+    const ms = (t.measures ?? []).map(m => `<button type="button" class="ins ms" data-t="${esc(`[${m.name}]`)}" title="${esc(`[${m.name}] := ${m.expression}`)}">${esc(m.name)}</button>`).join('');
+    const items = t.calculationGroup ? `<div class="names sub tiny" style="padding-top:0">items: ${t.calculationGroup.calculationItems.map(i => esc(i.name)).join(', ')}</div>` : '';
+    const kind = kindOf(t);
+    return `<div class="mt${(t.measures ?? []).length > 5 ? ' fact' : ''}" data-table="${esc(t.name)}"><header>${esc(t.name)}<span data-count>${kind}</span></header><div class="names">${cols}${ms}</div>${items}</div>`;
+  };
+  const graph = $('#pg-graph');
+  const inGraph = tables.filter(t => related.has(t.name) && place[t.name]);
+  graph.innerHTML = `<svg class="mg-lines" aria-hidden="true"></svg>${inGraph.map(t => {
+    const [c, r] = place[t.name];
+    return card(t).replace('<div class="mt', `<div style="grid-column:${c};grid-row:${r}" class="mt`);
+  }).join('')}`;
+  $('#pg-others').innerHTML = tables.filter(t => !inGraph.includes(t)).map(card).join('');
+  for (const el of [graph, $('#pg-others')]) el.addEventListener('click', e => { const b = e.target.closest('.ins'); if (b) insert(b.dataset.t); });
+
+  // The relationships: a line from card to card, clipped at their borders; 1 and * at its ends.
+  const svg = $('svg', graph);
+  const NS = 'http://www.w3.org/2000/svg';
+  const el = (tag, attrs, text) => { const e = document.createElementNS(NS, tag); for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v); if (text) e.textContent = text; return e; };
+  function draw() {
+    if (!graph.offsetWidth) return;
+    svg.replaceChildren();
+    const g = graph.getBoundingClientRect();
+    const box = name => { const r = graph.querySelector(`.mt[data-table="${CSS.escape(name)}"]`)?.getBoundingClientRect(); return r && { x: r.left - g.left + r.width / 2, y: r.top - g.top + r.height / 2, w: r.width / 2, h: r.height / 2 }; };
+    const edge = (b, dx, dy) => { const t = Math.min(dx ? b.w / Math.abs(dx) : Infinity, dy ? b.h / Math.abs(dy) : Infinity); return [b.x + dx * t, b.y + dy * t]; };
+    const pairs = new Map();
+    for (const r of rels) { const k = [r.fromTable, r.toTable].sort().join('|'); pairs.set(k, (pairs.get(k) ?? 0) + 1); }
+    const seen = new Map();
+    for (const r of rels) {
+      const a = box(r.fromTable), b = box(r.toTable);
+      if (!a || !b) continue;
+      const k = [r.fromTable, r.toTable].sort().join('|');
+      const n = pairs.get(k), i = seen.get(k) ?? 0; seen.set(k, i + 1);
+      let dx = b.x - a.x, dy = b.y - a.y; const len = Math.hypot(dx, dy) || 1; dx /= len; dy /= len;
+      const off = n > 1 ? (i - (n - 1) / 2) * 44 : 0; // parallel relationships side by side
+      const A = { ...a, x: a.x - dy * off, y: a.y + dx * off }, B = { ...b, x: b.x - dy * off, y: b.y + dx * off };
+      const [x1, y1] = edge(A, dx, dy), [x2, y2] = edge(B, -dx, -dy);
+      const m2m = r.fromCardinality === 'many' && r.toCardinality === 'many';
+      const cls = m2m ? 'm2m' : r.isActive === false ? 'inactive' : '';
+      svg.append(el('line', { x1, y1, x2, y2, class: cls }));
+      const end = (x, y, ux, uy, t) => svg.append(el('text', { x: x + ux * 12 - uy * 8, y: y + uy * 12 + ux * 8 + 4, 'text-anchor': 'middle', class: 'card' }, t));
+      end(x1, y1, dx, dy, r.fromCardinality === 'one' ? '1' : '*');
+      end(x2, y2, -dx, -dy, r.toCardinality === 'many' ? '*' : '1');
+      if (n > 1 || r.isActive === false || m2m) {
+        const label = m2m ? `${r.fromColumn}, many-to-many` : `${r.fromColumn}${r.isActive === false ? ' (inactive)' : ''}`;
+        // On the line's outer side: the way its offset moved it.
+        const side = off < 0 ? -1 : 1, px = -dy * side, py = dx * side;
+        svg.append(el('text', { x: (x1 + x2) / 2 + px * 8, y: (y1 + y2) / 2 + py * 8 + 4,
+          'text-anchor': Math.abs(px) < 0.3 ? 'middle' : px > 0 ? 'start' : 'end' }, label));
+      }
+    }
+  }
+  new ResizeObserver(draw).observe(graph);
+
+  // Each table's rows, once DuckDB is there.
+  let counted = false;
+  onEngine.add(async () => {
+    if (engineState !== 'ready' || counted) return;
+    counted = true;
+    for (const t of inGraph) {
+      try {
+        const { rows } = await run(`SELECT count(*) FROM "${t.name.replace(/"/g, '""')}"`);
+        const span = graph.querySelector(`.mt[data-table="${CSS.escape(t.name)}"] [data-count]`);
+        span.textContent = `${rows[0][0].toLocaleString('en-US')} rows`;
+      } catch { /* a table the data lacks */ }
+    }
+  });
+}
 show();
 document.documentElement.classList.add('ready');
 // ?run: load the engine at once, so a shared link opens with its rows.

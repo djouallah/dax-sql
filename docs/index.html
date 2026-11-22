@@ -206,11 +206,21 @@ ol.steps b { color: var(--ink); }
 
 
 /* playground */
-.play { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 16px; align-items: start; }
-.modelside { max-height: 80vh; overflow: auto; position: sticky; top: 140px; display: grid; gap: 6px; }
-.modelside details { border: 1px solid var(--line); border-radius: 9px; background: var(--surface); }
-.modelside summary { cursor: pointer; padding: 6px 9px; font-size: 13px; list-style-position: inside; }
-.modelside .names { display: flex; flex-wrap: wrap; gap: 4px; padding: 0 8px 8px; }
+.mgwrap { overflow-x: auto; padding-bottom: 4px; }
+.mg { position: relative; display: grid; grid-template-columns: repeat(4, minmax(180px, 1fr)); gap: 64px 64px; min-width: 900px; padding: 8px; align-items: start; }
+.mg-lines { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+.mg-lines line { stroke: var(--ink-2); stroke-width: 1.5; opacity: .6; }
+.mg-lines line.inactive { stroke-dasharray: 5 4; opacity: .45; }
+.mg-lines line.m2m { stroke: var(--k-ctx); stroke-dasharray: 2 4; opacity: 1; }
+.mg-lines text { fill: var(--muted); font: 10.5px var(--mono); paint-order: stroke; stroke: var(--surface); stroke-width: 4px; }
+.mg-lines text.card { fill: var(--ink-2); font: 700 12px system-ui, sans-serif; }
+.mt { position: relative; z-index: 1; border: 1px solid var(--line-2); border-radius: 10px; background: var(--surface-2); min-width: 0; }
+.mt.fact { border-color: var(--k-dax); box-shadow: 0 0 20px -8px var(--k-dax); }
+.mt header { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 6px 10px; background: var(--sunken); border-radius: 10px 10px 0 0; font: 700 13px var(--mono); }
+.mt header span { font: 11px system-ui, sans-serif; color: var(--muted); }
+.mt .names { display: flex; flex-wrap: wrap; gap: 4px; padding: 8px; }
+.mg-others { display: flex; flex-wrap: wrap; gap: 12px; }
+.mg-others .mt { width: 220px; }
 .ins { font: 11.5px var(--mono); border: 1px solid var(--line); background: var(--sunken); color: var(--ink-2); border-radius: 6px; padding: 2px 6px; cursor: pointer; }
 .ins:hover { color: var(--ink); border-color: var(--line-2); }
 .ins.ms { color: var(--k-ctx); }
@@ -231,7 +241,6 @@ kbd { font: 11px var(--mono); border: 1px solid var(--line-2); border-bottom-wid
 @media (max-width: 1000px) {
   .grid4 { grid-template-columns: 1fr 1fr; }
   .flow { grid-template-columns: 1fr 1fr; }
-  .play { grid-template-columns: 1fr; } .modelside { position: static; max-height: 300px; }
 }
 @media (max-width: 860px) {
   .grid2, .live-grid { grid-template-columns: 1fr; }
@@ -455,26 +464,25 @@ kbd { font: 11px var(--mono); border: 1px solid var(--line-2); border-bottom-wid
   <header class="head">
     <h2>Playground</h2>
     <p class="lead">Write DAX, or a SQL <code>SELECT</code> over the model (<code>FROM contoso</code>, measures as
-      <code>AGG([Sales Amount])</code>). It compiles as you type; <b>Run</b> executes it with DuckDB in this tab.
-      <kbd>Ctrl</kbd>+<kbd>Enter</kbd> runs too.</p>
+      <code>AGG([Sales Amount])</code>). It compiles as you type, and DuckDB answers it in this tab.</p>
   </header>
-  <div class="play">
-    <aside class="modelside card" id="pg-model"></aside>
-    <div class="stack">
-      <div class="demo-bar">
-        <select id="pg-ex" aria-label="Examples"></select>
-        <div class="seg" id="pg-opt"><button type="button" data-v="off">rewrites off</button><button type="button" data-v="on">rewrites on</button></div>
-        <div class="seg" id="pg-dia"><button type="button" data-v="duckdb">DuckDB</button><button type="button" data-v="tsql">T-SQL</button></div>
-      </div>
-      <textarea id="pg-in" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Query"></textarea>
-      <div id="pg-err"></div>
-      <div id="pg-dax"></div>
-      <div class="live-grid">
-        <div class="stack"><h4>The answer</h4><div id="pg-rows"></div><div id="pg-cols"></div></div>
-        <div class="stack">
-          <div class="sqlhead"><h4>The SQL</h4><span class="meta" id="pg-meta"></span><button class="btn" type="button" id="pg-copy">Copy SQL</button></div>
-          <div id="pg-sql"></div>
-        </div>
+  <div class="card stack">
+    <div class="sqlhead"><h3>The semantic model</h3><span class="sub">Click a column or a measure to put it in the query; hover a measure for its DAX.</span></div>
+    <div class="mgwrap"><div class="mg" id="pg-graph"></div></div>
+    <h4>Also in the model</h4>
+    <div class="mg-others" id="pg-others"></div>
+  </div>
+  <div class="stack">
+    <div class="demo-bar"><select id="pg-ex" aria-label="Examples"></select></div>
+    <textarea id="pg-in" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Query"></textarea>
+    <div id="pg-err"></div>
+    <div id="pg-dax"></div>
+    <div class="live-grid">
+      <div class="stack"><h4>The answer</h4><div id="pg-rows"></div><div id="pg-cols"></div></div>
+      <div class="stack">
+        <div class="sqlhead"><h4>The SQL dax-sql emitted</h4><span class="meta" id="pg-meta"></span><button class="btn" type="button" id="pg-copy">Copy SQL</button></div>
+        <div id="pg-sql"></div>
+        <p class="sub tiny">Laid out on lines to read; Copy SQL gives it exactly as emitted.</p>
       </div>
     </div>
   </div>

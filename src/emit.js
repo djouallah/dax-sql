@@ -1784,12 +1784,12 @@ const OVER = {
 // The fused groups without whose rows an expression is blank, or null if it can be
 // non-blank without any: whether SUMMARIZECOLUMNS can take its groups from them.
 // Whether each row of table x is of one row of each model table its columns come from: the
-// rows of a scan (its expanded table's), filtered, projected, distinct, ordered, or a variable
-// of those. Not a join, GENERATE or a constructor's.
+// rows of a scan (its expanded table's), filtered, projected, distinct, grouped (SUMMARIZE),
+// ordered, or a variable of those. Not a join, GENERATE or a constructor's.
 function ownRows(x) {
   if (!x) return false;
   if (x.k === 'scan') return true;
-  if (['filter', 'project', 'distinct', 'topn', 'topnskip', 'shared', 'window'].includes(x.k)) return ownRows(x.src);
+  if (['filter', 'project', 'distinct', 'group', 'topn', 'topnskip', 'shared', 'window'].includes(x.k)) return ownRows(x.src);
   return false;
 }
 

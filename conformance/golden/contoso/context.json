@@ -94,6 +94,60 @@
    ]
   ]
  },
+ "context-self-join-rows-transition-kept": {
+  "hash": "b03c0dac66f835801ab611279a4351795572668c",
+  "columns": [
+   "[Manager]",
+   "[MK]",
+   "[Reports]",
+   "[All staff]"
+  ],
+  "rows": [
+   [
+    "Ann",
+    1,
+    null,
+    5
+   ],
+   [
+    "Ben",
+    2,
+    null,
+    5
+   ],
+   [
+    "Di",
+    4,
+    null,
+    5
+   ]
+  ]
+ },
+ "context-self-join-rows-treatas-keys": {
+  "hash": "13236efd1683084728fc5448c5d354e465bfb074",
+  "columns": [
+   "[Manager]",
+   "[MK]",
+   "[Reports]"
+  ],
+  "rows": [
+   [
+    "Ann",
+    1,
+    2
+   ],
+   [
+    "Ben",
+    2,
+    1
+   ],
+   [
+    "Di",
+    4,
+    1
+   ]
+  ]
+ },
  "context-time-intelligence-in-date-row": {
   "hash": "b656bf202295bc19e797d40279af1aea61641903",
   "columns": [

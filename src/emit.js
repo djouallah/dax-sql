@@ -1477,26 +1477,35 @@ class Fusion {
   // (v), computed once: f's table under each key's values (a LATERAL join). Its name.
   mapping(f, refs, c, state) {
     const em = this.em;
-    // A table's key columns together, the combinations its rows hold, where the key row's values
-    // of them are of one row of it: a level's keys (their combinations), an iterator over a
-    // table's own rows. An iterator's row that can join two rows of a table (a self-join's,
-    // GENERATE's) holds pairs no row has: each column's values apart.
-    const together = !this.ofRows || ownRows(this.src);
-    const byTable = new Map();
-    for (const i of refs) {
-      const t = together ? this.keyCols[i].table : i;
-      if (!byTable.has(t)) byTable.set(t, []);
-      byTable.get(t).push(i);
-    }
-    // Each key table's values under the filters that decide the level's combinations (a level's
-    // seven dates, not the calendar's): its groups are joined to those combinations.
-    const dom = this.domain.length && em.d.mapDomain ? new Ctx(this.domain) : EMPTY;
-    const parts = [...byTable].map(([, is]) => {
-      const b = em.isolated(() => em.scanBlock(this.keyCols[is[0]].table, dom, new Map()));
-      b.setOut(is.map(i => ({ name: `k${i}`, lineage: null })), is.map(i => b.res.meta(this.keyCols[i])));
+    // The keys' values: under the filters that decide the level's combinations (a level's seven
+    // dates, not the calendar's), each key table's combinations of them, which its rows hold. An
+    // iterator's rows that are not one row of each table (a self-join's, GENERATE's: a manager's
+    // name beside a report's key, a NULL an outer join pads) hold values no row has: their own
+    // distinct values then.
+    let parts;
+    if (this.ofRows && !ownRows(this.src)) {
+      // Rows that read a row around them have no values of their own a CTE can list: the
+      // aggregate is left a subquery.
+      if (ir.freeRows(this.src).size) throw semantic('emit: an iterator of rows that read an outer row maps no keys');
+      const b = em.isolated(() => em.open(em.table(this.src, new Map())));
+      b.setOut(refs.map(i => ({ name: `k${i}`, lineage: null })), refs.map(i => b.res.col(i)));
       b.distinct = true;
-      return `(${b.render()}) AS ${em.alias('c')}`;
-    });
+      parts = [`(${b.render()}) AS ${em.alias('c')}`];
+    } else {
+      const byTable = new Map();
+      for (const i of refs) {
+        const t = this.keyCols[i].table;
+        if (!byTable.has(t)) byTable.set(t, []);
+        byTable.get(t).push(i);
+      }
+      const dom = this.domain.length && em.d.mapDomain ? new Ctx(this.domain) : EMPTY;
+      parts = [...byTable].map(([t, is]) => {
+        const b = em.isolated(() => em.scanBlock(t, dom, new Map()));
+        b.setOut(is.map(i => ({ name: `k${i}`, lineage: null })), is.map(i => b.res.meta(this.keyCols[i])));
+        b.distinct = true;
+        return `(${b.render()}) AS ${em.alias('c')}`;
+      });
+    }
     const dm = em.alias('d'), r = em.alias('r');
     const domRes = new WrapRes(em, null, this.keyCols.map((c, i) => ({ sql: refs.includes(i) ? `${dm}.${em.ident(`k${i}`)}` : 'NULL', lineage: c })), state);
     // Whether its own filter keeps a subquery that reads the key row (a mapping inside a

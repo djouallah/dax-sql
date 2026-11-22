@@ -1,0 +1,3 @@
+// note: MIN and MAX of two values that compare equal, a blank and 0, either way round
+EVALUATE ROW("a", ISBLANK(MAX(0, BLANK())), "b", ISBLANK(MAX(BLANK(), 0)), "c", ISBLANK(MIN(0, BLANK())), "d", ISBLANK(MIN(BLANK(), 0)),
+    "e", MAX(BLANK(), BLANK()) + 0, "f", MIN("", BLANK()) & "|")

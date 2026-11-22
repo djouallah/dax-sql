@@ -1,4 +1,5 @@
-// note: ALLEXCEPT as a table (not a CALCULATE modifier): the rows of the table under the filters it keeps
+// note: ALLEXCEPT as a table (not a CALCULATE modifier): which columns it has, and which filters it keeps
 EVALUATE CALCULATETABLE(ROW("color", COUNTROWS(ALLEXCEPT(Product, Product[Color])), "name", COUNTROWS(ALLEXCEPT(Product, Product[Name])),
-    "paris", SUMX(FILTER(ALLEXCEPT(Customer, Customer[City]), Customer[City] = "Paris"), [Sales Amount])),
+    "cats", COUNTROWS(ALLEXCEPT(Product, Product[Color], Product[Name])), "names", CONCATENATEX(ALLEXCEPT(Product, Product[Color]), Product[Name], ",", Product[Name]),
+    "cities", COUNTROWS(ALLEXCEPT(Customer, Customer[City]))),
     Product[Color] = "Red", Product[Name] = "Jersey", Customer[City] = "Paris")

@@ -66,8 +66,11 @@ function distinctCount(c, args, env) {
 function minMax(fn) {
   return (c, args, env) => {
     if (args.length === 2) {
-      const a = c.scalar(args[0], env), b = c.scalar(args[1], env);
-      return ir.fn(fn === 'max' ? 'greatest' : 'least', [a, b], ir.unify([a.t, b.t]));
+      // MAX(a, b): a blank compares as 0 or "" (MAX(-1, BLANK()) is the blank); of two that
+      // compare equal, the one that is not blank (MAX(BLANK(), 0) is 0).
+      const a = c.scalar(args[0], env), b = c.scalar(args[1], env), t = ir.unify([a.t, b.t]);
+      const op = fn === 'max' ? 'gt' : 'lt';
+      return ir.kase([[ir.op(op, a, b), a], [ir.op(op, b, a), b]], ir.fn('coalesce', [a, b], t), t);
     }
     return column(fn, same)(c, args, env);
   };

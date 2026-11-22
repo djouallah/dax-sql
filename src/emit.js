@@ -843,9 +843,16 @@ export class Emitter {
       case 'add': case 'sub': {
         const sub = x.op === 'sub';
         const date = t => t === 'datetime' || t === 'date';
-        if (date(l.t) && ir.isNum(r.t)) return d.fn('add_interval', [S(l), sub ? `-(${S(r)})` : S(r), "'day'"]);
-        if (!sub && ir.isNum(l.t) && date(r.t)) return d.fn('add_interval', [S(r), S(l), "'day'"]);
-        if (sub && date(l.t) && date(r.t)) return d.fn('datediff', [S(r), S(l), "'day'"]);
+        // A date plus whole days is a date; plus any other number, a date and time: the days
+        // added to its serial number (DATE(2024, 1, 1) + 0.5 is noon).
+        const serial = v => d.fn('date_serial', [S(v)]);
+        const plus = (dt, n) => n.t === 'int' ? d.fn('add_interval', [S(dt), sub ? `-(${S(n)})` : S(n), "'day'"])
+          : d.fn('serial_date', [`(${serial(dt)} ${sub ? '-' : '+'} ${S(n)})`]);
+        if (date(l.t) && ir.isNum(r.t)) return plus(l, r);
+        if (!sub && ir.isNum(l.t) && date(r.t)) return plus(r, l);
+        // A date minus a date: the days between them, a fraction of one with a time.
+        if (sub && l.t === 'date' && r.t === 'date') return d.fn('datediff', [S(r), S(l), "'day'"]);
+        if (sub && date(l.t) && date(r.t)) return `(${serial(l)} - ${serial(r)})`;
         if (date(l.t) && date(r.t)) return d.fn('add_datetimes', [S(l), S(r)]);
         const N = v => this.num(v, scope);
         if (l.nn && r.nn) return `(${N(l)} ${sub ? '-' : '+'} ${N(r)})`;
@@ -869,12 +876,17 @@ export class Emitter {
         return d.concat(t(l), t(r));
       }
       case 'in': {
-        const vals = x.a.slice(1), blank = vals.some(v => v.k === 'lit' && v.v === null);
-        const listed = vals.filter(v => !(v.k === 'lit' && v.v === null));
-        const L = S(l), list = listed.map(v => S(v));
-        let s = list.length ? `${L} IN (${list.join(', ')})` : d.never;
-        if (blank) s = `(${s} OR ${L} IS NULL)`;
-        return pred || blank ? `(${s})` : d.orFalse(s);
+        // Compared with ==: a blank is only a blank. A member that is never blank is in an IN
+        // list (FALSE where x is blank, so never unknown outside a WHERE); one that can be
+        // blank is IS NOT DISTINCT FROM x.
+        const vals = x.a.slice(1), isNull = v => v.k === 'lit' && v.v === null;
+        const sure = vals.filter(v => !isNull(v) && (v.k === 'lit' || v.nn));
+        const maybe = vals.filter(v => !isNull(v) && !(v.k === 'lit' || v.nn));
+        const L = S(l), parts = [];
+        if (sure.length) { const s = `${L} IN (${sure.map(v => S(v)).join(', ')})`; parts.push(pred ? s : d.orFalse(s)); }
+        for (const v of maybe) parts.push(d.isNotDistinct(L, S(v)));
+        if (vals.some(isNull)) parts.push(`${L} IS NULL`);
+        return parts.length ? `(${parts.join(' OR ')})` : d.never;
       }
     }
     throw new Error(`emit: op ${x.op}`);

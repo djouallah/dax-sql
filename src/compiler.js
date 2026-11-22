@@ -122,14 +122,14 @@ export class Compiler {
 
   isTable(ast, env) {
     switch (ast.k) {
-      case 'call': return TABLE.has(ast.fn) && !SCALAR.has(ast.fn) || ast.fn === 'CALCULATETABLE';
+      case 'call': return TABLE.has(ast.fn);
       case 'name': {
         const v = env.vars.get(lc(ast.name));
         if (v) return this.isTable(v.ast, v.env);
         return env.queryTables.has(lc(ast.name)) || this.model.hasTable(ast.name);
       }
       case 'table': case 'visualtable': return true;
-      case 'var': return this.isTable(ast.body, env);
+      case 'var': return this.isTable(ast.body, this.withVars(ast.defs, env));
       default: return false;
     }
   }
@@ -503,6 +503,7 @@ export class Compiler {
     if (ast.set.k === 'table' && ast.set.rows.every(r => r.length === left.length)) {
       // x IN { 1, 2 }: compared with ==, so a blank matches only a blank.
       const rows = ast.set.rows.map(r => r.map(x => this.scalar(x, env)));
+      if (!rows.length) throw semantic('IN {}: a table constructor needs a value for each column');
       if (left.length === 1) return ir.op('in', left[0], ...rows.map(r => r[0]));
       return rows.map(r => r.map((v, i) => ir.op('eqs', left[i], v)).reduce((a, b) => ir.op('and', a, b)))
         .reduce((a, b) => ir.op('or', a, b));
@@ -607,9 +608,12 @@ export class Compiler {
 
   // The filter context CALCULATE(_, args) evaluates its expression in.
   // `nonvisual`: the arguments are SUMMARIZECOLUMNS', where NONVISUAL can mark a filter.
-  calculateCtx(args, env, nonvisual = false) {
+  // `given`: filters already evaluated, as filter arguments before `args` (a balance function's
+  // dates).
+  calculateCtx(args, env, nonvisual = false, given = []) {
     // 1. The filter arguments, in the context outside.
-    const actions = args.filter(a => a.k !== 'empty').flatMap(a => this.filterArg(a, env, false, nonvisual));
+    const actions = [...given.map(filter => ({ kind: 'filter', filter, keep: false })),
+      ...args.filter(a => a.k !== 'empty').flatMap(a => this.filterArg(a, env, false, nonvisual))];
     // 2. Context transition.
     let ctx = this.transition(env);
     // 3. The modifiers: relationships first, then what is removed.
@@ -759,7 +763,7 @@ export class Compiler {
   }
 }
 
-const GROUPBY_AGGREGATES = new Set(['SUMX', 'AVERAGEX', 'MINX', 'MAXX', 'COUNTX', 'COUNTAX', 'PRODUCTX', 'GEOMEANX',
+const GROUPBY_AGGREGATES = new Set(['SUMX', 'AVERAGEX', 'MINX', 'MAXX', 'COUNTX', 'COUNTAX', 'PRODUCTX',
   'STDEVX.S', 'STDEVX.P', 'VARX.S', 'VARX.P']);
 const BINOPS = { '+': 'add', '-': 'sub', '*': 'mul', '/': 'div', '^': 'pow', '&': 'concat', '=': 'eq', '==': 'eqs',
   '<>': 'ne', '<': 'lt', '<=': 'le', '>': 'gt', '>=': 'ge', '&&': 'and', '||': 'or' };
@@ -785,7 +789,8 @@ function valuesCtx(x) {
 // The model columns an expression names directly (not inside an aggregate or an iterator):
 // the columns of a boolean filter.
 const OPAQUE = new Set(['CALCULATE', 'CALCULATETABLE', 'FILTER', 'SUMX', 'AVERAGEX', 'MINX', 'MAXX', 'COUNTX', 'COUNTAX',
-  'CONCATENATEX', 'PRODUCTX', 'MEDIANX', 'RANKX', 'SUM', 'AVERAGE', 'MIN', 'MAX', 'COUNT', 'COUNTA', 'COUNTROWS',
+  'CONCATENATEX', 'PRODUCTX', 'MEDIANX', 'RANKX', 'RANK', 'ROWNUMBER', 'SUM', 'AVERAGE', 'AVERAGEA', 'MIN', 'MINA', 'MAX',
+  'MAXA', 'COUNT', 'COUNTA', 'COUNTROWS', 'HASONEFILTER',
   'DISTINCTCOUNT', 'DISTINCTCOUNTNOBLANK', 'COUNTBLANK', 'VALUES', 'DISTINCT', 'ALL', 'SELECTEDVALUE', 'HASONEVALUE',
   'ISFILTERED', 'ISCROSSFILTERED', 'ISINSCOPE', 'ISSUBTOTAL', 'LOOKUPVALUE', 'RELATED', 'EARLIER', 'EARLIEST', 'TOPN', 'MEDIAN',
   'PRODUCT', 'STDEV.S', 'STDEV.P', 'VAR.S', 'VAR.P', 'STDEVX.S', 'STDEVX.P', 'VARX.S', 'VARX.P', 'PERCENTILE.INC',

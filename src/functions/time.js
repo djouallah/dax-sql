@@ -167,12 +167,11 @@ function balance(unit, side) {
       at = last(dates(c, col, env, x => between(x, periodStart(end, unit, months), periodEnd(end, unit, months))));
     } else at = shift(periodStart(first(visible), unit, months), -1, 'day');
     const t = dates(c, col, env, x => ir.op('eq', x, at));
-    const f = c.tableFilter(t, env.ctx);
-    // As CALCULATE(expr, t, filter): t is evaluated here, the rest as CALCULATE does.
-    const ctx = c.calculateCtx(filterArg && filterArg.k !== 'empty' ? [filterArg] : [], env);
-    let dropped = ctx.remove(x => x.table === col.table);
-    for (const x of [f].flat().filter(Boolean)) dropped = dropped.add(x);
-    return c.scalar(args[0], { ...env, ctx: dropped, rows: [] });
+    // CALCULATE(expr, t, filter): t replaces the filters on its column (on a date table, on the
+    // whole table), and the filter argument is applied with it.
+    const f = [c.tableFilter(t, env.ctx)].flat().filter(Boolean);
+    const ctx = c.calculateCtx(filterArg && filterArg.k !== 'empty' ? [filterArg] : [], env, false, f);
+    return c.scalar(args[0], { ...env, ctx, rows: [] });
   };
 }
 

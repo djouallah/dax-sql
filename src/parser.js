@@ -184,12 +184,26 @@ class Parser {
   }
   cat() { return this.chain(() => this.add(), ['&']); }
   add() { return this.chain(() => this.mul(), ['+', '-']); }
-  mul() { return this.chain(() => this.pow(), ['*', '/']); }
-  pow() { return this.chain(() => this.unary(), ['^']); }
+  mul() { return this.chain(() => this.unary(), ['*', '/']); }
+  // ^ binds tighter than a sign, as DAX has it: -2^2 is -4. Its right side can have a sign: 2^-1.
   unary() {
     const pos = this.pos();
     if (this.eat('-')) return { k: 'neg', e: this.unary(), pos };
     if (this.eat('+')) return this.unary();
+    return this.pow();
+  }
+  pow() {
+    let l = this.primary();
+    for (;;) {
+      const pos = this.pos();
+      if (!this.eat('^')) return l;
+      l = { k: 'bin', op: '^', l, r: this.signed(), pos };
+    }
+  }
+  signed() {
+    const pos = this.pos();
+    if (this.eat('-')) return { k: 'neg', e: this.signed(), pos };
+    if (this.eat('+')) return this.signed();
     return this.primary();
   }
   args(close) {

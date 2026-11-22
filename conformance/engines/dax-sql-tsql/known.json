@@ -59,5 +59,6 @@
   {"id":"edges/iterators/iterators-rankx-skip-dense-twin-ties","reason":"by design: text keeps its trailing spaces (Power BI drops them on load)"},
   {"id":"edges/iterators/iterators-rls-retail-averagex-customers","reason":"by design: text keeps its trailing spaces (Power BI drops them on load)"},
   {"id":"edges/iterators/iterators-text-functions-spaces-unicode","reason":"by design: text keeps its trailing spaces (Power BI drops them on load)"},
-  {"id":"edges/iterators/iterators-topn-text-blank-equals-empty","reason":"by design: text keeps its trailing spaces (Power BI drops them on load)"}
+  {"id":"edges/iterators/iterators-topn-text-blank-equals-empty","reason":"by design: text keeps its trailing spaces (Power BI drops them on load)"},
+  {"id":"contoso/scalar/scalar-datetime-minus-datetime","reason":"by design: a date minus a date is a number of days, with the fraction (Power BI types it a date and time: 1899-12-30 and the days)"}
 ]

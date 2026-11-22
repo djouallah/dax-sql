@@ -42,8 +42,11 @@ function all(c, args, env, ast) {
 function allExcept(c, args, env) {
   if (!isModelTableName(c, args[0], env)) throw semantic('ALLEXCEPT(table, column, ...)');
   const t = c.model.table(args[0].name), keep = new Set(args.slice(1).map(a => c.modelColumn(a, env)));
-  const exp = c.expandedColumns(t, env.ctx);
-  return rowsOf(c, t, env.ctx.remove(x => exp.has(x) && !keep.has(x)), 'ALLEXCEPT');
+  // As a table (not a CALCULATE filter), ALL of the table's other columns: their combinations,
+  // no filter kept.
+  const cols = t.columns.filter(x => !keep.has(x));
+  if (!cols.length) throw semantic('ALLEXCEPT as a table names every column of its table');
+  return ir.values(t, noFilters(env.ctx), cols, (tb, ctx) => c.scan(tb, ctx));
 }
 
 // ALLSELECTED as a table. Of a table: its rows, the columns of its expanded table that some
@@ -100,7 +103,10 @@ function selectColumns(c, args, env) {
   const src = c.table(args[0], env), row = ir.rowOf(src), inner = c.iter(env, row);
   const items = [];
   for (let i = 1; i < args.length;) {
-    if (args[i].k === 'str') { items.push(item(c, args[i].v, args[i + 1], inner)); i += 2; continue; }
+    if (args[i].k === 'str') {
+      if (!args[i + 1]) throw semantic(`SELECTCOLUMNS: "${args[i].v}" has no expression`);
+      items.push(item(c, args[i].v, args[i + 1], inner)); i += 2; continue;
+    }
     // SELECTCOLUMNS(t, T[c]): named after the column.
     if (args[i].k !== 'col') throw semantic('SELECTCOLUMNS expects "name", expression pairs');
     items.push(item(c, args[i].name, args[i], inner));
@@ -401,12 +407,13 @@ function rowFn(c, args, env) {
 function dataTable(c, args, env) {
   const data = args.at(-1);
   if (data?.k !== 'table') throw semantic('DATATABLE ends with the rows, { { ... } }');
-  const names = [];
-  for (let i = 0; i + 1 < args.length - 1; i += 2) names.push(args[i].v);
-  // { { 1, "a" }, { 2, "b" } }: each inner { } is a row.
+  const names = [], types = [];
+  for (let i = 0; i + 1 < args.length - 1; i += 2) { names.push(args[i].v); types.push(args[i + 1]); }
+  // { { 1, "a" }, { 2, "b" } }: each inner { } is a row; each value of the type its column
+  // declares (a DATETIME written as text, a DOUBLE as a whole number).
   const rows = data.rows.map(r => {
     const cells = r.length === 1 && r[0].k === 'table' ? r[0].rows.map(x => x[0]) : r;
-    return cells.map(x => c.scalar(x, env));
+    return cells.map((x, i) => c.scalar(types[i] ? { k: 'call', fn: 'CONVERT', args: [x, types[i]] } : x, env));
   });
   return rowsTable(names, rows);
 }
@@ -451,7 +458,8 @@ function nonBlank(fn) {
     const kept = ir.filter(src, row, ir.op('not', ir.fn('isblank', [e], 'bool', { nn: true })));
     const krow = ir.rowOf(kept, 'table');
     const v = ir.agg(fn, kept, krow, ir.col(krow, 0), col.type);
-    return { k: 'rows', rows: [[v]], cols: [{ name: col.name, lineage: col, t: col.type }], base: null, nonEmpty: true };
+    // No value for which expr is not blank: no row.
+    return ir.oneRow([v], ir.exists(kept), [col]);
   };
 }
 

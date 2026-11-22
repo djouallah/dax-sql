@@ -96,8 +96,9 @@ export function op(o, ...a) {
   else if (o === 'concat') t = 'string';
   else if (o === 'div' || o === 'pow') t = 'double';
   else if (o === 'neg') t = l.t;
-  else if ((o === 'add' || o === 'sub') && (l.t === 'datetime' || l.t === 'date')) t = isNum(r.t) ? l.t : o === 'add' ? 'datetime' : 'double';
-  else if (o === 'add' && isNum(l.t) && (r.t === 'datetime' || r.t === 'date')) t = 'datetime';
+  // A date plus whole days is a date, plus any other number a date and time.
+  else if ((o === 'add' || o === 'sub') && (l.t === 'datetime' || l.t === 'date')) t = isNum(r.t) ? (r.t === 'int' ? l.t : 'datetime') : o === 'add' ? 'datetime' : 'double';
+  else if (o === 'add' && isNum(l.t) && (r.t === 'datetime' || r.t === 'date')) t = l.t === 'int' ? r.t : 'datetime';
   else t = l.t === 'int' && r.t === 'int' ? 'int' : 'double';
   // Comparisons and logic never give a blank; + and - give one only when both sides do.
   const nn = t === 'bool' || o === 'concat' || (o === 'add' || o === 'sub') && (l.nn || r.nn)

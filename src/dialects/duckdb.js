@@ -168,9 +168,12 @@ export class DuckDBDialect extends Dialect {
       case 'eomonth': return `last_day(${x} + to_months(CAST(${y} AS INTEGER)))`;
       case 'add_interval': {
         const u = unit(z);
-        if (u === 'DAY') return `(${x} + to_days(CAST(${y} AS INTEGER)))`;
-        if (u === 'WEEK') return `(${x} + to_days(7 * CAST(${y} AS INTEGER)))`;
-        if (u === 'MONTH' || u === 'QUARTER' || u === 'YEAR') return `(${x} + to_months(${u === 'YEAR' ? 12 : u === 'QUARTER' ? 3 : 1} * CAST(${y} AS INTEGER)))`;
+        // A date moved by days or months stays a DATE (DATE + INTERVAL is a TIMESTAMP, and a
+        // TIMESTAMP compared with a date column casts the column, which no hash join takes).
+        const asDate = v => (nodes[0]?.t === 'date' ? `CAST(${v} AS DATE)` : v);
+        if (u === 'DAY') return asDate(`(${x} + to_days(CAST(${y} AS INTEGER)))`);
+        if (u === 'WEEK') return asDate(`(${x} + to_days(7 * CAST(${y} AS INTEGER)))`);
+        if (u === 'MONTH' || u === 'QUARTER' || u === 'YEAR') return asDate(`(${x} + to_months(${u === 'YEAR' ? 12 : u === 'QUARTER' ? 3 : 1} * CAST(${y} AS INTEGER)))`);
         return `(${x} + INTERVAL (${y}) ${u})`;
       }
       case 'datediff': {

@@ -617,10 +617,11 @@ export class Emitter {
       for (const p of chain.preds) parts.push(paren(this.scalar(p.pred, withRow(scope, p.row, res), true)));
       return parts.length ? parts.join(' AND ') : this.d.always;
     }
-    // Otherwise matched on the keys of the tables both expanded tables hold whole, and on the
-    // columns of the others.
+    // Otherwise matched on the keys of the tables whose key the filter holds, and on the columns
+    // of the others: the filter's rows are rows of the model, so a key fixes the rest of its
+    // table's row, the columns a later filter took out of it (a group's quarter) included.
     const tables = [...new Set(D.map(c => c.table))];
-    const covered = tables.filter(V => V.key && V.columns.every(c => f.cols.includes(c)));
+    const covered = tables.filter(V => V.key && f.cols.includes(V.key));
     const minimal = covered.filter(V => !covered.some(W => W !== V && this.model.expand(W, state).has(V.name)));
     const settled = new Set(minimal.flatMap(W => [...this.model.expand(W, state).keys()]));
     const cols = [...minimal.map(V => V.key), ...D.filter(c => !settled.has(c.table.name))];

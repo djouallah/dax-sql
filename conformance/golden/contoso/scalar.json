@@ -328,6 +328,27 @@
    ]
   ]
  },
+ "scalar-min-max-blank-ties": {
+  "hash": "9416aa27eb749ddb200772f021f1d9a073ccbbdc",
+  "columns": [
+   "[a]",
+   "[b]",
+   "[c]",
+   "[d]",
+   "[e]",
+   "[f]"
+  ],
+  "rows": [
+   [
+    false,
+    false,
+    false,
+    false,
+    0,
+    "|"
+   ]
+  ]
+ },
  "scalar-min-max-two-values-blank": {
   "hash": "f1ce24f78512dbfa454965895d1c5f9a84984787",
   "columns": [

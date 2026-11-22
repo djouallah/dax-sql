@@ -1,18 +1,15 @@
 // Apache Ossie's query compliance cases (compliance/query in an Ossie checkout), answered by
 // dax-sql: .github/workflows/ossie-query.yml.
 //   node formats/test/ossie-query.mjs <ossie checkout>
-// The cases are in either of two layouts, and this reads whichever the checkout has:
-//   - cases/<case>/query.ossie.sql and expected.sql (Ossie's main): the expected rows are what
-//     DuckDB answers to expected.sql;
-//   - <case>.ost, a script (apache/ossie#769, the view expander's): the query is the argument of
-//     executeExpand(...), and the expected rows the table after its expansion (`|_} : string`).
+// Each case is in a <case>.ost script: the query is the argument of executeExpand(...), and the
+// expected rows the table after its expansion (`|_} : string`).
 // The SCOTT data (scott/scott.sql) is loaded into DuckDB, the model (scott/scott_model.ossie.yaml)
 // read with formats/ossie.js, and the query compiled as a host compiles one: compile(), or, for
 // SQL with a model SELECT in it, compileStatement(). Rows are compared as ossie-compare.mjs does.
 // Outcomes: match, fail (other rows), unsupported (dax-sql's UNSUPPORTED), error (any other).
 // A fail always fails the run. PENDING lists the cases not answered yet: those may be
 // unsupported or an error, and one that matches must leave the list.
-import { readFileSync, readdirSync, appendFileSync, existsSync } from 'node:fs';
+import { readFileSync, readdirSync, appendFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { DuckDBInstance } from '@duckdb/node-api';
 import { parse } from 'yaml';
@@ -67,19 +64,9 @@ function scriptCases(file) {
     const lines = tail.slice(end).split('\n').slice(1);
     const stop = lines.findIndex(l => !l.startsWith('+') && !l.startsWith('|'));
     const expected = table(lines.slice(0, stop < 0 ? undefined : stop));
-    out.push({ id, file, query: src.slice(open, close).trim(), expected: async () => expected, round: true });
+    out.push({ id, file, query: src.slice(open, close).trim(), expected });
     from = close;
   }
-}
-
-// A case of cases/<case>/: its query, and expected.sql's rows.
-function dirCase(name) {
-  const at = join(dir, 'cases', name);
-  const query = readFileSync(join(at, 'query.ossie.sql'), 'utf8').replace(/\r\n/g, '\n');
-  const head = query.match(/^-- ([AB]\d+[a-z]?)\. /m);
-  const id = caseId(head ? head[1] : name.split('_')[0].toUpperCase());
-  const expected = readFileSync(join(at, 'expected.sql'), 'utf8');
-  return { id, file: `cases/${name}`, query: query.trim(), expected: () => rows(con, expected), round: false };
 }
 
 // --- running -------------------------------------------------------------------------------
@@ -107,10 +94,7 @@ function compileCase(q) {
   }
 }
 
-const all = [
-  ...(existsSync(join(dir, 'cases')) ? readdirSync(join(dir, 'cases')).filter(d => existsSync(join(dir, 'cases', d, 'query.ossie.sql'))).sort().map(dirCase) : []),
-  ...readdirSync(dir).filter(f => f.endsWith('.ost')).sort().flatMap(scriptCases),
-];
+const all = readdirSync(dir).filter(f => f.endsWith('.ost')).sort().flatMap(scriptCases);
 if (!all.length) { console.log(`::error::no query cases in ${dir}`); process.exit(1); }
 const results = [];
 {
@@ -119,7 +103,7 @@ const results = [];
     try {
       sql = compileCase(c.query);
       const got = await rows(con, sql);
-      const diff = compare(got, await c.expected(), ordered(c.query), { round: c.round });
+      const diff = compare(got, c.expected, ordered(c.query), { round: true });
       outcome = diff ? 'fail' : 'match';
       detail = diff ?? '';
     } catch (e) {
@@ -141,8 +125,7 @@ for (const r of results) {
   else if (r.outcome !== 'match' && !PENDING.has(r.id)) bad.push(`${r.id}: ${r.outcome}, ${r.detail}`);
   if (STAR.has(r.id) && r.path !== 'SUMMARIZECOLUMNS') bad.push(`${r.id}: a star join, answered by the joined rows`);
 }
-// B10a is one of #769's cases, not yet main's.
-for (const id of STAR) if (!results.some(r => r.id === id) && !/[a-z]$/.test(id)) bad.push(`${id} is on STAR but no case has that id`);
+for (const id of STAR) if (!results.some(r => r.id === id)) bad.push(`${id} is on STAR but no case has that id`);
 const ids = new Set(results.map(r => r.id));
 for (const id of PENDING) if (!ids.has(id)) bad.push(`${id} is on PENDING but no case has that id`);
 

@@ -46,8 +46,3 @@ period's range beside one by shifted dates, and each one the mapping takes out i
   of a table's rows (SUMMARIZE's extension columns): `context-summarize-sameperiodlastyear`,
   `segmentation-customer-bands-calc-group`;
 - past 30 s: `segmentation-calc-group-name-ordinal-filter`, `segmentation-summarize-sply-quarter-band`.
-
-# Apache Ossie
-
-- When apache/ossie#769 (the view expander) merges, `ossie-query.yml` takes the expander from
-  main by itself; drop its step of the branch's `.ost` cases if main's `cases/` go.

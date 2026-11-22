@@ -992,9 +992,9 @@ npm test
   the one before, on one runner, the fastest of three rounds each: more than 10% slower in all,
   or a query 1.5 times as slow and 50 ms more, fails.
 - `.github/workflows/ossie-query.yml`, in CI only (Python and Ossie's main): Ossie SQL held to
-  Ossie as DAX is to Power BI. Ossie's query cases (`formats/test/ossie-query.mjs`: main's, and
-  those on the view expander's branch until it merges), the wide table cases' Layer 2 queries
-  (`ossie-wide.mjs`), and Ossie's view expander as an oracle (`ossie-expand.mjs`): a grid of
+  Ossie as DAX is to Power BI. Ossie's query cases (`formats/test/ossie-query.mjs`), the wide
+  table cases' Layer 2 queries (`ossie-wide.mjs`), and Ossie's view expander as an oracle
+  (`ossie-expand.mjs`): a grid of
   about 2,500 queries over SCOTT, Ossie's retail and stores, and every model in
   `conformance/models` written as Ossie (totals, groups, `WHERE`, `HAVING`, `ROLLUP`, CTEs,
   scalar operators over `AGG`, stars, fan-outs, chasm traps, snowflakes), each answered by the

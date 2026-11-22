@@ -52,6 +52,38 @@
   "hash": "8975408ca8f24bff5e2b8470405580d56ba8f912",
   "error": "Query (5, 55) The column '<oii>Product</oii>[<oii>Price</oii>]' either doesn't exist or doesn't have a relationship to any table available in the current context."
  },
+ "relationships-crossfilter-number-0-1-2": {
+  "hash": "c75d03b1769155865316b21033206bdbd470adc9",
+  "columns": [
+   "[none]",
+   "[oneway]",
+   "[both]"
+  ],
+  "rows": [
+   [
+    11,
+    5,
+    4
+   ]
+  ]
+ },
+ "relationships-crossfilter-number-3": {
+  "hash": "3e38d2b2fdfea03a6dffd8979d90fc71c0b0885d",
+  "columns": [
+   "[products bought in Paris]",
+   "[sales of red products]"
+  ],
+  "rows": [
+   [
+    5,
+    6
+   ]
+  ]
+ },
+ "relationships-crossfilter-number-4": {
+  "hash": "7edf3884f8b5408b44c51bef722d07727f9ddd48",
+  "error": "Query (3, 58) The CROSSFILTER function cannot be used to enable only the many-side of a many-to-one relationship to filter the one-side."
+ },
  "relationships-many-to-many-target-by-customer": {
   "hash": "caaaaabdb179688bb9a52ddbd1c49d1e9ce8cdb9",
   "columns": [

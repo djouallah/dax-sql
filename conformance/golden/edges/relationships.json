@@ -866,6 +866,18 @@
    ]
   ]
  },
+ "relationships-one-to-one-crossfilter-oneway": {
+  "hash": "ceb7d8e9d97d22001183761142936d2d0fcb4168",
+  "error": "Query (3, 56) CrossFilter function for One to One relationships should not contain oneway direction."
+ },
+ "relationships-one-to-one-crossfilter-oneway-leftfiltersright": {
+  "hash": "cdc324fe08f383c57d959b8f3076cc6ca1acbea2",
+  "error": "Query (3, 56) CrossFilter function for One to One relationships should not contain oneway direction."
+ },
+ "relationships-one-to-one-crossfilter-oneway-rightfiltersleft": {
+  "hash": "c43d43d323141aa3b4cae408b55bd1b8cb6b4296",
+  "error": "Query (3, 56) CrossFilter function for One to One relationships should not contain oneway direction."
+ },
  "relationships-one-to-one-format-filters-store": {
   "hash": "e64e3d3bc560cacf962fbe10fdbe8b02680a7477",
   "columns": [

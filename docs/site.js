@@ -33,11 +33,11 @@ function moveInd() {
   ind.style.transform = `translateX(${a.offsetLeft - 4}px)`;
 }
 function show() {
-  let id = (location.hash || '#limitations').slice(1);
+  let id = (location.hash || '#problem').slice(1);
   if (id === 'limits') id = 'limitations';
-  const view = views.find(v => v.id === id) ?? views[0];
+  const view = views.find(v => v.id === id) ?? views.find(v => v.id === 'problem');
   for (const v of views) v.classList.toggle('on', v === view);
-  for (const a of [...navLinks, $('#aboutlink')]) {
+  for (const a of [...navLinks, ...$$('.toplinks a[href^="#"]')]) {
     if (a.getAttribute('href') === `#${view.id}`) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
   }
   moveInd();

@@ -1559,6 +1559,26 @@ export function nameParts(name) {
 // The SELECTs over the model in a statement: `whole` when the statement is one, else
 // `relations`, each the text between its parentheses ({ start, end, text }). `name` is the
 // model's name in FROM: one part, or qualified (`ws.model`, or its parts as an array).
+// A statement's text with its model queries' SQL in their places (statementRelations), in one
+// pass. An engine that cannot nest a WITH (T-SQL): each one's CTEs in one WITH at the top, and
+// an ORDER BY in parentheses only with OFFSET. A UNION's arm is a subquery, named.
+export function spliceStatement(text, relations, dialect) {
+  const nest = dialect.nestedWith;
+  const inner = r => (nest ? r.sql : r.ordered ? `${r.body} OFFSET 0 ROWS` : r.body);
+  const sorted = [...relations].sort((a, b) => a.start - b.start);
+  let sql = text;
+  for (const [i, r] of [...sorted.entries()].reverse()) {
+    const arm = r.arm ? [`SELECT * FROM (`, `) AS ${dialect.ident(`__u${i + 1}`)} `] : ['', ''];
+    sql = `${sql.slice(0, r.start)}${arm[0]}\n${inner(r)}\n${arm[1]}${sql.slice(r.end)}`;
+  }
+  const lifted = nest ? [] : sorted.flatMap(r => r.ctes);
+  if (lifted.length) {
+    const own = /^\s*WITH\s/i.exec(sql);
+    sql = own ? `WITH ${lifted.join(',\n')},\n${sql.slice(own[0].length)}` : `WITH ${lifted.join(',\n')}\n${sql}`;
+  }
+  return sql;
+}
+
 export function modelRelations(src, name = 'model') {
   const toks = scan(src);
   const kw = (t, w) => t?.t === 'word' && t.v.toUpperCase() === w;

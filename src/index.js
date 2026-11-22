@@ -35,7 +35,7 @@ import { Dialect } from './dialects/base.js';
 import { newRow } from './ir.js';
 import { DaxError, semantic, unsupported } from './errors.js';
 import { Ctx } from './context.js';
-import { SqlTranslator, isSql, isSqlQuery, printDaxQuery, modelRelations } from './sql.js';
+import { SqlTranslator, isSql, isSqlQuery, printDaxQuery, modelRelations, spliceStatement } from './sql.js';
 
 export { DaxError } from './errors.js';
 export { Dialect } from './dialects/base.js';
@@ -147,16 +147,19 @@ export function createCompiler(input, options = {}) {
     return new Emitter(model, dialect, { ...opts, calcColumn, calcTable, security, noMapping: true }).query(s);
   });
   // `dax`: the query's text, or its tree (keyed by `key`, the text it was built from).
-  function compileAll(dax, key = dax) {
+  // `extra`: options of this compilation only (aliasStart).
+  function compileAll(dax, key = dax, extra = null) {
     if (rolesError) throw semantic(rolesError);
+    const opts = extra ? { ...options, ...extra } : options;
+    if (extra) key = `${key}\u0000${JSON.stringify(extra)}`;
     let out = cache.get(key);
     if (out) return out;
-    out = base.query(dax, emit(options));
+    out = base.query(dax, emit(opts));
     if (base.splitOne && dialect.splitOneGroup === 'smaller') {
       const size = o => o.reduce((n, x) => n + (x.sql ?? '').length, 0);
       base.noSplit = true;
       try {
-        const whole = base.query(dax, emit(options));
+        const whole = base.query(dax, emit(opts));
         if (size(whole) < size(out)) out = whole;
       } finally { base.noSplit = false; }
     }
@@ -167,28 +170,35 @@ export function createCompiler(input, options = {}) {
   // A SELECT over the model: the DAX query's tree it builds, compiled as DAX's is (no DAX text
   // between them), with its LIMIT and OFFSET.
   const sqlTranslator = new SqlTranslator(model);
-  function translateSql(text) {
+  function translateSql(text, extra = null) {
     const t = sqlTranslator.translate(text);
-    const [out] = compileAll(t.query, `SQL ${text}`);
-    return { ...t, out: t.limit == null && t.offset == null ? out : { ...out, sql: out.sql + dialect.limit(t.limit, t.offset, out.ordered) } };
+    const [out] = compileAll(t.query, `SQL ${text}`, extra);
+    if (t.limit == null && t.offset == null) return { ...t, out };
+    const limit = dialect.limit(t.limit, t.offset, out.ordered);
+    return { ...t, out: { ...out, sql: out.sql + limit, body: out.body + limit, limited: true } };
   }
   const compileSql = text => translateSql(text).out;
   // Any SQL with SELECTs over the model in it: each one's SQL in its place, the rest as written.
-  function compileStatement(text, name = 'model') {
+  // The model queries of a statement, each compiled, where they are in it: { whole, relations:
+  // [{ start, end, arm, text, dax, sql, ctes, body, ordered }], aliases }. Aliases are numbered
+  // from `aliases` on, so that queries of several models can share one WITH.
+  function statementRelations(text, name = 'model', aliases = 0) {
     if (/^\s*(DEFINE|EVALUATE)\b/i.test(text)) throw new DaxError('SQL: a DAX query is not SQL', { code: 'UNSUPPORTED' });
     const relation = t => {
-      const { query, out } = translateSql(t);
-      return { text: t, dax: printDaxQuery(query), sql: out.sql };
+      const { query, out } = translateSql(t, dialect.nestedWith ? null : { aliasStart: aliases });
+      aliases = out.aliases;
+      return { text: t, dax: printDaxQuery(query), sql: out.sql, ctes: out.ctes, body: out.body, ordered: out.ordered && !out.limited };
     };
-    const { whole, relations } = modelRelations(text, name);
-    if (whole) {
-      const r = relation(text);
-      return { sql: r.sql, relations: [r] };
-    }
-    let sql = text;
-    const out = relations.map(r => ({ ...r, ...relation(r.text) }));
-    for (const r of [...out].reverse()) sql = `${sql.slice(0, r.start)}${r.arm ? 'SELECT * FROM (' : ''}\n${r.sql}\n${r.arm ? ') ' : ''}${sql.slice(r.end)}`;
-    return { sql, relations: out.map(({ text: t, dax, sql: s }) => ({ text: t, dax, sql: s })) };
+    const found = modelRelations(text, name);
+    if (found.whole) return { whole: relation(text), relations: [], aliases };
+    const relations = found.relations.map(r => ({ ...r, ...relation(r.text) }));
+    return { whole: null, relations, aliases };
+  }
+  // Any SQL with SELECTs over the model in it: each one's SQL in its place, the rest as written.
+  function compileStatement(text, name = 'model') {
+    const { whole, relations } = statementRelations(text, name);
+    const out = whole ? [whole] : relations;
+    return { sql: whole ? whole.sql : spliceStatement(text, relations, dialect), relations: out.map(({ text: t, dax, sql }) => ({ text: t, dax, sql })) };
   }
   return {
     model,
@@ -205,6 +215,7 @@ export function createCompiler(input, options = {}) {
     // parentheses -> { sql, relations: [{ text, dax, sql }] }: each SELECT's SQL in its place, the
     // rest as written. A text that is one SELECT over the model is compiled whole.
     compileStatement,
+    statementRelations,
     // Whether a text is a DAX query (it starts with DEFINE or EVALUATE).
     isDax: text => /^\s*(DEFINE|EVALUATE)\b/i.test(text),
     // Whether a text is a SELECT over the model, and the DAX query it stands for, with its

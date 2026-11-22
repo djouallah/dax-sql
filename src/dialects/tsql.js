@@ -95,6 +95,7 @@ export class TSqlDialect extends Dialect {
   orFalse(c) { return `(CASE WHEN ${c} THEN 1 ELSE 0 END = 1)`; }
   get always() { return '1 = 1'; }
   get never() { return '1 = 0'; }
+  get nestedWith() { return false; }
 
   // A blank sorts first ascending and last descending as it is; the other way round, by a key first.
   order(v, dir, nulls) {

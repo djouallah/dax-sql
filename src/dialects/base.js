@@ -137,6 +137,8 @@ export class Dialect {
   orFalse(c) { return `COALESCE(${c}, FALSE)`; }   // a condition that is FALSE where it is unknown
   get always() { return 'TRUE'; }                  // conditions that always, never hold
   get never() { return 'FALSE'; }
+  // A WITH inside a subquery (compileStatement nests a model's query's CTEs where it is).
+  get nestedWith() { return true; }
 
   // a and b, text, joined (neither blank).
   concat(a, b) { return `(${a} || ${b})`; }

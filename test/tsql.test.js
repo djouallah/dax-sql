@@ -141,3 +141,20 @@ test('SUMMARIZECOLUMNS by one calculation group: split by item only when that is
   const q = query('segmentation-calc-group-name-filter-ordinal-grouped');
   for (const dialect of ['tsql', null]) assert.ok(compileAs(q.model, q.dax, dialect).length < 20000);
 });
+
+test('T-SQL: a statement with model queries in it has one WITH at the top, an ordered one OFFSET, a UNION arm a name', () => {
+  const bim = JSON.parse(readFileSync(`${modelDir('contoso')}/model.bim`, 'utf8'));
+  const c = createCompiler(tmslToModel(bim), { dialect: 'tsql' });
+  const q = 'SELECT Color, AGG(Orders) o FROM model GROUP BY ALL';
+  for (const text of [`SELECT t.Color FROM (${q} ORDER BY Color) AS t`, `${q} UNION ALL ${q.replace('Orders', '[Sales Amount]')}`,
+    `WITH m AS (${q}) SELECT * FROM m`]) {
+    const sql = code(c.compileStatement(text).sql);
+    assert.equal(sql.match(/\bWITH\b/g).length, 1, text);
+    assert.match(sql, /^WITH /, text);
+    // Each CTE declared once, however many queries there are.
+    const names = [...sql.matchAll(/(?:WITH|,)\s*([a-z]\d+) AS \(/g)].map(m => m[1]);
+    assert.equal(new Set(names).size, names.length, text);
+    if (/ORDER BY Color\)/.test(text)) assert.match(sql, /ORDER BY [^()]*OFFSET 0 ROWS\s*\) AS t/, text);
+    if (/UNION/.test(text)) assert.match(sql, /\) AS '' UNION ALL SELECT \* FROM \(/, text);
+  }
+});

@@ -29,7 +29,7 @@ export class Emitter {
     // (Fusion, rowFused, groupedFirst, once, nonBlank, sum_currency). The answers must be the
     // same; CI runs the suites both ways.
     this.optimize = options.optimize !== false;
-    this.n = 0;
+    this.n = options.aliasStart ?? 0;   // aliases go on from here (compileStatement: one numbering for all)
     this.ctes = [];
     this.memo = new Map();        // shared IR -> CTE name
     this.fusions = [];            // stack: the Fusion aggregates go to, or null
@@ -82,9 +82,13 @@ export class Emitter {
       if (start.length) sql += ` WHERE ${this.startAt(keys, order, start.map(v => this.scalar(v, scope)), start)}`;
       sql += ` ORDER BY ${keys.map((k, i) => this.orderBy(k, order[i].desc)).join(', ')}`;
     }
+    const body = sql;
     if (this.ctes.length) sql = `WITH ${this.ctes.join(',\n')}\n${sql}`;
     return {
       sql: this.d.finish(sql),
+      // The same, as its CTEs and the SELECT that reads them, for an engine that cannot nest a
+      // WITH (compileStatement lifts them); and the last alias number it used.
+      ctes: this.ctes.map(c => this.d.finish(c)), body: this.d.finish(body), aliases: this.n,
       ordered: order.length > 0,
       columns: table.cols.map((c, i) => ({ name: outNames[i], dax: daxName(c), type: c.t, lineage: c.lineage ? `'${c.lineage.table.name}'[${c.lineage.name}]` : null })),
     };
@@ -602,7 +606,11 @@ export class Emitter {
     const determined = c => has(c) || !this.d.correlatedSemiJoin
       && (c.table.key && c.table.key !== c && has(c.table.key) || stored(c) || fixedBy(c));
     const whole = [...full.keys()].every(n => this.model.table(n).columns.every(determined));
-    if (chain && table === f.base && whole) {
+    // Its conditions are the scan's only when its rows reach the same rows of the related tables
+    // as the scan's: CALCULATETABLE(Sales, USERELATIONSHIP(Sales[ShipDate], 'Date'[Date]))
+    // holds each sale with its ship date's row of Date, which must be its order date's too.
+    const same = chain && samePaths(full, this.model.expand(f.base, this.model.state(chain.scan.ctx.mods)));
+    if (chain && table === f.base && whole && same) {
       const parts = [...this.conds(table, chain.scan.ctx, res, scope)];
       for (const p of chain.preds) parts.push(paren(this.scalar(p.pred, withRow(scope, p.row, res), true)));
       return parts.length ? parts.join(' AND ') : this.d.always;
@@ -858,7 +866,7 @@ export class Emitter {
         if (l.nn && r.nn) return `(${N(l)} ${sub ? '-' : '+'} ${N(r)})`;
         if (l.nn) return `(${N(l)} ${sub ? '-' : '+'} COALESCE(${S(r)}, 0))`;
         if (r.nn) return `(COALESCE(${S(l)}, 0) ${sub ? '-' : '+'} ${N(r)})`;
-        return d.blankAdd(S(l), S(r), sub);
+        return d.blankAdd(N(l), N(r), sub);
       }
       case 'mul': return `(${this.num(l, scope)} * ${this.num(r, scope)})`;
       // x / BLANK() is x / 0: infinity (or NaN), not blank; BLANK() / x is blank.
@@ -1422,7 +1430,8 @@ class Fusion {
     // group can have rows for keys this one has none of (it is mixed).
     // Its scan can also keep fewer rows than the group's, by conditions on the tables it
     // joins: those are the aggregate's FILTER in the group.
-    if (!g && !readsKeys && !edge && !outer.length && !mapped.length && !guards.length && (OVER[x.fn] || x.fn === 'avg') && (!keyed || nullEmpty)) {
+    // Not for a sum to be added exactly (RANKX's): the groups' sums would be added as doubles.
+    if (!g && !readsKeys && !edge && !outer.length && !mapped.length && !guards.length && !em.exact && (OVER[x.fn] || x.fn === 'avg') && (!keyed || nullEmpty)) {
       for (const h of [...this.groups, ...this.prior.flatMap(f => f.groups)]) {
         if (h.over || h.edge || h.readsKeys || h.outer?.length || h.mapped || h.tables !== `${S.table.name}|${state.key}`) continue;
         if (h.keys.length <= keyList.length || !keyList.every(i => h.keys.includes(i))) continue;
@@ -2045,6 +2054,16 @@ function mayBeBlank(x, i) {
 }
 
 // A filter's table as FILTER(..FILTER(scan)..), through table VARs: the scan and the predicates.
+// Two expanded tables (Model.expand) that reach the same tables over the same relationships.
+function samePaths(a, b) {
+  if (a.size !== b.size) return false;
+  for (const [n, p] of a) {
+    const q = b.get(n);
+    if (!q || q.length !== p.length || q.some((h, i) => h.rel !== p[i].rel)) return false;
+  }
+  return true;
+}
+
 function filterChain(x) {
   const preds = [];
   while (x.k === 'filter' || x.k === 'distinct' || x.k === 'shared') {
@@ -2109,7 +2128,8 @@ function outputNames(cols, style) {
 
 // SQL with its aliases renamed, outside its string literals.
 function renameAliases(sql, map) {
-  return sql.split(/('(?:[^']|'')*')/).map((part, i) => i % 2 ? part
+  // Outside string literals and quoted names, as canonical.
+  return sql.split(/('(?:[^']|'')*'|"(?:[^"]|"")*")/).map((part, i) => i % 2 ? part
     : part.replace(/\b[a-z]\d+\b/g, m => map.get(m) ?? m)).join('');
 }
 

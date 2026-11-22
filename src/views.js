@@ -29,7 +29,7 @@
 // Errors are DaxError: SYNTAX for a statement that does not read, CATALOG for a view that is
 // missing or already there.
 import { DaxError } from './errors.js';
-import { nameParts } from './sql.js';
+import { nameParts, spliceStatement } from './sql.js';
 
 const lc = s => String(s).toLowerCase();
 const str = s => (s == null ? 'NULL' : `'${String(s).replace(/'/g, "''")}'`);
@@ -396,9 +396,18 @@ export function makeViews(createCompiler, { fullNames = false, dialect = 'duckdb
       const v = named(parts);
       if (v) found.set(parts.map(lc).join('\u0000'), [v, parts]);
     }
-    let out = text;
-    for (const [v, parts] of found.values()) out = v.compiler.compileStatement(out, parts).sql;
-    return out;
+    // Each view's queries found in the text as written, and put in place in one pass: a view's
+    // SQL is never read again for another's name (a view named like a table it reads).
+    if (!found.size) return text;
+    let aliases = 0;
+    const relations = [];
+    for (const [v, parts] of found.values()) {
+      const r = v.compiler.statementRelations(text, parts, aliases);
+      if (r.whole) return r.whole.sql;
+      aliases = r.aliases;
+      relations.push(...r.relations);
+    }
+    return spliceStatement(text, relations, [...found.values()][0][0].compiler.dialect);
   }
 
   // A statement's text with each (DESCRIBE v) and (SHOW SEMANTIC ...) in it replaced by the rows

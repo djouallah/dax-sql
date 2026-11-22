@@ -162,3 +162,16 @@ test('compileStatement takes a qualified model name, as text or as parts', () =>
   // Only the whole name is the model: a longer or shorter one is not.
   assert.equal(c.compileStatement('SELECT 1 FROM x.ws.contoso', 'ws.contoso').sql, 'SELECT 1 FROM x.ws.contoso');
 });
+
+test("two views in one statement: one's SQL is not read again for the other's name (a view named like a table it reads)", async () => {
+  const v2 = createViews();
+  v2.define('contoso', tmslToModel(bim));
+  // A view named Sales, over a model of Category alone: contoso's SQL reads "Sales".
+  const cats = { model: { tables: [{ name: 'Category', columns: [{ name: 'Category', dataType: 'string', sourceColumn: 'Category' }],
+    measures: [{ name: 'Cats', expression: 'COUNTROWS(Category)' }], partitions: [{ name: 'p', source: { type: 'entity', entityName: 'Category' } }] }] } };
+  v2.define('Sales', tmslToModel(cats));
+  const [{ sql }] = v2.rewrite('SELECT a.Color, a.o, b.n FROM (SELECT Color, AGG(Orders) AS o FROM contoso GROUP BY ALL) AS a CROSS JOIN (SELECT AGG(Cats) AS n FROM Sales) AS b');
+  const rows = await h.sql(sql);
+  const direct = await h.run('EVALUATE SUMMARIZECOLUMNS(Product[Color], "o", [Orders], "n", COUNTROWS(ALL(Category)))');
+  assert.deepEqual(sorted(rows.map(r => [r.Color, r.o, r.n])), sorted(direct.map(r => [r.Color, r.o, r.n])));
+});

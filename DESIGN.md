@@ -534,6 +534,10 @@ and gives each aggregate the filters that reach its table.
     semi-joins. A many-to-many relationship matches values, a blank meeting a blank: a NULL
     on one side meets a NULL on the other.
   - Relationships can be active or inactive. One-to-one relationships filter both ways.
+  - `CROSSFILTER` takes a direction by name or number (0 None, 1 OneWay, 2 Both, 3
+    OneWay_RightFiltersLeft, 4 OneWay_LeftFiltersRight). As in DAX, a one-to-one relationship
+    takes only None or Both, and the many side of a many-to-one one cannot filter the one side
+    alone: both are errors.
   - A table filter (`FILTER(Sales, …)`) filters its expanded table, each row with the related
     rows it reached where it was evaluated: `CALCULATETABLE(Sales, USERELATIONSHIP(...))` as a
     filter keeps a sale only where its ship date's row of Date is its order date's too.

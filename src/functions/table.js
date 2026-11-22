@@ -664,12 +664,20 @@ function crossFilter(c, args, env) {
   const a = c.modelColumn(args[0], env), b = c.modelColumn(args[1], env);
   const rel = c.model.relationshipOf(a, b);
   if (!rel) throw semantic(`CROSSFILTER: no relationship between '${a.table.name}'[${a.name}] and '${b.table.name}'[${b.name}]`);
-  const d = args[2]?.k === 'name' ? args[2].name.toUpperCase() : (args[2]?.k === 'num' ? ['NONE', 'ONEWAY', 'BOTH'][Number(args[2].v)] : null);
+  // The direction by name, or by its number: 0 None, 1 OneWay, 2 Both, 3 OneWay_RightFiltersLeft,
+  // 4 OneWay_LeftFiltersRight (as Power BI reads them).
+  const d = args[2]?.k === 'name' ? args[2].name.toUpperCase()
+    : args[2]?.k === 'num' ? ['NONE', 'ONEWAY', 'BOTH', 'ONEWAY_RIGHTFILTERSLEFT', 'ONEWAY_LEFTFILTERSRIGHT'][Number(args[2].v)] : null;
   // Left is the first column: LeftFiltersRight is the usual way when it is the one side.
   const leftIsOne = rel.to === a;
   const cross = { NONE: 'none', BOTH: 'both', ONEWAY: 'single',
     ONEWAY_LEFTFILTERSRIGHT: leftIsOne ? 'single' : 'reverse', ONEWAY_RIGHTFILTERSLEFT: leftIsOne ? 'reverse' : 'single' }[d];
   if (!cross) throw semantic('CROSSFILTER(column, column, None | OneWay | Both | OneWay_LeftFiltersRight | OneWay_RightFiltersLeft)');
+  // As DAX: a one-to-one relationship filters both ways or not at all, and the many side of a
+  // many-to-one one never filters the one side alone.
+  const manyMany = rel.fromCard === 'many' && rel.toCard === 'many';
+  if (rel.fromCard === 'one' && rel.toCard === 'one' && cross !== 'none' && cross !== 'both') throw semantic('CROSSFILTER: a one-to-one relationship takes no one-way direction');
+  if (!manyMany && cross === 'reverse') throw semantic('CROSSFILTER cannot make only the many side of a many-to-one relationship filter the one side');
   return { kind: 'mods', change: mods => mods.cross.set(rel.name, cross) };
 }
 

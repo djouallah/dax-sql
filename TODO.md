@@ -4,15 +4,10 @@ Nothing here blocks a release. DAX on DuckDB first; T-SQL is the last wave.
 
 # Wave 1: DAX on DuckDB
 
-- **Not probed against Power BI yet:** CROSSFILTER's numeric directions 3 and 4, and a
-  one-to-one relationship made one-way by CROSSFILTER (`model.js` makes every one-to-one both
-  ways).
-- **Speed** (1.1M sales: patterns' Sales repeated 292 times):
-  - SAMEPERIODLASTYEAR inside SUMMARIZE (`segmentation-summarize-sply-quarter-band`,
-    `relationships-summarize-sply-product-category`): 5.8 and 7.6 s.
-  - RANKX over a measure (`segmentation-rankx-growth-blank-zero-negative`, 136 scans): 4.1 s.
-    It compares the measure for each pair of rows; row fusion, which computes the ranked rows'
-    values once, measured slower on DuckDB as a whole (62 s to 96 s over 139 queries).
+- **Speed** (1.1M sales: patterns' Sales repeated 292 times): RANKX over a measure
+  (`segmentation-rankx-growth-blank-zero-negative`, 136 scans): 3.7 s. It compares the
+  measure for each pair of rows; row fusion, which computes the ranked rows' values once,
+  measured slower on DuckDB as a whole (62 s to 96 s over 139 queries).
 
 # Wave 2: T-SQL
 

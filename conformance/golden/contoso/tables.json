@@ -66,6 +66,10 @@
    ]
   ]
  },
+ "tables-allexcept-as-table": {
+  "hash": "20d457cfc268482b01e0efd22309c77486a05b9e",
+  "error": "Query (3, 63) A single value for column '<oii>City</oii>' in table '<oii>Customer</oii>' cannot be determined. This can happen when a measure or function formula refers to a column that contains many values without specifying an aggregation such as min, max, count, or sum to get a single result."
+ },
  "tables-calculated-table": {
   "hash": "f9ae70197901e138451d21078dae7fdaf3ab96ef",
   "columns": [
@@ -128,6 +132,35 @@
    [
     2,
     "y"
+   ]
+  ]
+ },
+ "tables-datatable-declared-types": {
+  "hash": "53bb59ca921464fda40d286f9c01163f81677de7",
+  "columns": [
+   "[d]",
+   "[x]",
+   "[s]",
+   "[y]",
+   "[next]",
+   "[half]"
+  ],
+  "rows": [
+   [
+    "2024-01-31",
+    1.0,
+    "a",
+    2024,
+    "2024-02-01",
+    0.5
+   ],
+   [
+    "2024-02-29",
+    2.0,
+    "b",
+    2024,
+    "2024-03-01",
+    1.0
    ]
   ]
  },
@@ -823,6 +856,19 @@
    ],
    [
     2
+   ]
+  ]
+ },
+ "tables-var-returns-table-variable": {
+  "hash": "73df800a66965253c3a81d79172b77ad04c46f11",
+  "columns": [
+   "[n]",
+   "[s]"
+  ],
+  "rows": [
+   [
+    2,
+    4350.0
    ]
   ]
  }

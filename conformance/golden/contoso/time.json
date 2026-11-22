@@ -12,6 +12,36 @@
    ]
   ]
  },
+ "time-closingbalancemonth-fact-date-keeps-filters": {
+  "hash": "c96023cd14e9e14680aaa2a8a341c4df06571968",
+  "columns": [
+   "[c]",
+   "[e]"
+  ],
+  "rows": [
+   [
+    4,
+    4
+   ]
+  ]
+ },
+ "time-closingbalancemonth-filter-on-date-table": {
+  "hash": "5703ef3480f03ce0fa568bed302a2517c8432a27",
+  "columns": [
+   "[y2023]",
+   "[y2024]",
+   "[q1]",
+   "[red]"
+  ],
+  "rows": [
+   [
+    null,
+    200.0,
+    null,
+    200.0
+   ]
+  ]
+ },
  "time-dateadd-partial-month": {
   "hash": "260d0b1ed73755bd2a47e65ac00ce6f077ce96a4",
   "columns": [
@@ -75,6 +105,21 @@
   "rows": [
    [
     "2024-03-15"
+   ]
+  ]
+ },
+ "time-firstnonblank-nothing-found": {
+  "hash": "388ce177c128e5bba61f1d112bf1b5ce9d80035f",
+  "columns": [
+   "[n]",
+   "[l]",
+   "[s]"
+  ],
+  "rows": [
+   [
+    null,
+    null,
+    null
    ]
   ]
  },

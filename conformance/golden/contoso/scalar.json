@@ -95,6 +95,61 @@
    ]
   ]
  },
+ "scalar-date-year-below-1900": {
+  "hash": "f48329b3429f0890404228abe4b1d57eacd01774",
+  "columns": [
+   "[a]",
+   "[b]",
+   "[c]",
+   "[d]"
+  ],
+  "rows": [
+   [
+    "0100-01-01",
+    "1899-12-31",
+    "1999-01-01",
+    "0100-03-01"
+   ]
+  ]
+ },
+ "scalar-datetime-minus-datetime": {
+  "hash": "0e23aeacc0caba7be05303abe4b733fb8dbb826a",
+  "columns": [
+   "[a]",
+   "[b]",
+   "[c]",
+   "[d]"
+  ],
+  "rows": [
+   [
+    "1899-12-30 12:00:00",
+    "1900-01-28",
+    "1901-12-30 12:00:00",
+    0.5
+   ]
+  ]
+ },
+ "scalar-datetime-plus-fraction-of-day": {
+  "hash": "0cc6f25241a9de966101796a5f642d914d6bb319",
+  "columns": [
+   "[a]",
+   "[b]",
+   "[c]",
+   "[d]",
+   "[e]",
+   "[f]"
+  ],
+  "rows": [
+   [
+    "2024-01-01 12:00:00",
+    "2023-12-31 12:00:00",
+    "2024-01-01 01:00:00",
+    "2024-01-01 06:00:00",
+    "2024-12-31 18:00:00",
+    "2024-01-03"
+   ]
+  ]
+ },
  "scalar-define-measure-and-query-var": {
   "hash": "3463dbdd7df53207e6610e757b06b4541ccfd9bb",
   "columns": [
@@ -220,6 +275,23 @@
    ]
   ]
  },
+ "scalar-in-blank-member": {
+  "hash": "8ed26e8a4663c0fb9cd83e9a710a6615e49ac9c3",
+  "columns": [
+   "[a]",
+   "[b]",
+   "[c]",
+   "[d]"
+  ],
+  "rows": [
+   [
+    true,
+    true,
+    true,
+    false
+   ]
+  ]
+ },
  "scalar-lookupvalue-ignores-filter-context": {
   "hash": "200be71a7ccf730740e541900a56aa1deb1c465f",
   "columns": [
@@ -252,6 +324,55 @@
   ],
   "rows": [
    [
+    20.0
+   ]
+  ]
+ },
+ "scalar-min-max-two-values-blank": {
+  "hash": "f1ce24f78512dbfa454965895d1c5f9a84984787",
+  "columns": [
+   "[a]",
+   "[b]",
+   "[c]",
+   "[d]",
+   "[e]"
+  ],
+  "rows": [
+   [
+    null,
+    null,
+    null,
+    -5,
+    2
+   ]
+  ]
+ },
+ "scalar-min-two-values-blank-measure": {
+  "hash": "489827532d8899b9eba0b4af2890ea88d8897986",
+  "columns": [
+   "Customer[Customer]",
+   "[m]",
+   "[x]"
+  ],
+  "rows": [
+   [
+    "Alice",
+    500.0,
+    2000.0
+   ],
+   [
+    "Bob",
+    500.0,
+    1850.0
+   ],
+   [
+    "Chloe",
+    500.0,
+    2260.0
+   ],
+   [
+    "Erin",
+    20.0,
     20.0
    ]
   ]
@@ -308,6 +429,10 @@
     1.01
    ]
   ]
+ },
+ "scalar-row-in-empty-table": {
+  "hash": "7f1a0b7f597bc5dfe75730e52ee6dfb133c6b839",
+  "error": "Query (2, 38) The number of arguments is invalid. Function CONTAINSROW must have a value for each column in the table expression."
  },
  "scalar-selectedvalue-alternate": {
   "hash": "58f29ce46b8154f3f6ead0f31860e5c32fd30457",
@@ -413,6 +538,25 @@
     1,
     "1899-12-30 01:00:00",
     15
+   ]
+  ]
+ },
+ "scalar-unary-minus-and-power": {
+  "hash": "6996124bb67bcefaabfd92cb8272fcc7b4f4fb2e",
+  "columns": [
+   "[a]",
+   "[b]",
+   "[c]",
+   "[d]",
+   "[e]"
+  ],
+  "rows": [
+   [
+    -4.0,
+    0.5,
+    4.0,
+    -4.0,
+    -8.0
    ]
   ]
  }

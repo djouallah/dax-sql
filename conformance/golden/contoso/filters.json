@@ -292,6 +292,21 @@
    ]
   ]
  },
+ "filters-boolean-filter-maxa": {
+  "hash": "804c1fe0d99b710674796f57dc76f402a0e35c27",
+  "columns": [
+   "[a]",
+   "[b]",
+   "[c]"
+  ],
+  "rows": [
+   [
+    5950.0,
+    5950.0,
+    5600.0
+   ]
+  ]
+ },
  "filters-category-two-hops": {
   "hash": "d1c9ad7e25289acd66cc817fca29795e3c8e879c",
   "columns": [

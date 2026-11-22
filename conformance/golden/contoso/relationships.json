@@ -1,4 +1,17 @@
 {
+ "relationships-calculatetable-userelationship-as-filter": {
+  "hash": "205dcd2492789656fe45447923a2af1afdb24527",
+  "columns": [
+   "[ship]",
+   "[order]"
+  ],
+  "rows": [
+   [
+    null,
+    4120.0
+   ]
+  ]
+ },
  "relationships-crossfilter-both-count-customers": {
   "hash": "6a9e920b4953406d418a3961d84de1506188b967",
   "columns": [

@@ -1,6 +1,6 @@
 // The site: views, theme, and every live example. The compiler is the one on main, served next
 // to this page (src/, formats/), and the model is the tests' fixture (fixtures/contoso.js).
-import { createCompiler, parseQuery } from './src/index.js';
+import { createCompiler } from './src/index.js';
 import { tmslToModel } from './formats/tmsl.js';
 import { bim, setup } from './fixtures/contoso.js';
 import * as ex from './examples.js';
@@ -45,18 +45,6 @@ function show() {
 }
 addEventListener('hashchange', () => { show(); scrollTo({ top: 0 }); });
 addEventListener('resize', moveInd);
-
-// A segmented toggle: <div class="seg" data-name><button data-v>...; calls back with the value.
-function seg(el, value, onChange) {
-  const set = v => { for (const b of $$('button', el)) b.setAttribute('aria-selected', String(b.dataset.v === v)); };
-  set(value);
-  el.addEventListener('click', e => {
-    const b = e.target.closest('button');
-    if (!b) return;
-    set(b.dataset.v);
-    onChange(b.dataset.v);
-  });
-}
 
 // ---------------------------------------------------------------- the compiler
 const compilers = new Map();
@@ -153,11 +141,45 @@ function rowsBox(el, getSql, { dialect = () => 'duckdb', auto = false } = {}) {
 // ---------------------------------------------------------------- 1. the problem
 {
   const steps = ex.problem;
-  let i = 0, optimize = false, timer = null;
+  let i = 0, timer = null;
   const stepper = $('#stepper');
   stepper.innerHTML = steps.map((s, k) => `<button type="button" data-i="${k}"><b>${k + 1}</b>${esc(s.title)}</button>`).join('');
-  const rows = rowsBox($('#p-rows'), () => compile(steps[i].dax, { optimize }).sql, { dialect: () => 'duckdb' });
-  const chip = ([kind, text]) => `<div class="ctx ctx-${kind}"><span class="ck">${kind}</span><span>${esc(text)}</span></div>`;
+  // The SQL that answers the step: the hand-written one, or the compiler's.
+  const sqlOf = s => s.lang === 'sql' ? s.sql : s.dax ? compile(s.dax).sql : null;
+  const rowsEl = $('#p-rows');
+  const rows = rowsBox(rowsEl, () => sqlOf(steps[i]));
+  const chips = (kind, list) => `<div class="ctxs">${list.map(t => `<div class="ctx ctx-${kind}"><span class="ck">${kind}</span><span>${esc(t)}</span></div>`).join('')}</div>`;
+  // The model's part of the story, read from the model itself.
+  const raw = bim.model;
+  const ref = (t, c) => `${/\s|^Date$/.test(t) ? `'${t}'` : t}[${c}]`;
+  const modelText = s => [
+    '// relationships: how the tables meet',
+    ...s.rels.map(n => raw.relationships.find(r => r.name === n))
+      .map(r => `${ref(r.fromTable, r.fromColumn)} -> ${ref(r.toTable, r.toColumn)}`),
+    '',
+    '// measures: what the numbers mean',
+    ...s.measures.map(m => `[${m}] := ${raw.tables.flatMap(t => t.measures ?? []).find(x => x.name === m).expression}`),
+  ].join('\n');
+  // The joins the compiler wrote, read from its SQL.
+  const joinsOf = sql => {
+    const alias = new Map([...sql.matchAll(/"([^"]+)" AS (\w+)/g)].map(m => [m[2], m[1]]));
+    return [...sql.matchAll(/JOIN "([^"]+)" AS (\w+) ON (\w+)\."([^"]+)" = (\w+)\."([^"]+)"/g)].map(m => {
+      const [, t, a, l, lc, r, rc] = m;
+      const [mine, other, otherCol] = l === a ? [lc, r, rc] : [rc, l, lc];
+      return `${alias.get(other) ?? other} meets ${t} on ${otherCol}${otherCol === mine ? '' : ` = ${mine}`}`;
+    });
+  };
+  // Step 5: the hand-written SQL and the compiler's, run side by side.
+  async function compare() {
+    const s = steps[i], el = $('#p-cmp');
+    if (!s.compare || !el || engineState !== 'ready') return;
+    const [x, y] = await Promise.all([run(s.sql), run(compile(s.dax).sql)]);
+    const norm = r => JSON.stringify(r.rows.map(row => row.map(cell)));
+    el.innerHTML = norm(x) === norm(y)
+      ? `<span class="chip match"><i>=</i>the same ${plural(x.rows.length, 'row')} as the hand-written SQL</span>`
+      : '<span class="chip differs"><i>&times;</i>the rows differ from the hand-written SQL</span>';
+  }
+  onEngine.add(compare);
   function render() {
     const s = steps[i];
     for (const b of $$('button', stepper)) {
@@ -166,97 +188,48 @@ function rowsBox(el, getSql, { dialect = () => 'duckdb', auto = false } = {}) {
       if (k === i) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current');
     }
     $('#caption').textContent = s.say;
-    $('#p-dax').innerHTML = daxBlock(s.dax);
-    $('#p-ctx').innerHTML = s.ctx.length ? s.ctx.map(chip).join('') : '<div class="ctx ctx-empty"><span class="ck">empty</span><span>every row of Sales</span></div>';
-    const c = compile(s.dax, { optimize });
-    const st = stats(c.sql);
-    $('#p-meta').textContent = `${plural(st.lines, 'line')} · ${plural(st.selects, 'SELECT')}`;
-    $('#p-sql').innerHTML = sqlBlock(c.sql);
+    $('#p-write-h').textContent = s.lang === 'model' ? 'What the model holds, written once'
+      : s.lang === 'sql' ? (s.compare ? 'What you wrote, by hand' : 'What you write, by hand') : 'What you write';
+    $('#p-write').innerHTML = s.lang === 'sql' ? sqlBlock(s.write) : daxBlock(s.lang === 'model' ? modelText(s) : s.write);
+    rowsEl.parentElement.hidden = s.lang === 'model';
+    const right = $('#p-right'), head = $('#p-right-h'), meta = $('#p-meta');
+    meta.textContent = '';
+    if (s.lang === 'model') {
+      head.textContent = 'Written once, for every question';
+      right.innerHTML = `${chips('model', s.checks)}<p class="sub">A model answers nothing by itself: it is asked. The whole model is in the <a href="#play">Playground</a>.</p>`;
+    } else if (!s.dax) {
+      head.textContent = 'What you must get right, in every query';
+      right.innerHTML = chips('you', s.checks);
+    } else {
+      const sql = compile(s.dax).sql, st = stats(sql);
+      meta.textContent = `${plural(st.lines, 'line')} · ${plural(st.selects, 'SELECT')}`;
+      if (s.compare) {
+        head.textContent = 'The SQL dax-sql compiled from the names: the same joins';
+        right.innerHTML = `${chips('join', joinsOf(sql))}${sqlBlock(sql)}<div id="p-cmp"></div>`;
+        compare();
+      } else {
+        head.textContent = 'The model did these';
+        right.innerHTML = `${chips('model', s.checks)}<h4>The SQL that runs, compiled in your browser</h4>${sqlBlock(sql)}`;
+      }
+    }
     for (const el of $$('#walk .rv')) { el.classList.remove('on'); void el.offsetWidth; el.classList.add('on'); }
-    rows();
+    if (s.lang !== 'model') rows();
   }
   const go = k => { i = Math.max(0, Math.min(steps.length - 1, k)); render(); };
   stepper.addEventListener('click', e => { const b = e.target.closest('button'); if (b) { stop(); go(Number(b.dataset.i)); } });
   $('#p-prev').onclick = () => { stop(); go(i - 1); };
   $('#p-next').onclick = () => { stop(); go(i + 1); };
-  const stop = () => { clearInterval(timer); timer = null; $('#play').textContent = 'Play'; };
-  $('#play').onclick = () => {
+  const stop = () => { clearInterval(timer); timer = null; $('#p-play').textContent = 'Play'; };
+  $('#p-play').onclick = () => {
     if (timer) { stop(); return; }
     go(0);
-    $('#play').textContent = 'Stop';
-    timer = setInterval(() => { if (i >= steps.length - 1) stop(); else go(i + 1); }, 6500);
+    $('#p-play').textContent = 'Stop';
+    timer = setInterval(() => { if (i >= steps.length - 1) stop(); else go(i + 1); }, 9000);
   };
-  seg($('#p-opt'), 'off', v => { optimize = v === 'on'; render(); });
   render();
 }
 
-
-// ---------------------------------------------------------------- 2. how it works
-{
-  $('#how-dax').innerHTML = daxBlock(ex.how);
-  // The syntax tree, one node a line.
-  const label = n => {
-    switch (n.k) {
-      case 'call': return `<b>${esc(n.fn)}</b>(&hellip;)`;
-      case 'col': return n.table ? `column <code>'${esc(n.table)}'[${esc(n.name)}]</code>` : `name <code>[${esc(n.name)}]</code> <span class="muted">(a measure? not known yet)</span>`;
-      case 'str': return `text <code>"${esc(n.v)}"</code>`;
-      case 'num': return `number <code>${esc(n.v)}</code>`;
-      default: return `<b>${esc(n.k)}</b>`;
-    }
-  };
-  const lines = [];
-  const walk = (n, depth) => {
-    if (!n || typeof n !== 'object') return;
-    if (Array.isArray(n)) { n.forEach(x => walk(x, depth)); return; }
-    if (n.k) { lines.push(`<div class="tn" style="--d:${depth}"><span class="tk">${esc(n.k)}</span>${label(n)}</div>`); depth++; }
-    for (const [key, v] of Object.entries(n)) if (key !== 'k' && v && typeof v === 'object') walk(v, depth);
-  };
-  const ast = parseQuery(ex.how);
-  lines.push('<div class="tn" style="--d:0"><span class="tk">query</span><b>EVALUATE</b></div>');
-  walk(ast.evaluates[0].e, 1);
-  for (const o of ast.evaluates[0].order) { lines.push('<div class="tn" style="--d:1"><span class="tk">order</span><b>ORDER BY</b></div>'); walk(o, 2); }
-  $('#how-ast').innerHTML = lines.join('');
-
-  // Rewrites off and on, and the same rows.
-  const raw = compile(ex.how, { optimize: false }), fused = compile(ex.how, { optimize: true });
-  const sr = stats(raw.sql), sf = stats(fused.sql);
-  $('#how-raw').innerHTML = sqlBlock(raw.sql);
-  $('#how-fused').innerHTML = sqlBlock(fused.sql);
-  $('#how-raw-m').textContent = `${plural(sr.lines, 'line')} · ${plural(sr.selects, 'SELECT')}`;
-  $('#how-fused-m').textContent = `${plural(sf.lines, 'line')} · ${plural(sf.selects, 'SELECT')}`;
-  const agree = $('#how-agree');
-  const renderAgree = async () => {
-    if (engineState !== 'ready') {
-      agree.innerHTML = `<button class="btn run" type="button">&#9654; Run both</button> <span class="sub">and compare their rows, as CI's <code>agree</code> job does for every conformance query.</span>`;
-      $('button', agree).onclick = () => loadEngine();
-      if (engineState === 'loading') agree.innerHTML = '<p class="sub"><span class="spin"></span> Loading DuckDB-WASM&hellip;</p>';
-      return;
-    }
-    const [a, b] = await Promise.all([run(raw.sql), run(fused.sql)]);
-    const same = JSON.stringify(a.rows) === JSON.stringify(b.rows);
-    agree.innerHTML = `${same ? `<span class="chip match"><i>=</i>the same ${plural(a.rows.length, 'row')}</span>` : '<span class="chip differs"><i>&times;</i>the rows differ</span>'}
-      <span class="sub">rewrites off: ${a.ms.toFixed(0)} ms · rewrites on: ${b.ms.toFixed(0)} ms, on 11 sales. The gap grows with the data: see the measured numbers below.</span>`;
-  };
-  onEngine.add(renderAgree);
-  renderAgree();
-
-  // The two dialects.
-  const q = ex.problem[2].dax;
-  $('#how-dialect-q').innerHTML = daxBlock(q);
-  $('#how-duck').innerHTML = sqlBlock(compile(q, { dialect: 'duckdb' }).sql);
-  $('#how-tsql').innerHTML = sqlBlock(compile(q, { dialect: 'tsql' }).sql);
-
-  // The stages, stepped.
-  const stages = $$('#pipe .fbox');
-  const pick = k => {
-    stages.forEach((s, j) => s.classList.toggle('on', j === k));
-    $$('[data-stage]').forEach(p => p.classList.toggle('on', Number(p.dataset.stage) === k));
-  };
-  stages.forEach((s, j) => { s.tabIndex = 0; s.onclick = () => pick(j); s.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(j); } }; });
-  pick(0);
-}
-
-// ---------------------------------------------------------------- 3. the playground
+// ---------------------------------------------------------------- 2. the playground
 // The query, the SQL the compiler emits (DuckDB's, with its rewrites, as it ships), and DuckDB's answer.
 const pgIn = $('#pg-in'), pgEx = $('#pg-ex');
 const pg = { compiled: null };

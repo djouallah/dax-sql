@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>dax-sql</title>
-<meta name="description" content="dax-sql compiles DAX and Apache Ossie SQL over a semantic model into one plain SQL SELECT: what a measure means, how the compiler turns it into SQL, and a live playground.">
+<meta name="description" content="dax-sql compiles DAX and Apache Ossie SQL over a semantic model into one plain SQL SELECT: why a semantic model, why it is no magic, and a live playground.">
 <script>try { document.documentElement.dataset.theme = localStorage.getItem("theme") || "dark"; } catch (e) { document.documentElement.dataset.theme = "dark"; }</script>
 <style>
 :root {
@@ -97,12 +97,6 @@ nav#nav .ind.off { opacity: 0; }
 .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
 .stack { display: grid; gap: 12px; align-content: start; min-width: 0; }
 .grid2 > *, .grid4 > *, .stack > * { min-width: 0; }
-[data-stage]:not(.on) { display: none !important; }
-[data-stage].on { animation: rise .35s cubic-bezier(.2,.8,.2,1) both; }
-.seg { display: inline-flex; background: var(--sunken); border-radius: 10px; padding: 3px; border: 1px solid var(--line); }
-.seg button { font: inherit; font-size: 13px; font-weight: 600; border: 0; background: none; color: var(--ink-2);
-  padding: 5px 12px; border-radius: 7px; cursor: pointer; white-space: nowrap; }
-.seg button[aria-selected="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 0 0 1px var(--line-2), 0 0 18px -6px var(--k-dax); }
 
 /* code */
 pre.code { max-height: 520px; }
@@ -159,24 +153,10 @@ td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; }
 .ctx { display: flex; gap: 8px; align-items: baseline; padding: 7px 10px; border-radius: 9px; background: var(--surface); border: 1px solid var(--line);
   font-size: 13px; color: var(--ink-2); --kc: var(--k-ctx); }
 .ctx .ck { font: 700 11px var(--mono); text-transform: uppercase; letter-spacing: .05em; color: var(--kc); min-width: 62px; }
-.ctx-bind { --kc: var(--k-dax); } .ctx-pred { --kc: var(--k-ctx); } .ctx-path { --kc: var(--k-eng); }
-.ctx-removed { --kc: var(--crit); } .ctx-empty { --kc: var(--muted); }
-.ctx-path, .ctx-empty { border-style: dashed; }
+.ctx-you { --kc: var(--k-ctx); } .ctx-model { --kc: var(--k-sql); } .ctx-join { --kc: var(--k-eng); }
+.ctx-model { border-style: dashed; }
 .sqlhead { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; flex-wrap: wrap; }
 .meta { font: 12px var(--mono); color: var(--muted); }
-
-/* the model diagram */
-.model svg { width: 100%; max-width: 860px; height: auto; display: block; margin: 0 auto; }
-.model .svgwrap { overflow-x: auto; }
-@media (max-width: 600px) { .model svg { min-width: 640px; } }
-.model .tb rect { fill: var(--surface-2); stroke: var(--line-2); stroke-width: 1.2; }
-.model .tb.fact rect { stroke: var(--k-dax); filter: drop-shadow(0 0 10px color-mix(in srgb, var(--k-dax) 40%, transparent)); }
-.model .tb text { fill: var(--ink); font: 700 13.5px var(--mono); }
-.model .tb text.n { fill: var(--muted); font: 11.5px system-ui, sans-serif; }
-.model .rl { stroke: var(--ink-2); stroke-width: 1.5; fill: none; opacity: .7; }
-.model .rl.inactive { stroke-dasharray: 5 4; opacity: .5; }
-.model .rl.m2m { stroke: var(--k-ctx); stroke-dasharray: 2 4; opacity: 1; }
-.model .lbl { fill: var(--muted); font: 11px var(--mono); }
 
 /* approaches */
 
@@ -184,26 +164,6 @@ td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; }
 .live { display: grid; gap: 10px; }
 .live-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .live-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 14px; align-items: start; }
-
-/* the pipeline */
-.flow { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
-.fbox { border: 1px solid var(--line-2); border-radius: 12px; padding: 12px; background: var(--surface); display: grid; gap: 5px; align-content: start;
-  cursor: pointer; transition: border-color .2s, box-shadow .2s, transform .2s; --kc: var(--k-dax); }
-.fbox:hover { transform: translateY(-2px); }
-.fbox.on { border-color: var(--kc); box-shadow: 0 0 24px -10px var(--kc); background: var(--surface-2); }
-.fbox h4 { margin: 0; color: var(--kc); }
-.fbox p { font-size: 12.5px; color: var(--ink-2); }
-.fbox code { font-size: 11px; }
-.fbox:nth-child(1) { --kc: var(--k-dax); } .fbox:nth-child(2) { --kc: var(--k-ctx); } .fbox:nth-child(3) { --kc: var(--k-ir); }
-.fbox:nth-child(4) { --kc: var(--k-sql); } .fbox:nth-child(5) { --kc: var(--k-eng); }
-.tree { font: 12.5px/1.75 var(--mono); max-height: 520px; overflow: auto; padding: 10px 12px; background: var(--sunken); border: 1px solid var(--line); border-radius: 10px; }
-.tn { padding-left: calc(var(--d) * 18px); white-space: nowrap; color: var(--ink-2); position: relative; }
-.tn .tk { display: inline-block; min-width: 44px; margin-right: 8px; font-size: 11px; color: var(--k-ir); }
-.tn b { color: var(--ink); }
-.tn code { background: none; padding: 0; color: var(--ink); }
-ol.steps { margin: 0; padding-left: 20px; display: grid; gap: 6px; color: var(--ink-2); font-size: 14px; }
-ol.steps b { color: var(--ink); }
-
 
 /* playground */
 .mgwrap { overflow-x: auto; padding-bottom: 4px; }
@@ -263,7 +223,6 @@ kbd { font: 11px var(--mono); border: 1px solid var(--line-2); border-bottom-wid
 
 @media (max-width: 1000px) {
   .grid4 { grid-template-columns: 1fr 1fr; }
-  .flow { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 860px) {
   .grid2, .live-grid, .qgrid { grid-template-columns: 1fr; }
@@ -274,7 +233,7 @@ kbd { font: 11px var(--mono); border: 1px solid var(--line-2); border-bottom-wid
   .wrap { padding: 0 16px; }
   .brand { font-size: 24px; } .tagline { display: none; } .toplinks { gap: 14px; }
   nav#nav a { flex: none; font-size: 14px; padding: 8px 9px; }
-  .grid4, .flow { grid-template-columns: 1fr; }
+  .grid4 { grid-template-columns: 1fr; }
   h2 { font-size: 23px; }
   .card { padding: 14px; }
 }
@@ -296,7 +255,6 @@ kbd { font: 11px var(--mono); border: 1px solid var(--line-2); border-bottom-wid
   <nav id="nav">
     <span class="ind" aria-hidden="true"></span>
     <a href="#problem">The problem</a>
-    <a href="#how">How it works</a>
     <a href="#play">Playground</a>
   </nav>
 </div></div>
@@ -350,12 +308,9 @@ kbd { font: 11px var(--mono); border: 1px solid var(--line-2); border-bottom-wid
 <!-- ============================== 1. the problem -->
 <section id="problem" class="view">
   <header class="head">
-    <h2>A measure is a question, not a formula</h2>
-    <p class="lead">In Power BI a measure is written once, <code>[Sales Amount] := SUM(Sales[Amount])</code>, and then asked
-      everywhere: in a total, in a row per year, under a slicer, inside another measure. What it returns depends on
-      <b>where it is asked</b>: on the filters around it, which DAX calls the <b>filter context</b>. SQL has no filter
-      context, no relationships between tables, and no rows that turn into filters. So one measure is different SQL in
-      every place it is used. Follow it through five places, each a column added to the same query.</p>
+    <h2>Every question in SQL is a new query</h2>
+    <p class="lead">SQL gives the exact answer, but each question is written from scratch, joins and all. A semantic model
+      writes that part once, so a question is only the names it asks for. Five steps.</p>
   </header>
 
   <div class="card stack" id="walk">
@@ -363,171 +318,24 @@ kbd { font: 11px var(--mono); border: 1px solid var(--line-2); border-bottom-wid
       <div class="stepper" id="stepper"></div>
       <button class="btn" type="button" id="p-prev" aria-label="Previous step">&larr;</button>
       <button class="btn" type="button" id="p-next" aria-label="Next step">&rarr;</button>
-      <button class="btn" type="button" id="play">Play</button>
+      <button class="btn" type="button" id="p-play">Play</button>
     </div>
     <p class="caption big" id="caption" aria-live="polite"></p>
     <div class="stage">
       <div class="stack">
-        <div class="rv"><h4>The query</h4><div id="p-dax"></div></div>
-        <div class="rv d1"><h4>The filter context of the new column</h4><div class="ctxs" id="p-ctx"></div></div>
-        <div class="rv d3"><h4>The answer</h4><div id="p-rows"></div></div>
+        <div class="rv"><h4 id="p-write-h">What you write</h4><div id="p-write"></div></div>
+        <div class="rv d2"><h4>The answer</h4><div id="p-rows"></div></div>
       </div>
       <div class="arrow" aria-hidden="true">&rarr;</div>
-      <div class="stack rv d2">
-        <div class="sqlhead"><h4>The SQL, compiled in your browser</h4>
-          <div class="seg" id="p-opt"><button type="button" data-v="off">rewrites off</button><button type="button" data-v="on">rewrites on</button></div></div>
-        <div id="p-sql"></div>
-        <span class="meta" id="p-meta"></span>
+      <div class="stack rv d1">
+        <div class="sqlhead"><h4 id="p-right-h"></h4><span class="meta" id="p-meta"></span></div>
+        <div id="p-right"></div>
       </div>
-    </div>
-    <p class="note"><b>Rewrites off</b> shows the SQL as DAX means it: each measure on each row is a subquery over the
-      rows its filter context keeps. That is easy to read and slow on real data. <b>Rewrites on</b> is what the compiler
-      ships: the same answer from fused <code>GROUP BY</code> queries (see <a href="#how">How it works</a>). Nothing on this page
-      is pasted SQL: your browser runs the compiler from the repo's main branch.</p>
-  </div>
-
-  <div class="card stack model">
-    <h3>The model on this page</h3>
-    <p class="sub">The test suite's small sales model, small enough to check every answer by hand: 11 sales, 5 products in 3
-      categories, 4 customers, every day of 2023 and 2024. Sale 11 is to customer 99, who is not in Customer.</p>
-    <div class="svgwrap"><svg viewBox="0 0 820 312" role="img" aria-label="Sales relates to Product, Customer and Date; Product to Category; Returns to Product and Date; CityTarget to Customer, many to many.">
-      <line class="rl" x1="230" y1="64" x2="180" y2="64"/>
-      <line class="rl" x1="430" y1="146" x2="380" y2="76"/>
-      <line class="rl" x1="305" y1="220" x2="305" y2="88"/>
-      <line class="rl" x1="380" y1="252" x2="430" y2="268"/>
-      <line class="rl" x1="580" y1="146" x2="630" y2="76"/>
-      <line class="rl" x1="492" y1="178" x2="492" y2="250"/>
-      <line class="rl inactive" x1="518" y1="178" x2="518" y2="250"/>
-      <line class="rl m2m" x1="705" y1="88" x2="705" y2="220"/>
-      <text class="lbl" x="484" y="204" text-anchor="end">OrderDate</text>
-      <text class="lbl" x="526" y="204">ShipDate (inactive)</text>
-      <text class="lbl" x="697" y="158" text-anchor="end">City, many-to-many</text>
-      <g class="tb"><rect x="30" y="40" width="150" height="48" rx="9"/><text x="44" y="61">Category</text><text class="n" x="44" y="78">3 rows</text></g>
-      <g class="tb"><rect x="230" y="40" width="150" height="48" rx="9"/><text x="244" y="61">Product</text><text class="n" x="244" y="78">5 rows</text></g>
-      <g class="tb"><rect x="230" y="220" width="150" height="48" rx="9"/><text x="244" y="241">Returns</text><text class="n" x="244" y="258">3 rows</text></g>
-      <g class="tb fact"><rect x="430" y="130" width="150" height="48" rx="9"/><text x="444" y="151">Sales</text><text class="n" x="444" y="168">11 rows · the fact</text></g>
-      <g class="tb"><rect x="430" y="250" width="150" height="48" rx="9"/><text x="444" y="271">Date</text><text class="n" x="444" y="288">731 rows</text></g>
-      <g class="tb"><rect x="630" y="40" width="150" height="48" rx="9"/><text x="644" y="61">Customer</text><text class="n" x="644" y="78">4 rows</text></g>
-      <g class="tb"><rect x="630" y="220" width="150" height="48" rx="9"/><text x="644" y="241">CityTarget</text><text class="n" x="644" y="258">3 rows</text></g>
-    </svg></div>
-    <p class="sub">Lines are relationships, the many side toward the fact. The model also has calculated tables, two
-      calculation groups, a field parameter and three security roles: try them in the <a href="#play">Playground</a>.</p>
-  </div>
-</section>
-
-<!-- ============================== 2. how it works -->
-<section id="how" class="view">
-  <header class="head">
-    <h2>How it works</h2>
-    <p class="lead">Five stages in about 9,000 lines of JavaScript, with no dependencies. Follow one query through them:
-      sales, last year and year to date, by month. Click a stage.</p>
-  </header>
-  <div class="flow" id="pipe">
-    <div class="fbox"><h4>1 · Parse</h4><p>DAX text to a syntax tree. Nothing about the model yet.</p><code>lexer.js parser.js</code></div>
-    <div class="fbox"><h4>2 · Compile</h4><p>The tree walked with the filter context as a value.</p><code>compiler.js context.js model.js</code></div>
-    <div class="fbox"><h4>3 · Plan</h4><p>A small relational tree: scans, groups, aggregates.</p><code>ir.js</code></div>
-    <div class="fbox"><h4>4 · Emit</h4><p>SQL, then the rewrites that make it fast.</p><code>emit.js</code></div>
-    <div class="fbox"><h4>5 · Dialect</h4><p>The spelling of one engine.</p><code>dialects/</code></div>
-  </div>
-
-  <div class="card stack" data-stage="0">
-    <h3>Parse: the text becomes a tree</h3>
-    <p class="sub">The lexer and parser know DAX's grammar and nothing else. <code>[Sales PY]</code> is a name in brackets:
-      whether it is a measure, and what it means, is the compiler's question. The tree below is this page's parser output.</p>
-    <div class="grid2"><div id="how-dax"></div><div class="tree" id="how-ast"></div></div>
-  </div>
-
-  <div class="card stack" data-stage="1">
-    <h3>Compile: the filter context as a value</h3>
-    <p class="sub">The compiler walks the tree with an environment: the filter context, the row contexts, the variables, the
-      columns SUMMARIZECOLUMNS groups by, the shadow contexts ALLSELECTED restores, and the measures being expanded. A measure
-      reference is replaced by its expression under the current context. Wherever DAX would change the context at run
-      time, a new one is built here, at compile time.</p>
-    <div class="grid2">
-      <div class="stack">
-        <h4>A filter is one of three things</h4>
-        <div class="tw"><table class="wrapcell">
-          <tr><th>Kind</th><th>What it says</th><th>Made by</th></tr>
-          <tr><td><code>bind</code></td><td>A column equals a value, possibly an outer row's: the SQL is then correlated.</td><td>A group's key; context transition</td></tr>
-          <tr><td><code>pred</code></td><td>A predicate on columns, read on each row.</td><td><code>CALCULATE(&hellip;, T[c] &gt; 5)</code></td></tr>
-          <tr><td><code>rel</code></td><td>The rows of a table, matched on its columns' lineage.</td><td><code>TREATAS</code>, <code>VALUES</code>, <code>FILTER</code>, time intelligence</td></tr>
-        </table></div>
-        <p class="sub">A filter reaches a table only along relationships: <code>expand(T)</code> is DAX's expanded table
-          (the tables T reaches through many-to-one relationships), and <code>inbound(T)</code> the bidirectional and
-          many-to-many ones through which a filter enters from outside, as a semi-join.</p>
-      </div>
-      <div class="stack">
-        <h4>CALCULATE, in four steps</h4>
-        <ol class="steps">
-          <li>Evaluate the filter arguments in the <b>outer</b> context.</li>
-          <li>Turn the row contexts into <code>bind</code>s: <b>context transition</b>.</li>
-          <li>Apply the relationship modifiers (<code>USERELATIONSHIP</code>, <code>CROSSFILTER</code>), then the removals (<code>ALL</code>, <code>REMOVEFILTERS</code>).</li>
-          <li>Drop what the context said about the filters' columns, unless <code>KEEPFILTERS</code>, and add the filters.</li>
-        </ol>
-        <h4>Here</h4>
-        <p class="sub"><code>[Sales PY]</code> is <code>CALCULATE([Sales Amount], SAMEPERIODLASTYEAR('Date'[Date]))</code>. In a
-          month's row the context binds <code>'Date'[Year]</code> and <code>'Date'[Month]</code>. SAMEPERIODLASTYEAR is a
-          <code>rel</code> filter: the dates of that month, one year earlier. A filter on a date table's date column clears
-          the rest of that table, so the year and month binds go, and only those dates stay.</p>
-      </div>
-    </div>
-  </div>
-
-  <div class="card stack" data-stage="2">
-    <h3>Plan: a few node kinds</h3>
-    <p class="sub">The compiler's output is a tree close to relational algebra. Every aggregate is an <code>agg</code> over a
-      <code>scan</code> of one model table under one filter context. <code>freeRows(x)</code> says which rows from outside a
-      node it reads: that is exactly the correlation its SQL will need.</p>
-    <div class="tw"><table class="wrapcell">
-      <tr><th>Scalars</th><td><code>lit col op fn case agg exists insub wrank</code></td></tr>
-      <tr><th>Tables</th><td><code>scan filter project distinct group topn cross rows series generate</code> <code>sc</code> (SUMMARIZECOLUMNS) <code>shared</code> (a table VAR) <code>onerow prefix window</code>, and the set operations</td></tr>
-      <tr><th>A scan</th><td>The table joined to the related tables it needs, with the filter context as its WHERE. A <code>rel</code> filter is <code>IN</code> for one column and <code>EXISTS</code> for more.</td></tr>
-      <tr><th>An aggregate</th><td>A scalar subquery over its scan, correlated to the rows it reads.</td></tr>
-    </table></div>
-  </div>
-
-  <div class="card stack" data-stage="3">
-    <h3>Emit: correct first, then fast</h3>
-    <p class="sub">Written straight from the plan, each measure on each row is a correlated subquery: exactly what DAX means,
-      and slow on real data. The emitter then rewrites it. <b>Fusion</b>: aggregates over the same table, keys and filters
-      become one <code>GROUP BY</code> CTE, joined to the groups. <b>Totals from groups</b>: a subtotal adds up a group's
-      rows instead of scanning again. <b>Grouping before joins</b>: a fact is grouped by its key before it meets its
-      dimensions. <b>Mappings</b> for time intelligence: each group's dates are computed once and joined.
-      <code>optimize: false</code> turns them all off. Here the rewritten SQL is longer, not shorter: length is not the
-      point, correlation is. Rewrites off, each measure is a subquery evaluated for one month at a time, which the engine
-      must decorrelate (DuckDB does; Fabric runs some as loops) and which is still slow at scale (the table below). Rewrites on, each is a
-      <code>GROUP BY</code> over all the months at once, and the dates each month maps to are computed once and joined: no
-      subquery is left per month.</p>
-    <div class="grid2">
-      <div class="stack"><div class="sqlhead"><h4>Rewrites off</h4><span class="meta" id="how-raw-m"></span></div><div id="how-raw"></div></div>
-      <div class="stack"><div class="sqlhead"><h4>Rewrites on</h4><span class="meta" id="how-fused-m"></span></div><div id="how-fused"></div></div>
-    </div>
-    <div id="how-agree"></div>
-    <div class="tw"><table class="wrapcell">
-      <tr><th>Measured in DESIGN.md</th><th class="n">Before</th><th class="n">After</th></tr>
-      <tr><td>A million rows joined to their dates for each month, read as groups</td><td class="n">12 s</td><td class="n">0.1 s</td></tr>
-      <tr><td>Measures over "days the daily table lacks", 1.6 million rows: correlated vs fused groups</td><td class="n">30 s</td><td class="n">0.2 s</td></tr>
-      <tr><td>A SUMMARIZE with a measure by year and category, a million rows: table filter as conditions</td><td class="n">40 s</td><td class="n">1 s</td></tr>
-      <tr><td>A RANKX of 121 rows on Fabric, written in shapes Fabric decorrelates</td><td class="n">over 300 s</td><td class="n">under 1 s</td></tr>
-    </table></div>
-  </div>
-
-  <div class="card stack" data-stage="4">
-    <h3>Dialect: the spelling of one engine</h3>
-    <p class="sub">The plan and the rewrites are the same for every engine; a dialect says how to write them. DuckDB is the
-      default. <code>dialect: 'tsql'</code> writes T-SQL for Fabric's SQL analytics endpoint and Warehouse: a boolean is a
-      <code>BIT</code>, <code>OUTER APPLY</code> stands for <code>LATERAL</code>, a <code>CASE</code> inside an aggregate for
-      <code>FILTER</code>, and some subqueries take shapes Fabric decorrelates rather than loops over. To add an engine, extend
-      <code>Dialect</code> in <code>src/dialects/base.js</code>.</p>
-    <div id="how-dialect-q"></div>
-    <div class="grid2">
-      <div class="stack"><h4>DuckDB</h4><div id="how-duck"></div></div>
-      <div class="stack"><h4>T-SQL (Fabric)</h4><div id="how-tsql"></div></div>
     </div>
   </div>
 </section>
 
-<!-- ============================== 3. playground -->
+<!-- ============================== 2. playground -->
 <section id="play" class="view">
   <div class="playbar">
     <div class="subtabs" id="pg-tabs" role="tablist">
@@ -572,7 +380,7 @@ const dax = createCompiler(model, { tableSource: t => `read_parquet('data/${t.na
 const { sql, columns } = dax.compile(`EVALUATE SUMMARIZECOLUMNS('Date'[Year], "Sales", [Sales Amount])`);</code></pre>
     <p>The full design, with every rule it implements, is in <a href="https://github.com/djouallah/dax-sql/blob/main/DESIGN.md">DESIGN.md</a>.</p>
     <h3>This page</h3>
-    <p>One HTML file. Every SQL snippet on it is compiled in your browser by the compiler from the main branch, and run, when
+    <p>One HTML file. Apart from the SQL labelled hand-written, every SQL snippet on it is compiled in your browser by the compiler from the main branch, and run, when
       you ask, by <a href="https://github.com/duckdb/duckdb-wasm">DuckDB-WASM</a> 1.32.0. The layout follows
       <a href="https://djouallah.github.io/ossie_bench/">ossie_bench</a>.</p>
     <h3>Not endorsed</h3>

@@ -1,52 +1,80 @@
 // The queries the site compiles, live, with the compiler on main. They run over the small
 // Contoso-like model in test/fixtures/contoso.js (11 sales, 5 products, 4 customers, 2023-2024).
 
-// The problem: one measure, [Sales Amount] = SUM(Sales[Amount]), asked in five places.
-// Each step adds one column to the same query.
-const y = "'Date'[Year]";
-const cols = [
-  ['"Sales", [Sales Amount]'],
-  ['"Bikes", CALCULATE([Sales Amount], Category[Category] = "Bikes")'],
-  ['"All years", CALCULATE([Sales Amount], ALL(\'Date\'))'],
-  ['"Best customer", MAXX(VALUES(Customer[Customer]), [Sales Amount])'],
+// The problem, in five steps: a question in SQL, the next question, the model written once,
+// the question as names, and the SQL it compiles to. The hand-written SQL is labelled as such
+// on the page; the rest is compiled in the browser.
+const sql1 = `SELECT d."Year", SUM(s."Amount") AS "Sales"
+FROM "Sales" AS s
+JOIN "Date" AS d ON d."Date" = s."OrderDate"
+GROUP BY d."Year"
+ORDER BY d."Year"`;
+
+const sql2 = `SELECT d."Year",
+  SUM(s."Amount") AS "Sales",
+  SUM(CASE WHEN c."Category" = 'Bikes' THEN s."Amount" END) AS "Bikes",
+  SUM(CASE WHEN c."Category" = 'Bikes' THEN s."Amount" END) / SUM(s."Amount") AS "Bikes share"
+FROM "Sales" AS s
+JOIN "Date" AS d ON d."Date" = s."OrderDate"
+JOIN "Product" AS p ON p."ProductKey" = s."ProductKey"
+JOIN "Category" AS c ON c."CategoryKey" = p."CategoryKey"
+GROUP BY d."Year"
+ORDER BY d."Year"`;
+
+const dax2 = `EVALUATE
+SUMMARIZECOLUMNS(
+  'Date'[Year],
+  "Sales", [Sales Amount],
+  "Bikes", CALCULATE([Sales Amount], Category[Category] = "Bikes"),
+  "Bikes share", DIVIDE(CALCULATE([Sales Amount], Category[Category] = "Bikes"), [Sales Amount])
+)
+ORDER BY 'Date'[Year]`;
+
+const checks2 = [
+  'Sales meets Date on OrderDate, not ShipDate',
+  'Sales meets Product on ProductKey',
+  'Product meets Category on CategoryKey',
+  'a join that repeats a sale counts it twice',
+  '"Bikes" is the same filter in every column that needs it',
+  '"Sales" is SUM(Amount) every time, in every query',
 ];
-const sc = n => `EVALUATE\nSUMMARIZECOLUMNS(\n  ${[y, ...cols.slice(0, n).map(c => c[0])].join(',\n  ')}\n)\nORDER BY ${y}`;
 
 export const problem = [
   {
-    title: 'A total',
-    dax: 'EVALUATE ROW("Sales", [Sales Amount])',
-    ctx: [],
-    say: 'Asked alone, the measure sees every sale. The filter context is empty, and the SQL is one SUM.',
+    title: 'A question in SQL',
+    lang: 'sql', write: sql1, sql: sql1,
+    checks: ['Sales meets Date on OrderDate, not ShipDate', 'group by the year', '"Sales" is SUM(Amount)'],
+    say: 'Sales by year. In SQL you write the whole query: the join, the group, the sum. It is exact, and this one is easy.',
   },
   {
-    title: 'By year',
-    dax: sc(1),
-    ctx: [['bind', "'Date'[Year] = the row's year"], ['path', 'Date filters Sales on OrderDate']],
-    say: 'Now each row of the result asks it again, for its own year. Sales has no Year column: the filter reaches Sales only through the relationship on OrderDate, so the SQL needs a join.',
+    title: 'The next question',
+    lang: 'sql', write: sql2, sql: sql2,
+    checks: checks2,
+    say: 'Now bikes beside all sales, and their share. The whole query again: two more joins, a filter, a division. Still exact, but every question restates how the tables meet and what "sales" means, and each new line is one more place to get it wrong.',
   },
   {
-    title: 'A filter two tables away',
-    dax: sc(2),
-    ctx: [['bind', "'Date'[Year] = the row's year"], ['pred', 'Category[Category] = "Bikes"'], ['path', 'Category → Product → Sales']],
-    say: 'CALCULATE adds a filter on Category. Nothing in the query says how Category meets Sales: the model does, through Product. Same measure, another join path.',
+    title: 'A semantic model writes it once',
+    lang: 'model',
+    rels: ['sales_orderdate', 'sales_product', 'product_category'],
+    measures: ['Sales Amount'],
+    checks: ['how Sales meets Date', 'how Sales meets Product, and Product Category', 'what "Sales" means'],
+    say: 'A semantic model holds the parts every question repeats: how the tables meet (the relationships) and what the numbers mean (the measures). They are written once, next to the data.',
   },
   {
-    title: 'A filter taken away',
-    dax: sc(3),
-    ctx: [['removed', "ALL('Date') drops the year"]],
-    say: "ALL('Date') removes the row's year, so this column is the grand total on every row. The measure is the same text; its filter context is not.",
+    title: 'Then a question is just names',
+    lang: 'dax', write: dax2, dax: dax2,
+    checks: checks2,
+    say: 'The same question, asked by name: the year, [Sales Amount], and a filter on Category. No joins in it. The model knows how Category reaches Sales, so the query only says what it wants.',
   },
   {
-    title: 'A row becomes a filter',
-    dax: sc(4),
-    ctx: [['bind', "'Date'[Year] = the row's year"], ['bind', "Customer[Customer] = MAXX's current row"]],
-    say: "MAXX walks the customers, and inside it [Sales Amount] turns each customer's row into a filter: context transition. The SQL has to compute sales per year and customer, then take the max.",
+    title: 'No magic',
+    lang: 'sql', write: sql2, sql: sql2, dax: dax2, compare: true,
+    say: 'There is no magic in DAX. Every name stands for SQL you could write by hand: the compiled SQL has the joins you wrote. SQL engines do not take these questions only because nobody had done the work of compiling them. dax-sql is one example of that work, and there will be more: Apache Ossie gives semantic models an open format, and AI makes compilers like this cheap to write.',
   },
 ];
 
-// How it works: time intelligence, the case where the rewrites matter most.
-export const how = `EVALUATE
+// The playground's time intelligence example.
+const timeIntel = `EVALUATE
 SUMMARIZECOLUMNS(
   'Date'[Year], 'Date'[Month],
   "Sales", [Sales Amount],
@@ -54,6 +82,10 @@ SUMMARIZECOLUMNS(
   "YTD", [Sales YTD]
 )
 ORDER BY 'Date'[Year], 'Date'[Month]`;
+
+// The playground's first two examples.
+const y = "'Date'[Year]";
+const sc = cols => `EVALUATE\nSUMMARIZECOLUMNS(\n  ${[y, ...cols].join(',\n  ')}\n)\nORDER BY ${y}`;
 
 // One plan, two languages: a SELECT over the model, and the DAX it stands for.
 export const sql = `SELECT Color, AGG([Sales Amount]) AS sales, MEASURE(Orders) AS orders
@@ -74,9 +106,14 @@ ORDER BY [Sales] DESC`;
 
 // The playground's examples.
 export const playground = [
-  ['Sales by year', sc(1)],
-  ['Five filter contexts', sc(4)],
-  ['Time intelligence', how],
+  ['Sales by year', sc(['"Sales", [Sales Amount]'])],
+  ['Five filter contexts', sc([
+    '"Sales", [Sales Amount]',
+    '"Bikes", CALCULATE([Sales Amount], Category[Category] = "Bikes")',
+    `"All years", CALCULATE([Sales Amount], ALL('Date'))`,
+    '"Best customer", MAXX(VALUES(Customer[Customer]), [Sales Amount])',
+  ])],
+  ['Time intelligence', timeIntel],
   ['Share of category', `EVALUATE
 SUMMARIZECOLUMNS(
   Category[Category], Product[Name],

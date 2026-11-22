@@ -458,8 +458,12 @@ function nonBlank(fn) {
     const kept = ir.filter(src, row, ir.op('not', ir.fn('isblank', [e], 'bool', { nn: true })));
     const krow = ir.rowOf(kept, 'table');
     const v = ir.agg(fn, kept, krow, ir.col(krow, 0), col.type);
-    // No value for which expr is not blank: no row.
-    return ir.oneRow([v], ir.exists(kept), [col]);
+    // No value for which expr is not blank: no row. The row of the value, kept where it is not
+    // blank, so the value is computed once (a blank value of the column whose expr is not
+    // blank is no row either).
+    const one = { k: 'rows', rows: [[v]], cols: [{ name: col.name, lineage: col, t: col.type }], base: null };
+    const r = ir.rowOf(one, 'table');
+    return ir.filter(one, r, ir.op('not', ir.fn('isblank', [ir.col(r, 0)], 'bool', { nn: true })));
   };
 }
 

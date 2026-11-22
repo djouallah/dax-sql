@@ -1,6 +1,6 @@
 // A fact table's sums and counts by columns of the tables it reaches over many-to-one relationships:
 // on DuckDB its rows are grouped by the keys before the joins (emit.js Fusion.belowJoins), and the
-// answer is the same, the blank group included (a sale whose customer isn't in Customer).
+// answer is the same; a sale whose customer isn't in Customer counts in the total, in no group.
 import { test, before } from 'node:test';
 import assert from 'node:assert/strict';
 import { harness, sorted } from './helpers.js';

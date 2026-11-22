@@ -3,7 +3,7 @@
   "version": "0.2.4",
   "license": "MIT",
   "author": "N.S. Devaraj (https://github.com/nsdevaraj)",
-  "description": "DAX and Apache Ossie SQL queries over semantic models (TMSL, Ossie) compiled to one SQL SELECT; tested on DuckDB",
+  "description": "DAX and Apache Ossie SQL queries over semantic models (TMSL, Ossie) compiled to one SQL SELECT for DuckDB or T-SQL (Microsoft Fabric), held to Power BI's answers",
   "keywords": [
     "dax",
     "sql",
@@ -12,13 +12,16 @@
     "tabular",
     "tmsl",
     "duckdb",
+    "tsql",
+    "fabric",
+    "ossie",
     "compiler"
   ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/djouallah/dax-sql.git"
   },
-  "homepage": "https://github.com/djouallah/dax-sql#readme",
+  "homepage": "https://djouallah.github.io/dax-sql/",
   "bugs": "https://github.com/djouallah/dax-sql/issues",
   "type": "module",
   "main": "src/index.js",

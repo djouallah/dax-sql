@@ -6,8 +6,8 @@
 1. Publishes each model of out/ (an Import model whose tables are M #table literals) to the
    workspace with fabric-cicd, and refreshes it. It has no data source, so the refresh needs
    no credentials.
-2. Asks it, over XMLA (ADOMD.NET under pythonnet), every query whose golden is missing or stale
-   (its hash is not the query's), or every query with --all. A query with roles is asked on a
+2. Asks it, over XMLA (ADOMD.NET under pythonnet), every query whose golden is missing, stale
+   (its hash is not the query's) or an error, or every query with --all. A query with roles is asked on a
    connection with those roles.
 3. Writes golden/<model>/<family>.json: by id, { hash, columns, rows } or { hash, error }.
    Goldens of queries no longer in the suite are dropped.

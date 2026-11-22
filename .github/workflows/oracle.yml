@@ -2,7 +2,7 @@ name: Oracle
 
 # Asks Power BI the suite's queries and commits its answers (conformance/golden/), what every engine is held
 # to. Publishes each model with its data inside (an Import model, conformance/oracle/export.mjs) to the
-# workspace, refreshes it, and asks it over XMLA every query whose golden is missing or stale
+# workspace, refreshes it, and asks it over XMLA every query whose golden is missing, stale or an error
 # (conformance/oracle/oracle.py).
 #
 # Manual only: it creates or updates a Fabric item and costs the capacity's CU. The identity is

@@ -106,12 +106,12 @@ engine is known to get wrong. The exit code is 1 in two cases:
 - a query fails, errs or is unsupported without being on that list;
 - a query on the list matches. The list only shrinks.
 
-The engines tested here are under `engines/`, each with its known list. The `Conformance`
-workflow (in the repo root) runs them on every push.
+The engines tested here are under `engines/`, each with its known list.
 
-| Engine | Adapter |
-|---|---|
-| dax-sql (this repo) | `engines/dax-sql/adapter.mjs <repo root>`: compiles each query with that checkout and runs the SQL on DuckDB |
+| Engine | Adapter | Run |
+|---|---|---|
+| dax-sql (this repo) | `engines/dax-sql/adapter.mjs <repo root>`: compiles each query with that checkout and runs the SQL on DuckDB | the `Conformance` workflow (repo root), on every push; it also compiles each query with and without the emitter's rewrites (`engines/dax-sql/agree.mjs`): the rows must be the same |
+| dax-sql, T-SQL | `engines/dax-sql-tsql/adapter.mjs <repo root>`: compiles each query as T-SQL and runs it on a Fabric lakehouse's SQL endpoint, over the suite's data as the lakehouse's Delta tables (`lakehouse.py`) | by hand: it needs a lakehouse and a token |
 
 ## Power BI, the oracle
 
@@ -180,3 +180,16 @@ Goldens are never written by hand.
   - a disconnected segments table;
   - a calculation group, a field parameter and two roles;
   - fact rows whose product or customer is missing.
+- **`contoso`**: the small sales model of dax-sql's own tests (`test/fixtures/contoso.js`), 11
+  sales, with an inactive ship-date relationship, a many-to-many on the city, calculated
+  tables, two calculation groups, a field parameter, roles with row- and object-level security,
+  and a parent-child table (`tools/contoso/build.mjs`).
+- **`edges`**: a small model whose data and relationships are awkward on purpose: a
+  bidirectional many-to-one, a many-to-many on a brand, a three-level snowflake, a one-to-one,
+  fact keys that are NULL, empty or unknown, text with trailing spaces (`tools/edges/build.mjs`).
+- **`aac`**: the semantic model of analytics-as-code (Australia's electricity market), as its
+  Apache Ossie file and as TMSL, on a sample of its data (`tools/aac/build.mjs`).
+- **`tpcds`**: the TPC-DS store_sales model of direct-lake-parquet-layout, on a sample
+  (`tools/tpcds/build.mjs`).
+
+Each is built by `npm run build:<model>` in `conformance/` (`npm run build` for `patterns`).

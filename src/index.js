@@ -1,4 +1,4 @@
-// dax-sql: DAX queries over a Tabular semantic model -> SQL.
+// dax-sql: DAX queries, or SQL SELECTs, over a semantic model -> one SQL SELECT.
 //
 //   import { createCompiler } from 'dax-sql';
 //   const dax = createCompiler(model, { tableSource: t => `v_${t.name}` });
@@ -20,8 +20,9 @@
 //                  dimension's key is read off the fact's foreign key with no join (by
 //                  default only those whose assumeIntegrity says so)
 //   user           the value of USERNAME() and USERPRINCIPALNAME()
-//   roles          the names of the model's roles to query as (row-level security): every
-//                  table's rows are those some role keeps
+//   roles          the names of the model's roles to query as: every table's rows are those
+//                  some role keeps (row-level security), and what every role hides is no name
+//                  (object-level security)
 //   params         the values of query parameters (@name), by name
 //   optimize       false: every aggregate its own subquery, none fused or shared (much slower;
 //                  for checking that the rewrites change no answer, as CI does)

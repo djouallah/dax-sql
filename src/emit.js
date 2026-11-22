@@ -1430,8 +1430,7 @@ class Fusion {
     // group can have rows for keys this one has none of (it is mixed).
     // Its scan can also keep fewer rows than the group's, by conditions on the tables it
     // joins: those are the aggregate's FILTER in the group.
-    // Not for a sum to be added exactly (RANKX's): the groups' sums would be added as doubles.
-    if (!g && !readsKeys && !edge && !outer.length && !mapped.length && !guards.length && !em.exact && (OVER[x.fn] || x.fn === 'avg') && (!keyed || nullEmpty)) {
+    if (!g && !readsKeys && !edge && !outer.length && !mapped.length && !guards.length && (OVER[x.fn] || x.fn === 'avg') && (!keyed || nullEmpty)) {
       for (const h of [...this.groups, ...this.prior.flatMap(f => f.groups)]) {
         if (h.over || h.edge || h.readsKeys || h.outer?.length || h.mapped || h.tables !== `${S.table.name}|${state.key}`) continue;
         if (h.keys.length <= keyList.length || !keyList.every(i => h.keys.includes(i))) continue;
@@ -1564,14 +1563,18 @@ class Fusion {
   over(x, h, keys, S, conds) {
     const em = this.em;
     const parts = em.isolated(() => em.aggParts(x, withRow(new Map(), x.row, h.block.res)));
+    // A sum to be added exactly (RANKX's): the groups' sums left DECIMALs, added up as they are.
+    const exactly = parts.extra?.exact && parts.extra.t === 'double';
     const add = fn => {
-      const make = filter => em.d.agg(fn, parts.arg, filter ? { ...parts.extra, filter } : parts.extra);
+      const extra = exactly && fn === 'sum' ? { ...parts.extra, exact: 'groups' } : parts.extra;
+      const make = filter => em.d.agg(fn, parts.arg, filter ? { ...extra, filter } : extra);
       const key = `${make(null)}|${[...conds].sort().join(' AND ')}`;
       let i = h.aggs.findIndex(a => a.key === key);
       if (i < 0) { h.aggs.push({ key, conds, make, parts: { ...parts, fn } }); i = h.aggs.length - 1; }
       return `${h.alias}.a${i}`;
     };
-    const sql = x.fn === 'avg' ? `(CAST(SUM(${add('sum')}) AS ${em.d.type('double')}) / SUM(${add('count0')}))` : OVER[x.fn](add(parts.fn));
+    const sql = x.fn === 'avg' ? `(CAST(SUM(${add('sum')}) AS ${em.d.type('double')}) / SUM(${add('count0')}))`
+      : exactly && x.fn === 'sum' ? em.d.cast(`SUM(${add('sum')})`, 'double') : OVER[x.fn](add(parts.fn));
     if (!NULL_EMPTY.has(x.fn)) h.nullEmpty = false;
     h.reread = true;
     let d = this.groups.find(y => y.over === h && y.keys.join(',') === keys.join(','));

@@ -1,6 +1,6 @@
 // Runs the suite against an engine through its adapter, and holds each answer against Power
 // BI's (golden/). The engine is a black box: the runner knows only the adapter protocol
-// (README.md).
+// (CONTRACT.md).
 //
 //   node runner/run.mjs --adapter "<command>" [--known known.json] [--model m] [--family f]
 //                       [--grep regex] [--report report.json]

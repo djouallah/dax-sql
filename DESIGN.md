@@ -9,9 +9,9 @@ sets: the groups of SUMMARIZECOLUMNS, CALCULATE's filters, and context transitio
 rows of an iterator. That context reaches a table only along its relationships. SQL has none
 of this.
 
-The analytics-as-code dashboard's former compiler (`compiler.js`) wrote the SQL for the
-constructs its page used, case by case.
-This package translates DAX's rules instead, so that a query it has not seen comes out right.
+The SQL generator the analytics-as-code dashboard had before this package wrote the SQL for
+the constructs its page used, case by case. This package translates DAX's rules instead, so
+that a query it has not seen comes out right.
 
 ## The approach
 
@@ -166,8 +166,8 @@ table has (`EXISTS`): fused or not, the groups are the same.
 
 A blank in a table filter must match the fact rows that have no row of the table, and a NULL
 stored in a column, so membership (`member`) is null-safe where both sides can be blank
-(`blankSide`, `mayHoldNull`, `mayBeBlank`): a blank row, a column read through a join that
-may find no row, a column that is not a key, a constant blank. It stays a plain `IN`
+(`blankSide`, `mayHoldNull`, `mayBeBlank`): a column read through a join that may find no
+row, a column that is not a key, a constant blank. It stays a plain `IN`
 elsewhere. When the table reads no outer row, the null-safe form is
 `x IN (…) OR x IS NULL AND EXISTS (… IS NULL)`, as fast as `IN`; otherwise it is `EXISTS`
 with `IS NOT DISTINCT FROM`. A many-to-many relationship matches its columns' values the same
@@ -193,10 +193,10 @@ semi-join, recursively, without returning to where it came from.
 `ir.js` defines two kinds of node:
 
 - **Scalars:** `lit`, `col`, `op`, `fn`, `case`, `agg`, `exists`, `insub`.
-- **Tables:** `scan`, `filter`, `project`, `distinct`, `group`, `topn`, `cross`, the set
-  operations, `rows`, `series`, `generate`, `sc` (SUMMARIZECOLUMNS), `shared` (a table VAR),
-  `onerow`, `prefix`, and `window` (INDEX, OFFSET,
-  WINDOW).
+- **Tables:** `scan`, `filter`, `project`, `distinct`, `group`, `topn`, `topnskip`, `cross`,
+  the set operations, `rows`, `series`, `join` (NATURALINNERJOIN and its kind), `subindex`
+  (SUBSTITUTEWITHINDEX), `generate`, `sc` (SUMMARIZECOLUMNS), `shared` (a table VAR),
+  `onerow`, `prefix`, `paths` (PATH's rows), and `window` (INDEX, OFFSET, WINDOW).
 - **Scalars added for those:** `wrank` (RANK, ROWNUMBER).
 
 A row is a `RowRef`; an expression names a row's column through it. `freeRows(x)` says which
@@ -280,8 +280,7 @@ own column instead. Its correlation moves from the group to the row, which joins
 have no row (`support`). When that holds, and each of those groups' scans keeps the filters
 that decide the keys' combinations (those reaching a key's table), the groups are the union of
 those groups' keys. Otherwise they are the combinations of the keys' values (each table's
-existing combinations, cross-joined, plus a dimension's blank row) and the expressions are
-evaluated on each. `ROLLUPADDISSUBTOTAL` is a `UNION ALL` of the levels; each call is an axis,
+existing combinations, cross-joined) and the expressions are evaluated on each. `ROLLUPADDISSUBTOTAL` is a `UNION ALL` of the levels; each call is an axis,
 and the levels of several are crossed.
 
 **Text** is compared as the engine compares it (a departure from DAX, which compares without
@@ -297,7 +296,7 @@ measure answers the same whether it is fused into a GROUP BY or stays a subquery
 - `CROSSJOIN` with another table is a `prefix`.
 - As a filter, it is a bind guarded by its condition.
 
-This keeps measures like this model's "days the daily table lacks"
+This keeps measures like the aac model's "days the daily table lacks"
 (`EXCEPT(VALUES(dim_calendar[date]), …)` under a group's date) in fused groups. As correlated
 subqueries, they took 30 s on 1.6 million rows; as fused groups they take 0.2 s.
 
@@ -326,25 +325,26 @@ writes it:
 
 ## Verification
 
-- 81 tests: hand-worked expectations on a small model (78, of which 24 for calculated tables,
-  calculation groups, field parameters, row-level security, ALLSELECTED, `START AT`, the
-  window functions, the blank row, context transition and FORMAT), this model's measures
-  checked against SQL written by hand, and every page query compared with `compiler.js`. The
-  differences are listed with their DAX reason.
-- An adversarial review by a second agent ran about 620 more queries. Its findings were fixed
-  and added as tests.
-- A second review of the six features, by two agents, ran about 500 queries. Its findings were
-  fixed and added as tests too: among them RLS across bidirectional and many-to-many
-  relationships, ALLSELECTED's per-column shadows, blank matching in table filters, and
-  context transition on every column.
+What says the SQL is right is the answers, not the SQL's text:
 
-**Speed.** On made-up data of this model's shape (1.6 million 5-minute rows across 400 units,
-plus a year of daily rows):
+- **DAX is held to Power BI.** The conformance suite (`conformance/`) is 1,262 queries over five
+  models with their data. Power BI's own answers are its goldens, asked over XMLA by the `Oracle`
+  workflow and never written by hand. On every push each query is compiled, run on DuckDB, and
+  its rows compared with Power BI's. A query that differs is on the engine's known list with
+  its reason, a departure by design or a Power BI quirk not copied; one off the list fails the
+  run, and so does one on it that matches.
+- **The rewrites change no answer.** Every query is compiled twice, with the emitter's rewrites
+  (fusion, shared scans, grouping before joins, mappings) and with `optimize: false` (each
+  aggregate its own subquery, as the filter context says it), and both run on one DuckDB: the
+  rows must be the same, the known queries' too (`agree.mjs`).
+- **SQL over the datasets is held to Apache Ossie** (`ossie-query.yml`): its query compliance
+  cases, its wide table cases, and a grid of about 2,500 queries each answered by Ossie's view
+  expander and by dax-sql on one DuckDB.
+- **Each commit is held to the speed of the one before** (`bench.mjs`, `perf.yml`).
+- **Unit tests** hold the SQL's shape, the errors, the parser, the T-SQL dialect's text and the
+  SQL front end (`npm test`).
 
-- The page's 104 queries take about 6.3 s here against about 2.7 s for `compiler.js`, on the
-  same machine. No query takes over 0.85 s, and the slowest one takes 0.55 s in `compiler.js`.
-- The difference is mostly the "days the daily table lacks" terms. This package evaluates
-  them; `compiler.js` assumes they are empty. The blank row's checks add a little.
+A bug found is a probe first: a query in the suite, answered by the Oracle, then the fix.
 
 ## Reference
 
@@ -368,13 +368,14 @@ What the README leaves out: the API, what the compiler does, and how.
 - `relationships`: `{ name, from: { table, column }, to: { table, column }, active,
   crossFilter, fromCardinality, toCardinality, assumeIntegrity, securityFilter }`. The
   defaults are active, `single`, many to one, no assumption and `single`.
-- `roles`: `{ name, filters: [{ table, dax }] }`.
+- `roles`: `{ name, filters: [{ table, dax }], hidden: [{ table, column }] }`; `hidden` is
+  object-level security, a whole table when `column` is left out.
 
 Only a name, a measure's `dax` and a relationship's ends are required. `src/model.js` says
 the same at its top.
 
-A file is read into a model object by a reader in `formats/`. These readers sit outside the
-package: they are not exported and the compiler never imports them.
+A file is read into a model object by a reader in `formats/`, exported as `dax-sql/formats/tmsl.js`
+and `dax-sql/formats/ossie.js`. The compiler never imports them.
 
 - `formats/tmsl.js`: `tmslToModel(bim)` reads a TMSL model (`model.bim`, the JSON of Power BI
   and Analysis Services).
@@ -412,7 +413,7 @@ package: they are not exported and the compiler never imports them.
 
 - `compile(dax)`: one `EVALUATE` returns `{ sql, columns }`. It throws a `DaxError` when the
   query has several `EVALUATE`s.
-  It also takes a SQL `SELECT` over the model ([SQL](#sql)).
+  It also takes a SQL `SELECT` (or `WITH … SELECT`) over the model ([SQL](#sql)).
 - `compileAll(dax)`: every `EVALUATE` of the query, in order. The same text is compiled once
   and then cached.
 - `isDax(text)`: whether a text starts with `DEFINE` or `EVALUATE`.
@@ -420,12 +421,18 @@ package: they are not exported and the compiler never imports them.
 - `sqlToDax(sql)`: the DAX query a `SELECT` stands for, `{ dax, limit, offset }`.
 - `compileStatement(text, name = 'model')`: any SQL of the engine in which a `SELECT` over the
   model is a relation in parentheses, `{ sql, relations: [{ text, dax, sql }] }` ([SQL](#sql)).
+  `statementRelations(text, name, aliases)` is the same before they are put in place (semantic
+  views put several models' in one statement).
 - `fieldParameters()`: the model's field parameters, each with its fields in order.
 - `expandFieldParameter(table, labels)`: the fields a selection of a field parameter stands
   for (all of them without `labels`), each `{ label, ref, order, kind, name, tableName }`.
   Power BI resolves a field parameter before it writes the query, so a caller does the same:
   it puts these columns or measures in the query where the parameter goes.
-- `model`: the model as read.
+- `model`: the model as read; `dialect`: the dialect it writes.
+
+The package also exports `DaxError`, `Model`, the dialects (`Dialect`, `DuckDBDialect`,
+`TSqlDialect`), the parsers (`parseQuery`, `parseExpression`, `parseSql`) and
+`modelRelations` (where a statement's model queries are).
 
 `createViews()` keeps **semantic views**: models a SQL engine's users name in their SQL, with
 the statements that make, drop and list them. It is engine-neutral: where a view is stored and
@@ -469,10 +476,11 @@ SELECT * FROM (SHOW SEMANTIC METRICS IN sales) WHERE ...;   -- each one reads as
 | `dialect` | `'duckdb'` (default), `'tsql'` (the Fabric SQL endpoint and Warehouse; see T-SQL below), or an instance of a `Dialect` subclass. |
 | `columnNames` | `'short'` (default): the column's or the expression's name. `'dax'`: `Table[Column]`, `[Measure]`. |
 | `castOutput` | `true` (default): whole numbers as `BIGINT`, other numbers as `DOUBLE`. Or an object, by the column's type (`int`, `double`, `decimal`, `datetime`, `string`, `bool`), of a function of its SQL: `{ int: s => \`CAST(${s} AS INTEGER)\` }`; a type it leaves out is not cast. |
-| `assumeIntegrity` | `true`: every relationship relies on referential integrity, so a dimension key is read off the fact's foreign key without a join. By default only relationships whose `relyOnReferentialIntegrity` is set are treated this way. |
+| `assumeIntegrity` | `true`: every relationship relies on referential integrity, so a dimension key is read off the fact's foreign key without a join. By default only relationships whose `assumeIntegrity` is set (TMSL's `relyOnReferentialIntegrity`) are treated this way. |
 | `user` | The value of `USERNAME()` and `USERPRINCIPALNAME()`. |
 | `roles` | A role name, or several: row-level security, each table keeping the rows that at least one of the roles keeps; and object-level security, a table or column hidden when every role hides it. A hidden object is no name for the query (naming it, a measure that reads it, a measure of a hidden table: an error, as the model lacked it), while the model still reads it: relationships, joins, and calculated columns computed from it, which stay visible. A table result leaves its hidden columns out. Roles that hide objects together with roles that filter rows are an error, as in Power BI; one role can do both. |
 | `params` | The values of the query's parameters (`@name`), by name: numbers, text, booleans, `Date`s or `null` (blank). |
+| `optimize` | `false`: every aggregate its own subquery, none fused or shared. Much slower; it is for checking that the rewrites change no answer, as CI does. |
 
 Errors are `DaxError` with a `code`:
 
@@ -480,6 +488,7 @@ Errors are `DaxError` with a `code`:
 - `SEMANTIC`: valid DAX that is wrong for this model, such as an unknown column or a column
   with no row context.
 - `UNSUPPORTED`: valid DAX this compiler does not translate.
+- `CATALOG`: a semantic view that is missing or already there.
 
 It never guesses.
 
@@ -497,10 +506,11 @@ and gives each aggregate the filters that reach its table.
     measure or `CALCULATE`, nor a column of an outer row that is not one of the model's (an
     iterator's `[Value]`): DAX rejects these, and `FILTER` over a table is the way to write
     them.
-- **Modifiers:** `ALL`, `ALLNOBLANKROW`, `REMOVEFILTERS`, `ALLEXCEPT`, `ALLSELECTED`,
-  `USERELATIONSHIP` and `CROSSFILTER`. `ALL` on a table clears its expanded table, so
-  `ALL(Sales)` also clears the filters on Sales' dimensions. `ALLNOBLANKROW` clears them too,
-  and keeps out the table's blank row: the fact rows without a row in the table.
+- **Modifiers:** `ALL`, `ALLNOBLANKROW`, `ALLCROSSFILTERED`, `REMOVEFILTERS`, `ALLEXCEPT`,
+  `ALLSELECTED`, `USERELATIONSHIP` and `CROSSFILTER`. `ALL` on a table clears its expanded
+  table, so `ALL(Sales)` also clears the filters on Sales' dimensions; `ALLNOBLANKROW` is `ALL`
+  (no blank row). As a table, `ALLEXCEPT(T, c)` is `ALL` of T's other columns, with no filter
+  kept.
 - **ALLSELECTED** works with shadow filter contexts, as SQLBI's "definitive guide" describes
   them:
   - An iterator (`SUMX`, `FILTER`, `ADDCOLUMNS`, `SUMMARIZE`, …) is a shadow on the columns it
@@ -521,11 +531,12 @@ and gives each aggregate the filters that reach its table.
 - **Relationships:**
   - A filter reaches a table through many-to-one relationships, read off the expanded table.
   - It also reaches tables through bidirectional and many-to-many relationships, as
-    semi-joins. A blank row the filter keeps reaches the other table's blank row. A
-    many-to-many relationship matches values, a blank meeting a blank: a NULL on one side
-    meets a NULL, or the blank row, on the other.
+    semi-joins. A many-to-many relationship matches values, a blank meeting a blank: a NULL
+    on one side meets a NULL on the other.
   - Relationships can be active or inactive. One-to-one relationships filter both ways.
-  - A table filter (`FILTER(Sales, …)`) filters its expanded table.
+  - A table filter (`FILTER(Sales, …)`) filters its expanded table, each row with the related
+    rows it reached where it was evaluated: `CALCULATETABLE(Sales, USERELATIONSHIP(...))` as a
+    filter keeps a sale only where its ship date's row of Date is its order date's too.
 - **Row context:**
   - Iterators create row contexts. In context transition, a date table's date replaces the
     filters on the rest of its table, as a filter argument on it does.
@@ -546,6 +557,9 @@ and gives each aggregate the filters that reach its table.
   - `COUNTROWS` and `DISTINCTCOUNT` of nothing are blank, and `DISTINCTCOUNT` counts a blank
     as a value.
   - `1 / BLANK()` is infinity.
+  - `MIN(a, b)` and `MAX(a, b)` compare a blank as 0 (or `""`) and return it: `MAX(-1,
+    BLANK())` is blank; of a blank and a value equal to it, the value.
+  - `x IN { … }` compares with `==`: a blank member matches only a blank.
   - `RANKX` compares a blank as 0 (or ""): a blank and 0 tie, and `DENSE` counts them as one
     value.
   - `PERCENTILEX.INC/EXC` and `MEDIANX` (`PERCENTILEX.INC` at 0.5) count the blanks among
@@ -590,6 +604,10 @@ and gives each aggregate the filters that reach its table.
   and in no group by the dimension's columns. A blank in a table
   filter matches a NULL stored in a column (`TREATAS({BLANK()}, Sales[CustomerKey])` keeps the
   sales with no customer key).
+- **Dates as numbers:** a date plus or minus whole days is a date; plus any other number, a
+  date and time (`DATE(2024, 1, 1) + 0.5` is noon). A date minus a date is the days between
+  them, with the fraction a time makes (a departure from DAX, which types it a date and time
+  after 1899-12-30).
 - **TOPN** keeps rows tied with the last one. **ORDER BY** puts blanks first when ascending.
 - `DEFINE MEASURE`, `DEFINE VAR`, `DEFINE TABLE` and `DEFINE COLUMN` are supported, as are
   several `EVALUATE`s and lazy `VAR`s. Calculated columns are evaluated per row in an empty
@@ -647,7 +665,7 @@ and gives each aggregate the filters that reach its table.
 
 **Functions.**
 
-- **Aggregates and iterators:** `SUM`, `AVERAGE`, `MIN`, `MAX`, `COUNT(A/BLANK)`, `COUNTROWS`,
+- **Aggregates and iterators:** `SUM`, `AVERAGE(A)`, `MIN(A)`, `MAX(A)`, `COUNT(A/BLANK)`, `COUNTROWS`,
   `DISTINCTCOUNT(NOBLANK)`, `PRODUCT`, `MEDIAN`, `STDEV.S/P`, `VAR.S/P`, `PERCENTILE.INC/EXC`;
   their X forms; `CONCATENATEX` and `RANKX`.
 - **Filter context:** `CALCULATE`, the modifiers above, `ISFILTERED`, `ISCROSSFILTERED`,
@@ -681,12 +699,13 @@ and gives each aggregate the filters that reach its table.
   - `RUNNINGSUM`, `MOVINGAVERAGE`, `PREVIOUS`, `NEXT`, `FIRST` and `LAST` are `WINDOW`,
     `OFFSET` and `INDEX` over those rows; `COLLAPSE` and `COLLAPSEALL` are the value at the
     parent and the grand total; `ISATLEVEL`, whether the row is not a total of a column's
-    group. `EXPAND` of a column is an error, as in DAX; other `EXPAND`s are not supported.
+    group. `EXPAND` of a column is an error, as in DAX; other `EXPAND`s and `EXPANDALL` are
+    not supported.
 - **Tables:**
   - building and shaping: `FILTER`, `VALUES`, `DISTINCT`, `ALL…`, `SUMMARIZE`,
     `SUMMARIZECOLUMNS`, `ADDCOLUMNS`, `SELECTCOLUMNS`, `GROUPBY`/`CURRENTGROUP` (the table of
-    `SUMX`, `AVERAGEX`, `MINX`, `MAXX`, `COUNTX`, `COUNTAX`, `PRODUCTX`, `GEOMEANX`, `STDEVX`
-    and `VARX` only, as in DAX: not `CONCATENATEX`, say), `TOPN`,
+    `SUMX`, `AVERAGEX`, `MINX`, `MAXX`, `COUNTX`, `COUNTAX`, `PRODUCTX`, `STDEVX` and `VARX`
+    only: not `CONCATENATEX`, say), `TOPN`,
     `TOPNSKIP`, `ADDMISSINGITEMS`; `ROLLUP`/`ROLLUPGROUP` and `ISSUBTOTAL` in `SUMMARIZE`;
   - combining: `CROSSJOIN`, `UNION`, `INTERSECT`, `EXCEPT`, `GENERATE(ALL)`, `TREATAS`,
     `NATURALINNERJOIN`, `NATURALLEFTOUTERJOIN` (on the columns of the same lineage, or of the
@@ -694,15 +713,18 @@ and gives each aggregate the filters that reach its table.
     different data types are an error; `MINX` and `MAXX` of text are text, but a measure of
     them, alone or in an `IF`, is a variant, as DAX declares it),
     `SUBSTITUTEWITHINDEX`;
-  - constructing: `ROW`, `DATATABLE`, `{ }`, `GENERATESERIES`, `CALENDAR`, `CALENDARAUTO`;
-  - `FIRSTNONBLANK`, `LASTNONBLANK`, over a column or a table of one column.
+  - constructing: `ROW`, `DATATABLE` (each value of its column's declared type), `{ }`,
+    `GENERATESERIES`, `CALENDAR`, `CALENDARAUTO`;
+  - `FIRSTNONBLANK`, `LASTNONBLANK`, over a column or a table of one column; no row when
+    every value's expression is blank.
 - **Time intelligence:**
   - `DATESYTD/QTD/MTD`, `TOTALYTD/QTD/MTD`, `DATESBETWEEN`, `DATESINPERIOD`;
   - `DATEADD` and `DATESINPERIOD` (from the last day of a month to the end of the moved
     month; for `DATEADD` and `SAMEPERIODLASTYEAR`, only a month end whose day before is in
     the dates too: February 28 alone moves to February 28), `SAMEPERIODLASTYEAR`,
     `PARALLELPERIOD`, `PREVIOUS/NEXT DAY/MONTH/QUARTER/YEAR`;
-  - `STARTOF…`, `ENDOF…`, `FIRSTDATE`, `LASTDATE`, `OPENING/CLOSINGBALANCE…`;
+  - `STARTOF…`, `ENDOF…`, `FIRSTDATE`, `LASTDATE`, `OPENING/CLOSINGBALANCE…` (as `CALCULATE`
+    of the period's date and the filter argument: a filter on the date table is kept);
   - a year end (`"6/30"`) on the functions of a year that take one.
 - **Values:** logic (`IF`, `SWITCH`, `COALESCE`, `DIVIDE`, …), math, text, dates, `CONVERT`,
   `NAMEOF`.
@@ -784,11 +806,14 @@ LIMIT 10
   `LIMIT n`. **`FETCH FIRST n ROWS WITH TIES`** is `TOPN(n, …)` on the ORDER BY's keys, which
   keeps the rows tied with the n-th.
 - Conditions: comparisons, `AND`, `OR`, `NOT`, `IN`, `BETWEEN`, `IS NULL` (`ISBLANK`), `LIKE`
-  (`'x'`, `'x%'`, `'%x'`, `'%x%'`), `CASE`, `CAST`, `DATE '…'`, `TIMESTAMP '…'`, `||`, `%`;
-  other functions are DAX's of the same name. Values compare as in DAX: text without regard
-  to case, a blank equal to 0 or `""`.
-- A measure keeps its definition: nothing changes the filter context but `WHERE`. `SELECT *`,
-  `DISTINCT`, joins, subqueries, `UNION`, window functions and `COUNT(*)` are not supported.
+  (`'x'`, `'x%'`, `'%x'`, `'%x%'`), `CASE`, `CAST` (`AS DATE` drops the time), `DATE '…'`,
+  `TIMESTAMP '…'`, `||` (below `+` and `-`, as in PostgreSQL), `%` (SQL's remainder, the sign of
+  the dividend), `LOG(base, x)`; other functions are DAX's of the same name, but `TRIM`, which
+  in DAX also collapses the spaces inside, is not supported. Values compare as in DAX: text by
+  case (as the engine compares it), a blank equal to 0 or `""`.
+- A measure keeps its definition: nothing changes the filter context but `WHERE`. Over the
+  model (`FROM model`), `SELECT *`, `DISTINCT`, joins, subqueries, `UNION`, window functions
+  and `COUNT(*)` are not supported; over its datasets, joins and subqueries are (below).
 
 **Over the model's datasets.** A `FROM` that names the model's tables (`emp`, or
 `scott_model.emp`, each with an optional alias) instead of the model reads them as the
@@ -803,14 +828,16 @@ they differ from a DAX query's:
   alike; an expression of aggregates makes no group of its own.
 - A comparison (`=`, `<`, `IN`, `BETWEEN`, ...) with a NULL is not true, in `WHERE`, `ON` and
   `HAVING`: DAX's blank equals blank, 0 and `""`, so a manager-less employee would join a pet
-  with no owner. `NOT` of one is not true either (three-valued logic); `NULL + 1`, `NULL - 1`,
-  `1 / NULL` and `NULL || 'a'` are NULL; `NULLIF` and `WHERE FALSE` work as SQL's.
+  with no owner. `NOT` of one is not true either (three-valued logic), nor is `x = NULL`,
+  `x NOT IN (1, NULL)`, `x NOT LIKE 'a%'` of a NULL `x`, or `x NOT IN (SELECT …)` when the
+  subquery has a NULL; `NULL + 1`, `NULL - 1`, `1 / NULL`, `NULL % 2` and `NULL || 'a'` are
+  NULL; `NULLIF` and `WHERE FALSE` work as SQL's.
 - Joins (`JOIN`, `LEFT`, `RIGHT`, `FULL`, `CROSS`, on any condition, a table joined to itself)
   never repeat a row of a measure: `AGG(e.m)` is `m` over the rows of `e`'s table that the
   group's joined rows come from, each once, and none for the rows an outer join pads.
 - `WITH`'s queries, and subqueries in `FROM` that only pass rows through, are put in place:
-  their relations join the query's, their `WHERE` is its, and a measure keeps its identity
-  when renamed. A join to a subquery whose columns only its `ON` reads is a filter of the
+  their relations join the query's, their `WHERE` is its (not supported when a later `RIGHT`
+  or `FULL` join pads the subquery's rows), and a measure keeps its identity when renamed. A join to a subquery whose columns only its `ON` reads is a filter of the
   other side (a top N, a list of keys). A scalar subquery is computed once, outside the query's
   filters; `IN (SELECT ...)` too.
 - `ROLLUP` needs no `GROUPING` in the `SELECT`; `NULLS FIRST` and `NULLS LAST` sort either way;
@@ -842,7 +869,9 @@ until the groups are chosen, so there is no view of it, and it is named only as 
 such a `SELECT` (`JOIN model` is an error); `model.dataset` names the model too. The scanner
 reads only what nesting depends on (strings, quoted names, `$$` strings, comments,
 parentheses), so `FROM model` in a string or a comment is text. A `SELECT` over the model
-reads no column of the statement around it.
+reads no column of the statement around it. On T-SQL, which nests no `WITH`, the model
+queries' CTEs are one `WITH` at the top of the statement, an ordered one takes `OFFSET 0 ROWS`,
+and an arm of a `UNION` is a named subquery.
 
 ```sql
 WITH m AS (SELECT Product.Color, AGG(Orders) AS orders FROM model GROUP BY ALL)
@@ -855,15 +884,19 @@ SELECT m.*, p.n FROM m JOIN (SELECT "Color", COUNT(*) AS n FROM "Product" GROUP 
 
 | File | |
 |---|---|
+| `index.js` | the API: `createCompiler`, `createViews` |
 | `lexer.js`, `parser.js` | DAX text into a syntax tree |
-| `sql.js` | a SQL `SELECT` over the model into a DAX query |
+| `sql.js` | a SQL `SELECT` over the model into a DAX query; a statement's model queries |
+| `views.js` | semantic views: their statements, and the models named in SQL |
 | `model.js` | the model object read: tables, columns, measures, relationships; expanded tables and filter propagation |
-| `compiler.js` | the tree into an intermediate form, with the filter context as a value (`context.js`) |
+| `compiler.js` | the tree into an intermediate form, with the filter context as a value |
+| `context.js` | the filter context: its filters, and what removing columns leaves of them |
 | `functions/` | the function library, by kind |
 | `ir.js` | the intermediate form: scalars, tables, rows, aggregates over scans |
 | `emit.js` | the intermediate form into SQL |
 | `format.js` | FORMAT's patterns, read into what a dialect writes |
 | `dialects/` | what differs between SQL engines: `base.js` (the interface), `duckdb.js`, `duckdb-format.js`, `tsql.js`, `tsql-format.js` |
+| `errors.js` | `DaxError` and its codes |
 
 The SQL it writes:
 
@@ -872,7 +905,7 @@ The SQL it writes:
 - The aggregates of SUMMARIZECOLUMNS and ROW are fused where they can be. Those over the same
   table under the same filters become one `GROUP BY` in a CTE, joined to the groups.
 - `VALUES` of a column the context binds to one value is that value, not a scan. That turns
-  per-group subqueries like this model's "days the daily table lacks" into fused groups.
+  per-group subqueries like the aac model's "days the daily table lacks" into fused groups.
 - A filter of a column's values with conditions on that column alone, like
   `FILTER(ALL('Date'[Date]), 'Date'[Date] >= x)`, is a condition on the scan's own row when
   every row has a value of that column: the scan's own column, or one reached over
@@ -890,8 +923,8 @@ aggregates to write) and pass an instance as `dialect`.
 
 ### T-SQL
 
-`dialect: 'tsql'` writes T-SQL as Microsoft Fabric's SQL analytics endpoint and Warehouse run
-it, tested there. The DuckDB SQL is the same with or without it: the emitter asks the dialect for
+`dialect: 'tsql'` writes T-SQL for Microsoft Fabric's SQL analytics endpoint and Warehouse,
+tested on a lakehouse's SQL analytics endpoint. The DuckDB SQL is the same with or without it: the emitter asks the dialect for
 what it wrote itself (conditions and boolean values, `NULLS FIRST/LAST`, `LATERAL`, `||`, a
 window's `ORDER BY`), and DuckDB's answers are what the emitter wrote before.
 
@@ -964,7 +997,7 @@ What T-SQL has no function for is written with what it has:
   with different orders in one SELECT.
 
 `conformance/engines/dax-sql-tsql` runs the suite on a Fabric lakehouse's SQL endpoint, with its
-known list (those above, and DuckDB's that T-SQL shares), over the suite's data as the
+known list (DuckDB's that T-SQL shares, the PATH queries, infinity and an exact sum), over the suite's data as the
 lakehouse's own Delta tables (`lakehouse.py` writes them with delta-rs, in schema `daxconf`):
 the tables a model reads, run by Fabric's distributed engine. It has its own driver, so the
 package depends on nothing new; it needs a lakehouse and a token, so it runs by hand, not in CI.
@@ -976,58 +1009,51 @@ npm install   # DuckDB for Node, for the tests only
 npm test
 ```
 
-- `test/sql.test.js`: each SQL query answers what its DAX query answers; its errors carry their
-  codes.
+`npm test` runs `test/*.test.js` and `formats/test/*.test.js`:
+
+- `smoke.test.js`, on a small sales model (`test/fixtures/contoso.js`): representative queries
+  compile and run on DuckDB, with and without roles; errors carry their codes; the SQL keeps
+  its shape (a filter inline on the fact, a selected total read off the groups).
+- `belowjoins.test.js`: a fact's sums and counts grouped by its keys before its joins answer
+  as the joins do.
+- `sql.test.js`: each SQL query answers what its DAX query answers; its errors carry their
+  codes; `compileStatement`.
+- `datasets.test.js`: SQL over the datasets answers what plain SQL over the same tables does
+  (NULLs, joins, `IN` and `LIKE`, `CAST`, `%`, `WITH TIES`).
+- `views.test.js`: semantic views' statements, run on DuckDB.
+- `tsql.test.js`: every conformance query is T-SQL with nothing Fabric lacks, or refused by
+  name; the shapes Fabric needs.
 - `formats/test/formats.test.js`: TMSL to Ossie and back answers every measure as the TMSL
   does, on DuckDB, for contoso and aac (`conformance/models/aac`, whose `ossie.yaml` is its
   `model.bim` as Ossie); which measures are SQL and which DAX; what the extension may hold; a
   file of the earlier shape, and one of the spec before, reads as it did; an Ossie model in SQL
   reads as DAX, `AGG`, `source.column` and `ROUND` included.
-- `conformance/engines/dax-sql/agree.mjs` (`conformance.yml`): every query of the suite
-  compiled with the emitter's rewrites (fusion, shared scans, grouping before joins, ...) and
-  with `optimize: false` (each aggregate its own subquery, as the filter context says it), run
-  on one DuckDB: the rows must be the same, on the known queries too. The Ossie checks below run
-  both ways as well (`DAXSQL_OPTIMIZE=0`).
-- `conformance/engines/dax-sql/bench.mjs` (`perf.yml`): every query timed by the commit and by
+
+In CI:
+
+- `conformance.yml`: the suite against Power BI's goldens (`conformance/`), and
+  `conformance/engines/dax-sql/agree.mjs`: every query of the suite compiled with the emitter's
+  rewrites and with `optimize: false`, run on one DuckDB: the rows must be the same, on the
+  known queries too. A release waits for it.
+- `perf.yml` (`conformance/engines/dax-sql/bench.mjs`): every query timed by the commit and by
   the one before, on one runner, the fastest of three rounds each: more than 10% slower in all,
   or a query 1.5 times as slow and 50 ms more, fails.
-- `.github/workflows/ossie-query.yml`, in CI only (Python and Ossie's main): Ossie SQL held to
-  Ossie as DAX is to Power BI. Ossie's query cases (`formats/test/ossie-query.mjs`), the wide
-  table cases' Layer 2 queries (`ossie-wide.mjs`), and Ossie's view expander as an oracle
-  (`ossie-expand.mjs`): a grid of
+- `ossie-query.yml` (Python and Ossie's main): Ossie SQL held to Ossie as DAX is to Power BI.
+  Ossie's query cases (`formats/test/ossie-query.mjs`), the wide table cases' Layer 2 queries
+  (`ossie-wide.mjs`), and Ossie's view expander as an oracle (`ossie-expand.mjs`): a grid of
   about 2,500 queries over SCOTT, Ossie's retail and stores, and every model in
   `conformance/models` written as Ossie (totals, groups, `WHERE`, `HAVING`, `ROLLUP`, CTEs,
   scalar operators over `AGG`, stars, fan-outs, chasm traps, snowflakes), each answered by the
   expander's SQL and by dax-sql's on one DuckDB. Values come from the data, with a fixed seed.
   A different answer fails the run; one that is only the blank row this package does not have
-  is counted apart. A release waits for it, and for the conformance suite.
-- `.github/workflows/ossie.yml`, in CI only (it needs Python and an Ossie checkout, of Ossie's
-  main: the spec of the day, checked every morning too): what
-  `formats/ossie.js` writes for every model here passes Ossie's own validator
-  (`validation/validate.py`), and Ossie's portability ladder (`compliance/portability`) comes
-  back from dax-sql PORTABLE, every element, as its grader scores it. A release waits for it.
-- `test/smoke.test.js`, on a small sales model (`test/fixtures/contoso.js`): representative
-  queries compile and run on DuckDB, with and without roles; errors carry their codes; the SQL
-  keeps its shape (a filter inline on the fact, a selected total read off the groups).
+  is counted apart. All three run again with `DAXSQL_OPTIMIZE=0`. A release waits for it.
+- `ossie.yml` (Ossie's main, every morning too): what `formats/ossie.js` writes for every model
+  here passes Ossie's own validator (`validation/validate.py`), and Ossie's portability ladder
+  (`compliance/portability`) comes back from dax-sql PORTABLE, every element, as its grader
+  scores it. A release waits for it.
+- `pages.yml`: the site (`docs/`, https://djouallah.github.io/dax-sql/), whose every example is
+  compiled by the code on main before it is published.
+- `oracle.yml`, by hand: Power BI's answers for the suite's new or stale queries.
 - [analytics-as-code](https://github.com/djouallah/analytics-as-code) runs its model's measures
   and its dashboard's queries through this package on every push, and compares them with its
   deployed Power BI model on request.
-
-### Review
-
-Two separate review agents tried about 500 queries against the six new features (calculated
-tables, calculation groups, field parameters and row-level security; ALLSELECTED; `START AT`;
-the window functions; the blank row; FORMAT). These are the fixes that matter most:
-
-- **Security leaks:** row-level security didn't pass through relationships set to filter both
-  ways for security, or through many-to-many ones. Users could see rows their role should
-  hide.
-- **A crash** whenever a calculation group's "no selection" or "several selected" expression
-  used `SELECTEDMEASURE()`.
-- **Iterating a table row:** `ALLEXCEPT` and `REMOVEFILTERS` on the key gave wrong numbers,
-  because only the key column was filtered rather than the whole row.
-- **An older bug:** `PREVIOUSMONTH` and similar functions ignored the current row of the date
-  table.
-
-Each fix has a test. What still differs from DAX is listed under
-the README's known limitations.

@@ -33,6 +33,9 @@ INSERT INTO s.emp VALUES
   (7934, 'MILLER', 'CLERK', 7782, 1300.03, NULL, 10);
 CREATE TABLE s.visit (k1 VARCHAR, k2 INTEGER, n INTEGER);
 INSERT INTO s.visit VALUES ('a', 1, 5), ('a', 2, 6), (NULL, 3, 7), (NULL, 4, 8), ('b', 5, 9);
+CREATE TABLE s.ev (id INTEGER, ts TIMESTAMP, label VARCHAR, n INTEGER);
+INSERT INTO s.ev VALUES (1, '2024-01-01 00:00:00', 'alpha', -7), (2, '2024-01-01 13:30:00', 'beta', 7),
+  (3, '2024-01-02 09:00:00', NULL, -8), (4, '2024-01-02 23:59:00', '', NULL), (5, '2024-01-03 00:00:00', 'ab', 9);
 `;
 
 const field = (name, datatype) => ({ name, datatype, expression: { sql: name } });
@@ -57,6 +60,9 @@ const MODEL = {
     { name: 'visit', source: 's.visit', primary_key: ['k1', 'k2'],
       fields: [field('k1', 'String'), field('k2', 'Integer'), field('n', 'Integer')],
       metrics: [metric('visits', 'COUNT(*)', 'Integer'), metric('total', 'SUM(n)', 'Integer')] },
+    { name: 'ev', source: 's.ev', primary_key: ['id'],
+      fields: [field('id', 'Integer'), field('ts', 'Timestamp'), field('label', 'String'), field('n', 'Integer')],
+      metrics: [metric('events', 'COUNT(*)', 'Integer')] },
   ],
   relationships: [
     { name: 'emp_dept', from: 'emp', to: 'dept', from_columns: ['deptno'], to_columns: ['deptno'] },
@@ -147,4 +153,41 @@ test("a fixed decimal: SQL's AVG and division are not rounded, ROUND(.., 4) is",
   assert.equal(sql('DIVIDE(SUM(T[x]), SUM(T[n]))'), 'ROUND(SUM(x) / NULLIF(SUM(n), 0), 4)');
   assert.equal(sql('AVERAGEX(T, CONVERT(T[x], DOUBLE))'), 'AVG(x)');
   assert.equal(sql('SUMX(T, T[x] * T[n])'), 'SUM(x * n)');
+});
+
+test("SQL's NULLs: = NULL, <> NULL and NOT IN a list with a NULL keep no row", async () => {
+  for (const c of ['comm = NULL', 'comm <> NULL', 'comm NOT IN (0, NULL)', 'comm IN (0, NULL)', 'NOT (comm IN (300, NULL))',
+    'NOT (comm NOT IN (300, 500))', 'comm NOT IN (300, 500)', 'comm BETWEEN NULL AND 500', 'NOT (comm + NULL > 0)'])
+    await same(`SELECT AGG(emp_count) AS n FROM m.emp WHERE ${c}`, `SELECT COUNT(*) FROM s.emp WHERE ${c}`);
+});
+
+test('LIKE and NOT LIKE leave out NULLs', async () => {
+  for (const c of ["label NOT LIKE 'a%'", "NOT label LIKE 'a%'", "label LIKE '%%'", "label LIKE ''", "NOT (label LIKE '%b%')",
+    "label NOT LIKE '%a'"])
+    await same(`SELECT AGG(events) AS n FROM m.ev WHERE ${c}`, `SELECT COUNT(*) FROM s.ev WHERE ${c}`);
+});
+
+test('IN and NOT IN a subquery with a NULL in it', async () => {
+  for (const c of ['comm IN (SELECT comm FROM m.emp)', 'comm NOT IN (SELECT comm FROM m.emp)',
+    "comm NOT IN (SELECT comm FROM m.emp WHERE job = 'SALESMAN')", "NOT (comm IN (SELECT comm FROM m.emp WHERE job = 'SALESMAN'))",
+    "deptno NOT IN (SELECT deptno FROM m.dept WHERE dname = 'SALES')"])
+    await same(`SELECT AGG(emp_count) AS n FROM m.emp WHERE ${c}`, `SELECT COUNT(*) FROM s.emp WHERE ${c.replaceAll('m.', 's.')}`);
+});
+
+test("CAST AS DATE drops the time; %, LOG(b, x) and || as SQL has them", async () => {
+  await same("SELECT AGG(events) AS n FROM m.ev WHERE CAST(ts AS DATE) = DATE '2024-01-02'",
+    "SELECT COUNT(*) FROM s.ev WHERE CAST(ts AS DATE) = DATE '2024-01-02'");
+  await same('SELECT CAST(ts AS DATE) AS d, AGG(events) AS n FROM m.ev GROUP BY CAST(ts AS DATE)',
+    'SELECT CAST(ts AS DATE), COUNT(*) FROM s.ev GROUP BY 1');
+  await same('SELECT id, n % 3 AS r, LOG(2, id * 4) AS l, label || 1 + 2 AS t, AGG(events) AS c FROM m.ev GROUP BY ALL',
+    'SELECT id, n % 3, LOG(2, id * 4), label || 1 + 2, COUNT(*) FROM s.ev GROUP BY ALL');
+  assert.throws(() => dax.compile('SELECT TRIM(label) AS t, AGG(events) AS n FROM m.ev GROUP BY label'), e => e.code === 'UNSUPPORTED');
+});
+
+test('over a join: FETCH WITH TIES; a subquery whose WHERE a RIGHT JOIN would pad', async () => {
+  await same('SELECT e.job, AGG(e.emp_count) AS n FROM m.emp AS e RIGHT JOIN m.dept AS d ON e.deptno = d.deptno GROUP BY e.job ORDER BY n DESC FETCH FIRST 1 ROWS WITH TIES',
+    'SELECT e.job, COUNT(e.empno) AS n FROM s.emp AS e RIGHT JOIN s.dept AS d ON e.deptno = d.deptno GROUP BY e.job QUALIFY rank() OVER (ORDER BY n DESC) <= 1');
+  // Its WHERE cannot be the outer query's (that would drop the padded rows): not supported, not wrong.
+  assert.throws(() => dax.compile('SELECT d.dname, AGG(d.dept_count) AS n FROM (SELECT empno, deptno FROM m.emp WHERE sal > 2000) AS x RIGHT JOIN m.dept AS d ON x.deptno = d.deptno GROUP BY d.dname'),
+    e => e.code === 'UNSUPPORTED');
 });

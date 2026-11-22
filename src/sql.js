@@ -311,12 +311,22 @@ class Parser {
     if (not) throw this.err('expected IN, BETWEEN or LIKE');
     return l;
   }
+  // || binds looser than + and -, as in PostgreSQL and DuckDB: 'a' || 1 + 2 is 'a3'.
   add() {
+    const at = this.tok?.at;
+    let l = this.sum();
+    while (this.tok?.t === 'op' && this.tok.v === '||') {
+      this.i++;
+      l = this.node({ k: 'bin', op: '||', l, r: this.sum() }, at);
+    }
+    return l;
+  }
+  sum() {
     const at = this.tok?.at;
     let l = this.mul();
     for (;;) {
       const t = this.tok;
-      if (!(t?.t === 'op' && ['+', '-', '||'].includes(t.v))) return l;
+      if (!(t?.t === 'op' && ['+', '-'].includes(t.v))) return l;
       this.i++;
       l = this.node({ k: 'bin', op: t.v, l, r: this.mul() }, at);
     }
@@ -528,6 +538,16 @@ function mapExpr(e, f) {
   }
 }
 const someExpr = (e, f) => !!e && (f(e) || kids(e).some(x => someExpr(x, f)));
+// An operand that can be NULL: one that is not a constant, or a constant with a NULL in it.
+const nullable = e => !isConstant(e) || someExpr(e, x => x.k === 'null');
+// x, where each operand of `pairs` ([SQL, DAX]) that can be NULL is not blank.
+const guard = (pairs, x) => [x, ...pairs.filter(([s]) => nullable(s)).map(([, d]) => D.not(D.call('ISBLANK', d)))]
+  .reduce((a, b) => D.bin('&&', a, b));
+// a % b: SQL's remainder has the sign of a, DAX's MOD the sign of b.
+const remainder = (a, b) => {
+  const m = D.call('MOD', a, b);
+  return D.call('IF', D.bin('&&', D.bin('<>', m, D.num(0)), D.bin('<>', D.call('SIGN', m), D.call('SIGN', a))), D.bin('-', m, b), m);
+};
 // A SELECT's expressions, each mapped by `f`.
 const mapQuery = (q, f) => ({
   ...q,
@@ -610,12 +630,8 @@ export class SqlTranslator {
     }
     const sub = x => this.dax(x, ctx);
     // Over datasets, SQL's NULLs: a comparison with one is not true (DAX's blank equals blank,
-    // 0 and ""). Each operand that is not a constant is known not to be blank.
-    const known = (pairs, x) => {
-      if (!this.sqlNulls) return x;
-      const guards = pairs.filter(([s]) => !isConstant(s)).map(([, d]) => D.not(D.call('ISBLANK', d)));
-      return [x, ...guards].reduce((a, b) => D.bin('&&', a, b));
-    };
+    // 0 and ""). Each operand that can be NULL is known not to be blank.
+    const known = (pairs, x) => this.sqlNulls ? guard(pairs, x) : x;
     const CMP = new Set(['=', '<>', '<', '<=', '>', '>=']);
     switch (e.k) {
       case 'num': return D.num(e.v);
@@ -633,35 +649,29 @@ export class SqlTranslator {
       case 'not': return this.sqlNulls ? this.falseDax(e.e, ctx) : D.not(sub(e.e));
       case 'bin': {
         const l = sub(e.l), r = sub(e.r);
-        if (e.op === '%') return D.call('MOD', l, r);
         if (CMP.has(e.op)) return known([[e.l, l], [e.r, r]], D.bin(e.op, l, r));
-        const x = D.bin({ AND: '&&', OR: '||', '||': '&' }[e.op] ?? e.op, l, r);
+        const x = e.op === '%' ? remainder(l, r) : D.bin({ AND: '&&', OR: '||', '||': '&' }[e.op] ?? e.op, l, r);
         // Over datasets, SQL's NULLs: NULL + 1 is NULL (DAX's BLANK + 1 is 1), and so are
-        // NULL - 1, 1 / NULL and NULL || 'a'.
-        if (this.sqlNulls && ['+', '-', '/', '||'].includes(e.op)) {
-          const blanks = [[e.l, l], [e.r, r]].filter(([s]) => !isConstant(s)).map(([, d]) => D.call('ISBLANK', d));
+        // NULL - 1, 1 / NULL, NULL % 2 and NULL || 'a'.
+        if (this.sqlNulls && ['+', '-', '/', '%', '||'].includes(e.op)) {
+          const blanks = [[e.l, l], [e.r, r]].filter(([s]) => nullable(s)).map(([, d]) => D.call('ISBLANK', d));
           if (blanks.length) return D.call('IF', blanks.reduce((a, b) => D.bin('||', a, b)), D.call('BLANK'), x);
         }
         return x;
       }
       case 'isnull': return e.not ? D.not(D.call('ISBLANK', sub(e.e))) : D.call('ISBLANK', sub(e.e));
       case 'in': {
-        const v = sub(e.e), x = D.in(v, e.list.map(sub));
-        return known([[e.e, v]], e.not ? D.not(x) : x);
+        if (this.sqlNulls) return this.inList(e, ctx, true);
+        const x = D.in(sub(e.e), e.list.map(sub));
+        return e.not ? D.not(x) : x;
       }
       case 'between': {
         const x = sub(e.e), lo = sub(e.lo), hi = sub(e.hi), b = D.bin('&&', D.bin('>=', x, lo), D.bin('<=', x, hi));
         return known([[e.e, x], [e.lo, lo], [e.hi, hi]], e.not ? D.not(b) : b);
       }
       case 'like': {
-        if (e.pat.k !== 'str') throw sqlUnsupported('LIKE with a pattern that is not a constant');
-        const p = e.pat.v, inner = p.replace(/^%/, '').replace(/%$/, '');
-        if (/[%_]/.test(inner)) throw sqlUnsupported(`LIKE '${p}' (only 'x', 'x%', '%x' and '%x%')`);
-        const x = sub(e.e), s = D.str(inner), n = D.num([...inner].length);
-        const starts = p.startsWith('%'), ends = p.length > 1 && p.endsWith('%');
-        const c = starts && ends ? D.call('CONTAINSSTRING', x, s) : ends ? D.bin('=', D.call('LEFT', x, n), s)
-          : starts ? D.bin('=', D.call('RIGHT', x, n), s) : D.bin('=', x, s);
-        return e.not ? D.not(c) : c;
+        const { x, c } = this.like(e, ctx);
+        return known([[e.e, x]], e.not ? D.not(c) : c);
       }
       case 'case': {
         const parts = e.whens.flatMap(([w, t]) => [sub(w), sub(t)]);
@@ -671,7 +681,12 @@ export class SqlTranslator {
       case 'cast': {
         const t = CASTS[e.type.toUpperCase()];
         if (!t) throw sqlUnsupported(`CAST to ${e.type}`);
-        return D.call('CONVERT', sub(e.e), D.word(t));
+        const x = sub(e.e);
+        // CAST(x AS DATE): the day, its time dropped.
+        if (e.type.toUpperCase() === 'DATE') {
+          return D.call('IF', D.call('ISBLANK', x), D.call('BLANK'), D.call('DATE', D.call('YEAR', x), D.call('MONTH', x), D.call('DAY', x)));
+        }
+        return D.call('CONVERT', x, D.word(t));
       }
       case 'subquery': {
         // A scalar subquery: its own query, in no filter of the one around it; a variable of
@@ -682,9 +697,8 @@ export class SqlTranslator {
         return this.variable(D.call('MAXX', sq.table, D.ref(sq.names[0])));
       }
       case 'insub': {
-        const sq = this.subquery(e.q, { distinct: true });
-        if (sq.names.length !== 1) throw sqlSemantic(`IN (SELECT ...) has one column: ${e.src}`);
-        const x = { k: 'in', e: sub(e.e), set: D.call('SELECTCOLUMNS', sq.table, D.str(sq.names[0]), D.ref(sq.names[0])) };
+        if (this.sqlNulls) return this.inSubquery(e, ctx, true);
+        const x = { k: 'in', e: sub(e.e), set: this.inSet(e) };
         return e.not ? D.not(x) : x;
       }
       case 'call': {
@@ -701,6 +715,10 @@ export class SqlTranslator {
           const [a, b] = e.args.map(sub);
           return D.call('IF', D.bin('==', a, b), D.call('BLANK'), a);
         }
+        // LOG(b, x): SQL's base comes first, DAX's last.
+        if (e.fn === 'LOG' && e.args.length === 2) return D.call('LOG', sub(e.args[1]), sub(e.args[0]));
+        // DAX's TRIM also makes each run of spaces inside one space; SQL's only trims the ends.
+        if (e.fn === 'TRIM') throw sqlUnsupported(`TRIM (DAX's TRIM also collapses the spaces inside the text): ${e.src}`);
         return D.call(FUNCS[e.fn] ?? e.fn, ...e.args.map(sub));
       }
     }
@@ -711,8 +729,7 @@ export class SqlTranslator {
   // NOT of a comparison with a NULL is not true either).
   falseDax(e, ctx) {
     const sub = x => this.dax(x, ctx);
-    const known = (pairs, x) => [x, ...pairs.filter(([s]) => !isConstant(s)).map(([, d]) => D.not(D.call('ISBLANK', d)))]
-      .reduce((a, b) => D.bin('&&', a, b));
+    const known = guard;
     const NEG = { '=': '<>', '<>': '=', '<': '>=', '<=': '>', '>': '<=', '>=': '<' };
     switch (e.k) {
       case 'not': return sub(e.e);
@@ -727,18 +744,54 @@ export class SqlTranslator {
           return known([[e.l, l], [e.r, r]], D.bin(NEG[e.op], l, r));
         }
         break;
-      case 'in': {
-        const v = sub(e.e), x = D.in(v, e.list.map(sub));
-        return known([[e.e, v]], e.not ? x : D.not(x));
-      }
+      case 'in': return this.inList(e, ctx, false);
+      case 'insub': return this.inSubquery(e, ctx, false);
       case 'between': {
         const x = sub(e.e), lo = sub(e.lo), hi = sub(e.hi), b = D.bin('&&', D.bin('>=', x, lo), D.bin('<=', x, hi));
         return known([[e.e, x], [e.lo, lo], [e.hi, hi]], e.not ? b : D.not(b));
+      }
+      case 'like': {
+        const { x, c } = this.like(e, ctx);
+        return known([[e.e, x]], e.not ? c : D.not(c));
       }
     }
     // Anything else: false where it is neither true nor blank.
     const x = sub(e);
     return D.bin('&&', D.not(x), D.not(D.call('ISBLANK', x)));
+  }
+
+  // x [NOT] LIKE 'pattern': the value, and the condition on it whether it is blank or not.
+  like(e, ctx) {
+    if (e.pat.k !== 'str') throw sqlUnsupported('LIKE with a pattern that is not a constant');
+    const p = e.pat.v, inner = p.replace(/^%/, '').replace(/%$/, '');
+    if (/[%_]/.test(inner)) throw sqlUnsupported(`LIKE '${p}' (only 'x', 'x%', '%x' and '%x%')`);
+    const x = this.dax(e.e, ctx), s = D.str(inner), n = D.num([...inner].length);
+    const starts = p.startsWith('%'), ends = p.length > 1 && p.endsWith('%');
+    const c = starts && ends ? D.call('CONTAINSSTRING', x, s) : ends ? D.bin('=', D.call('LEFT', x, n), s)
+      : starts ? D.bin('=', D.call('RIGHT', x, n), s) : D.bin('=', x, s);
+    return { x, c };
+  }
+
+  // Over datasets, x [NOT] IN (a, b, ...) where it is true (`holds`) or where it is false, with
+  // SQL's NULLs: IN is true where x is one of the members (a NULL x is none of them), and false
+  // where x and every member are known and x is none of them. NOT IN the other way round.
+  inList(e, ctx, holds) {
+    const v = this.dax(e.e, ctx), list = e.list.map(x => this.dax(x, ctx)), x = D.in(v, list);
+    const member = guard([[e.e, v]], x), none = guard([[e.e, v], ...e.list.map((s, i) => [s, list[i]])], D.not(x));
+    return holds !== !!e.not ? member : none;
+  }
+  // x [NOT] IN (SELECT ...) the same way: false where x is known and neither x nor a NULL is in
+  // the subquery's rows.
+  inSubquery(e, ctx, holds) {
+    const v = this.dax(e.e, ctx), set = this.inSet(e);
+    const member = guard([[e.e, v]], { k: 'in', e: v, set });
+    const none = guard([[e.e, v]], D.bin('&&', D.not({ k: 'in', e: v, set }), D.not({ k: 'in', e: D.call('BLANK'), set })));
+    return holds !== !!e.not ? member : none;
+  }
+  inSet(e) {
+    const sq = this.subquery(e.q, { distinct: true });
+    if (sq.names.length !== 1) throw sqlSemantic(`IN (SELECT ...) has one column: ${e.src}`);
+    return D.call('SELECTCOLUMNS', sq.table, D.str(sq.names[0]), D.ref(sq.names[0]));
   }
 
   nameDax(e, ctx) {
@@ -854,7 +907,9 @@ export class SqlTranslator {
       const qualify = e => mapExpr(e, x => (x.k === 'name' && x.parts.length === 1 ? { ...x, parts: [alias, x.parts[0]] } : null));
       substs.push({ alias: a, map: new Map(sq.select.map(s => [lc(itemName(s)), qualify(s.e)])) });
       const cond = sq.where && qualify(sq.where);
-      if (i === 0 || l.type === 'inner' || l.type === 'cross') where = andOf(where, cond);
+      // Its WHERE is the outer query's, unless a later RIGHT or FULL join pads its rows with NULLs.
+      const padded = leaves.slice(i + 1).some(x => !['inner', 'left', 'cross'].includes(x.type));
+      if ((i === 0 || l.type === 'inner' || l.type === 'cross') && !(cond && padded)) where = andOf(where, cond);
       else if (cond) throw sqlUnsupported(`${l.rel.src}: a subquery with a WHERE on the outer side of a join`);
       out.push({ ...l, rel: { kind: 'name', parts: inner.parts, alias, src: inner.src } });
     }
@@ -1186,6 +1241,11 @@ export class SqlTranslator {
     let table = D.call('ADDCOLUMNS', spine, ...measures.flatMap(x => [D.str(x.name), value(x)]));
     if (having) table = D.call('FILTER', table, having);
     table = D.call('SELECTCOLUMNS', table, ...items.flatMap((it, k) => [D.str(it.name), out[k]]));
+    // FETCH FIRST n ROWS WITH TIES, as over one relation.
+    if (q.ties != null) {
+      if (!order.length) throw sqlSemantic('FETCH … WITH TIES needs an ORDER BY');
+      table = D.call('TOPN', D.num(q.ties), table, ...order.flatMap(o => [o.e, D.word(o.desc ? 'DESC' : 'ASC')]));
+    }
     return {
       query: { defines: [], evaluates: [{ e: table, order, start: [] }] }, limit: q.limit, offset: q.offset,
       names: items.map(it => it.name), oneRow: !groups.length && !q.having,

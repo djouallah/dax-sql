@@ -188,8 +188,8 @@ function rowsBox(el, getSql, { dialect = () => 'duckdb', auto = false } = {}) {
       if (k === i) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current');
     }
     $('#caption').textContent = s.say;
-    $('#p-write-h').textContent = s.lang === 'model' ? 'What the model holds, written once'
-      : s.lang === 'sql' ? (s.compare ? 'What you wrote, by hand' : 'What you write, by hand') : 'What you write';
+    $('#p-write-h').textContent = s.writeHead ?? (s.lang === 'model' ? 'What the model holds, written once'
+      : s.lang === 'sql' ? (s.compare ? 'What you wrote, by hand' : 'What you write, by hand') : 'What you write');
     $('#p-write').innerHTML = s.lang === 'sql' ? sqlBlock(s.write) : daxBlock(s.lang === 'model' ? modelText(s) : s.write);
     rowsEl.parentElement.hidden = s.lang === 'model';
     const right = $('#p-right'), head = $('#p-right-h'), meta = $('#p-meta');
@@ -198,8 +198,8 @@ function rowsBox(el, getSql, { dialect = () => 'duckdb', auto = false } = {}) {
       head.textContent = 'Written once, for every question';
       right.innerHTML = `${chips('model', s.checks)}<p class="sub">A model answers nothing by itself: it is asked. The whole model is in the <a href="#play">Playground</a>.</p>`;
     } else if (!s.dax) {
-      head.textContent = 'What you must get right, in every query';
-      right.innerHTML = chips('you', s.checks);
+      head.textContent = s.rightHead ?? 'What you must get right, in every query';
+      right.innerHTML = chips(s.who ?? 'you', s.checks);
     } else {
       const sql = compile(s.dax).sql, st = stats(sql);
       meta.textContent = `${plural(st.lines, 'line')} · ${plural(st.selects, 'SELECT')}`;

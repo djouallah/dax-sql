@@ -66,6 +66,14 @@ export const problem = [
     checks: checks2,
     say: 'The same question, asked by name: the year, [Sales Amount], and a filter on Category. No joins in it. The model knows how Category reaches Sales, so the query only says what it wants.',
   },
+  {
+    title: 'Why not let AI write it?',
+    lang: 'sql', write: sql2, sql: sql2, who: 'llm',
+    writeHead: 'What an LLM writes, at run time',
+    rightHead: 'What it must get right, every time it is asked',
+    checks: checks2,
+    say: 'Modern LLMs can write this SQL at run time, and they are nearly always right. Nearly, not always: every question, they must get every join and filter right again. From here it is opinion. Some people think that means we do not need semantic models. My view: it is the least efficient way to solve the problem. Using AI for a deterministic question makes no sense.',
+  },
 ];
 
 // The playground's time intelligence example.

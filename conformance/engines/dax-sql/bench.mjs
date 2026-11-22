@@ -4,7 +4,8 @@
 //   node engines/dax-sql/bench.mjs <base checkout> <head checkout> [--rounds 3] [--grep regex]
 // Each round times every query by both, the order alternating; a query's time is its fastest
 // round, the least noise. The head fails when the whole suite is more than 10% slower, or a
-// query takes more than twice as long and 250 ms more. The slowest changes are in the report.
+// query takes more than 1.5 times as long and 50 ms more (with no change, a query moves up to
+// 1.3 times and 30 ms). The slowest changes are in the report.
 import { appendFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { loadQueries, modelDir } from '../../tools/suite.mjs';
@@ -16,7 +17,7 @@ const rounds = Number(opt('--rounds', 3));
 const grep = opt('--grep', null);
 const [baseDir, headDir] = args;
 if (!baseDir || !headDir) throw new Error('usage: bench.mjs <base checkout> <head checkout> [--rounds 3] [--grep regex]');
-const TOTAL = 1.10, QUERY = 2, MS = 250;
+const TOTAL = 1.10, QUERY = 1.5, MS = 50;
 
 const head = await engine(headDir);
 const base = await engine(baseDir, { DuckDBInstance: head.DuckDBInstance });

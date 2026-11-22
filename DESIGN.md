@@ -990,7 +990,7 @@ npm test
   both ways as well (`DAXSQL_OPTIMIZE=0`).
 - `conformance/engines/dax-sql/bench.mjs` (`perf.yml`): every query timed by the commit and by
   the one before, on one runner, the fastest of three rounds each: more than 10% slower in all,
-  or a query twice as slow and 250 ms more, fails.
+  or a query 1.5 times as slow and 50 ms more, fails.
 - `.github/workflows/ossie-query.yml`, in CI only (Python and Ossie's main): Ossie SQL held to
   Ossie as DAX is to Power BI. Ossie's query cases (`formats/test/ossie-query.mjs`: main's, and
   those on the view expander's branch until it merges), the wide table cases' Layer 2 queries

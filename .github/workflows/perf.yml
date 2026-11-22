@@ -2,7 +2,7 @@ name: Speed
 
 # Every query of the conformance suite timed by this commit and by the one before it, on the
 # same runner and the same DuckDB (conformance/engines/dax-sql/bench.mjs): a commit that makes
-# the suite more than 10% slower, or one query more than twice as slow (and 250 ms more), fails.
+# the suite more than 10% slower, or one query more than 1.5 times as slow (and 50 ms more), fails.
 # The summary lists the queries that changed most.
 
 on:

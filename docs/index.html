@@ -1,0 +1,690 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>dax-sql</title>
+<meta name="description" content="dax-sql compiles DAX and Apache Ossie SQL over a semantic model into one plain SQL SELECT. Why a compiler matters, how this one works, and how it is checked against Power BI, with a live playground.">
+<script>try { document.documentElement.dataset.theme = localStorage.getItem("theme") || "dark"; } catch (e) { document.documentElement.dataset.theme = "dark"; }</script>
+<style>
+:root {
+  color-scheme: dark;
+  --page: #08090c; --surface: #0f1117; --surface-2: #141721; --sunken: #1b1f2a;
+  --ink: #eef0f6; --ink-2: #b3b8c7; --muted: #7c8294;
+  --line: #21252f; --line-2: #323846;
+  --k-dax: #9085e9; --k-ctx: #e0679a; --k-ir: #d9a020; --k-sql: #2fd39a; --k-eng: #4d9cff;
+  --good: #22c55e; --good-ink: #4ade80; --warn-ink: #fbbf24; --crit: #f87171;
+  --good-bg: rgba(34,197,94,.13); --warn-bg: rgba(251,191,36,.13); --crit-bg: rgba(248,113,113,.13); --note-bg: rgba(77,156,255,.12);
+  --glow-a: rgba(144,133,233,.16); --glow-b: rgba(47,211,154,.08);
+  --mono: ui-monospace, "Cascadia Mono", "SF Mono", Consolas, Menlo, monospace;
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+  --page: #f6f6f3; --surface: #ffffff; --surface-2: #fbfbf9; --sunken: #f0efea;
+  --ink: #0d0e12; --ink-2: #4a4d57; --muted: #7f828c;
+  --line: #e4e3dc; --line-2: #cfcec6;
+  --k-dax: #6250d6; --k-ctx: #c23a73; --k-ir: #a86f00; --k-sql: #0e8a5f; --k-eng: #2a78d6;
+  --good: #0ca30c; --good-ink: #006300; --warn-ink: #8a6200; --crit: #d03b3b;
+  --good-bg: #e7f5e7; --warn-bg: #fdf1d2; --crit-bg: #fae6e6; --note-bg: #eaf2fc;
+  --glow-a: rgba(98,80,214,.07); --glow-b: rgba(20,153,106,.05);
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { overflow-x: hidden; }
+body { margin: 0; color: var(--ink); font: 15px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+  background: radial-gradient(1100px 600px at 8% -12%, var(--glow-a), transparent 60%),
+              radial-gradient(900px 520px at 100% -8%, var(--glow-b), transparent 60%), var(--page);
+  background-attachment: fixed; }
+a { color: inherit; text-decoration-color: var(--line-2); text-underline-offset: 3px; }
+a:hover { text-decoration-color: currentColor; }
+code, pre { font-family: var(--mono); font-size: 12.5px; }
+code { background: var(--sunken); padding: 1px 5px; border-radius: 5px; overflow-wrap: anywhere; }
+pre { margin: 0; padding: 12px 14px; background: var(--sunken); border: 1px solid var(--line); border-radius: 10px;
+  overflow: auto; line-height: 1.55; }
+pre code { background: none; padding: 0; overflow-wrap: normal; }
+h1, h2, h3, h4, p { margin: 0; }
+h2 { font-size: 28px; line-height: 1.15; letter-spacing: -.025em; font-weight: 750; }
+h3 { font-size: 17px; letter-spacing: -.01em; }
+h4 { font-size: 11.5px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 650; margin-bottom: 6px; }
+.wrap { max-width: 1240px; margin: 0 auto; padding: 0 20px; }
+.lead { color: var(--ink-2); max-width: 80ch; font-size: 15.5px; line-height: 1.65; }
+.lead b, .sub b { color: var(--ink); }
+.sub { color: var(--ink-2); font-size: 13.5px; }
+.tiny { font-size: 12px; margin-top: 6px; }
+.muted { color: var(--muted); }
+
+/* top bar */
+.top { position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, var(--page) 85%, transparent);
+  backdrop-filter: blur(14px) saturate(1.4); border-bottom: 1px solid var(--line); }
+.top .wrap { display: grid; gap: 10px; padding-top: 14px; padding-bottom: 12px; }
+.tophead { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.brand { display: inline-flex; align-items: center; gap: 11px; font-size: 30px; font-weight: 800; letter-spacing: -.035em;
+  line-height: 1.1; text-decoration: none; white-space: nowrap; }
+.tagline { color: var(--ink-2); font-size: 15px; }
+.toplinks { margin-left: auto; display: flex; align-items: center; gap: 22px; }
+.toplinks a, .toplinks button { font: inherit; font-size: 15px; font-weight: 550; color: var(--ink-2); text-decoration: none;
+  background: none; border: 0; padding: 0; cursor: pointer; }
+.toplinks a:hover, .toplinks button:hover, .toplinks a[aria-current="page"] { color: var(--ink); }
+.toplinks .gh { display: inline-flex; color: var(--ink); }
+.toplinks .gh svg { width: 30px; height: 30px; fill: currentColor; }
+.logo { width: 26px; height: 26px; border-radius: 8px; position: relative; flex: none;
+  background: conic-gradient(from 210deg, var(--k-dax), var(--k-ctx), var(--k-ir), var(--k-sql), var(--k-dax));
+  box-shadow: 0 0 18px -2px color-mix(in srgb, var(--k-dax) 70%, transparent); }
+.logo::after { content: ""; position: absolute; inset: 6px; border-radius: 3px; background: var(--page); }
+nav#nav { position: relative; display: flex; padding: 4px; border-radius: 14px; background: var(--sunken); border: 1px solid var(--line); overflow-x: auto; scrollbar-width: none; }
+nav#nav a { position: relative; z-index: 1; flex: 1; text-align: center; padding: 9px 10px; border-radius: 10px; text-decoration: none;
+  color: var(--ink-2); font-size: 15px; font-weight: 550; white-space: nowrap; transition: color .2s; }
+nav#nav a:hover { color: var(--ink); }
+nav#nav a[aria-current="page"] { color: var(--ink); font-weight: 650; }
+nav#nav .ind { position: absolute; top: 4px; bottom: 4px; left: 4px; border-radius: 10px; background: var(--surface);
+  box-shadow: 0 1px 2px rgba(0,0,0,.18), inset 0 0 0 1px var(--line-2), 0 0 22px -8px color-mix(in srgb, var(--k-dax) 60%, transparent);
+  transition: transform .35s cubic-bezier(.3,.8,.2,1), width .35s cubic-bezier(.3,.8,.2,1), opacity .2s; }
+nav#nav .ind.off { opacity: 0; }
+.btn { font: inherit; font-size: 13px; color: var(--ink-2); background: var(--surface); border: 1px solid var(--line-2);
+  border-radius: 8px; padding: 6px 11px; cursor: pointer; white-space: nowrap; text-decoration: none; }
+.btn:hover { color: var(--ink); border-color: var(--muted); }
+.btn.run { color: var(--ink); border-color: color-mix(in srgb, var(--k-sql) 60%, transparent); box-shadow: 0 0 16px -8px var(--k-sql); }
+
+/* views and layout */
+.view { display: none; padding: 30px 0 40px; }
+.view.on { display: grid; gap: 22px; animation: rise .45s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } }
+.head { display: grid; gap: 12px; }
+.card { background: linear-gradient(180deg, var(--surface-2), var(--surface)); border: 1px solid var(--line);
+  border-radius: 16px; padding: 20px; min-width: 0; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid2.tight { gap: 10px; }
+.grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.stack { display: grid; gap: 12px; align-content: start; min-width: 0; }
+.grid2 > *, .grid4 > *, .stack > * { min-width: 0; }
+.subtabs { display: flex; gap: 4px; padding: 4px; width: fit-content; max-width: 100%; flex-wrap: wrap;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
+.subtabs button { font: inherit; font-size: 13.5px; font-weight: 600; border: 0; background: none; color: var(--ink-2);
+  padding: 6px 13px; border-radius: 8px; cursor: pointer; font-family: var(--mono); }
+.subtabs button[aria-selected="true"] { background: var(--sunken); color: var(--ink); box-shadow: inset 0 0 0 1px var(--line-2); }
+[data-pane-of]:not(.on), [data-stage]:not(.on) { display: none !important; }
+[data-stage].on { animation: rise .35s cubic-bezier(.2,.8,.2,1) both; }
+.seg { display: inline-flex; background: var(--sunken); border-radius: 10px; padding: 3px; border: 1px solid var(--line); }
+.seg button { font: inherit; font-size: 13px; font-weight: 600; border: 0; background: none; color: var(--ink-2);
+  padding: 5px 12px; border-radius: 7px; cursor: pointer; white-space: nowrap; }
+.seg button[aria-selected="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 0 0 1px var(--line-2), 0 0 18px -6px var(--k-dax); }
+
+/* code */
+pre.code { max-height: 520px; }
+pre.code.dax { border-left: 3px solid color-mix(in srgb, var(--k-dax) 70%, transparent); }
+pre.code.sql { border-left: 3px solid color-mix(in srgb, var(--k-sql) 70%, transparent); }
+.code .kw { color: var(--k-eng); font-weight: 600; }
+.code .fn { color: var(--k-dax); }
+.code .id { color: var(--ink); }
+.code .ms { color: var(--k-ctx); font-weight: 600; }
+.code .str { color: var(--k-ir); }
+.code .num { color: var(--k-sql); }
+.code .com { color: var(--muted); font-style: italic; }
+.err { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; padding: 10px 12px; border-radius: 10px; background: var(--crit-bg); }
+.err code { background: none; padding: 0; font-size: 12.5px; }
+
+/* tables */
+.tw { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; vertical-align: top; }
+tr:last-child td { border-bottom: 0; }
+th { font-weight: 650; color: var(--ink-2); font-size: 12px; background: var(--sunken); }
+td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; }
+.wrapcell td, .wrapcell th { white-space: normal; }
+.wrapcell td:first-child { min-width: 170px; }
+
+/* chips */
+.chip { display: inline-flex; align-items: center; gap: 5px; padding: 1px 9px 1px 7px; border-radius: 999px;
+  font-size: 12px; font-weight: 650; line-height: 1.65; white-space: nowrap; color: var(--ink); }
+.chip i { font-style: normal; font-weight: 800; }
+.chip.match { background: var(--good-bg); } .chip.match i { color: var(--good-ink); }
+.chip.differs, .chip.refused { background: var(--crit-bg); } .chip.differs i, .chip.refused i { color: var(--crit); }
+.chip.partial { background: var(--warn-bg); } .chip.partial i { color: var(--warn-ink); }
+.note { background: var(--note-bg); border: 1px solid color-mix(in srgb, var(--k-eng) 30%, transparent); border-radius: 12px; padding: 12px 14px; font-size: 13.5px; color: var(--ink-2); }
+.note b { color: var(--ink); }
+.spin { display: inline-block; width: 11px; height: 11px; border-radius: 50%; border: 2px solid var(--line-2); border-top-color: var(--k-sql); animation: spin 1s linear infinite; vertical-align: -1px; margin-right: 4px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.runbox { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding: 10px 12px; border: 1px dashed var(--line-2); border-radius: 10px; }
+
+/* the walkthrough */
+.demo-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.stepper { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; flex: 1; }
+.stepper button { font: inherit; font-size: 13px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--ink-2); border-radius: 999px; padding: 4px 12px 4px 5px; cursor: pointer; display: inline-flex; gap: 7px; align-items: center; white-space: nowrap; }
+.stepper button b { width: 20px; height: 20px; border-radius: 50%; background: var(--sunken); display: grid; place-items: center; font-size: 11.5px; }
+.stepper button[aria-current="step"] { border-color: var(--k-dax); color: var(--ink); box-shadow: 0 0 16px -6px var(--k-dax); }
+.stepper button.done b { background: var(--k-dax); color: #fff; }
+.caption.big { font-size: 17px; min-height: 3.2em; color: var(--ink); max-width: 95ch; }
+.stage { display: grid; grid-template-columns: minmax(0, 1fr) 24px minmax(0, 1.35fr); gap: 10px; align-items: start; }
+.arrow { align-self: center; text-align: center; color: var(--k-dax); font-size: 22px; text-shadow: 0 0 12px var(--k-dax); }
+.rv { opacity: 0; transform: translateY(10px); transition: opacity .5s ease, transform .5s cubic-bezier(.2,.8,.2,1); }
+.rv.on { opacity: 1; transform: none; }
+.rv.d1 { transition-delay: .12s; } .rv.d2 { transition-delay: .26s; } .rv.d3 { transition-delay: .4s; }
+.ctxs { display: grid; gap: 6px; }
+.ctx { display: flex; gap: 8px; align-items: baseline; padding: 7px 10px; border-radius: 9px; background: var(--surface); border: 1px solid var(--line);
+  font-size: 13px; color: var(--ink-2); --kc: var(--k-ctx); }
+.ctx .ck { font: 700 11px var(--mono); text-transform: uppercase; letter-spacing: .05em; color: var(--kc); min-width: 62px; }
+.ctx-bind { --kc: var(--k-dax); } .ctx-pred { --kc: var(--k-ctx); } .ctx-path { --kc: var(--k-eng); }
+.ctx-removed { --kc: var(--crit); } .ctx-empty { --kc: var(--muted); }
+.ctx-path, .ctx-empty { border-style: dashed; }
+.sqlhead { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.meta { font: 12px var(--mono); color: var(--muted); }
+
+/* the model diagram */
+.model svg { width: 100%; max-width: 860px; height: auto; display: block; margin: 0 auto; }
+.model .svgwrap { overflow-x: auto; }
+@media (max-width: 600px) { .model svg { min-width: 640px; } }
+.model .tb rect { fill: var(--surface-2); stroke: var(--line-2); stroke-width: 1.2; }
+.model .tb.fact rect { stroke: var(--k-dax); filter: drop-shadow(0 0 10px color-mix(in srgb, var(--k-dax) 40%, transparent)); }
+.model .tb text { fill: var(--ink); font: 700 13.5px var(--mono); }
+.model .tb text.n { fill: var(--muted); font: 11.5px system-ui, sans-serif; }
+.model .rl { stroke: var(--ink-2); stroke-width: 1.5; fill: none; opacity: .7; }
+.model .rl.inactive { stroke-dasharray: 5 4; opacity: .5; }
+.model .rl.m2m { stroke: var(--k-ctx); stroke-dasharray: 2 4; opacity: 1; }
+.model .lbl { fill: var(--muted); font: 11px var(--mono); }
+
+/* approaches */
+.appr { display: grid; gap: 10px; align-content: start; border-top: 2px solid var(--line-2); }
+.appr.chosen { border-top-color: var(--k-sql); box-shadow: 0 0 40px -22px var(--k-sql); }
+.appr h3 { font-size: 16px; }
+.appr p { color: var(--ink-2); font-size: 13.5px; }
+.appr .num { font: 700 12px var(--mono); color: var(--muted); }
+ul.facts { margin: 0; padding: 0; list-style: none; display: grid; gap: 16px; }
+ul.facts > li { display: grid; gap: 10px; padding-left: 16px; border-left: 2px solid color-mix(in srgb, var(--k-dax) 55%, transparent); }
+ul.facts > li > p { color: var(--ink-2); max-width: 90ch; }
+ul.facts > li > p b:first-child { color: var(--ink); font-size: 15.5px; display: block; margin-bottom: 2px; }
+
+/* live blocks */
+.live { display: grid; gap: 10px; }
+.live-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.live-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 14px; align-items: start; }
+
+/* the pipeline */
+.flow { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+.fbox { border: 1px solid var(--line-2); border-radius: 12px; padding: 12px; background: var(--surface); display: grid; gap: 5px; align-content: start;
+  cursor: pointer; transition: border-color .2s, box-shadow .2s, transform .2s; --kc: var(--k-dax); }
+.fbox:hover { transform: translateY(-2px); }
+.fbox.on { border-color: var(--kc); box-shadow: 0 0 24px -10px var(--kc); background: var(--surface-2); }
+.fbox h4 { margin: 0; color: var(--kc); }
+.fbox p { font-size: 12.5px; color: var(--ink-2); }
+.fbox code { font-size: 11px; }
+.fbox:nth-child(1) { --kc: var(--k-dax); } .fbox:nth-child(2) { --kc: var(--k-ctx); } .fbox:nth-child(3) { --kc: var(--k-ir); }
+.fbox:nth-child(4) { --kc: var(--k-sql); } .fbox:nth-child(5) { --kc: var(--k-eng); }
+.tree { font: 12.5px/1.75 var(--mono); max-height: 520px; overflow: auto; padding: 10px 12px; background: var(--sunken); border: 1px solid var(--line); border-radius: 10px; }
+.tn { padding-left: calc(var(--d) * 18px); white-space: nowrap; color: var(--ink-2); position: relative; }
+.tn .tk { display: inline-block; min-width: 44px; margin-right: 8px; font-size: 11px; color: var(--k-ir); }
+.tn b { color: var(--ink); }
+.tn code { background: none; padding: 0; color: var(--ink); }
+ol.steps { margin: 0; padding-left: 20px; display: grid; gap: 6px; color: var(--ink-2); font-size: 14px; }
+ol.steps b { color: var(--ink); }
+
+/* proof */
+.stat { display: grid; gap: 2px; }
+.stat .big { font-size: 34px; font-weight: 800; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+.stat .big.good { color: var(--good-ink); }
+.stat span { color: var(--ink-2); font-size: 13px; }
+.oflow { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr; gap: 8px; align-items: stretch; }
+.oflow .ob { border: 1px solid var(--line-2); border-radius: 12px; padding: 12px; background: var(--surface); display: grid; gap: 4px; align-content: start; }
+.oflow .ob p { font-size: 12.5px; color: var(--ink-2); }
+.oflow .farrow { align-self: center; color: var(--k-dax); font-size: 20px; }
+td img { display: block; height: 20px; }
+
+/* playground */
+.play { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 16px; align-items: start; }
+.modelside { max-height: 80vh; overflow: auto; position: sticky; top: 140px; display: grid; gap: 6px; }
+.modelside details { border: 1px solid var(--line); border-radius: 9px; background: var(--surface); }
+.modelside summary { cursor: pointer; padding: 6px 9px; font-size: 13px; list-style-position: inside; }
+.modelside .names { display: flex; flex-wrap: wrap; gap: 4px; padding: 0 8px 8px; }
+.ins { font: 11.5px var(--mono); border: 1px solid var(--line); background: var(--sunken); color: var(--ink-2); border-radius: 6px; padding: 2px 6px; cursor: pointer; }
+.ins:hover { color: var(--ink); border-color: var(--line-2); }
+.ins.ms { color: var(--k-ctx); }
+textarea#pg-in { width: 100%; min-height: 220px; resize: vertical; font: 13px/1.55 var(--mono); color: var(--ink); background: var(--sunken);
+  border: 1px solid var(--line-2); border-left: 3px solid color-mix(in srgb, var(--k-dax) 70%, transparent); border-radius: 10px; padding: 12px 14px; tab-size: 2; }
+textarea#pg-in:focus { outline: none; border-color: var(--k-dax); }
+select { font: inherit; font-size: 13.5px; color: var(--ink); background: var(--surface); border: 1px solid var(--line-2); border-radius: 8px; padding: 6px 8px; max-width: 100%; }
+.colchip { display: inline-flex; gap: 5px; font: 12px var(--mono); padding: 2px 8px; border-radius: 6px; background: var(--sunken); color: var(--muted); margin: 0 4px 4px 0; }
+.colchip b { color: var(--ink); font-weight: 600; }
+kbd { font: 11px var(--mono); border: 1px solid var(--line-2); border-bottom-width: 2px; border-radius: 4px; padding: 0 4px; }
+
+/* about */
+.about { max-width: 78ch; display: grid; gap: 14px; }
+.about h3 { margin-top: 8px; }
+.about p { color: var(--ink-2); font-size: 15.5px; line-height: 1.65; }
+.about p b { color: var(--ink); }
+
+@media (max-width: 1000px) {
+  .grid4 { grid-template-columns: 1fr 1fr; }
+  .flow { grid-template-columns: 1fr 1fr; }
+  .oflow { grid-template-columns: 1fr; } .oflow .farrow { transform: rotate(90deg); justify-self: center; }
+  .play { grid-template-columns: 1fr; } .modelside { position: static; max-height: 300px; }
+}
+@media (max-width: 860px) {
+  .grid2, .live-grid { grid-template-columns: 1fr; }
+  .stage { grid-template-columns: 1fr; } .stage .arrow { transform: rotate(90deg); }
+}
+@media (max-width: 600px) {
+  .wrap { padding: 0 16px; }
+  .brand { font-size: 24px; } .tagline { display: none; } .toplinks { gap: 14px; }
+  nav#nav a { flex: none; font-size: 14px; padding: 8px 9px; }
+  .grid4, .flow { grid-template-columns: 1fr; }
+  h2 { font-size: 23px; }
+  .card { padding: 14px; }
+}
+</style>
+</head>
+<body>
+
+<div class="top"><div class="wrap">
+  <div class="tophead">
+    <a class="brand" href="#problem"><span class="logo" aria-hidden="true"></span>dax-sql</a>
+    <span class="tagline">a compiler for semantic models</span>
+    <div class="toplinks">
+      <a href="#about" id="aboutlink">About</a>
+      <button type="button" id="theme">Light</button>
+      <a class="gh" href="https://github.com/djouallah/dax-sql" aria-label="GitHub repository"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></a>
+    </div>
+  </div>
+  <nav id="nav">
+    <span class="ind" aria-hidden="true"></span>
+    <a href="#problem">The problem</a>
+    <a href="#why">Why a compiler</a>
+    <a href="#how">How it works</a>
+    <a href="#proof">Proof</a>
+    <a href="#play">Playground</a>
+    <a href="#limits">Limits</a>
+  </nav>
+</div></div>
+
+<main class="wrap">
+
+<!-- ============================== 1. the problem -->
+<section id="problem" class="view">
+  <header class="head">
+    <h2>A measure is a question, not a formula</h2>
+    <p class="lead">In Power BI a measure is written once, <code>[Sales Amount] := SUM(Sales[Amount])</code>, and then asked
+      everywhere: in a total, in a row per year, under a slicer, inside another measure. What it returns depends on
+      <b>where it is asked</b>: on the filters around it, which DAX calls the <b>filter context</b>. SQL has no filter
+      context, no relationships between tables, and no rows that turn into filters. So one measure is different SQL in
+      every place it is used. Follow it through five places, each a column added to the same query.</p>
+  </header>
+
+  <div class="card stack" id="walk">
+    <div class="demo-bar">
+      <div class="stepper" id="stepper"></div>
+      <button class="btn" type="button" id="p-prev" aria-label="Previous step">&larr;</button>
+      <button class="btn" type="button" id="p-next" aria-label="Next step">&rarr;</button>
+      <button class="btn" type="button" id="play">Play</button>
+    </div>
+    <p class="caption big" id="caption" aria-live="polite"></p>
+    <div class="stage">
+      <div class="stack">
+        <div class="rv"><h4>The query</h4><div id="p-dax"></div></div>
+        <div class="rv d1"><h4>The filter context of the new column</h4><div class="ctxs" id="p-ctx"></div></div>
+        <div class="rv d3"><h4>The answer</h4><div id="p-rows"></div></div>
+      </div>
+      <div class="arrow" aria-hidden="true">&rarr;</div>
+      <div class="stack rv d2">
+        <div class="sqlhead"><h4>The SQL, compiled in your browser</h4>
+          <div class="seg" id="p-opt"><button type="button" data-v="off">rewrites off</button><button type="button" data-v="on">rewrites on</button></div></div>
+        <div id="p-sql"></div>
+        <span class="meta" id="p-meta"></span>
+      </div>
+    </div>
+    <p class="note"><b>Rewrites off</b> shows the SQL as DAX means it: each measure on each row is a subquery over the
+      rows its filter context keeps. That is easy to read and slow on real data. <b>Rewrites on</b> is what the compiler
+      ships: the same answer from fused <code>GROUP BY</code> queries (see <a href="#how">How it works</a>). Nothing on this page
+      is pasted SQL: your browser runs the compiler from the repo's main branch.</p>
+  </div>
+
+  <div class="card stack model">
+    <h3>The model on this page</h3>
+    <p class="sub">The test suite's small sales model, small enough to check every answer by hand: 11 sales, 5 products in 3
+      categories, 4 customers, every day of 2023 and 2024. Sale 11 is to customer 99, who is not in Customer.</p>
+    <div class="svgwrap"><svg viewBox="0 0 820 312" role="img" aria-label="Sales relates to Product, Customer and Date; Product to Category; Returns to Product and Date; CityTarget to Customer, many to many.">
+      <line class="rl" x1="230" y1="64" x2="180" y2="64"/>
+      <line class="rl" x1="430" y1="146" x2="380" y2="76"/>
+      <line class="rl" x1="305" y1="220" x2="305" y2="88"/>
+      <line class="rl" x1="380" y1="252" x2="430" y2="268"/>
+      <line class="rl" x1="580" y1="146" x2="630" y2="76"/>
+      <line class="rl" x1="492" y1="178" x2="492" y2="250"/>
+      <line class="rl inactive" x1="518" y1="178" x2="518" y2="250"/>
+      <line class="rl m2m" x1="705" y1="88" x2="705" y2="220"/>
+      <text class="lbl" x="484" y="204" text-anchor="end">OrderDate</text>
+      <text class="lbl" x="526" y="204">ShipDate (inactive)</text>
+      <text class="lbl" x="697" y="158" text-anchor="end">City, many-to-many</text>
+      <g class="tb"><rect x="30" y="40" width="150" height="48" rx="9"/><text x="44" y="61">Category</text><text class="n" x="44" y="78">3 rows</text></g>
+      <g class="tb"><rect x="230" y="40" width="150" height="48" rx="9"/><text x="244" y="61">Product</text><text class="n" x="244" y="78">5 rows</text></g>
+      <g class="tb"><rect x="230" y="220" width="150" height="48" rx="9"/><text x="244" y="241">Returns</text><text class="n" x="244" y="258">3 rows</text></g>
+      <g class="tb fact"><rect x="430" y="130" width="150" height="48" rx="9"/><text x="444" y="151">Sales</text><text class="n" x="444" y="168">11 rows · the fact</text></g>
+      <g class="tb"><rect x="430" y="250" width="150" height="48" rx="9"/><text x="444" y="271">Date</text><text class="n" x="444" y="288">731 rows</text></g>
+      <g class="tb"><rect x="630" y="40" width="150" height="48" rx="9"/><text x="644" y="61">Customer</text><text class="n" x="644" y="78">4 rows</text></g>
+      <g class="tb"><rect x="630" y="220" width="150" height="48" rx="9"/><text x="644" y="241">CityTarget</text><text class="n" x="644" y="258">3 rows</text></g>
+    </svg></div>
+    <p class="sub">Lines are relationships, the many side toward the fact. The model also has calculated tables, two
+      calculation groups, a field parameter and three security roles: try them in the <a href="#play">Playground</a>.</p>
+  </div>
+</section>
+
+<!-- ============================== 2. why a compiler -->
+<section id="why" class="view">
+  <header class="head">
+    <h2>Why a compiler is a big deal</h2>
+    <p class="lead">A semantic model is where a business keeps its definitions: what sales are, what last year means, what
+      a share of a category is. Today those definitions run in one place, <b>the engine that owns the model</b>. Every
+      other tool either calls that engine or writes the definitions again, and the copies drift apart. A compiler is the
+      third way: it reads the definitions and writes the SQL, for whatever engine already holds the data.</p>
+  </header>
+
+  <div class="stack">
+    <h3>Four ways to answer a DAX query with SQL</h3>
+    <div class="grid4">
+      <div class="card appr"><span class="num">1</span><h3>Write the SQL case by case</h3>
+        <p>A template for each pattern a report uses: by year, year to date, a share. This is how the analytics-as-code
+          dashboard's first compiler worked. Each case works. The query nobody wrote a case for comes out wrong, or not at all.</p>
+        <span><span class="chip partial"><i>~</i>only the cases written</span></span></div>
+      <div class="card appr"><span class="num">2</span><h3>Interpret DAX in the client</h3>
+        <p>Fetch the rows, then evaluate the DAX in JavaScript. Easier to get right, but the data leaves the engine and
+          the work grows with it. That is an interpreter, not a compiler.</p>
+        <span><span class="chip differs"><i>&times;</i>moves the data</span></span></div>
+      <div class="card appr"><span class="num">3</span><h3>Build a query engine</h3>
+        <p>A cost-based planner that splits each query into formula-engine and storage-engine work, as VertiPaq does.
+          The fastest SQL, at several times the work, and what you now maintain is an engine.</p>
+        <span><span class="chip partial"><i>~</i>several times the work</span></span></div>
+      <div class="card appr chosen"><span class="num">4</span><h3>Compile DAX's rules</h3>
+        <p>Model the rules themselves: filter context, relationships, context transition, blanks. Wherever DAX would change
+          the filter context at run time, the compiler builds the new one <b>at compile time</b>. Every aggregate ends up as
+          &ldquo;the rows of table T that this filter context keeps, aggregated&rdquo;, and the engine does the rest.</p>
+        <span><span class="chip match"><i>&check;</i>what dax-sql does</span></span></div>
+    </div>
+  </div>
+
+  <div class="card stack">
+    <h3>What that changes</h3>
+    <ul class="facts">
+      <li><p><b>The definitions leave the vendor.</b> A Power BI <code>model.bim</code>, or an Apache Ossie file, becomes
+        plain SQL for DuckDB or for Microsoft Fabric's SQL endpoint. A new engine is a <code>Dialect</code> subclass: the
+        rules stay, only the spelling changes.</p></li>
+      <li><p><b>The data stays where it is.</b> The output is one <code>SELECT</code>. The engine that holds the data does
+        all the work: DuckDB on a laptop, a warehouse, or this browser tab. Nothing is fetched to be computed elsewhere.</p></li>
+      <li><p><b>A query nobody wrote a case for still comes out right.</b> The answer follows from the rules, not from a
+        template. This one mixes ALLSELECTED, a TOPN inside CONCATENATEX, and a sort on a measure. Berlin has no sales,
+        so all five products tie for its top: DAX's TOPN keeps ties, and so does the SQL.</p>
+        <div id="why-unseen"></div></li>
+      <li><p><b>It refuses rather than guesses.</b> What it cannot translate exactly is an error with a code, never a
+        plausible wrong number: <code>SYNTAX</code> for the text, <code>SEMANTIC</code> for the model, <code>UNSUPPORTED</code>
+        for what it does not do.</p>
+        <div class="subtabs" id="st-refused"></div><div id="refused"></div></li>
+      <li><p><b>One plan, two languages.</b> A SQL <code>SELECT</code> over the model, with measures as
+        <code>AGG(measure)</code> as Snowflake's semantic views write them, builds the same tree a DAX query does. Here
+        is a SQL query, the DAX it stands for, and the check that both compile to the same SQL:</p>
+        <div class="grid2 tight"><div><h4>SQL over the model</h4><div id="why-sql"></div></div>
+          <div><h4>The DAX it stands for</h4><div id="why-dax"></div></div></div>
+        <div id="why-same"></div>
+        <div id="why-sql-live"></div></li>
+      <li><p><b>The working is readable.</b> The SQL is the explanation of the number. It can be read, diffed, cached,
+        and <code>EXPLAIN</code>ed by the engine, and checked by anyone who knows SQL, without a model engine in between.</p></li>
+      <li><p><b>Apache Ossie needs exactly this.</b> <a href="https://github.com/apache/ossie">Ossie</a> (incubating) is a
+        portable specification for semantic models. Its query layer says that SQL with measures is rewritten into plain
+        SQL over the tables, &ldquo;view expansion&rdquo;, and its reference compiler is still in progress
+        (<a href="https://github.com/apache/ossie/issues/707">issue #707</a>, <a href="https://github.com/apache/ossie/pull/769">PR #769</a>).
+        dax-sql compiles Ossie models and their SQL today, and is checked against that expander every day.</p></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================== 3. how it works -->
+<section id="how" class="view">
+  <header class="head">
+    <h2>How it works</h2>
+    <p class="lead">Five stages in about 9,000 lines of JavaScript, with no dependencies. Follow one query through them:
+      sales, last year and year to date, by month. Click a stage.</p>
+  </header>
+  <div class="flow" id="pipe">
+    <div class="fbox"><h4>1 · Parse</h4><p>DAX text to a syntax tree. Nothing about the model yet.</p><code>lexer.js parser.js</code></div>
+    <div class="fbox"><h4>2 · Compile</h4><p>The tree walked with the filter context as a value.</p><code>compiler.js context.js model.js</code></div>
+    <div class="fbox"><h4>3 · Plan</h4><p>A small relational tree: scans, groups, aggregates.</p><code>ir.js</code></div>
+    <div class="fbox"><h4>4 · Emit</h4><p>SQL, then the rewrites that make it fast.</p><code>emit.js</code></div>
+    <div class="fbox"><h4>5 · Dialect</h4><p>The spelling of one engine.</p><code>dialects/</code></div>
+  </div>
+
+  <div class="card stack" data-stage="0">
+    <h3>Parse: the text becomes a tree</h3>
+    <p class="sub">The lexer and parser know DAX's grammar and nothing else. <code>[Sales PY]</code> is a name in brackets:
+      whether it is a measure, and what it means, is the compiler's question. The tree below is this page's parser output.</p>
+    <div class="grid2"><div id="how-dax"></div><div class="tree" id="how-ast"></div></div>
+  </div>
+
+  <div class="card stack" data-stage="1">
+    <h3>Compile: the filter context as a value</h3>
+    <p class="sub">The compiler walks the tree with an environment: the filter context, the row contexts, the variables, the
+      columns SUMMARIZECOLUMNS groups by, the shadow contexts ALLSELECTED restores, and the measures being expanded. A measure
+      reference is replaced by its expression under the current context. Wherever DAX would change the context at run
+      time, a new one is built here, at compile time.</p>
+    <div class="grid2">
+      <div class="stack">
+        <h4>A filter is one of three things</h4>
+        <div class="tw"><table class="wrapcell">
+          <tr><th>Kind</th><th>What it says</th><th>Made by</th></tr>
+          <tr><td><code>bind</code></td><td>A column equals a value, possibly an outer row's: the SQL is then correlated.</td><td>A group's key; context transition</td></tr>
+          <tr><td><code>pred</code></td><td>A predicate on columns, read on each row.</td><td><code>CALCULATE(&hellip;, T[c] &gt; 5)</code></td></tr>
+          <tr><td><code>rel</code></td><td>The rows of a table, matched on its columns' lineage.</td><td><code>TREATAS</code>, <code>VALUES</code>, <code>FILTER</code>, time intelligence</td></tr>
+        </table></div>
+        <p class="sub">A filter reaches a table only along relationships: <code>expand(T)</code> is DAX's expanded table
+          (the tables T reaches through many-to-one relationships), and <code>inbound(T)</code> the bidirectional and
+          many-to-many ones through which a filter enters from outside, as a semi-join.</p>
+      </div>
+      <div class="stack">
+        <h4>CALCULATE, in four steps</h4>
+        <ol class="steps">
+          <li>Evaluate the filter arguments in the <b>outer</b> context.</li>
+          <li>Turn the row contexts into <code>bind</code>s: <b>context transition</b>.</li>
+          <li>Apply the relationship modifiers (<code>USERELATIONSHIP</code>, <code>CROSSFILTER</code>), then the removals (<code>ALL</code>, <code>REMOVEFILTERS</code>).</li>
+          <li>Drop what the context said about the filters' columns, unless <code>KEEPFILTERS</code>, and add the filters.</li>
+        </ol>
+        <h4>Here</h4>
+        <p class="sub"><code>[Sales PY]</code> is <code>CALCULATE([Sales Amount], SAMEPERIODLASTYEAR('Date'[Date]))</code>. In a
+          month's row the context binds <code>'Date'[Year]</code> and <code>'Date'[Month]</code>. SAMEPERIODLASTYEAR is a
+          <code>rel</code> filter: the dates of that month, one year earlier. A filter on a date table's date column clears
+          the rest of that table, so the year and month binds go, and only those dates stay.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card stack" data-stage="2">
+    <h3>Plan: a few node kinds</h3>
+    <p class="sub">The compiler's output is a tree close to relational algebra. Every aggregate is an <code>agg</code> over a
+      <code>scan</code> of one model table under one filter context. <code>freeRows(x)</code> says which rows from outside a
+      node it reads: that is exactly the correlation its SQL will need.</p>
+    <div class="tw"><table class="wrapcell">
+      <tr><th>Scalars</th><td><code>lit col op fn case agg exists insub wrank</code></td></tr>
+      <tr><th>Tables</th><td><code>scan filter project distinct group topn cross rows series generate</code> <code>sc</code> (SUMMARIZECOLUMNS) <code>shared</code> (a table VAR) <code>onerow prefix window</code>, and the set operations</td></tr>
+      <tr><th>A scan</th><td>The table joined to the related tables it needs, with the filter context as its WHERE. A <code>rel</code> filter is <code>IN</code> for one column and <code>EXISTS</code> for more.</td></tr>
+      <tr><th>An aggregate</th><td>A scalar subquery over its scan, correlated to the rows it reads.</td></tr>
+    </table></div>
+  </div>
+
+  <div class="card stack" data-stage="3">
+    <h3>Emit: correct first, then fast</h3>
+    <p class="sub">Written straight from the plan, each measure on each row is a correlated subquery: exactly what DAX means,
+      and slow on real data. The emitter then rewrites it. <b>Fusion</b>: aggregates over the same table, keys and filters
+      become one <code>GROUP BY</code> CTE, joined to the groups. <b>Totals from groups</b>: a subtotal adds up a group's
+      rows instead of scanning again. <b>Grouping before joins</b>: a fact is grouped by its key before it meets its
+      dimensions. <b>Mappings</b> for time intelligence: each group's dates are computed once and joined.
+      <code>optimize: false</code> turns them all off. Here the rewritten SQL is longer, not shorter: length is not the
+      point, correlation is. Rewrites off, each measure is a subquery evaluated for one month at a time, which the engine
+      must decorrelate (DuckDB does; Fabric runs some as loops) and which is still slow at scale (the table below). Rewrites on, each is a
+      <code>GROUP BY</code> over all the months at once, and the dates each month maps to are computed once and joined: no
+      subquery is left per month.</p>
+    <div class="grid2">
+      <div class="stack"><div class="sqlhead"><h4>Rewrites off</h4><span class="meta" id="how-raw-m"></span></div><div id="how-raw"></div></div>
+      <div class="stack"><div class="sqlhead"><h4>Rewrites on</h4><span class="meta" id="how-fused-m"></span></div><div id="how-fused"></div></div>
+    </div>
+    <div id="how-agree"></div>
+    <div class="tw"><table class="wrapcell">
+      <tr><th>Measured in DESIGN.md</th><th class="n">Before</th><th class="n">After</th></tr>
+      <tr><td>A million rows joined to their dates for each month, read as groups</td><td class="n">12 s</td><td class="n">0.1 s</td></tr>
+      <tr><td>Measures over "days the daily table lacks", 1.6 million rows: correlated vs fused groups</td><td class="n">30 s</td><td class="n">0.2 s</td></tr>
+      <tr><td>A SUMMARIZE with a measure by year and category, a million rows: table filter as conditions</td><td class="n">40 s</td><td class="n">1 s</td></tr>
+      <tr><td>A RANKX of 121 rows on Fabric, written in shapes Fabric decorrelates</td><td class="n">over 300 s</td><td class="n">under 1 s</td></tr>
+    </table></div>
+  </div>
+
+  <div class="card stack" data-stage="4">
+    <h3>Dialect: the spelling of one engine</h3>
+    <p class="sub">The plan and the rewrites are the same for every engine; a dialect says how to write them. DuckDB is the
+      default. <code>dialect: 'tsql'</code> writes T-SQL for Fabric's SQL analytics endpoint and Warehouse: a boolean is a
+      <code>BIT</code>, <code>OUTER APPLY</code> stands for <code>LATERAL</code>, a <code>CASE</code> inside an aggregate for
+      <code>FILTER</code>, and some subqueries take shapes Fabric decorrelates rather than loops over. To add an engine, extend
+      <code>Dialect</code> in <code>src/dialects/base.js</code>.</p>
+    <div id="how-dialect-q"></div>
+    <div class="grid2">
+      <div class="stack"><h4>DuckDB</h4><div id="how-duck"></div></div>
+      <div class="stack"><h4>T-SQL (Fabric)</h4><div id="how-tsql"></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== 4. proof -->
+<section id="proof" class="view">
+  <header class="head">
+    <h2>Checked against Power BI, not against itself</h2>
+    <p class="lead">A compiler compared only with its own idea of DAX proves nothing. dax-sql is compared with the real thing:
+      <b>Power BI's own answers</b> to the same queries, over the same data. A release waits for that, and for Apache
+      Ossie's checks.</p>
+  </header>
+  <div class="grid4">
+    <div class="card stat"><div class="big">1,262</div><span>DAX queries, over 5 models</span></div>
+    <div class="card stat"><div class="big good">1,207</div><span>return exactly Power BI's rows</span></div>
+    <div class="card stat"><div class="big">53</div><span>known differences, each with a written reason</span></div>
+    <div class="card stat"><div class="big">2</div><span>pending</span></div>
+  </div>
+  <p class="sub">At the conformance run of 22 November 2026. Of the 53 differences, 51 are departures by design (text sorted by
+    code point, trailing spaces kept: see <a href="#limits">Limits</a>), one is a Power BI quirk not copied, and one is
+    Power BI adding a float sum in another order. A new difference fails CI.</p>
+
+  <div class="card stack">
+    <h3>The oracle</h3>
+    <div class="oflow">
+      <div class="ob"><h4>1 · The models</h4><p><code>patterns</code>, <code>contoso</code>, <code>edges</code>, <code>aac</code>, <code>tpcds</code>: a <code>model.bim</code> and its data as CSV each.</p></div>
+      <div class="farrow" aria-hidden="true">&rarr;</div>
+      <div class="ob"><h4>2 · Power BI</h4><p>The Oracle workflow publishes each to Power BI as an Import model, refreshes it, and asks every query over XMLA.</p></div>
+      <div class="farrow" aria-hidden="true">&rarr;</div>
+      <div class="ob"><h4>3 · The goldens</h4><p>Power BI's rows, committed to <code>conformance/golden/</code>. Only that workflow writes them.</p></div>
+      <div class="farrow" aria-hidden="true">&rarr;</div>
+      <div class="ob"><h4>4 · dax-sql</h4><p>On every push, each query is compiled, run on DuckDB, and its rows compared with Power BI's.</p></div>
+    </div>
+  </div>
+
+  <div class="card stack">
+    <h3>What runs on every push</h3>
+    <div class="tw"><table class="wrapcell">
+      <tr><th>Check</th><th>What it holds the compiler to</th><th>Now</th></tr>
+      <tr><td><b>Tests</b></td><td>Unit tests: compiled queries' rows against SQL written by hand, the shape of the SQL, errors, FORMAT.</td><td><img alt="Tests status" src="https://github.com/djouallah/dax-sql/actions/workflows/test.yml/badge.svg?branch=main"></td></tr>
+      <tr><td><b>Conformance</b></td><td>The 1,262 queries against Power BI's goldens. Then <code>agree</code>: every query compiled with and without the rewrites, run on one DuckDB; the rows must be the same.</td><td><img alt="Conformance status" src="https://github.com/djouallah/dax-sql/actions/workflows/conformance.yml/badge.svg?branch=main"></td></tr>
+      <tr><td><b>Ossie queries</b></td><td>Ossie SQL against Apache Ossie's query compliance cases, and a grid of about 2,500 queries no one wrote the answers of, answered by both Ossie's view expander and dax-sql. Also daily.</td><td><img alt="Ossie queries status" src="https://github.com/djouallah/dax-sql/actions/workflows/ossie-query.yml/badge.svg?branch=main"></td></tr>
+      <tr><td><b>Ossie models</b></td><td>The Ossie that dax-sql writes passes Ossie's validator, every element portable. Also daily.</td><td><img alt="Ossie models status" src="https://github.com/djouallah/dax-sql/actions/workflows/ossie.yml/badge.svg?branch=main"></td></tr>
+      <tr><td><b>Speed</b></td><td>Each query timed on this commit and the one before. It fails if the suite is 10% slower, or one query more than 1.5 times as slow and 50 ms slower.</td><td><img alt="Speed status" src="https://github.com/djouallah/dax-sql/actions/workflows/perf.yml/badge.svg?branch=main"></td></tr>
+      <tr><td><b>Release</b></td><td>A version tag publishes to npm, with provenance, only after the Ossie, conformance and test checks pass.</td><td><img alt="Release status" src="https://github.com/djouallah/dax-sql/actions/workflows/publish.yml/badge.svg"></td></tr>
+    </table></div>
+    <p class="sub">The badges are live: red is a real failure on main, not decoration. The T-SQL dialect runs the same suite on a
+      Fabric lakehouse, by hand.</p>
+  </div>
+</section>
+
+<!-- ============================== 5. playground -->
+<section id="play" class="view">
+  <header class="head">
+    <h2>Playground</h2>
+    <p class="lead">Write DAX, or a SQL <code>SELECT</code> over the model (<code>FROM contoso</code>, measures as
+      <code>AGG([Sales Amount])</code>). It compiles as you type; <b>Run</b> executes it with DuckDB in this tab.
+      <kbd>Ctrl</kbd>+<kbd>Enter</kbd> runs too.</p>
+  </header>
+  <div class="play">
+    <aside class="modelside card" id="pg-model"></aside>
+    <div class="stack">
+      <div class="demo-bar">
+        <select id="pg-ex" aria-label="Examples"></select>
+        <div class="seg" id="pg-opt"><button type="button" data-v="off">rewrites off</button><button type="button" data-v="on">rewrites on</button></div>
+        <div class="seg" id="pg-dia"><button type="button" data-v="duckdb">DuckDB</button><button type="button" data-v="tsql">T-SQL</button></div>
+      </div>
+      <textarea id="pg-in" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Query"></textarea>
+      <div id="pg-err"></div>
+      <div id="pg-dax"></div>
+      <div class="live-grid">
+        <div class="stack"><h4>The answer</h4><div id="pg-rows"></div><div id="pg-cols"></div></div>
+        <div class="stack">
+          <div class="sqlhead"><h4>The SQL</h4><span class="meta" id="pg-meta"></span><button class="btn" type="button" id="pg-copy">Copy SQL</button></div>
+          <div id="pg-sql"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== 6. limits -->
+<section id="limits" class="view">
+  <header class="head">
+    <h2>What it does not do</h2>
+    <p class="lead">Where plain SQL and Power BI disagree, dax-sql follows plain SQL, on purpose. These are the departures,
+      all by design, and what it refuses.</p>
+  </header>
+  <div class="card stack">
+    <h3>Departures from DAX</h3>
+    <div class="tw"><table class="wrapcell">
+      <tr><th>Departure</th><th>Why</th></tr>
+      <tr><td>Text is compared, grouped and sorted as the engine does it: on DuckDB <code>"red"</code> is not <code>"Red"</code>.</td><td>Power BI's case-insensitive, culture-aware rules would wrap every comparison of text. On T-SQL, the database's collation decides.</td></tr>
+      <tr><td>Text keeps its trailing spaces: <code>"a "</code> and <code>"a"</code> are two values.</td><td>Power BI drops them on load; here the data is read as it is. Trim them in the data if they matter.</td></tr>
+      <tr><td>No blank row: a dimension is expected to hold every key its facts use.</td><td>Knowing whether Power BI's row of blanks is there takes a scan of every such fact table in every query that lists a dimension's values: 3,908 checks over the conformance queries, a third of their SQL. Fact rows with a key the dimension lacks still count in totals.</td></tr>
+      <tr><td>A column that mixes numbers and text comes back as text.</td><td>A SQL column has one type.</td></tr>
+      <tr><td><code>IFERROR</code> returns its first argument.</td><td>SQL has no error values.</td></tr>
+      <tr><td>Values come back unformatted; <code>FORMAT</code> is en-US, with a constant pattern.</td><td>A measure's format string is the caller's to apply, as with a DAX query.</td></tr>
+    </table></div>
+  </div>
+  <div class="grid2">
+    <div class="card stack">
+      <h3>On T-SQL, by design</h3>
+      <ul class="sub" style="margin:0;padding-left:18px;display:grid;gap:6px">
+        <li><code>1 / BLANK()</code> is blank: T-SQL has no infinity.</li>
+        <li>A sum of floating-point values is an exact decimal sum, the same in any order: Fabric adds FLOATs in an order of its own.</li>
+        <li>PATH and the PATH functions are refused: they need a recursive CTE, which Fabric lacks.</li>
+      </ul>
+    </div>
+    <div class="card stack">
+      <h3>Not implemented</h3>
+      <p class="sub">Anything not listed in <a href="https://github.com/djouallah/dax-sql/blob/main/DESIGN.md#what-it-does">DESIGN.md, What it does</a>.
+        It is refused with <code>UNSUPPORTED</code>, never approximated. The slow queries still left are in
+        <a href="https://github.com/djouallah/dax-sql/blob/main/TODO.md">TODO.md</a>.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== about -->
+<section id="about" class="view">
+  <div class="card about">
+    <h2>About</h2>
+    <p><b>dax-sql is a compiler for semantic models.</b> A DAX query, or an Apache Ossie SQL query, goes in, with a Power BI
+      (TMSL) or Ossie model. One SQL <code>SELECT</code> comes out, for DuckDB or Microsoft Fabric. It has no dependencies and
+      is MIT licensed. It was initially written by <a href="https://github.com/nsdevaraj">N.S. Devaraj</a>.</p>
+<pre class="code"><code>npm install dax-sql</code></pre>
+<pre class="code dax"><code>import { createCompiler } from 'dax-sql';
+import { tmslToModel } from 'dax-sql/formats/tmsl.js';   // or formats/ossie.js
+
+const model = tmslToModel(JSON.parse(bimText));           // a model.bim
+const dax = createCompiler(model, { tableSource: t => `read_parquet('data/${t.name}.parquet')` });
+const { sql, columns } = dax.compile(`EVALUATE SUMMARIZECOLUMNS('Date'[Year], "Sales", [Sales Amount])`);</code></pre>
+    <p>The full design, with every rule it implements, is in <a href="https://github.com/djouallah/dax-sql/blob/main/DESIGN.md">DESIGN.md</a>.</p>
+    <h3>This page</h3>
+    <p>One HTML file. Every SQL snippet on it is compiled in your browser by the compiler from the main branch, and run, when
+      you ask, by <a href="https://github.com/duckdb/duckdb-wasm">DuckDB-WASM</a> 1.32.0. The layout follows
+      <a href="https://djouallah.github.io/ossie_bench/">ossie_bench</a>.</p>
+    <h3>Not endorsed</h3>
+    <p>Nothing here is endorsed by Microsoft or the Apache Software Foundation. Power BI and DAX are Microsoft's; Apache Ossie
+      is an incubating project of the ASF.</p>
+  </div>
+</section>
+
+</main>
+<noscript><div class="wrap"><p class="note">This page compiles its examples in the browser and needs JavaScript.</p></div></noscript>
+<script type="module" src="site.js"></script>
+</body>
+</html>

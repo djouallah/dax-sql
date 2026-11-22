@@ -69,10 +69,10 @@ export const problem = [
   {
     title: 'Why not let AI write it?',
     lang: 'sql', write: sql2, sql: sql2, who: 'llm',
-    writeHead: 'What an LLM writes, at run time',
+    writeHead: 'What an LLM might write, at run time',
     rightHead: 'What it must get right, every time it is asked',
     checks: checks2,
-    say: 'Modern LLMs can write this SQL at run time, and they are nearly always right. Nearly, not always: every question, they must get every join and filter right again. From here it is opinion. Some people think that means we do not need semantic models. My view: it is the least efficient way to solve the problem. Using AI for a deterministic question makes no sense.',
+    say: 'Modern LLMs can write this SQL at run time, and they are often right. Often is not always, and a wrong query still returns numbers that look fine. From here it is opinion. Some people think that means we no longer need a compiler. My view: turning names into SQL is a deterministic problem, like arithmetic, and AI is the least efficient way to solve a deterministic problem. Nobody asks an LLM to add up a column; they give it a calculator. A compiler is that calculator: let AI pick the names, and let the compiler write the SQL.',
   },
 ];
 

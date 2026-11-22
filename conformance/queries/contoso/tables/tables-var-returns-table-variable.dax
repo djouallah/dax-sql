@@ -1,0 +1,3 @@
+// note: a VAR block whose RETURN is a table variable is a table, as a query or a CALCULATE filter
+EVALUATE VAR t = VAR u = FILTER(Product, Product[Price] > 100) RETURN u
+RETURN ROW("n", COUNTROWS(t), "s", CALCULATE([Sales Amount], VAR f = FILTER(ALL(Product), Product[Color] = "Red") RETURN f))

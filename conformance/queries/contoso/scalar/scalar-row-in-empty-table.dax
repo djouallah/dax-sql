@@ -1,0 +1,2 @@
+// note: a row of two values IN an empty table constructor
+EVALUATE ROW("a", (1, 2) IN {}, "b", 1 IN {})

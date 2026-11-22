@@ -1,0 +1,3 @@
+// note: a balance function over a fact table's date column: only that column's filter is replaced, not the fact's other filters
+EVALUATE CALCULATETABLE(ROW("c", CLOSINGBALANCEMONTH(SUM(Sales[Qty]), Sales[OrderDate]), "e", CALCULATE(SUM(Sales[Qty]), ENDOFMONTH(Sales[OrderDate]))),
+    Sales[Qty] >= 4, 'Date'[Year] = 2024)

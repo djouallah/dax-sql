@@ -1,0 +1,3 @@
+// note: a CALCULATE boolean filter compared with MAXA and HASONEFILTER of another table: one table's column, so a valid filter
+EVALUATE ROW("a", CALCULATE([Sales Amount], Product[Price] > MAXA('Date'[Year]) / 100), "b", CALCULATE([Sales Amount], Product[Price] > MAX('Date'[Year]) / 100),
+    "c", CALCULATE([Sales Amount], Product[Price] > IF(HASONEFILTER(Customer[City]), 500, 50)))

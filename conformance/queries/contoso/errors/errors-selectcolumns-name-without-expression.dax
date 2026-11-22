@@ -1,0 +1,3 @@
+// note: SELECTCOLUMNS with a name and no expression
+// expect: error
+EVALUATE SELECTCOLUMNS(Product, "x")

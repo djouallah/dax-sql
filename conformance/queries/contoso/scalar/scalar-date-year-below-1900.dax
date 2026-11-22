@@ -1,0 +1,2 @@
+// note: DATE adds 1900 to a year below 1900, constant or not
+EVALUATE ROW("a", DATE(100, 1, 1), "b", DATE(1899, 12, 31), "c", DATE(99, 1, 1), "d", DATE(MAX('Date'[Year]) - 1924, 3, 1))

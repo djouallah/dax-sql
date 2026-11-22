@@ -1,0 +1,3 @@
+// note: a date or datetime plus or minus a fraction of a day keeps the hours
+EVALUATE ROW("a", DATE(2024, 1, 1) + 0.5, "b", DATE(2024, 1, 2) - 1.5, "c", DATE(2024, 1, 1) + 1/24, "d", 0.25 + DATE(2024, 1, 1),
+    "e", MAX('Date'[Date]) + 0.75, "f", DATE(2024, 1, 1) + 2)

@@ -1,0 +1,2 @@
+// note: the precedence of a sign and ^
+EVALUATE ROW("a", -2^2, "b", 2^-1, "c", (-2)^2, "d", 0 - 2^2, "e", -2^3)

@@ -1,0 +1,2 @@
+// note: MIN and MAX of two values with a blank: a blank is compared as 0
+EVALUATE ROW("a", MAX(-1, BLANK()), "b", MIN(1, BLANK()), "c", MAX(BLANK(), BLANK()), "d", MIN(BLANK(), -5), "e", MAX(2, BLANK()))

@@ -1,0 +1,4 @@
+// note: DATATABLE's columns are of the types it declares: a DATETIME written as text, a DOUBLE written as a whole number
+EVALUATE ADDCOLUMNS(DATATABLE("d", DATETIME, "x", DOUBLE, "s", STRING, {{"2024-01-31", 1, "a"}, {"2024-02-29", 2, "b"}}),
+    "y", YEAR([d]), "next", [d] + 1, "half", [x] / 2)
+ORDER BY [d]

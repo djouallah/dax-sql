@@ -1,0 +1,3 @@
+// note: MIN of a measure and a constant, by customer: the customers without sales are 0, not blank
+EVALUATE SUMMARIZECOLUMNS(Customer[Customer], "m", MIN([Sales Amount], 500), "x", MAX([Sales Amount], -1))
+ORDER BY Customer[Customer]

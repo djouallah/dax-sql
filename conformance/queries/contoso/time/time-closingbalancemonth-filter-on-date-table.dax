@@ -1,0 +1,6 @@
+// note: a balance function's filter argument on the date table is kept, as CALCULATE(expr, ENDOFMONTH(dates), filter) keeps it
+EVALUATE CALCULATETABLE(ROW("y2023", CLOSINGBALANCEMONTH([Sales Amount], 'Date'[Date], 'Date'[Year] = 2023),
+    "y2024", CLOSINGBALANCEMONTH([Sales Amount], 'Date'[Date], 'Date'[Year] = 2024),
+    "q1", CLOSINGBALANCEQUARTER([Sales Amount], 'Date'[Date], 'Date'[Quarter] = 1),
+    "red", CLOSINGBALANCEMONTH([Sales Amount], 'Date'[Date], Product[Color] = "Red")),
+    'Date'[Year] = 2024, 'Date'[Month] = 2)

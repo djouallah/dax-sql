@@ -1,0 +1,3 @@
+// note: FIRSTNONBLANK and LASTNONBLANK where every value is blank: an empty table, not a row of a blank
+EVALUATE ROW("n", COUNTROWS(FIRSTNONBLANK('Date'[Date], BLANK())), "l", COUNTROWS(LASTNONBLANK('Date'[Date], BLANK())),
+    "s", CALCULATE([Sales Amount], LASTNONBLANK('Date'[Date], BLANK())))

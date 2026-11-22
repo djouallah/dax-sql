@@ -1,0 +1,3 @@
+// note: CALCULATETABLE with USERELATIONSHIP used as a CALCULATE filter: its rows are those of the ship date
+EVALUATE ROW("ship", CALCULATE([Sales Amount], CALCULATETABLE(Sales, USERELATIONSHIP(Sales[ShipDate], 'Date'[Date]), 'Date'[Year] = 2024)),
+    "order", CALCULATE([Sales Amount], CALCULATETABLE(Sales, 'Date'[Year] = 2024)))

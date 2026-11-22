@@ -1,0 +1,3 @@
+// note: IN compares as ==: a blank member that is not a constant matches a blank
+EVALUATE ROW("a", SELECTEDVALUE(Product[Price]) IN {SELECTEDVALUE(Customer[CustomerKey])}, "b", NOT (5 IN {BLANK(), SELECTEDVALUE(Product[Price])}),
+    "c", SELECTEDVALUE(Product[Price]) IN {1, SELECTEDVALUE(Customer[CustomerKey])}, "d", 5 IN {BLANK(), SELECTEDVALUE(Product[Price])})

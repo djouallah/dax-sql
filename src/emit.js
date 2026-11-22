@@ -702,9 +702,41 @@ export class Emitter {
   // type), a boolean is converted to what is asked for: scalarOf writes a condition for the
   // kinds of node isCond names, and a value for the others.
   scalar(x, scope, pred = false) {
-    const s = this.scalarOf(x, scope, pred);
+    if (this.bound?.has(x)) return this.bound.get(x);
+    // Not where aggregates are fused: their values are a group's columns already.
+    if (this.d.bindsOnce && this.optimize && !this.fusions.at(-1) && !this.binding?.has(x) && (x.k === 'case' || x.k === 'op' || x.k === 'fn')) {
+      const reps = repeatedValues(x, scope);
+      if (reps.length) return this.bindOnce(x, reps, scope, pred);
+    }
+    // Inside an aggregate or a subquery the bound values are not named (repeatedValues counts
+    // them outside): what is written there can go to a CTE, where the row that binds them is not.
+    let s;
+    if (this.bound && (x.shared || x.k === 'agg' || x.k === 'exists' || x.k === 'insub' || x.k === 'wrank')) {
+      const [pb, pg] = [this.bound, this.binding];
+      this.bound = null; this.binding = null;
+      try { s = this.scalarOf(x, scope, pred); } finally { this.bound = pb; this.binding = pg; }
+    } else s = this.scalarOf(x, scope, pred);
     if (this.d.boolValues || x.t !== 'bool') return s;
     return pred === isCond(x, this) ? s : pred ? this.d.cond(s) : this.d.value(s);
+  }
+
+  // An expression that names one value more than once (a measure's VAR read in its test and
+  // in its result: IF(NOT ISBLANK(cur), cur - prev)), each such value a subquery: the values
+  // computed once, in a row the expression reads, (SELECT expr FROM (SELECT v AS b0, ...)).
+  bindOnce(x, reps, scope, pred) {
+    const a = this.alias('b');
+    const vals = reps.map(({ y, exact }, i) => {
+      if (exact) this.exact++;
+      try { return `${this.scalar(y, scope)} AS ${this.ident(`b${i}`)}`; } finally { if (exact) this.exact--; }
+    });
+    const bound = new Map(this.bound ?? []), binding = new Set(this.binding ?? []);
+    reps.forEach(({ y }, i) => bound.set(y, `${a}.${this.ident(`b${i}`)}`));
+    binding.add(x);
+    const [pb, pg] = [this.bound, this.binding];
+    this.bound = bound; this.binding = binding;
+    try {
+      return `(SELECT ${this.scalar(x, scope, pred)} FROM (SELECT ${vals.join(', ')}) AS ${a})`;
+    } finally { this.bound = pb; this.binding = pg; }
   }
 
   scalarOf(x, scope, pred) {
@@ -1767,6 +1799,32 @@ function hoistable(s, q, all) {
   const own = new Set([...q.sql.matchAll(/\bAS ([a-z]\d+)\b/g)].map(m => m[1]));
   const declared = new Set([...(s.slice(0, q.start) + s.slice(q.end)).matchAll(/\bAS ([a-z]\d+)\b/g)].map(m => m[1]));
   return [...q.sql.matchAll(/\b([a-z]\d+)\./g)].every(m => own.has(m[1]) || !declared.has(m[1]));
+}
+
+// The subqueries (aggregates, EXISTS) an expression names more than once, the same node each
+// time, outside any table it reads (where a row of its own could change them) and outside
+// branches an error() is in (computed once, a value is computed whether its branch is taken).
+// The outermost only: one inside another goes with it.
+// A value named inside a RANKX's `same` anywhere is computed exactly (its sums as DECIMALs), so
+// that it is the same as each ranked row's.
+function repeatedValues(x, scope) {
+  const count = new Map(), exact = new Set();
+  let errors = false;
+  const walk = (y, inSame) => {
+    if (!y || typeof y !== 'object') return;
+    if (y.k === 'fn' && y.name === 'error') errors = true;
+    if (y.k === 'agg' || y.k === 'exists') {
+      count.set(y, (count.get(y) ?? 0) + 1);
+      if (inSame) exact.add(y);
+      return;
+    }
+    const s = inSame || y.k === 'fn' && y.name === 'same';
+    if (y.k === 'op' || y.k === 'fn') y.a.forEach(v => walk(v, s));
+    else if (y.k === 'case') { y.w.forEach(([c, v]) => { walk(c, s); walk(v, s); }); walk(y.e, s); }
+  };
+  walk(x, false);
+  if (errors) return [];
+  return [...count].filter(([y, n]) => n > 1 && [...ir.freeRows(y)].every(id => scope.has(id))).map(([y]) => ({ y, exact: exact.has(y) }));
 }
 
 // Whether SQL holds a subquery; whether an aggregate's parts do (aggParts).

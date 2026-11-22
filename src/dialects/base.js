@@ -50,8 +50,6 @@ export class Dialect {
   // A query's LIMIT and OFFSET, after its ORDER BY.
   limit(n, offset) { return `${n != null ? ` LIMIT ${n}` : ''}${offset ? ` OFFSET ${offset}` : ''}`; }
 
-  isDistinct(a, b) { return `${a} IS DISTINCT FROM ${b}`; }
-
   // body(...vals): SQL that names each of `vals` more than once. An engine that has no way to
   // name a value once (T-SQL) writes the ones that are more than a column or a constant once,
   // in a row the body reads; nested, they would grow the SQL at each level.

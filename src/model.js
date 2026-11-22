@@ -1,10 +1,14 @@
 // The semantic model: dax-sql's model object (below) read into tables, columns, measures and
-// relationships, and the two questions the compiler asks of relationships:
+// relationships, and the questions the compiler asks of relationships:
 //   expand(table)      the tables whose columns a row of `table` reaches by following
 //                      relationships from the many side to the one side (DAX's expanded
 //                      table), each with the path of joins that reaches it
+//   inbound(table)     the relationships a filter enters `table` by from outside its expanded
+//                      table (the one side of a bidirectional one, a many-to-many)
 //   reaches(from, to)  whether a filter on `from` propagates to `to`
-// Both depend on which relationships are active and in which direction they filter, which
+//   oneSides(table)    the relationships `table` is the one side of, not relying on integrity
+//   securityPaths(..)  two ways a secured table's filter reaches a table, if there are two
+// They depend on which relationships are active and in which direction they filter, which
 // USERELATIONSHIP and CROSSFILTER change inside a CALCULATE: a `RelState` says that.
 // Names are looked up without regard to case, as in DAX.
 //
@@ -299,7 +303,7 @@ export class Model {
   // The relationships `table` is a one side of, whose other side may hold keys it lacks (they
   // do not rely on referential integrity): the one side of a many-to-one relationship, and
   // either side of a one-to-one relationship. [{ rel, one: column of `table`, many: the other
-  // side's }]. The rows of the other side whose key `table` lacks belong to its blank row.
+  // side's }]: a column of `table` whose values are unique.
   oneSides(table) {
     const out = [];
     for (const r of this.relationships) {

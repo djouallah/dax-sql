@@ -1,4 +1,4 @@
-# Apache Ossie's view expander (ost/src/ossie_ost/expander.py, apache/ossie#502) as a filter, for
+# Apache Ossie's view expander (ost/src/ossie_ost/expander.py, on its main) as a filter, for
 # formats/test/ossie-expand.mjs: each line of stdin a JSON object, each line of stdout its answer.
 #   {"model": "<name>", "yaml": "<Ossie YAML>"}   defines a model (answer {"ok": true} or {"error"})
 #   {"sql": "<query>"}                             expands a query (answer {"sql"} or {"error"})

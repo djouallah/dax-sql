@@ -26,8 +26,10 @@ export class Emitter {
     this.options = options;
     // optimize: false (a check, not a mode to run): every aggregate its own subquery, as the
     // filter context says it, with none of the rewrites below that fuse, share or narrow them
-    // (Fusion, rowFused, groupedFirst, once, nonBlank, sum_currency). The answers must be the
-    // same; CI runs the suites both ways.
+    // (Fusion, rowFused, groupedFirst, once, nonBlank, sum_currency, hoistRepeats, a table
+    // filter as conditions or a list: inlineValues, listedValues, relCond's own rows; = for IS
+    // NOT DISTINCT FROM, member's IN). The answers must be the same; CI runs the suites both
+    // ways (on DuckDB: T-SQL's own, bind and fuseRows, are not compared).
     this.optimize = options.optimize !== false;
     this.n = options.aliasStart ?? 0;   // aliases go on from here (compileStatement: one numbering for all)
     this.ctes = [];
@@ -533,7 +535,7 @@ export class Emitter {
           const sides = [res.meta(D[0]), this.scalar(f.val, scope)];
           // Where one side can't be blank, = says the same as IS NOT DISTINCT FROM, and an engine
           // turns a subquery correlated by = into a join (Fabric loops on the other: 26 s, 2.5 s so).
-          const sure = nonBlankValue(f.val) || !mayHoldNull(D[0]) && !this.blankSide(table, D[0], res, res.state);
+          const sure = this.optimize && (nonBlankValue(f.val) || !mayHoldNull(D[0]) && !this.blankSide(table, D[0], res, res.state));
           out.push(sure ? `${sides[0]} = ${sides[1]}` : this.d.isNotDistinct(...sides));
           if (f.guard) out.push(paren(this.scalar(f.guard, scope, true)));
         }
@@ -583,7 +585,7 @@ export class Emitter {
   // A filter that is a table, on the columns D of the scan's expanded table.
   relCond(f, D, table, res, scope, state) {
     if (!f.base) {
-      const inline = this.inlineValues(f, D, table, res, scope, state) ?? this.listedValues(f, D, res);
+      const inline = this.optimize ? this.inlineValues(f, D, table, res, scope, state) ?? this.listedValues(f, D, res) : null;
       if (inline) return inline;
       const b = this.table(f.src, scope), names = b.names(), a = this.alias('r');
       const sel = D.map(c => `${a}.${this.ident(names[f.idx[f.cols.indexOf(c)]])}`);
@@ -610,7 +612,7 @@ export class Emitter {
     // as the scan's: CALCULATETABLE(Sales, USERELATIONSHIP(Sales[ShipDate], 'Date'[Date]))
     // holds each sale with its ship date's row of Date, which must be its order date's too.
     const same = chain && samePaths(full, this.model.expand(f.base, this.model.state(chain.scan.ctx.mods)));
-    if (chain && table === f.base && whole && same) {
+    if (this.optimize && chain && table === f.base && whole && same) {
       const parts = [...this.conds(table, chain.scan.ctx, res, scope)];
       for (const p of chain.preds) parts.push(paren(this.scalar(p.pred, withRow(scope, p.row, res), true)));
       return parts.length ? parts.join(' AND ') : this.d.always;
@@ -686,6 +688,7 @@ export class Emitter {
   // blank as in DAX. IN for one column that cannot be blank on both sides; one that can, IN or
   // else a blank in `from` (as fast as IN when `from` reads no outer row); EXISTS otherwise.
   member(left, right, from, blanks = false, correlated = true) {
+    if (!this.optimize) return `EXISTS (SELECT 1 FROM ${from} WHERE ${left.map((l, i) => this.d.isNotDistinct(right[i], l)).join(' AND ')})`;
     if (left.length === 1 && !blanks) return `${left[0]} IN (SELECT ${right[0]} FROM ${from})`;
     if (left.length === 1 && !correlated)
       return `(${left[0]} IN (SELECT ${right[0]} FROM ${from}) OR ${left[0]} IS NULL AND EXISTS (SELECT 1 FROM ${from} WHERE ${right[0]} IS NULL))`;
@@ -1188,7 +1191,7 @@ export class Emitter {
       keys = this.keyCombinations(x, L, keyNames, scope);
     } else keys = 'SELECT 1 AS one';
 
-    const apply = this.d.repeats ? this.hoistRepeats(items) : '';
+    const apply = this.d.repeats && this.optimize ? this.hoistRepeats(items) : '';
     const sel = [
       // A key a level holds one value of (a calculation item, SUMMARIZECOLUMNS' split): that value.
       ...x.keyCols.map((c, i) => `${active.includes(i) ? `${k}.${this.ident(keyNames[i])}` : L.consts?.has(i) ? this.d.literal(L.consts.get(i), c.type) : 'NULL'} AS ${this.ident(names[i])}`),

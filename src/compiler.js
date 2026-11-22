@@ -821,7 +821,8 @@ const groupFilters = (g, ctx) => ctx.filters.filter(f => f.cols.some(c => c.tabl
 // ordinal of another item still applies PY, though no row of the group's table has both.
 const itemFilters = (g, ctx) => groupFilters(g, ctx).filter(f => f.cols.includes(g.column));
 // DAX's =: text without regard to case.
-const sameValue = (a, b) => (typeof a === 'string' && typeof b === 'string' ? a.toLowerCase() === b.toLowerCase() : a === b);
+// Text by case, as the engine compares it: the item a filter selects is the one its SQL keeps.
+const sameValue = (a, b) => a === b;
 
 // The value of an expression of constants (and of `col`, which gives a column's value), or
 // DYNAMIC (thrown) when it is not one this can work out.

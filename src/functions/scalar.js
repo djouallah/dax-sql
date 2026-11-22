@@ -109,7 +109,7 @@ function isBlank(c, args, env) { return ir.fn('isblank', [s(c, args[0], env)], '
 
 function round(name) {
   return (c, args, env) => ir.fn(name, [s(c, args[0], env), opt(c, args[1], env, ir.lit(0))],
-    name === 'round' && !args[1] ? 'double' : 'double', { strict: true });
+    'double', { strict: true });
 }
 
 function convert(c, args, env) {

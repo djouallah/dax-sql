@@ -1,5 +1,5 @@
 // dax-sql's Ossie SQL against Apache Ossie's view expander (ost/src/ossie_ost/expander.py,
-// apache/ossie#502), on a grid of queries no one wrote the answers of: .github/workflows/ossie-query.yml.
+// on its main), on a grid of queries no one wrote the answers of: .github/workflows/ossie-query.yml.
 //   node formats/test/ossie-expand.mjs <ossie checkout> <expander checkout> [--python "<command>"] [--only <model>] [--report <file>]
 // The expander turns a query over a model's datasets into plain DuckDB SQL over their sources, by
 // the reference evaluation strategy of the Relational Query Interface (Section 9): an oracle. Each

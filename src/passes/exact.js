@@ -47,7 +47,7 @@ export function exact(root) {
     return out;
   };
   const mark = x => walk(x, y => {
-    if (y.k !== 'pop' || !COMPARE.has(y.op) || y.a.length !== 2) return;
+    if ((y.k !== 'pop' && y.k !== 'op') || !COMPARE.has(y.op) || y.a.length !== 2) return;
     const a = sums(y.a[0]), b = sums(y.a[1]);
     if (!a.size || !b.size) return;
     for (const g of [...a, ...b]) g.extra = { ...g.extra, exact: true };

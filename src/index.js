@@ -47,6 +47,7 @@ import { share } from './passes/share.js';
 import { inline } from './passes/inline.js';
 import { prune } from './passes/prune.js';
 import { renames } from './passes/renames.js';
+import { exact } from './passes/exact.js';
 import { kids, scalarsOf } from './passes/decorrelate.js';
 // The correlated plan: the plan before decorrelation, its scalars standard, its measures fused,
 // a subtree held more than once one definition.
@@ -64,7 +65,7 @@ function planSize(root) {
   for (const d of root.defs ?? []) R(d.rel);
   return n;
 }
-const correlated = plan => prune(renames(inline(share(fuseApplies(standard(plan))))));
+const correlated = plan => prune(renames(inline(share(exact(fuseApplies(standard(plan)))))));
 import { explain as drawPlan } from './explain.js';
 import { optimize } from './passes/index.js';
 
@@ -179,7 +180,7 @@ export function createCompiler(input, options = {}) {
     let p;
     try { p = new Lowerer(model, o).query(s); } catch (err) { if (err.code !== 'UNSUPPORTED') throw err; return emit(opts)([s])[0]; }
     const ps = new PlanSql(model, dialect, o);
-    const sql = ps.query({ ...p, plan: prune(renames(inline(share(fuseApplies(p.plan))))) });
+    const sql = ps.query({ ...p, plan: prune(renames(inline(share(exact(fuseApplies(p.plan)))))) });
     return { sql, ctes: [], body: sql, aliases: ps.n, ordered: p.ordered, columns: p.columns, size: planSize(p.plan) };
   });
   const emit = opts => statements => statements.map(s => {

@@ -26,11 +26,15 @@ export class PostgresDialect extends Dialect {
   fuseRows = true;
   correlatedJoin = true;
   correlatedSemiJoin = false;
+  // An aggregate belongs to the query whose columns it reads: SUM((SELECT ... k1 ...)) is the
+  // outer query's. Its subqueries are columns of a SELECT it is over, as on T-SQL.
+  aggOverSubquery = false;
   get aggFilter() { return true; }
   get sumCurrency() { return true; }
 
   type(t) { return t === 'string' ? 'TEXT' : t === 'date' ? 'DATE' : super.type(t); }
   // A NULL in a subquery's column is TEXT, which no UNION arm of a number matches: typed.
+  literal(v, t) { return v === null ? this.nullOf(t) : super.literal(v, t); }
   nullOf(t) { return this.type(t) ? `CAST(NULL AS ${this.type(t)})` : 'NULL'; }
 
   // A value more than a column or a constant, written once in a row the body reads:

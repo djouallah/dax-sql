@@ -1244,7 +1244,9 @@ export class Emitter {
       // A key a level holds one value of (a calculation item, SUMMARIZECOLUMNS' split): that value.
       ...x.keyCols.map((c, i) => `${active.includes(i) ? `${k}.${this.ident(keyNames[i])}` : L.consts?.has(i) ? this.d.literal(L.consts.get(i), c.type) : this.d.nullOf(c.type)} AS ${this.ident(names[i])}`),
       ...L.flags.map((f, i) => `${this.d.bool(f)} AS ${this.ident(names[x.keyCols.length + i])}`),
-      ...items.map((s, i) => `${s} AS ${this.ident(names[x.keyCols.length + L.flags.length + i])}`),
+      // A blank item (a measure blank at this level) typed as its column, which a UNION of the
+      // levels reads (a NULL in a subquery is TEXT on PostgreSQL).
+      ...items.map((s, i) => `${s === 'NULL' ? this.d.nullOf(x.cols?.[x.keyCols.length + L.flags.length + i]?.t) : s} AS ${this.ident(names[x.keyCols.length + L.flags.length + i])}`),
     ];
     const joins = groupsSql.filter(g => g !== from?.g).map(g => ` LEFT JOIN ${g.alias} ON ${g.on(k, keyNames)}`).join('');
     let sql = `SELECT ${sel.join(', ')} FROM ${from ? from.sql : `(${keys}) AS ${k}`}${joins}${apply}`;

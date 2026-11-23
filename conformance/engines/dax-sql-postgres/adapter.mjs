@@ -9,7 +9,8 @@
 //
 // The driver, pg, is this folder's own dependency: dax-sql only writes SQL. A query has
 // PG_TIMEOUT_MS (30 s) to answer; PG_SESSIONS (4) run side by side; with PG_TIMES, each query's
-// time to answer and its SQL's length are written to that file.
+// time to answer and its SQL's length are written to that file; with PG_PLANS, the plan (EXPLAIN)
+// and the SQL of each query past its time.
 import { readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { basename, dirname, join, resolve } from 'node:path';
@@ -60,7 +61,7 @@ async function load(client, modelPath, dataDir) {
   return { model: db.model, tableSource: t => sources.get(t.source?.entity ?? t.name), compilers: new Map() };
 }
 
-const times = [];
+const times = [], plans = [];
 async function answer(client, db, q) {
   try {
     const roles = JSON.stringify(q.roles ?? null);
@@ -70,10 +71,13 @@ async function answer(client, db, q) {
     const { sql, columns } = db.compilers.get(roles).compile(q.dax);
     if (process.env.PG_SHOW) console.error(`${q.id}\n${sql}\n`);
     const t0 = performance.now();
-    const r = await client.query({ text: sql, rowMode: 'array' });
+    const r = await client.query({ text: sql, rowMode: 'array' }).catch(err => { err.sql = sql; throw err; });
     times.push({ id: q.id, ms: Math.round(performance.now() - t0), bytes: sql.length });
     return { id: q.id, columns: columns.map(c => c.name), rows: r.rows };
   } catch (err) {
+    if (err.code === '57014' && process.env.PG_PLANS && err.sql) {
+      try { plans.push({ id: q.id, sql: err.sql, plan: (await client.query(`EXPLAIN ${err.sql}`)).rows.map(r => r['QUERY PLAN']).join('\n') }); } catch {}
+    }
     return { id: q.id, error: `${err.code ? `${err.code}: ` : ''}${String(err.message).split('\n')[0]}`, ...(err.code === 'UNSUPPORTED' ? { unsupported: true } : {}) };
   }
 }
@@ -98,4 +102,5 @@ await Promise.all(Array.from({ length: Math.min(SESSIONS, queue.length || 1) }, 
   }
   await client.end();
 }));
+if (process.env.PG_PLANS) writeFileSync(process.env.PG_PLANS, plans.map(p => `### ${p.id}\n\n${p.plan}\n\n${p.sql}\n`).join('\n'));
 if (process.env.PG_TIMES) writeFileSync(process.env.PG_TIMES, JSON.stringify(times.sort((a, b) => b.ms - a.ms), null, 1));

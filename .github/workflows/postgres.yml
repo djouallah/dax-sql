@@ -63,6 +63,7 @@ jobs:
       - name: The suite on PostgreSQL
         env:
           PG_TIMES: ${{ runner.temp }}/pg-times.json
+          PG_PLANS: ${{ runner.temp }}/pg-plans.md
         run: |
           node conformance/runner/run.mjs --adapter "node conformance/engines/dax-sql-postgres/adapter.mjs ." \
             --known conformance/engines/dax-sql-postgres/known.json --report "$RUNNER_TEMP/postgres.json"
@@ -82,3 +83,4 @@ jobs:
           path: |
             ${{ runner.temp }}/postgres.json
             ${{ runner.temp }}/pg-times.json
+            ${{ runner.temp }}/pg-plans.md

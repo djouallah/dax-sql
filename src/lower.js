@@ -284,10 +284,14 @@ export class Lowerer {
       if (!D.length) continue;
       if (f.kind === 'bind') {
         if (f.implied && ctx.filters.includes(f.implied)) continue;
-        out.push(P.same(res.meta(D[0]), this.scalar(f.val, scope, blk)));
+        // Where one side can't be blank, = says the same as ≡ (and an engine turns a subquery
+        // correlated by = into a join).
+        const v = this.scalar(f.val, scope, blk);
+        const sure = nonBlankValue(f.val) || !mayHoldNull(D[0]) && !this.blankSide(table, D[0], state);
+        out.push(sure ? P.eq(res.meta(D[0]), v) : P.same(res.meta(D[0]), v));
         if (f.guard) out.push(this.scalar(f.guard, scope, blk));
       } else if (f.kind === 'pred' && D.length === f.cols.length) out.push(this.scalar(f.pred, withRow(scope, f.row, res), blk));
-      else out.push(this.relCond(f.kind === 'pred' ? narrow(f, D) : f, D, res, scope, state));
+      else out.push(this.relCond(f.kind === 'pred' ? narrow(f, D) : f, D, table, res, scope, state));
     }
     for (const name of exp.keys()) {
       for (const e of this.model.inbound(this.model.table(name), state)) {
@@ -309,14 +313,37 @@ export class Lowerer {
 
   // A filter that is a table, on the columns D of the scan's expanded table: the row's values
   // are one of its rows, a blank matching a blank.
-  relCond(f, D, res, scope, state) {
+  relCond(f, D, table, res, scope, state) {
     if (!f.base) {
+      const inline = this.inlineValues(f, D, table, res, scope, state);
+      if (inline?.length) return P.and(inline);
+      const listed = inline ? null : this.listedValues(f, D, res);
+      if (listed) return listed;
       const sub = this.table(f.src, scope).render();
       const on = D.map(c => P.same(sub.list[f.idx[f.cols.indexOf(c)]].expr, res.meta(c)));
       return P.exists(P.select(sub.rel, P.and(on)));
     }
-    // Rows of a model table: matched on the keys of the tables whose key the filter holds, and
-    // on the columns of the others.
+    // Rows of a model table, as the scan's own rows: its conditions, inline. The filter holds
+    // every column, or every column but those its others determine (a column of a table whose
+    // key it holds, a calculated one of a table whose stored columns it holds, a related table's
+    // whose relationship's column it holds); and its rows reach the same rows of the related
+    // tables as the scan's (not under another relationship).
+    const chain = filterChain(f.src);
+    if (chain && table === f.base) {
+      const has = c => f.cols.includes(c), paths = this.model.expand(f.base, state, null, true);
+      const stored = c => has(c) || c.expr && c.table.columns.every(x => x.expr || has(x));
+      const fixedBy = c => c.table !== f.base && paths.get(c.table.name)?.length > 0 && stored(paths.get(c.table.name)[0].from);
+      const determined = c => has(c) || c.table.key && c.table.key !== c && has(c.table.key) || stored(c) || fixedBy(c);
+      const full = this.model.expand(f.base, state);
+      const whole = [...full.keys()].every(n => this.model.table(n).columns.every(determined));
+      if (whole && samePaths(full, this.model.expand(f.base, this.model.state(chain.scan.ctx.mods)))) {
+        const parts = [...this.conds(table, chain.scan.ctx, res, scope)];
+        for (const p of chain.preds) parts.push(this.scalar(p.pred, withRow(scope, p.row, res), res.block));
+        return parts.length ? P.and(parts) : P.TRUE;
+      }
+    }
+    // Otherwise matched on the keys of the tables whose key the filter holds, and on the columns
+    // of the others.
     const tables = [...new Set(D.map(c => c.table))];
     const covered = tables.filter(V => V.key && f.cols.includes(V.key));
     const minimal = covered.filter(V => !covered.some(W => W !== V && this.model.expand(W, state).has(V.name)));
@@ -326,6 +353,53 @@ export class Lowerer {
     b.setOut(cols.map(c => ({ name: c.name, lineage: c })), cols.map(c => b.res.meta(c)));
     const sub = b.render();
     return P.exists(P.select(sub.rel, P.and(cols.map((c, i) => P.same(sub.list[i].expr, res.meta(c))))));
+  }
+
+  // Values of a table's columns, unfiltered but for conditions on those columns alone
+  // (FILTER(ALL(T[c]), T[c] >= x)), as a filter on columns every row of the scan holds a value of:
+  // the row's value is one of them when the conditions hold of it (and, read through a
+  // relationship, it is not blank). The conditions on the scan's row; null when the filter is not
+  // of that kind (emit.js's inlineValues).
+  inlineValues(f, D, table, res, scope, state) {
+    if (this.options.security?.length && !this.insecure) return null;
+    const chain = valuesChain(f.src);
+    if (!chain || chain.scan.ctx.filters.length) return null;
+    const T = chain.scan.table;
+    if (!chain.cols.every(c => c.lineage?.table === T && D.includes(c.lineage))) return null;
+    if (D.some(c => this.blankSide(table, c, state))) return null;
+    if (!chain.preds.every(p => plainOf(p.pred, p.row))) return null;
+    const parts = chain.preds.map(p => {
+      const r = { block: res.block, col: ref => res.meta(typeof ref === 'number' ? p.row.cols[ref].lineage : ref), meta: m => res.meta(m) };
+      return this.scalar(p.pred, withRow(scope, p.row, r), res.block);
+    });
+    // The scan's own column holds one of its values on every row, a NULL stored in it too.
+    for (const c of D) if (c.table !== table) parts.push(P.notNull(res.meta(c)));
+    return parts;
+  }
+
+  // A table of constants on one column of the scan (TREATAS({"AR", "CA"}, T[c])) as a list: c IN
+  // ('AR', 'CA'), a BLANK() among them keeping the blank. Null when the filter is not of that
+  // kind, or a constant is of another type than the column's (emit.js's listedValues).
+  listedValues(f, D, res) {
+    if (D.length !== 1) return null;
+    let src = f.src;
+    while (src.k === 'shared' || src.k === 'distinct') src = src.src;
+    if (src.k !== 'rows') return null;
+    const c = D[0], i = f.idx[f.cols.indexOf(c)];
+    const vals = src.rows.map(r => r[i]);
+    const kind = t => (ir.isNum(t) ? 'num' : t);
+    if (!vals.every(v => v?.k === 'lit' && (v.v === null || kind(v.t) === kind(c.type)))) return null;
+    const listed = vals.filter(v => v.v !== null), L = res.meta(c);
+    const s = listed.length ? { k: 'pop', op: 'in', a: [L, ...listed], t: 'bool', nn: false } : P.FALSE;
+    return listed.length < vals.length ? P.or([s, P.isNull(L)]) : s;
+  }
+
+  // Whether a scan of `table` can read a blank in column c: through a relationship (not relying
+  // on referential integrity) for rows that match no row of c's table.
+  blankSide(table, c, state) {
+    if (c.table === table) return false;
+    const path = this.model.expand(table, state, null, true).get(c.table.name);
+    return !path || path.some(h => !(h.rel.ri || this.options.assumeIntegrity));
   }
 
   // A block whose input row is its output: extend it, or wrap it if it is not.
@@ -892,7 +966,7 @@ class Fusion {
       // Across a many-to-many relationship a blank meets a blank (conds): the join is blank-safe.
       const mm = edge.rel.fromCard === 'many' && edge.rel.toCard === 'many';
       const here = lw.isolated(() => block.res.meta(edge.here)), y = P.ref(pairs.cols[via.length]);
-      block.joins.push({ kind: 'inner', rel: pairs, on: mm ? P.key(here, y) : P.eq(here, y) });
+      block.late.push({ kind: 'inner', rel: pairs, on: mm ? P.key(here, y) : P.eq(here, y) });
       via.forEach((v, j) => { keys.add(v.ref); keyExpr.set(v.ref, P.ref(pairs.cols[j])); });
     }
     for (const { f, refs, c } of mapped) {
@@ -906,7 +980,7 @@ class Fusion {
         if (keys.has(i)) on.push(P.key(m.k[j], keyExpr.get(i) ?? lw.isolated(() => block.res.meta(this.keyCols[i]))));
         else { keys.add(i); keyExpr.set(i, m.k[j]); }
       });
-      block.joins.push({ kind: 'inner', rel: m.rel, on: P.and(on) });
+      block.late.push({ kind: 'inner', rel: m.rel, on: P.and(on) });
     }
     const keyList = [...keys].sort((a, b) => a - b);
     const keyExprs = lw.isolated(() => keyList.map(i => keyExpr.get(i) ?? block.res.meta(this.keyCols[i])));
@@ -1014,6 +1088,21 @@ Fusion.prototype.belowJoins = function belowJoins(g) {
   const readsJoined = e => [...R(e).cols].some(c => joined.has(c)), readsBase = e => [...R(e).cols].some(c => base.has(c));
   if (b.where.some(c => readsJoined(c) && readsBase(c))) return null;
   const after = b.where.filter(readsJoined), before = b.where.filter(c => !readsJoined(c));
+  // A condition on a table joined to the scan's own column by one equality keeps only the rows
+  // whose column it keeps: the inner grouping has it too, as a semi-join, so the engine skips the
+  // rows no group would keep. Only a condition a blank fails (a row that meets no row of the
+  // table meets a blank, which the outer condition drops too). The outer condition stays.
+  for (const j of b.joins) {
+    const on = j.on;
+    if (on?.k !== 'pop' || on.op !== 'eq') continue;
+    const [to, fk] = on.a;
+    if (to.k !== 'ref' || fk.k !== 'ref' || !j.rel.cols.includes(to.col) || !base.has(fk.col)) continue;
+    const own = new Set(j.rel.cols);
+    const cs = after.filter(c => [...R(c).cols].every(x => own.has(x)) && blankFails(c));
+    if (!cs.length) continue;
+    const { rel, map: m } = clone(j.rel);
+    before.push(P.exists(P.select(rel, P.and([...cs.map(c => subst(c, m)), P.eq(P.ref(m.get(to.col)), fk)]))));
+  }
   const cols = [...new Set([...g.keyExprs, ...b.joins.map(j => j.on)].flatMap(e => [...R(e).cols].filter(c => base.has(c))))];
   if (!cols.length) return null;
   const inner = P.aggregate(before.length ? P.select(b.from, P.and(before)) : b.from, cols.map(c => ({ name: c.name, expr: P.ref(c), lineage: c.lineage })),
@@ -1026,10 +1115,71 @@ Fusion.prototype.belowJoins = function belowJoins(g) {
     g.aggs.map((a, i) => ({ col: a.col, fn: OVER[a.fn], arg: P.ref(inner.aggs[i].col), extra: { ...a.extra, t: a.col.t } })));
 };
 
+// Whether a condition fails for a blank in what it reads: comparisons and lists of values, and
+// ANDs of them (no OR, NOT, IS NULL, COALESCE or CASE, which can hold of a blank).
+function blankFails(x) {
+  if (x.k === 'ref' || x.k === 'lit') return true;
+  if (x.k === 'pop') return ['and', 'eq', 'ne', 'lt', 'le', 'gt', 'ge', 'in', 'notnull'].includes(x.op) && x.a.every(blankFails);
+  return false;
+}
+
 // The aggregates that are blank over no rows: one a mapping takes, by keys its rows have none
 // of, is blank there as the aggregate over no rows is.
 const NULL_EMPTY = new Set(['sum', 'avg', 'min', 'max', 'count', 'countrows', 'dcount', 'dcountnb', 'countblank', 'median', 'stdev_s', 'stdev_p', 'var_s', 'var_p']);
 const mayHoldNull = c => !c.unique && c.nullable !== false;
+// Whether a value can't be blank: one that never is, or a column that holds none, read on a row
+// of its own table (not through a join that can find no row).
+function nonBlankValue(v) {
+  if (v.nn) return true;
+  if (v.k !== 'col' || !v.row) return false;
+  const c = typeof v.ref === 'object' ? v.ref : v.row.cols?.[v.ref]?.lineage;
+  if (!c || mayHoldNull(c)) return false;
+  if (v.row.kind === 'scan' && v.row.base === c.table) return true;
+  // VALUES of it: the distinct values of a column of its table's rows.
+  let s = v.row.src;
+  if (s?.k === 'distinct') s = s.src;
+  const item = s?.k === 'project' ? s.items.find(i => i.lineage === c) : null;
+  return !!item && item.expr.k === 'col' && item.expr.row?.kind === 'scan' && item.expr.row.base === c.table;
+}
+// A filter's table as FILTER(..FILTER(scan)..), through table VARs: the scan and the predicates.
+function filterChain(x) {
+  const preds = [];
+  while (x.k === 'filter' || x.k === 'distinct' || x.k === 'shared') {
+    if (x.k === 'filter') preds.push({ pred: x.pred, row: x.row });
+    x = x.src;
+  }
+  return x.k === 'scan' ? { scan: x, preds } : null;
+}
+// A filter's table as FILTER(..DISTINCT(SELECTCOLUMNS(scan, its own columns))..): the scan, the
+// predicates on the columns kept, and those columns; or null.
+function valuesChain(x) {
+  const preds = [];
+  for (;;) {
+    if (x.k === 'filter') { preds.push({ pred: x.pred, row: x.row }); x = x.src; } else if (x.k === 'distinct' || x.k === 'shared') x = x.src;
+    else break;
+  }
+  if (x.k !== 'project' || x.keep || x.src.k !== 'scan' || !x.items.every(i => i.expr.k === 'col' && i.expr.row === x.row)) return null;
+  return { scan: x.src, preds, cols: x.cols };
+}
+// Whether an expression reads nothing but constants and the columns of `row`.
+function plainOf(x, row) {
+  switch (x.k) {
+    case 'lit': return true;
+    case 'col': return x.row === row;
+    case 'op': case 'fn': return x.a.every(y => plainOf(y, row));
+    case 'case': return x.w.every(([c, v]) => plainOf(c, row) && plainOf(v, row)) && plainOf(x.e, row);
+  }
+  return false;
+}
+// Two expanded tables that reach the same tables over the same relationships.
+function samePaths(a, b) {
+  if (a.size !== b.size) return false;
+  for (const [n, p] of a) {
+    const q = b.get(n);
+    if (!q || q.length !== p.length || q.some((h, i) => h.rel !== p[i].rel)) return false;
+  }
+  return true;
+}
 
 // The columns a scalar reads (inside its EXISTS too), and whether it holds an EXISTS.
 function scalarReads(x, out = { cols: new Set(), query: false }) {
@@ -1109,6 +1259,7 @@ class Block {
     this.cols = cols;          // the table's columns: [{ name, lineage, t }]
     this.joins = [];           // [{ kind, rel, on }]
     this.applies = [];         // [{ rel, outer }]
+    this.late = [];            // joins after the applies (that read a value an apply computes): [{ kind, rel, on }]
     this.where = [];
     this.distinct = false;
     this.qualify = null;       // TOPN: { order, n }
@@ -1131,6 +1282,7 @@ class Block {
     let r = this.from ?? P.oneRow();
     for (const j of this.joins) r = P.join(j.kind, r, j.rel, j.on);
     for (const a of this.applies) r = P.apply(r, a.rel, a.outer);
+    for (const j of this.late) r = P.join(j.kind, r, j.rel, j.on);
     if (this.where.length) r = P.select(r, P.and(this.where));
     return r;
   }

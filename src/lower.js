@@ -1423,12 +1423,19 @@ class Block {
     this.plain = false;
   }
   // The input row: from, its joins and applies, its conditions.
+  // A condition that reads none of what the applies compute is tested before them (SQL's WHERE
+  // before its SELECT list): an apply is computed for the rows kept, not for every row.
   body() {
     let r = this.from ?? P.oneRow();
     for (const j of this.joins) r = P.join(j.kind, r, j.rel, j.on);
+    const made = new Set([...this.applies, ...this.late].flatMap(a => a.rel.cols));
+    const after = c => [...scalarReads(c).cols].some(x => made.has(x));
+    const early = this.where.filter(c => !after(c)), later = this.where.filter(after);
+    if (early.length && made.size) r = P.select(r, P.and(early));
     for (const a of this.applies) r = P.apply(r, a.rel, a.outer);
     for (const j of this.late) r = P.join(j.kind, r, j.rel, j.on);
-    if (this.where.length) r = P.select(r, P.and(this.where));
+    const rest = made.size ? later : this.where;
+    if (rest.length) r = P.select(r, P.and(rest));
     return r;
   }
   render() {

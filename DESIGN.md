@@ -275,8 +275,20 @@ inlining (`inline.js`: a definition read once, its relation where it is read), r
 pruning (`prune.js`: each relation keeps the columns something above it reads; a distinct all
 its columns, a grouping all its keys).
 `planSql(query)` writes the query plan in a dialect's SQL.
-The SQL `compile` writes is still `emit.js`'s, whose rewrites move onto the plan pass by pass
-(TODO.md).
+
+**DuckDB's SQL is the plan's.** `compile` lowers each statement with the compiler's decisions
+built in (`lower.js`'s `Fusion`, emit.js's ported: a level's measures over the same rows one
+grouping by its keys; a table filter that reads the keys a mapping of (keys, value) computed
+once; the fact grouped by its join keys before the dimensions, with a semi-join of each
+dimension's condition; the same for an iterator's, a FILTER's and an ADDCOLUMNS' rows). DuckDB is
+given the plan correlated, before decorrelation, and unnests its applies and EXISTS itself. The
+passes it takes are the generic ones: correlated fusion (`fuse-applies.js`), exact sums, sharing,
+inlining, renames and pruning. Its scalars stay DAX's, written by the emitter's scalar writer,
+so DAX's runtime errors are raised. Of a calculation group's two forms, the smaller plan after
+the passes is kept. A column is named by its order in the query (`_c1`, `_c2`, …), so a query
+compiles to the same SQL each time. `emit.js` compiles a query the lowering does not take,
+`{ viaPlan: false }` (and `optimize: false`), and T-SQL and PostgreSQL. Speed (`perf.yml`) holds
+the plan's SQL to `emit.js`'s on each push, by the same rules as against the commit before.
 
 ### The intermediate form
 
@@ -1010,9 +1022,9 @@ SELECT m.*, p.n FROM m JOIN (SELECT "Color", COUNT(*) AS n FROM "Product" GROUP 
 | `context.js` | the filter context: its filters, and what removing columns leaves of them |
 | `functions/` | the function library, by kind |
 | `ir.js` | the intermediate form: scalars, tables, rows, aggregates over scans |
-| `emit.js` | the intermediate form into SQL, rewritten |
-| `lower.js`, `plan.js` | the intermediate form into the query plan, and the plan's nodes |
-| `passes/` | the optimizer: passes over the query plan (`decorrelate.js`, `fuse.js`, `joins.js`, `standard.js`, `exact.js`, `share.js`, `inline.js`, `renames.js`, `prune.js`) |
+| `emit.js` | the intermediate form into SQL, rewritten (T-SQL, PostgreSQL; DuckDB's queries the plan does not take) |
+| `lower.js`, `plan.js` | the intermediate form into the query plan, the compiler's fusion built in (DuckDB's SQL), and the plan's nodes |
+| `passes/` | the optimizer: passes over the query plan (`decorrelate.js`, `fuse.js`, `fuse-applies.js`, `joins.js`, `outer.js`, `standard.js`, `exact.js`, `share.js`, `inline.js`, `renames.js`, `prune.js`) |
 | `plan-sql.js`, `explain.js` | the query plan as SQL; drawn as a tree |
 | `format.js` | FORMAT's patterns, read into what a dialect writes |
 | `dialects/` | what differs between SQL engines: `base.js` (the interface), `duckdb.js`, `duckdb-format.js`, `tsql.js`, `tsql-format.js`, `postgres.js`, `postgres-format.js` |

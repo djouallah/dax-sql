@@ -30,5 +30,6 @@ Nothing here blocks a release. DAX on DuckDB has nothing left; T-SQL is the last
    (range, shifted keys); the plan path on T-SQL and PostgreSQL, their slow queries under limit.
 3. **The emitter's rewrites as passes**, one at a time, each checked against the plan as it
    is: fusion, filters on the scan, grouping below joins, sharing.
-4. **Fabric's own pass** (`mapAlone`, a CTE computed again at each name); `compile()` through
-   the plan once every suite and `perf.yml` match; `emit.js` deleted.
+4. Done on DuckDB: `compile()` through the plan, held to `emit.js`'s SQL by `perf.yml` (the
+   suite 18% faster, no query past the gate). Left: **Fabric's own pass** (`mapAlone`, a CTE
+   computed again at each name); `emit.js` deleted once T-SQL takes the plan.

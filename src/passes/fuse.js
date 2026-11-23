@@ -77,8 +77,11 @@ const same = (x, y) => text(x, new Map()) === text(y, new Map());
 
 // { key, cols, ids }: the relation as text, its columns numbered in the order they are made
 // (a column made outside it named by its own id), and those columns in that order.
-export function canon(rel) {
-  const ids = new Map(), cols = [];
+// deep: a column of the relation read inside an EXISTS in it is named by its number too (two
+// copies of a filter whose EXISTS reads the row it tests are the same).
+export function canon(rel, deep = false, around = null) {
+  const ids = new Map(around ?? []), cols = [];
+  ids.deep = deep;
   const number = r => {
     for (const k of kids(r)) number(k);
     for (const c of r.cols) if (!ids.has(c)) { ids.set(c, ids.size); cols.push(c); }
@@ -120,7 +123,7 @@ export function text(x, ids) {
     case 'fn': return `${x.name}(${x.a.map(S).join(',')})`;
     case 'pop': return `${x.op}${x.name ?? ''}${x.to ?? ''}(${x.a.map(S).join(',')})`;
     case 'case': return `case(${x.w.map(([c, v]) => `${S(c)}:${S(v)}`).join(',')};${S(x.e)})`;
-    case 'exists': { const c = canon(x.rel); return `exists(${c.key})`; }
+    case 'exists': { const c = ids.deep ? canon(x.rel, true, ids) : canon(x.rel); return `exists(${c.key})`; }
   }
   return `?${x.k}`;
 }

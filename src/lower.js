@@ -207,11 +207,16 @@ export class Lowerer {
     throw unsupported(`plan: table ${x.k}`);
   }
 
-  // The rows of a model table the filter context keeps.
-  scanBlock(table, ctx, scope, excluded = null) {
+  // The rows of a model table the filter context keeps. self: [row, cols], a row whose columns
+  // are the scan's own (cols[i] its i-th), for filters that read the keys the scan is grouped by.
+  scanBlock(table, ctx, scope, excluded = null, self = null) {
     const rel = this.source(table);
     const b = new Block(this, rel, table.columns.map(c => ({ name: c.name, lineage: c, t: c.type })));
     b.res = new ScanRes(this, b, table, rel, this.model.state(ctx.mods));
+    if (self) {
+      const [row, cols] = self, res = b.res;
+      scope = withRow(scope, row, { block: b, col: r => res.meta(typeof r === 'number' ? cols[r] : r), meta: m => res.meta(m) });
+    }
     b.where.push(...this.conds(table, ctx, b.res, scope, excluded), ...this.securityConds(table, b.res, scope));
     return b;
   }
@@ -517,7 +522,9 @@ export class Lowerer {
     const kb = new Block(this, keyRel, x.cols);
     kb.res = new WrapRes(this, kb, x.keyCols.map((c, i) => ({ expr: refs.get(i) ?? ir.lit(null, c.type), lineage: c, name: c.name })), this.model.state(x.ctx0.mods));
     const s = withRow(scope, x.keyRow, kb.res);
-    const fusion = new Fusion(this, x.keyRow, active, x.keyCols);
+    // The filters that decide which combinations of the keys there are (keyFilters).
+    const domain = [...new Set([...new Set(L.active.map(c => c.table))].flatMap(t => this.keyFilters(x, t, true)))];
+    const fusion = new Fusion(this, x.keyRow, active, x.keyCols, domain);
     this.fusions.push(fusion);
     let items;
     try { items = L.items.map(i => this.scalar(i.expr, s, kb)); } finally { this.fusions.pop(); }
@@ -536,8 +543,9 @@ export class Lowerer {
     return this.exact(r);
   }
 
-  // The filters that decide which values the grouping columns of table t take (as emit.js).
-  keyFilters(x, t) {
+  // The filters that decide which values the grouping columns of table t take (as emit.js);
+  // `of`: the filters they come from (not narrowed to t's columns).
+  keyFilters(x, t, of = false) {
     const state = this.model.state(x.ctx0.mods), out = [];
     for (const f of x.ctx0.filters) {
       if (x.outer.includes(f)) {
@@ -546,7 +554,7 @@ export class Lowerer {
         if (f.base === t) out.push(f);
       } else {
         const own = f.cols.filter(c => c.table === t);
-        if (own.length) out.push(own.length === f.cols.length ? f : narrow(f, own));
+        if (own.length) out.push(own.length === f.cols.length || of ? f : narrow(f, own));
       }
     }
     return out;
@@ -676,12 +684,51 @@ export class Lowerer {
 // that filter it, joined to the level's rows on them (a blank matching a blank); an aggregate
 // the same in it as another is the other.
 class Fusion {
-  constructor(lw, keyRow, active, keyCols) {
+  constructor(lw, keyRow, active, keyCols, domain = []) {
     this.lw = lw;
     this.keyRow = keyRow;
     this.active = active;
     this.keyCols = keyCols;
+    this.domain = domain;
     this.groups = [];
+  }
+
+  // The mapping of filter f (a table filter, on its column c, reading keys `refs` of the key
+  // row): every combination of those keys' values (under the filters that decide the level's
+  // combinations: a level's seven dates, not the calendar's) beside each value f's table holds
+  // for them, f's table under each one's (an apply). One definition, read where it is joined:
+  // { rel, k: [its keys], v }.
+  mapping(f, refs, c, state) {
+    const lw = this.lw;
+    const byTable = new Map();
+    for (const i of refs) {
+      const t = this.keyCols[i].table;
+      if (!byTable.has(t)) byTable.set(t, []);
+      byTable.get(t).push(i);
+    }
+    const dom = new Ctx(this.domain);
+    let D = null;
+    const kcol = new Map();
+    for (const [t, is] of byTable) {
+      const b = lw.isolated(() => lw.scanBlock(t, dom, new Map()));
+      b.setOut(is.map(i => ({ name: `k${i}`, lineage: null })), is.map(i => b.res.meta(this.keyCols[i])));
+      b.distinct = true;
+      const part = lw.exact(b.render());
+      is.forEach((i, j) => kcol.set(i, part.cols[j]));
+      D = D ? P.join('cross', D, part) : part;
+    }
+    const db = new Block(lw, D, []);
+    db.res = new WrapRes(lw, db, this.keyCols.map((k, i) => ({ expr: kcol.has(i) ? P.ref(kcol.get(i)) : ir.lit(null, k.type), lineage: k, name: k.name })), state);
+    const sb = lw.isolated(() => lw.table(f.src, withRow(new Map(), this.keyRow, db.res)).render());
+    // A filter of a table's rows (f.base) has no idx: its columns are the table's, by lineage.
+    const at = f.idx ? f.idx[f.cols.indexOf(c)] : f.src.cols.findIndex(y => y.lineage === c);
+    if (at < 0 || !sb.list[at]) return null;
+    db.applies.push({ rel: sb.rel, outer: false });
+    db.setOut([...refs.map(i => ({ name: `k${i}`, lineage: null })), { name: 'v', lineage: null }], [...refs.map(i => P.ref(kcol.get(i))), sb.list[at].expr]);
+    db.distinct = true;
+    const rel = lw.exact(db.render());
+    const s = lw.shared(`mapping|${canon(rel, true).key}`, () => rel);
+    return { rel: s, k: refs.map((_, j) => P.ref(s.cols[j])), v: P.ref(s.cols[refs.length]) };
   }
 
   // Aggregate x as a column of its group, or null (not fused: computed for each row).
@@ -729,12 +776,45 @@ class Fusion {
       }
       rest.push(f);
     }
-    // The other filters read no row: those are the scan's own conditions, row by row.
-    if (rest.some(f => reads(f).size)) return null;
+    // The other filters read no row, or only keys the scan is filtered to: those are its own
+    // columns, row by row. A table filter on one column of the scan's that reads keys the scan is
+    // not filtered to (time intelligence: the dates of the group's period, its dates a year
+    // before) is a mapping of (keys, value) instead, joined to the scan.
+    let readsKeys = false;
+    const mapped = [];
+    for (const f of rest) {
+      const free = reads(f);
+      for (const id of free) if (id !== kid) return null;
+      if (!free.size) continue;
+      const refs = [...ir.rowRefs(f, kid)];
+      if (refs.every(i => keys.has(i))) { readsKeys = true; continue; }
+      // The column the mapping is on: the filter's one column, or the key of the one table whose
+      // columns it holds (FILTER(ALL('Date'), ...): the key says which row).
+      const T = f.cols[0]?.table;
+      const c = f.cols.length === 1 ? f.cols[0] : f.cols.every(y => y.table === T) && T.key && f.cols.includes(T.key) ? T.key : null;
+      if (f.kind !== 'rel' || !c || !NULL_EMPTY.has(x.fn) || !exp.has(c.table.name)
+        || refs.some(i => !this.keyCols[i]?.table || !this.active.includes(i))) return null;
+      mapped.push({ f, refs, c });
+    }
+    const kept = rest.filter(f => !mapped.some(m => m.f === f));
+    const block = lw.isolated(() => lw.scanBlock(S.table, new Ctx(kept, S.ctx.mods), new Map(), null, readsKeys ? [this.keyRow, this.keyCols] : null));
+    const keyExpr = new Map();
+    for (const { f, refs, c } of mapped) {
+      const m = this.mapping(f, refs, c, state);
+      if (!m) return null;
+      const here = lw.isolated(() => block.res.meta(c));
+      // A key the scan is grouped by already is the mapping's too: the same value. One it is
+      // not grouped by is the mapping's.
+      const on = [mayHoldNull(c) ? P.key(m.v, here) : P.eq(m.v, here)];
+      refs.forEach((i, j) => {
+        if (keys.has(i)) on.push(P.key(m.k[j], keyExpr.get(i) ?? lw.isolated(() => block.res.meta(this.keyCols[i]))));
+        else { keys.add(i); keyExpr.set(i, m.k[j]); }
+      });
+      block.joins.push({ kind: 'inner', rel: m.rel, on: P.and(on) });
+    }
     const keyList = [...keys].sort((a, b) => a - b);
-    const block = lw.isolated(() => lw.scanBlock(S.table, new Ctx(rest, S.ctx.mods), new Map()));
-    const keyExprs = lw.isolated(() => keyList.map(i => block.res.meta(this.keyCols[i])));
-    const c = canon(block.body());
+    const keyExprs = lw.isolated(() => keyList.map(i => keyExpr.get(i) ?? block.res.meta(this.keyCols[i])));
+    const c = canon(block.body(), true);
     const sig = `${S.table.name}|${state.key}|${keyList.join(',')}|${keyExprs.map(e => text(e, c.ids)).join(',')}|${c.key}`;
     let g = this.groups.find(y => y.sig === sig);
     if (!g) {
@@ -767,6 +847,11 @@ class Fusion {
     }
   }
 }
+
+// The aggregates that are blank over no rows: one a mapping takes, by keys its rows have none
+// of, is blank there as the aggregate over no rows is.
+const NULL_EMPTY = new Set(['sum', 'avg', 'min', 'max', 'count', 'countrows', 'dcount', 'dcountnb', 'countblank', 'median', 'stdev_s', 'stdev_p', 'var_s', 'var_p']);
+const mayHoldNull = c => !c.unique && c.nullable !== false;
 
 // Whether an expression is blank whatever its rows (emit.js's support with nothing fused): a
 // level of SUMMARIZECOLUMNS whose expressions all are has no group.

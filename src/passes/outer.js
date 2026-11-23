@@ -55,6 +55,20 @@ function inner(r, pred) {
 // the left, the same); again for what X is a cross join of.
 function uncross(j) {
   if (j.k !== 'join' || j.kind !== 'inner' || !j.on) return j;
+  // A condition's terms that read one side only, a cross join there: that cross join's condition
+  // (an inner join filters its sides by them).
+  for (const side of ['left', 'right']) {
+    const c = j[side];
+    if (c.k !== 'join' || c.kind !== 'cross') continue;
+    const S = new Set(c.cols), O = new Set(c.left.cols), Q = new Set(c.right.cols);
+    const cs = conjuncts(j.on);
+    const mine = cs.filter(t => { const f = refs(t); return f.size > 0 && [...f].every(col => S.has(col)) && [...f].some(col => O.has(col)) && [...f].some(col => Q.has(col)); });
+    if (!mine.length) continue;
+    const rest = cs.filter(t => !mine.includes(t));
+    const inner = uncross(P.join('inner', c.left, c.right, P.and(mine)));
+    const out = side === 'left' ? P.join('inner', inner, j.right, rest.length ? P.and(rest) : P.TRUE) : P.join('inner', j.left, inner, rest.length ? P.and(rest) : P.TRUE);
+    return uncross(out);
+  }
   const flip = j.right.k === 'join' && j.right.kind === 'cross' && !(j.left.k === 'join' && j.left.kind === 'cross');
   const cross = flip ? j.right : j.left, g = flip ? j.left : j.right;
   if (cross.k !== 'join' || cross.kind !== 'cross') return j;

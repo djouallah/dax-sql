@@ -4,9 +4,9 @@ Nothing here blocks a release. DAX on DuckDB has nothing left; T-SQL is the last
 
 # Wave 2: T-SQL
 
-- **3 queries past Fabric's 30 s**, not on the known list. Each holds a subquery of each group
-  that the mapping does not reach yet: a time-intelligence item applied to another (PY of YTD,
-  a mapping inside a mapping), `customers-returning-calc-group-all`;
-  `segmentation-calc-group-name-ordinal-filter`; `segmentation-summarize-sply-quarter-band`.
+- **2 queries past Fabric's 30 s**, on the known list as slow. Each holds a subquery of each
+  group that the mapping does not reach yet: `segmentation-calc-group-name-ordinal-filter` (60 s
+  alone), `segmentation-summarize-sply-quarter-band` (21 s alone, past 30 s beside 7 others; its
+  prior year's Low-band customer count is 8 s by itself).
 - `agree.mjs` holds the rewrites to the plain SQL on DuckDB only: T-SQL's own (`bind`,
-  `fuseRows`) are checked by nothing but the Fabric run, by hand.
+  `fuseRows`) are checked by the goldens in `tsql.yml`, not on the queries of its known list.

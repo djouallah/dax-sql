@@ -41,14 +41,24 @@ const token = process.env.TSQL_TOKEN
 
 // Sessions side by side (TSQL_SESSIONS, 8 by default); a query has TSQL_TIMEOUT_MS (30 s) to answer.
 const SESSIONS = Number(process.env.TSQL_SESSIONS || 8), TIMEOUT_MS = Number(process.env.TSQL_TIMEOUT_MS || 30000);
-async function session() {
+async function connect() {
   const conn = new Connection({
     server: HOST,
     authentication: { type: 'azure-active-directory-access-token', options: { token } },
     options: { database: DB, port: 1433, encrypt: true, connectTimeout: 30000, requestTimeout: TIMEOUT_MS },
   });
   await new Promise((ok, fail) => { conn.on('connect', e => (e ? fail(e) : ok())); conn.connect(); });
-  const run = sql => new Promise((ok, fail) => {
+  return conn;
+}
+async function session() {
+  let conn = await connect();
+  // A request past its time that could not be cancelled closes the connection: the next one
+  // opens another.
+  const run = async sql => {
+    if (conn.state !== conn.STATE.LOGGED_IN) { try { conn.close(); } catch {} conn = await connect(); }
+    return request(sql);
+  };
+  const request = sql => new Promise((ok, fail) => {
     let cols = [];
     const rows = [];
     const req = new Request(sql, e => (e ? fail(e) : ok({ cols, rows })));

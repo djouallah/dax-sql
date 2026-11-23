@@ -1004,7 +1004,8 @@ What T-SQL has no function for is written with what it has:
 known list (DuckDB's that T-SQL shares, the PATH queries, infinity and an exact sum), over the suite's data as the
 lakehouse's own Delta tables (`lakehouse.py` writes them with delta-rs, in schema `daxconf`):
 the tables a model reads, run by Fabric's distributed engine. It has its own driver, so the
-package depends on nothing new; it needs a lakehouse and a token, so it runs by hand, not in CI.
+package depends on nothing new. `tsql.yml` runs it on each push that changes the compiler or the
+suite, signed in as the Oracle is (an OIDC federated login); a query has 30 s to answer.
 
 ### Tests
 
@@ -1057,6 +1058,8 @@ In CI:
   scores it. A release waits for it.
 - `pages.yml`: the site (`docs/`, https://djouallah.github.io/dax-sql/), whose every example is
   compiled by the code on main before it is published.
+- `tsql.yml` (a push that changes the compiler or the suite): the suite as T-SQL on the Fabric
+  lakehouse's SQL endpoint, against its own known list, with the slowest queries in its summary.
 - `oracle.yml`, by hand: Power BI's answers for the suite's new or stale queries.
 - [analytics-as-code](https://github.com/djouallah/analytics-as-code) runs its model's measures
   and its dashboard's queries through this package on every push, and compares them with its

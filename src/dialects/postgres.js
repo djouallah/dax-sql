@@ -34,6 +34,10 @@ export class PostgresDialect extends Dialect {
   get aggFilter() { return true; }
   get sumCurrency() { return true; }
 
+  // IS NOT DISTINCT FROM is no join key Postgres hashes (a loop over both sides: a currency's
+  // groups past 30 s); an array's = takes a NULL element for equal to a NULL, and is hashed.
+  isNotDistinct(a, b) { return `ARRAY[${a}] = ARRAY[${b}]`; }
+
   type(t) { return t === 'string' ? 'TEXT' : t === 'date' ? 'DATE' : super.type(t); }
   // A NULL in a subquery's column is TEXT, which no UNION arm of a number matches: typed.
   literal(v, t) { return v === null ? this.nullOf(t) : super.literal(v, t); }

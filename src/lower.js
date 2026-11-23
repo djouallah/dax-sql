@@ -804,7 +804,7 @@ class Fusion {
       if (!part) continue;
       for (const id of ir.freeRows(part)) if (id !== x.row.id) return null;
     }
-    const keys = new Set(), rest = [], guards = [];
+    const keys = new Set(), rest = [], guards = [], via = [];
     for (const f of S.ctx.filters) {
       if (idle(f)) continue;
       if (f.kind === 'bind' && f.val.k === 'col' && f.val.row === this.keyRow) {
@@ -812,8 +812,9 @@ class Fusion {
         const ref = typeof f.val.ref === 'number' ? f.val.ref : this.keyRow.cols.findIndex(k => k.lineage === f.val.ref);
         if (ref < 0 || !this.active.includes(ref)) return null;
         if (exp.has(c.table.name)) keys.add(ref);
-        // A key whose filter reaches the scan over a relationship that filters back: not fused.
-        else if (lw.model.reaches(c.table, S.table, state)) return null;
+        // A key on a table whose filter reaches the scan over a relationship that filters
+        // back (both ways, many-to-many): kept for the pairs below.
+        else if (lw.model.reaches(c.table, S.table, state)) via.push({ ref, col: c });
         else continue;
         // A guarded key (a value of the group, when a condition on the group holds): the
         // condition is the group's, read where the group is.
@@ -838,13 +839,38 @@ class Fusion {
       // columns it holds (FILTER(ALL('Date'), ...): the key says which row).
       const T = f.cols[0]?.table;
       const c = f.cols.length === 1 ? f.cols[0] : f.cols.every(y => y.table === T) && T.key && f.cols.includes(T.key) ? T.key : null;
-      if (f.kind !== 'rel' || !c || !NULL_EMPTY.has(x.fn) || !exp.has(c.table.name)
+      if (f.kind !== 'rel' || !c || via.length || !NULL_EMPTY.has(x.fn) || !exp.has(c.table.name)
         || refs.some(i => !this.keyCols[i]?.table || !this.active.includes(i))) return null;
       mapped.push({ f, refs, c });
+    }
+    // Keys that reach the scan over a relationship that filters back: the scan is joined to the
+    // pairs (key, value of the relationship's column) that the filter context keeps on the keys'
+    // table, and grouped by the key. A row of the scan is in a key's group when its column is one
+    // of that key's values, as the filter says, once per key.
+    let edge = null;
+    if (via.length) {
+      const X = via[0].col.table;
+      if (readsKeys || via.some(v => v.col.table !== X)) return null;
+      for (const name of exp.keys()) {
+        for (const e of lw.model.inbound(lw.model.table(name), state)) if (e.there.table === X) edge ??= e;
+      }
+      if (!edge) return null;
+      lw.securityTree(edge.here.table, edge.rel, state);
     }
     const kept = rest.filter(f => !mapped.some(m => m.f === f));
     const block = lw.isolated(() => lw.scanBlock(S.table, new Ctx(kept, S.ctx.mods), new Map(), null, readsKeys ? [this.keyRow, this.keyCols] : null));
     const keyExpr = new Map();
+    if (edge) {
+      const m = lw.isolated(() => lw.scanBlock(edge.there.table, new Ctx(rest, S.ctx.mods), new Map(), new Set(exp.keys())));
+      m.setOut([...via.map((_, j) => ({ name: `g${j}`, lineage: null })), { name: 'y', lineage: null }], lw.isolated(() => [...via.map(v => m.res.meta(v.col)), m.res.meta(edge.there)]));
+      m.distinct = true;
+      const pairs = lw.exact(m.render());
+      // Across a many-to-many relationship a blank meets a blank (conds): the join is blank-safe.
+      const mm = edge.rel.fromCard === 'many' && edge.rel.toCard === 'many';
+      const here = lw.isolated(() => block.res.meta(edge.here)), y = P.ref(pairs.cols[via.length]);
+      block.joins.push({ kind: 'inner', rel: pairs, on: mm ? P.key(here, y) : P.eq(here, y) });
+      via.forEach((v, j) => { keys.add(v.ref); keyExpr.set(v.ref, P.ref(pairs.cols[j])); });
+    }
     for (const { f, refs, c } of mapped) {
       const m = this.mapping(f, refs, c, state);
       if (!m) return null;

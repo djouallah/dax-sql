@@ -498,7 +498,18 @@ export class Lowerer {
     };
     const cols = () => x.cols.map(c => P.newCol(c.name, c.t, { lineage: c.lineage }));
     if (x.rows.every(r => r.every(v => v.k === 'lit'))) return this.fromRel(P.values(x.rows, cols()), x.cols);
-    if (x.rows.length === 1) return block(x.rows[0]);
+    if (x.rows.length === 1) {
+      // ROW(...): one row, its aggregates fused where they can be (emit.js's fusedRow).
+      const b = new Block(this, null, x.cols);
+      const fusion = new Fusion(this, null, [], []);
+      this.fusions.push(fusion);
+      let vals;
+      try { vals = x.rows[0].map(v => this.scalar(v, scope, b)); } finally { this.fusions.pop(); }
+      fusion.finish(b, () => null);
+      b.setOut(x.cols, vals);
+      b.open = false;
+      return b;
+    }
     return this.fromRel(P.union(x.rows.map(r => this.exact(block(r).render()))), x.cols);
   }
 
@@ -887,7 +898,7 @@ class Fusion {
       }
     }
     if (S.k !== 'scan' || x.fn === 'single') return null;
-    const kid = this.keyRow.id;
+    const kid = this.keyRow?.id;
     const state = lw.model.state(S.ctx.mods);
     const exp = lw.model.expand(S.table, state);
     // A bind of a column that does not filter the scan (a group's country on a scan of rates) is
@@ -986,11 +997,35 @@ class Fusion {
     const keyExprs = lw.isolated(() => keyList.map(i => keyExpr.get(i) ?? block.res.meta(this.keyCols[i])));
     const c = canon(block.body(), true);
     const sig = `${S.table.name}|${state.key}|${keyList.join(',')}|${keyExprs.map(e => text(e, c.ids)).join(',')}|${c.key}`;
-    let g = this.groups.find(y => y.sig === sig);
+    const keyed = keyList.length > 0, nullEmpty = NULL_EMPTY.has(x.fn);
+    // A group whose aggregates differ in their conditions has the rows of any of them: an
+    // aggregate that is not blank over no rows does not join it.
+    let g = this.groups.find(y => y.sig === sig && !(y.mixed && !nullEmpty)), conds = null;
+    if (!g && !readsKeys && !edge && !mapped.length && MERGES.has(x.fn) && (!keyed || nullEmpty)) {
+      // An aggregate over another scan of the same tables by the same keys is that scan's, over
+      // the rows its own conditions on the joined tables keep: one scan for both, its conditions
+      // the group's or its own (CASE WHEN in its argument). With no keys there is one row each; by
+      // keys, the group has the rows of either, and an aggregate is blank for a key its own
+      // conditions keep no row of, as its own group would have no row for it: so only aggregates
+      // blank over no rows.
+      const into = `${S.table.name}|${state.key}|${keyList.join(',')}`;
+      for (const y of this.groups) {
+        if (y.merge !== into || (keyed && !y.nullEmpty) || y.aggs.some(a => !MERGES.has(a.fn))) continue;
+        const c = this.condsOn(y, S, rest);
+        if (!c) continue;
+        g = y;
+        conds = c;
+        if (keyed && (c.length !== g.block.where.length || c.some(x2 => !g.block.where.includes(x2)))) g.mixed = true;
+        break;
+      }
+    }
     if (!g) {
-      g = { sig, block, table: S.table, keys: keyList, keyExprs, aggs: [], plain: !edge && !readsKeys && !mapped.length };
+      const plain = !edge && !readsKeys && !mapped.length;
+      g = { sig, block, table: S.table, keys: keyList, keyExprs, aggs: [], plain, nullEmpty: true, merge: plain ? `${S.table.name}|${state.key}|${keyList.join(',')}` : null };
       this.groups.push(g);
     }
+    if (!nullEmpty) g.nullEmpty = false;
+    conds ??= [...g.block.where];
     // A group with an aggregate whose scan lacks one of the filters that decide the combinations
     // of the keys can hold keys that are not one of them; so does a mapping's (every value of the
     // key columns).
@@ -999,10 +1034,10 @@ class Fusion {
     const parts = lw.isolated(() => lw.aggParts(x, withRow(new Map(), x.row, g.block.res), g.block));
     const M = new Map(), T = e => (e ? text(e, M) : '');
     const e = parts.extra ?? {};
-    const key = [parts.fn, T(parts.arg), e.t, e.exact, e.text, T(e.delim), T(e.k), (e.order ?? []).map(o => `${T(o.expr)} ${o.desc}`).join(',')].join('|');
+    const key = [parts.fn, T(parts.arg), e.t, e.exact, e.text, T(e.delim), T(e.k), (e.order ?? []).map(o => `${T(o.expr)} ${o.desc}`).join(','), conds.map(T).sort().join(' AND ')].join('|');
     let a = g.aggs.find(y => y.key === key);
     if (!a) {
-      a = { key, col: P.newCol(x.fn, x.t), fn: parts.fn, arg: parts.arg, extra: parts.extra };
+      a = { key, col: P.newCol(x.fn, x.t), fn: parts.fn, arg: parts.arg, extra: parts.extra, conds };
       g.aggs.push(a);
     }
     const v = P.ref(a.col);
@@ -1014,9 +1049,44 @@ class Fusion {
 
   // The groups joined to the level's block kb (a key's value there: keyOf(i)).
   // Group g's grouping: { by its keys (g0, ...), its aggregates }.
+  // The scan keeps the conditions every aggregate has; an aggregate's others are a CASE WHEN in
+  // its argument (COUNTROWS a count of CASE WHEN q THEN 1).
   relOf(g) {
-    return g.rel ??= this.belowJoins(g) ?? P.aggregate(g.block.body(), g.keyExprs.map((e, j) => ({ name: `g${j}`, expr: e })),
-      g.aggs.map(a => ({ col: a.col, fn: a.fn, arg: a.arg, extra: a.extra })));
+    if (g.rel) return g.rel;
+    const common = g.block.where.filter(c => g.aggs.every(a => a.conds.includes(c)));
+    const owns = g.aggs.map(a => a.conds.filter(c => !common.includes(c)));
+    g.block.where = common;
+    const aggs = g.aggs.map((a, i) => {
+      if (!owns[i].length) return { col: a.col, fn: a.fn, arg: a.arg, extra: a.extra };
+      const q = P.and(owns[i]);
+      if (a.fn === 'countrows') return { col: a.col, fn: 'count', arg: when([[q, ir.lit(1, 'int')]], ir.lit(null, 'int'), 'int'), extra: { t: 'int' } };
+      return { col: a.col, fn: a.fn, arg: when([[q, a.arg]], ir.lit(null, a.arg.t), a.arg.t), extra: a.extra };
+    });
+    g.rel = (owns.some(o => o.length) ? null : this.belowJoins(g)) ?? P.aggregate(g.block.body(), g.keyExprs.map((e, j) => ({ name: `g${j}`, expr: e })), aggs);
+    return g.rel;
+  }
+
+  // The conditions of a scan of S's table under filters `rest`, written on the rows of group h
+  // (joining to h's scan what they need), when they differ from h's only on the tables it joins:
+  // the scan's own conditions are h's (what lets the engine skip its rows). Else null, and h as
+  // it was (emit.js's condsOn).
+  condsOn(h, S, rest) {
+    const lw = this.lw, b = h.block, res = b.res;
+    if (b.from?.k !== 'scan') return null;
+    const joins = b.joins.length, applies = b.applies.length, joinRel = new Map(res.joinRel), joinKey = new Map(res.joinKey);
+    const undo = () => { b.joins.length = joins; b.applies.length = applies; res.joinRel = joinRel; res.joinKey = joinKey; return null; };
+    let conds;
+    try {
+      conds = lw.isolated(() => [...lw.conds(S.table, new Ctx(rest, S.ctx.mods), res, new Map()), ...lw.securityConds(S.table, res, new Map())]);
+    } catch (err) { if (err.code === 'SEMANTIC') return undo(); throw err; }
+    if (b.applies.length > applies || conds.some(c => scalarReads(c).query)) return undo();
+    const ids = canon(b.body(), true).ids, T = c => text(c, ids);
+    const theirs = new Map(b.where.map(c => [T(c), c]));
+    const out = [...new Map(conds.map(c => [T(c), theirs.get(T(c)) ?? c])).values()];
+    const base = new Set(b.from.cols);
+    const ownOnly = cs => cs.filter(c => [...scalarReads(c).cols].every(x => base.has(x))).map(T).sort().join(' AND ');
+    if (ownOnly(out) !== ownOnly(b.where)) return undo();
+    return out;
   }
 
   // The groups joined to the level's block kb (a key's value there: keyOf(i)). Those in `from`
@@ -1122,6 +1192,11 @@ function blankFails(x) {
   if (x.k === 'pop') return ['and', 'eq', 'ne', 'lt', 'le', 'gt', 'ge', 'in', 'notnull'].includes(x.op) && x.a.every(blankFails);
   return false;
 }
+
+// The aggregates whose value over the rows a condition keeps is their value over all the rows with
+// their argument blank where it does not hold (CASE WHEN q THEN x): those a group's scan can hold
+// beside others under other conditions. COUNTROWS as a count of CASE WHEN q THEN 1.
+const MERGES = new Set(['sum', 'avg', 'min', 'max', 'count', 'count0', 'countrows', 'dcountnb', 'dcount0', 'median', 'stdev_s', 'stdev_p', 'var_s', 'var_p']);
 
 // The aggregates that are blank over no rows: one a mapping takes, by keys its rows have none
 // of, is blank there as the aggregate over no rows is.

@@ -5,6 +5,9 @@ name: Conformance
 # the queries, and compares the rows it answers with Power BI's (conformance/golden/). And every
 # query compiled with the emitter's rewrites and without, run on one DuckDB, must give the same
 # rows (engines/dax-sql/agree.mjs): the rewrites change no answer, the known ones included.
+# And the suite again through the query plan (DAXSQL_PLAN=1: the plan's SQL as it is, no
+# rewrite), against its own known list: until that list is DuckDB's, the job reports and does
+# not fail the run.
 
 on:
   push:
@@ -56,3 +59,29 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - name: With the rewrites and without
         run: node conformance/engines/dax-sql/agree.mjs .
+
+  plan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # Until known-plan.json is known.json: what the query plan does not lower yet is on it.
+    continue-on-error: true
+    steps:
+      # Named, so that called from another workflow it still checks out this repository.
+      - uses: actions/checkout@v4
+        with:
+          repository: djouallah/dax-sql
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: The suite through the query plan
+        env:
+          DAXSQL_PLAN: "1"
+        run: |
+          node conformance/runner/run.mjs --adapter "node conformance/engines/dax-sql/adapter.mjs ."             --known conformance/engines/dax-sql/known-plan.json --report "$RUNNER_TEMP/plan.json"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: plan-report
+          path: ${{ runner.temp }}/plan.json

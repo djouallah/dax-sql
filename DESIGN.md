@@ -188,6 +188,41 @@ When a scan of T is written, a filter applies on the columns it shares with T's 
 table, through joins. A filter arriving through an inbound relationship applies as a
 semi-join, recursively, without returning to where it came from.
 
+### The query plan
+
+A query's plan is the work an engine has to do for it, as relational algebra, with no rewrite
+and nothing of any engine (`explain(query)` draws it):
+
+```
+π  Category, Sales = sum
+└─ σ  sum ≠ BLANK                                SUMMARIZECOLUMNS leaves out blank rows
+   └─ ×ᴬ Apply                                   the measure, for each group
+      ├─ δ  Distinct                             the groups: the column's values
+      │  └─ π  Category.Category
+      │     └─ ▭  Category
+      └─ γ  SUM(Sales.Amount) → sum              [Sales Amount]
+         └─ σ  ∃1 ∧ (Category.Category ≡ outer.Category)   the group's key; TREATAS
+            ├─ ⟕  Category.CategoryKey = Product.CategoryKey   Sales' expanded table
+            │  ├─ ⟕  Product.ProductKey = Sales.ProductKey
+            │  │  ├─ ⟕  Date.Date = Sales.OrderDate
+            │  │  │  ├─ ▭  Sales
+            │  │  │  └─ ▭  Date
+            │  │  └─ ▭  Product
+            │  └─ ▭  Category
+            └─ ∃1 σ  Value ≡ outer.Date.Year
+               └─ ▭  Values {2024}
+```
+
+for `SUMMARIZECOLUMNS(Category[Category], TREATAS({2024}, 'Date'[Year]), "Sales", [Sales Amount])`.
+The filter context is σ and semi-joins (∃) over joins along the relationships; a measure is
+an apply (×ᴬ: the right side for each row of the left) of an aggregate (γ); ≡ is a blank
+matching a blank, and `outer.` a column of the row an apply or a semi-join is correlated to.
+Scalars are DAX's, with its rules for blanks.
+
+`planSql(query)` writes the plan as it is, in a dialect's SQL. The SQL `compile` writes is the
+plan rewritten by the optimizer (fusion, filters on the scan, shared scans, the rest); that
+optimizer still works on SQL text in `emit.js`, and moves onto the plan pass by pass (TODO.md).
+
 ### The intermediate form
 
 `ir.js` defines two kinds of node:
@@ -448,6 +483,10 @@ const { sql, columns } = dax.compile(`
   for (all of them without `labels`), each `{ label, ref, order, kind, name, tableName }`.
   Power BI resolves a field parameter before it writes the query, so a caller does the same:
   it puts these columns or measures in the query where the parameter goes.
+- `explain(query)`: the query plan ([The query plan](#the-query-plan)) drawn as a tree, one
+  per `EVALUATE`; `plan(query)` is the plan itself (`src/plan.js` says its nodes), and
+  `planSql(query)` its SQL as it is, `{ sql, columns }` as `compile` gives. Each takes a SQL
+  `SELECT` over the model too.
 - `model`: the model as read; `dialect`: the dialect it writes.
 
 The package also exports `DaxError`, `Model`, the dialects (`Dialect`, `DuckDBDialect`,
@@ -917,7 +956,9 @@ SELECT m.*, p.n FROM m JOIN (SELECT "Color", COUNT(*) AS n FROM "Product" GROUP 
 | `context.js` | the filter context: its filters, and what removing columns leaves of them |
 | `functions/` | the function library, by kind |
 | `ir.js` | the intermediate form: scalars, tables, rows, aggregates over scans |
-| `emit.js` | the intermediate form into SQL |
+| `emit.js` | the intermediate form into SQL, rewritten |
+| `lower.js`, `plan.js` | the intermediate form into the query plan, and the plan's nodes |
+| `plan-sql.js`, `explain.js` | the query plan as SQL, as it is; drawn as a tree |
 | `format.js` | FORMAT's patterns, read into what a dialect writes |
 | `dialects/` | what differs between SQL engines: `base.js` (the interface), `duckdb.js`, `duckdb-format.js`, `tsql.js`, `tsql-format.js`, `postgres.js`, `postgres-format.js` |
 | `errors.js` | `DaxError` and its codes |
@@ -1073,6 +1114,7 @@ npm test
 - `datasets.test.js`: SQL over the datasets answers what plain SQL over the same tables does
   (NULLs, joins, `IN` and `LIKE`, `CAST`, `%`, `WITH TIES`).
 - `views.test.js`: semantic views' statements, run on DuckDB.
+- `explain.test.js`: the query plan as drawn, and its SQL answering as the compiled SQL does.
 - `tsql.test.js`: every conformance query is T-SQL with nothing Fabric lacks, or refused by
   name; the shapes Fabric needs.
 - `formats/test/formats.test.js`: TMSL to Ossie and back answers every measure as the TMSL
@@ -1086,7 +1128,9 @@ In CI:
 - `conformance.yml`: the suite against Power BI's goldens (`conformance/`), and
   `conformance/engines/dax-sql/agree.mjs`: every query of the suite compiled with the emitter's
   rewrites and with `optimize: false`, run on one DuckDB: the rows must be the same, on the
-  known queries too. A release waits for it.
+  known queries too. A release waits for it. Its `plan` job runs the suite through the query
+  plan's SQL (`DAXSQL_PLAN=1`) against `known-plan.json`, and reports until that list is
+  `known.json`.
 - `perf.yml` (`conformance/engines/dax-sql/bench.mjs`): every query timed by the commit and by
   the one before, on one runner, the fastest of three rounds each: more than 10% slower in all,
   or a query 1.5 times as slow and 50 ms more, fails.

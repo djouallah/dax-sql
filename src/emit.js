@@ -2078,7 +2078,7 @@ const paren = s => `(${s})`;
 
 // An ORDER BY term with DAX's blanks: DEFAULT puts a numeric blank between the negative
 // numbers and zero, and a text blank before every text; FIRST and LAST say.
-function orderTerm(d, v, o) {
+export function orderTerm(d, v, o) {
   const dir = o.desc ? 'DESC' : 'ASC';
   if (o.blanks === 'first') return d.order(v, dir, 'FIRST');
   if (o.blanks === 'last') return d.order(v, dir, 'LAST');
@@ -2194,11 +2194,11 @@ function uniqNames(names) {
   });
 }
 
-function daxName(c) {
+export function daxName(c) {
   const q = c.lineage ? null : ir.qualifiedName(c.name);
   return c.lineage ? `'${c.lineage.table.name}'[${c.lineage.name}]` : q ? `'${q.table}'[${q.name}]` : `[${c.name}]`;
 }
-function outputNames(cols, style) {
+export function outputNames(cols, style) {
   const named = c => { const q = c.lineage ? null : ir.qualifiedName(c.name); return q ? `${q.table}[${q.name}]` : `[${c.name}]`; };
   if (style === 'dax') return uniqNames(cols.map(c => (c.lineage ? `${c.lineage.table.name}[${c.lineage.name}]` : named(c))));
   // Short names; where two collide, the later ones say their table.

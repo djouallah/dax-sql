@@ -38,6 +38,9 @@ import { newRow } from './ir.js';
 import { DaxError, semantic, unsupported } from './errors.js';
 import { Ctx } from './context.js';
 import { SqlTranslator, isSql, isSqlQuery, printDaxQuery, modelRelations, spliceStatement } from './sql.js';
+import { Lowerer } from './lower.js';
+import { PlanSql } from './plan-sql.js';
+import { explain as drawPlan } from './explain.js';
 
 export { DaxError } from './errors.js';
 export { Dialect } from './dialects/base.js';
@@ -203,9 +206,35 @@ export function createCompiler(input, options = {}) {
     const out = whole ? [whole] : relations;
     return { sql: whole ? whole.sql : spliceStatement(text, relations, dialect), relations: out.map(({ text: t, dax, sql }) => ({ text: t, dax, sql })) };
   }
+  // The query plan: what an engine has to do for the query, as relational algebra (lower.js),
+  // with no rewrite; one per EVALUATE. -> [{ plan, columns, ordered }]
+  function plans(text) {
+    if (rolesError) throw semantic(rolesError);
+    const opts = { ...options, calcColumn, calcTable, security };
+    const lower = q => base.query(q, statements => statements.map(s => new Lowerer(model, opts).query(s)));
+    if (!isSqlQuery(text)) return lower(text);
+    const t = sqlTranslator.translate(text);
+    const [p] = lower(t.query);
+    if (t.limit != null || t.offset != null) p.plan.limit = { n: t.limit, offset: t.offset };
+    return [p];
+  }
+  const onePlan = text => {
+    const out = plans(text);
+    if (out.length !== 1) throw new DaxError(`the query has ${out.length} EVALUATE statements`);
+    return out[0];
+  };
   return {
     model,
     dialect,
+    // One EVALUATE, or a SELECT over the model -> its query plan (plan.js).
+    plan: text => onePlan(text).plan,
+    // The query plan drawn as a tree, one per EVALUATE.
+    explain: text => plans(text).map(p => drawPlan(p.plan)).join('\n\n'),
+    // The SQL of the query plan as it is, no rewrite: { sql, columns }, as compile gives.
+    planSql(text) {
+      const p = onePlan(text);
+      return { sql: new PlanSql(model, dialect, options).query(p), columns: p.columns };
+    },
     // One EVALUATE, or a SELECT over the model -> { sql, columns: [{ name, dax, type, lineage }] }.
     compile(dax) {
       if (isSqlQuery(dax)) return compileSql(dax);

@@ -19,3 +19,16 @@ Nothing here blocks a release. DAX on DuckDB has nothing left; T-SQL is the last
   (`filters-calcgroup-item-as-calculate-filter`). The same kind as Fabric's: a subquery of each
   group the mapping does not reach, which PostgreSQL runs as a loop. Others take 15 s to 132 s
   (`segmentation-summarize-sply-quarter-band`); the run's summary lists them.
+
+# The query plan
+
+`DAX → query plan → optimizer (every engine) → engine passes (only what one needs) → SQL`.
+
+1. **The plan, as it is** (`lower.js`, `plan-sql.js`, `explain.js`): every query of the suite
+   through `planSql` answers as Power BI does on DuckDB; `known-plan.json` down to `known.json`.
+2. **Decorrelation**, the optimizer's first pass: an apply into γ and ⟕, for any correlation
+   (range, shifted keys); the plan path on T-SQL and PostgreSQL, their slow queries under limit.
+3. **The emitter's rewrites as passes**, one at a time, each checked against the plan as it
+   is: fusion, filters on the scan, grouping below joins, sharing.
+4. **Fabric's own pass** (`mapAlone`, a CTE computed again at each name); `compile()` through
+   the plan once every suite and `perf.yml` match; `emit.js` deleted.

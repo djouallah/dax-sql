@@ -14,6 +14,7 @@
 // First, an EXISTS a condition reads, correlated to a row, is an apply too: the row's count of
 // the relation's rows, a blank when there is none.
 import * as P from '../plan.js';
+import { clone } from './clone.js';
 
 export function decorrelate(root) {
   const u = new Unnest();
@@ -60,6 +61,12 @@ class Unnest {
   // --- EXISTS a row reads: an apply ---------------------------------------------------------
 
   E(r) {
+    // σ over distinct rows whose condition is an OR of terms testing EXISTS of a row they read:
+    // the distinct union of σ of each term over its own copy of the rows, each a semi-join of
+    // its own (an OR of two tests, a date matching the period's dates or its month's end, is
+    // no one equality to unnest, and the rows were each tested against each outer row).
+    const split = orSplit(r);
+    if (split) return this.E(split);
     r = mapKids(r, k => this.E(k));
     // One in an inner join's condition: the condition over the rows the join's sides make.
     if (r.k === 'join' && r.kind !== 'left' && r.on && existsOf(r.on).some(e => free(e).size)) return this.E(P.select(P.join('cross', r.left, r.right), r.on));
@@ -291,7 +298,7 @@ class Unnest {
         return { rel: P.projectAs(s.rel, [...r.items.map(i => ({ col: i.col, expr: S(i.expr, s.dc) })), ...ds]), dc: asMap(ds) };
       }
       case 'distinct': {
-        if (r.src.k !== 'project') throw STUCK;
+        if (r.src.k !== 'project' && r.src.k !== 'union') throw STUCK;
         const s = this.push(r.src, ctx);
         return { rel: P.distinct(s.rel), dc: s.dc };
       }
@@ -488,6 +495,17 @@ function substRel(r, map) {
   if (![...map.keys()].some(c => fr.has(c))) return r;
   return mapScalars(mapKids(r, k => substRel(k, map)), x => subst(x, map));
 }
+
+// σ_{a ∨ b}(δ X) -> δ(σ_a(X₁) ∪ σ_b(X₂)), the result under X's columns; null when r is not that.
+function orSplit(r) {
+  if (r.k !== 'select' || r.src.k !== 'distinct') return null;
+  const ds = disjuncts(r.pred);
+  if (ds.length < 2 || !ds.some(d => existsOf(d).some(e => free(e).size))) return null;
+  const branches = ds.map(d => { const { rel, map } = clone(r.src); return P.select(rel, subst(d, map)); });
+  const u = P.distinct(P.union(branches));
+  return P.projectAs(u, r.cols.map((c, i) => ({ col: c, expr: P.ref(u.cols[i]) })));
+}
+const disjuncts = x => ((x.k === 'op' || x.k === 'pop') && x.op === 'or' ? x.a.flatMap(disjuncts) : [x]);
 
 // The conditions a condition's ANDs hold.
 export function conjuncts(x) {

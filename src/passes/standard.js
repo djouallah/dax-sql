@@ -249,6 +249,8 @@ function asText(v) {
 // 28.999999999999996 in binary; ROUNDDOWN(0.29, 2) is 0.29).
 const g15 = v => caseOf([[cond('eq', [v, int(0)]), lit(0, 'double')]],
   call('round', [v, cast(pop('sub', [int(14), call('floor', [call('log10', [call('abs', [v], 'double')], 'double')], 'double')], 'double'), 'int')], 'double'), 'double');
+// A value read to 15 digits, rounded to a whole number half away from zero.
+const halfAway = v => pop('mul', [call('sign', [v], 'double'), call('floor', [pop('add', [g15(call('abs', [v], 'double')), lit(0.5, 'double')], 'double')], 'double')], 'double');
 // A date and time as days since day zero (1899-12-30), with the fraction; and back.
 const Z0 = lit('1899-12-30 00:00:00', 'datetime');
 const MICRO = lit(86400000000, 'int');
@@ -291,7 +293,13 @@ function fn(x) {
     case 'mod': return pop('sub', [p, pop('mul', [q, call('floor', [pop('div', [p, q], 'double')], 'double')], x.t)], x.t);
     case 'quotient': return cast(call('trunc', [pop('div', [p, q], 'double')], 'double'), 'int');
     case 'int': return cast(call('floor', [p], 'double'), 'int');
-    case 'round': return call('round', [p, cast(q, 'int')], x.t);
+    // Half away from zero, of the value read to 15 digits (ROUND(1.005, 2) is 1.01: 1.005 is
+    // 1.00499… in binary, which an engine's round takes down).
+    case 'round': {
+      const k = call('power', [int(10), q], 'double');
+      const r = pop('div', [halfAway(pop('mul', [p, k], 'double')), k], 'double');
+      return x.t === 'double' ? r : cast(r, x.t);
+    }
     case 'value': return cast(p, 'double');
     case 'greatest': case 'least': return call(x.name, x.t === 'variant' ? a.map(asText) : a, x.t);
     case 'upper': case 'lower': return call(x.name, [T(0)], 'string');
@@ -342,7 +350,7 @@ function fn(x) {
       const f = x.name === 'ceiling' ? 'ceil' : 'floor';
       return q ? pop('mul', [call(f, [g15(pop('div', [p, q], 'double'))], 'double'), q], 'double') : call(f, [p], 'double');
     }
-    case 'mround': return pop('mul', [call('round', [g15(pop('div', [p, q], 'double')), int(0)], 'double'), q], 'double');
+    case 'mround': return pop('mul', [halfAway(pop('div', [p, q], 'double')), q], 'double');
     // FORMAT: a number or a date by a pattern (parsed: its sections, digits, separators, the
     // names of days and months), as text; COMBINEVALUES: values joined by a separator.
     case 'format_number': case 'format_date': case 'combinevalues': return call(x.name, a, 'string', true);

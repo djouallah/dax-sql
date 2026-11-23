@@ -51,6 +51,7 @@ jobs:
           NODE_OPTIONS: --max-old-space-size=6144
         run: |
           node conformance/runner/run.mjs --adapter "node conformance/engines/dax-sql-substrait/adapter.mjs ." \
+            --known conformance/engines/dax-sql/known.json,conformance/engines/dax-sql/known-plan.json \
             --report "$RUNNER_TEMP/substrait.json" > "$RUNNER_TEMP/run.txt" 2>&1 || true
           tail -40 "$RUNNER_TEMP/run.txt"
       - name: Summary
@@ -63,7 +64,7 @@ jobs:
             const t = r.total, out = [];
             out.push("### Substrait on DataFusion", "", "| match | fail | error | unsupported |", "|---|---|---|---|", `| ${t.match} | ${t.fail} | ${t.error} | ${t.unsupported} |`, "");
             const groups = {};
-            for (const q of r.queries.filter(q => q.outcome !== "match")) {
+            for (const q of r.queries.filter(q => q.outcome !== "match" && !q.known)) {
               const k = `${q.outcome}: ${String(q.detail ?? "").split("\n")[0].replace(/\d+/g, "N").replace(/got .*/, "got …").slice(0, 140)}`;
               groups[k] = (groups[k] ?? 0) + 1;
             }

@@ -39,8 +39,16 @@ export class PostgresDialect extends Dialect {
   // elements are of one type: both cast to the key's (a date and time to TIMESTAMP, which a DATE
   // column and a date moved by an interval both are), where it is known.
   isNotDistinct(a, b, t) {
-    const T = t === 'date' || t === 'datetime' ? 'TIMESTAMP' : this.type(t);
+    const T = this.keyType(t);
     return T ? `ARRAY[CAST(${a} AS ${T})] = ARRAY[CAST(${b} AS ${T})]` : super.isNotDistinct(a, b);
+  }
+  keyType(t) { return t === 'date' || t === 'datetime' ? 'TIMESTAMP' : this.type(t); }
+  // Several keys as one: two records' = (not row constructors') takes a NULL field for equal to a
+  // NULL, and is one condition, its matches estimated once (several arrays' =, each estimated
+  // apart, multiply to a row or so: the planner loops over thousands).
+  keysTogether(ks) {
+    const row = side => `ROW(${ks.map(k => `CAST(${k[side]} AS ${this.keyType(k.t)})`).join(', ')})::record`;
+    return `${row('a')} = ${row('b')}`;
   }
 
   type(t) { return t === 'string' ? 'TEXT' : t === 'date' ? 'DATE' : super.type(t); }

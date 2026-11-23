@@ -381,7 +381,7 @@ function walk(x, f) {
   if (x.k === 'op' || x.k === 'fn' || x.k === 'pop') x.a.forEach(y => walk(y, f));
   else if (x.k === 'case') { x.w.forEach(([c, v]) => { walk(c, f); walk(v, f); }); walk(x.e, f); }
 }
-function refsOf(x) {
+export function refsOf(x) {
   const out = new Set();
   walk(x, y => { if (y.k === 'ref') out.add(y.col); });
   return out;

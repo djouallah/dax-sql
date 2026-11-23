@@ -5,6 +5,7 @@
 // rest through the dialect's methods. No rewrite: the SQL says what the plan says.
 import { Emitter, orderTerm } from './emit.js';
 import { isCondOp } from './plan.js';
+import { refsOf } from './passes/decorrelate.js';
 
 const EMPTY = new Map();
 const MANY = 'A table of multiple values was supplied where a single value was expected.';
@@ -61,7 +62,7 @@ export class PlanSql extends Emitter {
       case 'join': {
         const l = from(r.left, 'l'), rt = from(r.right, 'r');
         if (r.kind === 'cross') return `SELECT * FROM ${l} CROSS JOIN ${rt}`;
-        return `SELECT * FROM ${l} ${r.kind === 'left' ? 'LEFT JOIN' : 'JOIN'} ${rt} ON ${this.scalar(r.on, EMPTY, true)}`;
+        return `SELECT * FROM ${l} ${r.kind === 'left' ? 'LEFT JOIN' : 'JOIN'} ${rt} ON ${this.on(r)}`;
       }
       case 'apply': return `SELECT * FROM ${from(r.left, 'l')}${this.d.lateral(this.rel(r.right), this.alias('a'), r.outer)}`;
       case 'union': return r.srcs.map((s, k) => `SELECT ${r.picks[k].map((c, i) => `${c.t === 'blank' && r.cols[i].t !== 'blank' ? this.d.nullOf(r.cols[i].t) : cn(c)} AS ${cn(r.cols[i])}`).join(', ')} FROM ${from(s, 'u')}`).join(' UNION ALL ');
@@ -117,6 +118,28 @@ export class PlanSql extends Emitter {
 
   // A value as a column of type col.t: a blank typed as its column (a UNION reads it).
   val(v, col) { return v.k === 'lit' && v.v === null ? this.d.nullOf(col.t) : this.scalar(v, EMPTY); }
+
+  // A join's condition. Its blank-safe keys, each a value of the left's columns and one of the
+  // right's, as one where the dialect has it (Postgres estimates each key's matches apart: a join
+  // of several keys for a row or so, and loops over thousands).
+  on(r) {
+    if (!this.d.keysTogether) return this.scalar(r.on, EMPTY, true);
+    const cs = [], flat = c => (c.k === 'pop' && c.op === 'and' ? c.a.forEach(flat) : cs.push(c));
+    flat(r.on);
+    const L = new Set(r.left.cols), R = new Set(r.right.cols);
+    const within = (x, side) => { const f = refsOf(x); return f.size > 0 && [...f].every(c => side.has(c)); };
+    const keys = [];
+    for (const c of cs) {
+      if (c.k !== 'pop' || c.op !== 'key' || !this.d.keyType(c.a[0].t)) continue;
+      const [x, y] = c.a;
+      if (within(x, L) && within(y, R)) keys.push({ c, l: x, r: y });
+      else if (within(y, L) && within(x, R)) keys.push({ c, l: y, r: x });
+    }
+    if (keys.length < 2) return this.scalar(r.on, EMPTY, true);
+    const together = this.d.keysTogether(keys.map(k => ({ a: this.scalar(k.l, EMPTY), b: this.scalar(k.r, EMPTY), t: k.c.a[0].t })));
+    const used = new Set(keys.map(k => k.c));
+    return `(${[together, ...cs.filter(c => !used.has(c)).map(c => this.scalar(c, EMPTY, true))].join(' AND ')})`;
+  }
 
   // --- the plan's own scalars ----------------------------------------------------------------
 

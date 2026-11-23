@@ -363,13 +363,13 @@ class Unnest {
         return { rel: P.join(r.kind === 'cross' ? 'inner' : r.kind, a.rel, b.rel, P.and([...own, ...match])), dc: a.dc };
       }
       case 'apply': {
-        // An apply whose right reads D but none of its left (a date's window from the current
-        // dates' last, beside each date): D goes to the right, the left crossed with it as is
-        // (not D crossed with the left). An outer apply's right of one row for each value of D.
-        const fr = free(r.right), own = new Set(r.left.cols), lf = free(r.left);
-        if (!F.some(f => lf.has(f)) && ![...fr].some(c => own.has(c)) && (!r.outer || (r.right.k === 'aggregate' && !r.right.keys.length))) {
-          const s = this.push(r.right, ctx);
-          return { rel: P.join('cross', r.left, s.rel), dc: s.dc };
+        // An apply whose right reads none of its left's columns (a date's window from the current
+        // dates' last, beside each date; the window's start and end, one apply after the other) is
+        // its two sides crossed: D goes to the side that reads it, or to both, matched on its
+        // values (not D crossed with the left). An outer apply's right of one row for each value of D.
+        const fr = free(r.right), own = new Set(r.left.cols);
+        if (![...fr].some(c => own.has(c)) && (!r.outer || (r.right.k === 'aggregate' && !r.right.keys.length))) {
+          return this.push1(P.join('cross', r.left, r.right), ctx);
         }
         // An apply inside: D goes to its left; its right reads D there (and is unnested next).
         const s = this.push(r.left, ctx);

@@ -6,6 +6,7 @@
 // lists those that are left: text of a number, a date's serial number, FORMAT, PATH, …).
 import * as P from '../plan.js';
 import { mapKids, mapScalars } from './decorrelate.js';
+import { clone } from './clone.js';
 
 export function standard(root) {
   for (const d of root.defs ?? []) d.rel = R(d.rel);
@@ -22,7 +23,40 @@ function R(r) {
 
 // DAX's aggregates as standard ones, and what DAX makes of them above the grouping: a count of
 // no rows is blank (NULLIF), DISTINCTCOUNT counts the blank too, HASONEVALUE, a single value.
+// A distinct count of several columns (COUNTROWS(DISTINCT(…)), DISTINCTCOUNT of a row): the
+// distinct rows of those columns (δ), counted by the grouping's keys, joined back to its groups.
+const ROWS = new Set(['dcount', 'dcount0', 'dcountnb', 'hasone']);
 function aggregates(r) {
+  const tuples = r.aggs.filter(a => ROWS.has(a.fn) && a.arg?.k === 'fn' && a.arg.name === 'row');
+  if (!tuples.length) return plainAggregates(r);
+  const rest = plainAggregates({ ...r, aggs: r.aggs.filter(a => !tuples.includes(a)), cols: [...r.keys.map(k => k.col), ...r.aggs.filter(a => !tuples.includes(a)).map(a => a.col)] });
+  let rel = !r.keys.length && rest.k === 'aggregate' && !rest.aggs.length ? P.oneRow() : rest;
+  const vals = new Map();
+  for (const a of tuples) {
+    const { rel: src, map } = clone(r.src);
+    const re = x => subst(x, map);
+    const items = [...r.keys.map(k => ({ name: k.col.name, expr: re(k.expr) })), ...a.arg.a.map((v, i) => ({ name: `c${i}`, expr: re(v) }))];
+    const rows = P.distinct(P.project(src, items));
+    const keys = r.keys.map((k, i) => ({ col: P.newCol(k.col.name, k.col.t), expr: P.ref(rows.cols[i]) }));
+    const n = P.newCol('rows', 'int');
+    const counted = P.aggregate(rows, keys, [{ col: n, fn: 'count_star', arg: null, extra: {} }]);
+    rel = keys.length ? P.join('left', rel, counted, P.and(r.keys.map((k, i) => P.key(P.ref(k.col), P.ref(keys[i].col))))) : P.join('cross', rel, counted);
+    // A row is never blank: the count of distinct rows; over no rows, blank (HASONEVALUE: FALSE).
+    const c = P.ref(n), zero = lit(0, 'int');
+    vals.set(a.col, a.fn === 'hasone' ? coalesce(cond('eq', [c, lit(1, 'int')]), lit(false, 'bool')) : a.fn === 'dcount0' ? coalesce(c, zero) : pop('nullif', [c, zero], 'int'));
+  }
+  return P.projectAs(rel, [...r.keys.map(k => ({ col: k.col, expr: P.ref(k.col) })), ...r.aggs.map(a => ({ col: a.col, expr: vals.get(a.col) ?? P.ref(a.col) }))]);
+}
+// A scalar reading the columns `map` names instead.
+const subst = (x, map) => {
+  if (!x || typeof x !== 'object') return x;
+  if (x.k === 'ref') return map.has(x.col) ? P.ref(map.get(x.col)) : x;
+  if (x.k === 'op' || x.k === 'fn' || x.k === 'pop') return { ...x, a: x.a.map(y => subst(y, map)) };
+  if (x.k === 'case') return { ...x, w: x.w.map(([c, v]) => [subst(c, map), subst(v, map)]), e: subst(x.e, map) };
+  return x;
+};
+
+function plainAggregates(r) {
   const aggs = [], out = [];
   const agg = (fn, arg, t = 'int', extra = {}) => { const col = P.newCol(fn, t); aggs.push({ col, fn, arg, extra }); return P.ref(col); };
   const zero = lit(0, 'int'), one = lit(1, 'int');
@@ -173,6 +207,17 @@ function fn(x) {
     case 'coalesce': return a.length > 1 && a.every(v => v.t === a[0].t || v.t === 'blank' || isNum(v.t) === isNum(a[0].t)) && x.t !== 'variant' ? coalesce(...a) : keep();
     case 'divide': return a.length === 2 ? pop('div', [p, pop('nullif', [q, lit(0, 'int')], q.t)], x.t)
       : caseOf([[cond('eq', [coalesce(q, lit(0, 'int')), lit(0, 'int')]), s]], pop('div', [p, q], x.t), x.t);
+    // A fixed decimal over a whole number: the exact quotient of ten-thousandths, rounded half
+    // away from zero, in whole numbers (|n| div |d|, and one more when twice the remainder is at
+    // least |d|). Over 0 (or, for DIVIDE, a blank): as / and DIVIDE do with any number.
+    case 'cydiv': case 'cydivide': {
+      const n = cast(call('round', [pop('mul', [p, lit(10000, 'int')], 'double'), lit(0, 'int')], 'double'), 'int'), d = cast(q, 'int');
+      const an = call('abs', [n], 'int'), ad = call('abs', [d], 'int');
+      const up = caseOf([[cond('ge', [pop('mul', [lit(2, 'int'), call('mod', [an, ad], 'int')], 'int'), ad]), lit(1, 'int')]], lit(0, 'int'), 'int');
+      const signed = pop('mul', [pop('mul', [call('sign', [n], 'int'), call('sign', [d], 'int')], 'int'), pop('add', [call('idiv', [an, ad], 'int'), up], 'int')], 'int');
+      const zero = x.name === 'cydiv' ? pop('div', [cast(call('sign', [n], 'int'), 'double'), lit(0, 'int')], 'double') : (s ?? lit(null, 'double'));
+      return caseOf([[cond('eq', [coalesce(d, lit(0, 'int')), lit(0, 'int')]), zero]], pop('div', [signed, lit(10000, 'int')], 'double'), 'double');
+    }
     case 'iseven': case 'isodd': {
       const n = cast(call('trunc', [p], 'double'), 'int');
       return cond(x.name === 'iseven' ? 'eq' : 'ne', [call('mod', [n, lit(2, 'int')], 'int'), lit(0, 'int')]);

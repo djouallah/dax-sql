@@ -158,6 +158,8 @@ export class PlanSql extends Emitter {
       case 'trim': return d.fn('trim_ends', a, nodes);
       case 'contains': return d.fn('containsstringexact', a, nodes);
       case 'mod': return `(${x} % ${y})`;
+      // Whole-number division.
+      case 'idiv': return d.name === 'duckdb' ? `(${x} // ${y})` : d.name === 'postgres' ? `div(${x}, ${y})` : `(${x} / ${y})`;
       case 'trunc': return `trunc(${x})`;
       case 'floor': return `floor(${x})`;
       case 'raise_error': return d.fn('error', a, nodes);

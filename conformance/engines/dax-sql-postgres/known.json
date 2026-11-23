@@ -52,5 +52,6 @@
   {"id":"edges/relationships/relationships-ship-date-userelationship-by-month","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"},
   {"id":"edges/relationships/relationships-snowflake-region-country-rollup","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"},
   {"id":"edges/relationships/relationships-unknown-store-keys-blank-row","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"},
-  {"id":"contoso/scalar/scalar-datetime-minus-datetime","reason":"by design: a date minus a date is a number of days, with the fraction (Power BI types it a date and time: 1899-12-30 and the days)"}
+  {"id":"contoso/scalar/scalar-datetime-minus-datetime","reason":"by design: a date minus a date is a number of days, with the fraction (Power BI types it a date and time: 1899-12-30 and the days)"},
+  {"id":"contoso/scalar/scalar-min-max-blank-ties","reason":"PostgreSQL: an expression of blanks only (MAX(BLANK(), BLANK())) is typed as text, which COALESCE with a number rejects"}
 ]

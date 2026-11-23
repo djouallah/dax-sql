@@ -29,6 +29,8 @@ export class PostgresDialect extends Dialect {
   // An aggregate belongs to the query whose columns it reads: SUM((SELECT ... k1 ...)) is the
   // outer query's. Its subqueries are columns of a SELECT it is over, as on T-SQL.
   aggOverSubquery = false;
+  // A subquery in a CASE's branch is run for each row, as Fabric does: the branches' values a row.
+  subqueryInCase = false;
   get aggFilter() { return true; }
   get sumCurrency() { return true; }
 

@@ -2,6 +2,9 @@
 // dax-sql checkouts, a base and a head, on the same machine and the same DuckDB: a head that is
 // slower fails. .github/workflows/perf.yml runs it on each push against the commit before.
 //   node engines/dax-sql/bench.mjs <base checkout> <head checkout> [--rounds 3] [--grep regex]
+//     [--base-option name=value]...
+// --base-option: an option of the base's compilers (createCompiler's), the head's as they are:
+// `bench.mjs . . --base-option viaPlan=false` holds DuckDB's plan to the compiler's SQL.
 // Each round times every query by both, the order alternating; a query's time is its fastest
 // round, the least noise. The head fails when the whole suite is more than 10% slower, or a
 // query takes more than 1.5 times as long and 50 ms more (with no change, a query moves up to
@@ -15,6 +18,12 @@ const args = process.argv.slice(2);
 const opt = (name, d) => { const i = args.indexOf(name); return i < 0 ? d : args.splice(i, 2)[1]; };
 const rounds = Number(opt('--rounds', 3));
 const grep = opt('--grep', null);
+const baseOptions = {};
+for (let i; (i = args.indexOf('--base-option')) >= 0;) {
+  const [name, v] = args.splice(i, 2)[1].split('=');
+  baseOptions[name] = v === 'true' ? true : v === 'false' ? false : Number.isFinite(Number(v)) ? Number(v) : v;
+}
+const against = Object.keys(baseOptions).length ? `the base with ${Object.entries(baseOptions).map(([k, v]) => `${k}: ${v}`).join(', ')}` : 'the commit before';
 const [baseDir, headDir] = args;
 if (!baseDir || !headDir) throw new Error('usage: bench.mjs <base checkout> <head checkout> [--rounds 3] [--grep regex]');
 const TOTAL = 1.10, QUERY = 1.5, MS = 50;
@@ -37,7 +46,7 @@ async function dbOf(q) {
 async function time(side, e, q) {
   const db = await dbOf(q);
   const k = `${side}|${JSON.stringify(q.roles ?? null)}`;
-  if (!db.compilers.has(k)) db.compilers.set(k, e.createCompiler(db.models[side], { columnNames: 'dax', ...(q.roles ? { roles: q.roles } : {}) }));
+  if (!db.compilers.has(k)) db.compilers.set(k, e.createCompiler(db.models[side], { columnNames: 'dax', ...(side === 'base' ? baseOptions : {}), ...(q.roles ? { roles: q.roles } : {}) }));
   const t0 = performance.now();
   try {
     await db.con.runAndReadAll(db.compilers.get(k).compile(q.dax).sql);
@@ -72,7 +81,7 @@ const ms = v => v.toFixed(0);
 const top = [...timed].sort((x, y) => (y[1].head - y[1].base) - (x[1].head - x[1].base)).slice(0, 10);
 const gain = [...timed].sort((x, y) => (x[1].head - x[1].base) - (y[1].head - y[1].base)).slice(0, 5);
 const summary = [
-  `### Speed against the commit before: ${(th / 1000).toFixed(1)} s, was ${(tb / 1000).toFixed(1)} s (${th >= tb ? '+' : ''}${((th / tb - 1) * 100).toFixed(1)}%), ${timed.length} queries, fastest of ${rounds} rounds`, '',
+  `### Speed against ${against}: ${(th / 1000).toFixed(1)} s, was ${(tb / 1000).toFixed(1)} s (${th >= tb ? '+' : ''}${((th / tb - 1) * 100).toFixed(1)}%), ${timed.length} queries, fastest of ${rounds} rounds`, '',
   '| query | before, ms | now, ms |', '|---|---|---|',
   ...top.map(([k, b]) => `| ${k} | ${ms(b.base)} | ${ms(b.head)} |`),
   ...gain.map(([k, b]) => `| ${k} | ${ms(b.base)} | ${ms(b.head)} |`), '',

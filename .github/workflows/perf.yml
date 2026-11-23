@@ -43,3 +43,9 @@ jobs:
       - name: Both, query by query
         working-directory: head
         run: node conformance/engines/dax-sql/bench.mjs ../base . --rounds 3
+      # DuckDB's SQL is the query plan's: held to the compiler's SQL (viaPlan: false) by the same
+      # rules, on this commit.
+      - name: The plan against the compiled SQL
+        if: always()
+        working-directory: head
+        run: node conformance/engines/dax-sql/bench.mjs . . --rounds 3 --base-option viaPlan=false

@@ -40,6 +40,7 @@ import { Ctx } from './context.js';
 import { SqlTranslator, isSql, isSqlQuery, printDaxQuery, modelRelations, spliceStatement } from './sql.js';
 import { Lowerer } from './lower.js';
 import { PlanSql } from './plan-sql.js';
+import { toSubstrait } from './substrait.js';
 import { explain as drawPlan } from './explain.js';
 import { optimize } from './passes/index.js';
 
@@ -237,6 +238,13 @@ export function createCompiler(input, options = {}) {
       const p = onePlan(text);
       const plan = o.optimize === false ? p.plan : optimize(p.plan);
       return { sql: new PlanSql(model, dialect, options).query({ ...p, plan }), columns: p.columns };
+    },
+    // The query plan as a Substrait plan (substrait.js): { plan (its JSON form), dax (dax-sql's
+    // functions it uses), columns }. o: optimize, inline, tableName, tableSchema.
+    substrait(text, o = {}) {
+      const p = onePlan(text);
+      const plan = o.optimize === false ? p.plan : optimize(p.plan);
+      return { ...toSubstrait(plan, o), columns: p.columns };
     },
     // One EVALUATE, or a SELECT over the model -> { sql, columns: [{ name, dax, type, lineage }] }.
     compile(dax) {

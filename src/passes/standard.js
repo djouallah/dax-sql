@@ -2,10 +2,10 @@
 // 0, a blank plus a blank is blank, DIVIDE's zero), as the standard operators any engine has:
 // comparisons, + - * /, AND OR NOT, IN, IS NULL, COALESCE, NULLIF, CASE, CAST, and standard
 // functions under standard names (power, round, upper, length, substring, extract_year,
-// add_days, date_trunc, …). What has no standard writing yet stays DAX's (operators.mjs
-// lists those that are left: text of a number, a date's serial number, FORMAT, PATH, …).
+// add_days, date_trunc, …); what standard SQL has no one function for, a named function of the
+// plan's that each dialect writes (to_text, format_number, format_date, combinevalues,
+// replace_nth, parse_datetime).
 import * as P from '../plan.js';
-import { unsupported } from '../errors.js';
 import { mapKids, mapScalars } from './decorrelate.js';
 import { clone } from './clone.js';
 
@@ -236,14 +236,14 @@ function compare(o, l, r, pred) {
 
 const UNIT = s => String(s.v ?? '').toLowerCase();
 const int = v => lit(v, 'int');
-const NOPE = what => { throw unsupported(`${what} in a query plan`); };
-// A value as text: text itself, a whole number its digits, a logical TRUE or FALSE. A number
-// with a fraction or a date as DAX writes it (15 digits, en-US) is not in a query plan.
+// A value as text: text itself, a whole number its digits, a logical TRUE or FALSE; a number
+// with a fraction or a date to_text (as DAX writes it: 15 digits, a date en-US), which each
+// dialect writes.
 function asText(v) {
   if (v.t === 'string' || v.t === 'blank') return v;
   if (v.t === 'int') return cast(v, 'string');
   if (v.t === 'bool') return caseOf([[cond('eq', [v, lit(true, 'bool')]), lit('TRUE', 'string')], [cond('eq', [v, lit(false, 'bool')]), lit('FALSE', 'string')]], lit(null, 'string'), 'string');
-  return NOPE('a number with a fraction or a date written as text');
+  return call('to_text', [v], 'string', v.nn);
 }
 // A value read to 15 significant digits, as Power BI does before it cuts one (0.29 * 100 is
 // 28.999999999999996 in binary; ROUNDDOWN(0.29, 2) is 0.29).
@@ -312,7 +312,7 @@ function fn(x) {
       const pos = call('strpos', [low(within), low(coalesce(T(0), lit('', 'string')))], 'int');
       return caseOf([[cond('eq', [pos, int(0)]), a[3]]], pop('add', [pos, pop('sub', [s, int(1)], 'int')], 'int'), 'int');
     }
-    case 'substitute': return a.length === 3 ? call('replace', [T(0), T(1), T(2)], 'string') : NOPE("SUBSTITUTE's instance number");
+    case 'substitute': return a.length === 3 ? call('replace', [T(0), T(1), T(2)], 'string') : call('replace_nth', [T(0), T(1), T(2), a[3]], 'string');
     // A path's items ("|" between them): "" holds none, a blank path's length is blank, a
     // position past either end is blank.
     case 'pathlength': return caseOf([[cond('eq', [T(0), lit('', 'string')]), int(0)]], pop('add', [pop('sub', [call('length', [T(0)], 'int'), call('length', [call('replace', [T(0), lit('|', 'string'), lit('', 'string')], 'string')], 'int')], 'int'), int(1)], 'int'), 'int');
@@ -343,14 +343,16 @@ function fn(x) {
       return q ? pop('mul', [call(f, [g15(pop('div', [p, q], 'double'))], 'double'), q], 'double') : call(f, [p], 'double');
     }
     case 'mround': return pop('mul', [call('round', [g15(pop('div', [p, q], 'double')), int(0)], 'double'), q], 'double');
-    case 'format_number': case 'format_date': return NOPE('FORMAT');
-    case 'combinevalues': return NOPE('COMBINEVALUES');
+    // FORMAT: a number or a date by a pattern (parsed: its sections, digits, separators, the
+    // names of days and months), as text; COMBINEVALUES: values joined by a separator.
+    case 'format_number': case 'format_date': case 'combinevalues': return call(x.name, a, 'string', true);
     case 'year': case 'month': case 'day': case 'hour': case 'minute': case 'second': case 'quarter':
       return isDate(p.t) ? call(`extract_${x.name}`, [p], 'int') : keep();
     case 'cast': {
       const to = q?.v;
-      // Text as a date: ISO (YYYY-MM-DD) only; DAX's en-US forms (3/5/2024, March 5, 2024) not.
-      if (to === 'datetime' && p.t === 'string') return p.k === 'lit' && /^\d{4}-\d\d-\d\d([ T]\d\d:\d\d(:\d\d)?)?$/.test(p.v) ? cast(p, to) : NOPE('text read as a date (but an ISO one)');
+      // Text as a date: an ISO literal (YYYY-MM-DD) a cast; else parse_datetime (DAX's en-US
+      // forms too: 3/5/2024, March 5, 2024), as each dialect reads it.
+      if (to === 'datetime' && p.t === 'string') return p.k === 'lit' && /^\d{4}-\d\d-\d\d([ T]\d\d:\d\d(:\d\d)?)?$/.test(p.v) ? cast(p, to) : call('parse_datetime', [p], 'datetime');
       if (to === 'string') return asText(p);
       return ['int', 'double', 'decimal', 'bool', 'datetime'].includes(to) ? cast(p, to) : keep();
     }

@@ -198,6 +198,10 @@ export class PlanSql extends Emitter {
       case 'idiv': return d.name === 'duckdb' ? `(${x} // ${y})` : d.name === 'postgres' ? `div(${x}, ${y})` : `(${x} / ${y})`;
       case 'trunc': return `trunc(${x})`;
       case 'floor': return `floor(${x})`;
+      // As DAX writes a value as text, a text's n-th occurrence replaced, text read as a date.
+      case 'to_text': return d.text(x, nodes[0].t);
+      case 'replace_nth': return d.fn('substitute', a, nodes);
+      case 'parse_datetime': return d.fn('cast', [x, "'datetime'"], nodes);
     }
     return d.fn(name, a, nodes);
   }

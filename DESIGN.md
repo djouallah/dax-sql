@@ -244,10 +244,11 @@ functions and aggregates with those: a blank compared as 0 is a COALESCE, DIVIDE
 a NULLIF of COUNT, DISTINCTCOUNT a COUNT(DISTINCT) and a count of the blank, a fixed decimal a
 round to four places, a date's serial number microseconds from day zero, a percentile the
 values numbered and the two around the rank. No DAX operator, function or aggregate is left in
-an optimized plan (`operators.mjs` fails on one). What has no standard writing is not supported
-in a query plan (`UNSUPPORTED`): FORMAT (and FIXED), a number with a fraction or a date written
-as text (`&`, COMBINEVALUES, a COALESCE of a number and a text), text read as a date but an ISO
-one, SUBSTITUTE's instance number; `known-plan.json` lists the suite's queries that use them.
+an optimized plan (`operators.mjs` fails on one). What standard SQL has no one function for is a named function of
+the plan's, with its meaning, that each dialect writes: `to_text` (a number with a fraction or a
+date as DAX writes it: 15 digits, a date en-US), `format_number` and `format_date` (FORMAT and
+FIXED: a value by its pattern, parsed), `combinevalues`, `replace_nth` (SUBSTITUTE's instance
+number), `parse_datetime` (text read as a date, en-US forms too).
 
 No query plan holds an apply or an EXISTS correlated to a row, as the plan before the passes
 does (`{ optimize: false }`, the reference CI checks the passes against).

@@ -110,14 +110,14 @@ export class Lowerer {
         const b = this.open(this.table(x.src, scope));
         const was = this.filtering;
         this.filtering = b;
-        try { b.where.push(this.scalar(x.pred, withRow(scope, x.row, b.res), b)); } finally { this.filtering = was; }
+        try { b.where.push(this.rowFused(b, x, () => this.scalar(x.pred, withRow(scope, x.row, b.res), b), scope)); } finally { this.filtering = was; }
         return b;
       }
       case 'project': {
         const b = this.open(this.table(x.src, scope));
         const s2 = withRow(scope, x.row, b.res);
         const kept = x.keep ? b.outList().map(o => o.expr) : [];
-        const items = x.items.map(i => this.scalar(i.expr, s2, b));
+        const items = this.rowFused(b, x, () => x.items.map(i => this.scalar(i.expr, s2, b)), scope);
         b.setOut(x.cols, [...kept, ...items]);
         return b;
       }
@@ -778,7 +778,8 @@ export class Lowerer {
     return P.ref(col);
   }
 
-  // What f computes for each row of block b (the rows of iterator x): the aggregates a row's
+  // What f computes for each row of block b (the rows of iterator x, of a FILTER or an
+  // ADDCOLUMNS): the aggregates a row's
   // expressions take that a mapping takes (a filter that reads the row: the LASTNONBLANK of a
   // currency's rate for each date) fused as SUMMARIZECOLUMNS' are, one grouping by the row's
   // columns, joined to the rows (emit.js's rowFused, as for an engine that decorrelates the rest

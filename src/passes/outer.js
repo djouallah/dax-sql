@@ -91,13 +91,16 @@ function ev(x, nulls) {
   if (!x || typeof x !== 'object') return undefined;
   if (x.k === 'lit') return x.v;
   if (x.k === 'ref') return nulls.has(x.col) ? null : undefined;
+  // CASE: the branch taken; where a condition is not known, NULL when every branch it could take is.
   if (x.k === 'case') {
+    const could = [];
     for (const [c, v] of x.w) {
       const t = ev(c, nulls);
-      if (t === true) return ev(v, nulls);
-      if (t === undefined) return undefined;
+      if (t === true) { could.push(ev(v, nulls)); return could.every(u => u === null) ? null : could.length === 1 ? could[0] : undefined; }
+      if (t === undefined) could.push(ev(v, nulls));
     }
-    return ev(x.e, nulls);
+    could.push(ev(x.e, nulls));
+    return could.every(u => u === null) ? null : could.length === 1 ? could[0] : undefined;
   }
   if (x.k !== 'pop') return undefined;
   const A = () => x.a.map(y => ev(y, nulls));
@@ -139,3 +142,4 @@ function put(x, m) {
   if (Array.isArray(x.a)) return { ...x, a: x.a.map(y => put(y, m)) };
   return x;
 }
+

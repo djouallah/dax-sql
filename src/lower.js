@@ -50,7 +50,8 @@ export class Lowerer {
   shared(key, build) {
     let d = this.defOf.get(key);
     if (!d) {
-      d = P.definition(build(), 0);
+      this.defDepth = (this.defDepth ?? 0) + 1;
+      try { d = P.definition(build(), 0); } finally { this.defDepth--; }
       this.defs.push(d);
       d.n = this.defs.length;
       this.defOf.set(key, d);
@@ -94,7 +95,9 @@ export class Lowerer {
       case 'scan': return this.scanBlock(x.table, x.ctx, scope);
       case 'filter': {
         const b = this.open(this.table(x.src, scope));
-        b.where.push(this.scalar(x.pred, withRow(scope, x.row, b.res), b));
+        const was = this.filtering;
+        this.filtering = b;
+        try { b.where.push(this.scalar(x.pred, withRow(scope, x.row, b.res), b)); } finally { this.filtering = was; }
         return b;
       }
       case 'project': {
@@ -618,15 +621,17 @@ export class Lowerer {
     return P.ref(col);
   }
 
-  // The block an aggregate is computed in when it reads none of the row of the block it is in
-  // (a window's bound, the current dates' last, beside each date of the window): the innermost
-  // block whose row it reads, still to be rendered, once for each of its rows, not for each row
-  // of the block inside. Null: the block it is in.
+  // The block an aggregate in a filter's condition is computed in when it reads none of the row
+  // the filter tests (a window's bound, the current dates' last, beside each date of the window):
+  // the innermost block whose row it reads, in the same definition and still to be rendered, once
+  // for each of its rows, not for each row the filter tests. Null: the block it is in. (A value
+  // in an aggregate's argument stays: SQL reads an aggregate of the row around it as that row's.)
   hoist(x, scope, blk) {
+    if (this.filtering !== blk) return null;
     const blocks = [...ir.freeRows(x)].map(id => scope.get(id)?.block).filter(Boolean);
     if (!blocks.length || blocks.includes(blk)) return null;
     const t = blocks.reduce((a, b) => (b.serial > a.serial ? b : a));
-    return t.rendered ? null : t;
+    return t.rendered || t.defDepth !== blk.defDepth ? null : t;
   }
 
   aggParts(x, scope, b) {
@@ -668,6 +673,7 @@ class Block {
   constructor(lw, from, cols) {
     this.lw = lw;
     this.serial = Block.made = (Block.made ?? 0) + 1;   // blocks made later are inside those made before
+    this.defDepth = lw.defDepth ?? 0;                    // the definitions it is lowered in
     this.rendered = false;
     this.from = from;          // a relation, or null: one row
     this.cols = cols;          // the table's columns: [{ name, lineage, t }]

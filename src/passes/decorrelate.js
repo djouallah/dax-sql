@@ -507,7 +507,7 @@ export function mapScalars(r, f) {
 const mapExtra = (e, S) => (e ? { ...e, ...(e.delim ? { delim: S(e.delim) } : {}), ...(e.k ? { k: S(e.k) } : {}), ...(e.order ? { order: e.order.map(o => ({ ...o, expr: S(o.expr) })) } : {}) } : e);
 
 // A scalar reading the columns `map` names instead (an EXISTS' relation too).
-function subst(x, map) {
+export function subst(x, map) {
   return mapScalar(x, y => {
     if (y.k === 'ref') return map.has(y.col) ? P.ref(map.get(y.col)) : y;
     if (y.k === 'exists') return { ...y, rel: substRel(y.rel, map) };

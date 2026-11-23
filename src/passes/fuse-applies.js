@@ -10,8 +10,12 @@
 // NULL, so the rows q drops count for none. Each aggregate keeps its column: what reads it reads
 // the same column.
 import * as P from '../plan.js';
-import { mapKids, conjuncts } from './decorrelate.js';
-import { canon, text, remap, remapExtra } from './fuse.js';
+import { mapKids, conjuncts, free, subst } from './decorrelate.js';
+import { canon, text } from './fuse.js';
+
+// A scalar reading R's columns for R''s (an EXISTS' relation too).
+const remap = (x, map) => x && subst(x, map);
+const remapExtra = (e, map) => (e ? { ...e, ...(e.delim ? { delim: remap(e.delim, map) } : {}), ...(e.k ? { k: remap(e.k, map) } : {}), ...(e.order ? { order: e.order.map(o => ({ ...o, expr: remap(o.expr, map) })) } : {}) } : e);
 
 // Aggregates whose value over rows is their value over the rows whose argument is not NULL.
 const SKIP_NULL = new Set(['sum', 'avg', 'min', 'max', 'count_values', 'count_distinct', 'string_agg', 'median', 'stdev_s', 'stdev_p', 'var_s', 'var_p', 'product']);
@@ -25,8 +29,9 @@ export function fuseApplies(root) {
       const merged = merge(a.right, r.right);
       if (!merged) continue;
       // r's grouping reads none of the columns the applies between make (they are siblings).
-      if (path.some(b => b.right.cols.some(c => reads(r.right, c)))) break;
-      if (a.right.cols.some(c => reads(r.right, c))) continue;
+      const fr = free(r.right);
+      if (path.some(b => b.right.cols.some(c => fr.has(c)))) break;
+      if (a.right.cols.some(c => fr.has(c))) continue;
       const into = { ...a, right: merged, cols: [...a.left.cols, ...merged.cols] };
       const rebuilt = path.reduceRight((below, b) => ({ ...b, left: below, cols: [...below.cols, ...b.right.cols] }), into);
       return rebuilt;
@@ -63,22 +68,3 @@ function merge(g, h) {
   return { ...g, aggs: [...g.aggs, ...aggs], cols: [...g.cols, ...aggs.map(x => x.col)] };
 }
 
-// Whether a relation reads column c (a column of the row around it).
-function reads(r, c) {
-  const seen = new Set();
-  const inX = x => {
-    if (!x || typeof x !== 'object') return false;
-    if (x.k === 'ref') return x.col === c;
-    if (x.k === 'exists') return inR(x.rel);
-    if (x.k === 'case') return x.w.some(([p, v]) => inX(p) || inX(v)) || inX(x.e);
-    return Array.isArray(x.a) && x.a.some(inX);
-  };
-  const inR = rel => {
-    if (seen.has(rel)) return false;
-    seen.add(rel);
-    const xs = [rel.pred, rel.on, ...(rel.items ?? []).map(i => i.expr), ...(rel.keys ?? []).map(k => k.expr), ...(rel.aggs ?? []).flatMap(x => [x.arg, x.extra?.delim, ...(x.extra?.order ?? []).map(o => o.expr)])];
-    if (xs.some(inX)) return true;
-    return [rel.src, rel.left, rel.right, ...(rel.srcs ?? [])].some(k => k && inR(k));
-  };
-  return inR(r);
-}

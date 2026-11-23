@@ -1,5 +1,7 @@
 // The query plan's contract: every query of the suite, optimized, is made of the plan's simple
-// operators only (src/plan.js): no apply, no correlated EXISTS, nothing else. Writes how many
+// operators only (src/plan.js): no apply, no correlated EXISTS, nothing else. It lists the DAX
+// operators, functions and aggregates still left in optimized plans (those with no standard
+// writing yet, src/passes/standard.js). Writes how many
 // queries use each operator, as it is and optimized (to the job summary in CI), and exits 1
 // when a plan holds anything else.
 //
@@ -17,6 +19,7 @@ const { loadQueries, modelDir } = await import(pathToFileURL(join(root, 'conform
 
 const RELATIONS = new Set(['scan', 'values', 'select', 'project', 'distinct', 'aggregate', 'join', 'union', 'window', 'series', 'paths', 'shared', 'output']);
 const SCALARS = new Set(['lit', 'op', 'fn', 'case', 'ref', 'exists', 'pop']);
+const STANDARD_AGGS = new Set(['sum', 'avg', 'min', 'max', 'count', 'count_star', 'count_distinct', 'string_agg', 'median', 'stdev_s', 'stdev_p', 'var_s', 'var_p', 'product']);
 
 // The operators a plan holds, and what it holds that the contract has not.
 function operators(plan) {
@@ -32,8 +35,13 @@ function operators(plan) {
         const name = free(x.rel).size ? 'exists (correlated)' : 'exists';
         ops.add(name);
         if (free(x.rel).size) bad.add(name);
-      } else if (SCALARS.has(x.k)) { if (x.k === 'pop') ops.add(`pop ${x.op}`); }
-      else { ops.add(x.k); bad.add(x.k); }
+      } else if (SCALARS.has(x.k)) {
+        // The plan's standard operators by name; DAX's that are left (no standard writing yet).
+        if (x.k === 'pop') ops.add(x.op === 'call' ? `fn ${x.name}` : `op ${x.op}`);
+        else if (x.k === 'fn') ops.add(`DAX fn ${x.name}`);
+        else if (x.k === 'op') ops.add(`DAX op ${x.op}`);
+      } else { ops.add(x.k); bad.add(x.k); }
+      if (x.k === 'aggregate') for (const a of x.aggs) ops.add(STANDARD_AGGS.has(a.fn) ? `agg ${a.fn}` : `DAX agg ${a.fn}`);
     }
     for (const [k, v] of Object.entries(x)) if (k !== 'lineage' && k !== 'table') walk(v);
   };

@@ -107,8 +107,11 @@ function withSubs(n, subs) {
 const named = (name, expr) => (expr === name || expr.endsWith(`.${name}`) ? expr : `${name} = ${expr}`);
 const colName = c => (c.table ? `${c.table.name}.${c.name}` : c.name);
 
-const AGG = { avg: 'AVERAGE', countrows: 'COUNTROWS', dcount: 'DISTINCTCOUNT', dcountnb: 'DISTINCTCOUNTNOBLANK', count0: 'COUNT', dcount0: 'DISTINCTCOUNT', concat: 'CONCATENATEX' };
+const AGG = { avg: 'AVERAGE', countrows: 'COUNTROWS', dcount: 'DISTINCTCOUNT', dcountnb: 'DISTINCTCOUNTNOBLANK', count0: 'COUNT', dcount0: 'DISTINCTCOUNT', concat: 'CONCATENATEX',
+  count: 'COUNT', string_agg: 'STRING_AGG' };
 function agg(a, S) {
+  if (a.fn === 'count_star') return 'COUNT(*)';
+  if (a.fn === 'count_distinct') return `COUNT(DISTINCT ${S(a.arg)})`;
   const name = AGG[a.fn] ?? a.fn.toUpperCase();
   const args = [a.arg ? S(a.arg) : null, a.extra?.delim ? S(a.extra.delim) : null, a.extra?.k ? S(a.extra.k) : null].filter(x => x != null);
   return `${name}(${args.join(', ')})`;
@@ -136,10 +139,18 @@ function scalar(x, subs, avail) {
     case 'case': return `CASE ${x.w.map(([c, v]) => `WHEN ${S(c)} THEN ${S(v)}`).join(' ')}${x.e.k === 'lit' && x.e.v === null ? '' : ` ELSE ${S(x.e)}`} END`;
     case 'exists': subs.push(x.rel); return `∃${subs.length}`;
     case 'pop': {
-      const [a, b] = x.a.map(S);
-      return { eq: `${a} = ${b}`, key: `${a} ≡ ${b}`, isnull: `${a} = BLANK`, notnull: `${a} ≠ BLANK`, lt: `${a} < ${b}`, le: `${a} ≤ ${b}`,
-        gt: `${a} > ${b}`, ge: `${a} ≥ ${b}`, add: `${a} + ${b}`, sub: `${a} - ${b}`, coalesce: `COALESCE(${a}, ${b})`, true: 'TRUE', false: 'FALSE' }[x.op];
+      // An argument that is itself an operation, in parentheses.
+      const A = x.a.map(y => (y.k === 'pop' && INFIX[y.op] && x.op !== 'call' && x.op !== 'coalesce' && x.op !== 'cast' ? `(${S(y)})` : S(y)));
+      const [a, b] = A;
+      if (INFIX[x.op]) return `${a} ${INFIX[x.op]} ${b}`;
+      return {
+        isnull: `${a} = BLANK`, notnull: `${a} ≠ BLANK`, not: `¬${a}`, neg: `-${a}`, in: `${a} IN {${A.slice(1).join(', ')}}`,
+        coalesce: `COALESCE(${A.join(', ')})`, nullif: `NULLIF(${a}, ${b})`, cast: `CAST(${a} AS ${x.to})`,
+        call: `${x.name}(${A.join(', ')})`, true: 'TRUE', false: 'FALSE',
+      }[x.op] ?? `${x.op}(${A.join(', ')})`;
     }
   }
   return x.k;
 }
+
+const INFIX = { eq: '=', ne: '<>', key: '≡', lt: '<', le: '≤', gt: '>', ge: '≥', and: '∧', or: '∨', add: '+', sub: '-', mul: '*', div: '/', concat: '||' };

@@ -223,9 +223,18 @@ The plan is made of simple operators any engine can run, and nothing else (no SQ
   cross), ∪ union, ω window (row number, rank, dense rank, count of the partition), series
   (GENERATESERIES), paths (PATH's recursion), a definition read again (▭ V1), and the result's
   sort and limit.
-- **Scalars:** columns, literals, CASE, DAX's operators and functions (with its rules for
-  blanks), and the plan's own: `=` (NULL matches nothing), `≡` (a blank matches a blank: a
-  join's key), IS NULL, `<` `≤` `>` `≥`, `+` `-`, COALESCE, TRUE, FALSE.
+- **Scalars:** columns, literals, CASE, and standard operators: `=` (NULL matches nothing), `≡`
+  (a blank matches a blank: a join's key), `<>` `<` `≤` `>` `≥`, AND OR NOT, IN, IS NULL,
+  `+` `-` `*` `/`, COALESCE, NULLIF, CAST, and standard functions (abs, round, power, upper,
+  length, substring, extract_year, add_days, add_months, date_trunc_month, date_diff_day, …).
+- **Aggregates:** SUM, AVG, MIN, MAX, COUNT, COUNT(*), COUNT(DISTINCT), STRING_AGG, MEDIAN.
+
+The optimizer's last pass (`passes/standard.js`) writes DAX's operators, functions and
+aggregates with those: a blank compared as 0 is a COALESCE, DIVIDE a NULLIF, a count of no rows
+a NULLIF of COUNT, DISTINCTCOUNT a COUNT(DISTINCT) and a count of the blank, a fixed decimal a
+round to four places. What has no standard writing yet stays DAX's, and `operators.mjs` lists
+it: exact fixed-decimal division, a distinct count of several columns, the percentiles, FORMAT,
+PATH's functions, a number written as text, and a few rarer functions.
 
 The plan as it is also holds applies and EXISTS correlated to a row; optimized, it holds
 neither. `conformance/engines/dax-sql/operators.mjs` checks every query of the suite against

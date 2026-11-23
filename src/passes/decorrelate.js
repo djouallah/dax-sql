@@ -343,7 +343,7 @@ export function mapKids(r, g) {
   return r;
 }
 
-function mapScalars(r, f) {
+export function mapScalars(r, f) {
   const S = x => (x ? f(x) : x);
   switch (r.k) {
     case 'select': return { ...r, pred: S(r.pred) };

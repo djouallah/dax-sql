@@ -51,7 +51,7 @@ export const sub = (l, r) => pop('sub', [l, r], 'int', false);
 export const coalesce = (x, v) => pop('coalesce', [x, v], x.t ?? v.t, true);
 export const TRUE = pop('true', []), FALSE = pop('false', []);
 // Whether a plan operator is a condition (the others are values).
-export const isCondOp = op => !['add', 'sub', 'coalesce'].includes(op);
+export const isCondOp = op => !['add', 'sub', 'mul', 'div', 'neg', 'coalesce', 'nullif', 'cast', 'concat', 'call'].includes(op);
 
 // Conditions, as SQL has them.
 export const and = xs => xs.length === 1 ? xs[0] : xs.reduce((l, r) => ({ k: 'op', op: 'and', a: [l, r], t: 'bool', nn: true }));

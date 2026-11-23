@@ -108,6 +108,11 @@ export class PlanSql extends Emitter {
     if (fn === 'single') return `CASE WHEN COUNT(*) > 1 THEN ${this.d.fn('error', [this.d.str(MANY)], [])} ELSE MIN(${x}) END`;
     // The one value of its rows, or none.
     if (fn === 'onlyone') return `CASE WHEN COUNT(*) = 1 THEN MIN(${x}) END`;
+    // The standard aggregates, under the names the dialect knows them by.
+    if (fn === 'count_star') return 'COUNT(*)';
+    if (fn === 'count') return this.d.agg('count0', x, {});
+    if (fn === 'count_distinct') return this.d.agg('dcount0', x, {});
+    if (fn === 'string_agg') fn = 'concat';
     const e = { t: extra.t, ...(extra.exact ? { exact: true } : {}) };
     if (extra.delim) e.delim = this.scalar(extra.delim, EMPTY);
     if (extra.order) e.order = extra.order.map(o => this.orderBy(this.scalar(o.expr, EMPTY), o.desc));
@@ -122,21 +127,53 @@ export class PlanSql extends Emitter {
 
   scalar(x, scope = EMPTY, pred = false) {
     if (x.k === 'pop') {
-      const [a, b] = x.a.map(v => this.scalar(v, scope));
+      // The conditions of AND, OR and NOT as conditions; the others' arguments as values.
+      const logic = x.op === 'and' || x.op === 'or' || x.op === 'not';
+      const A = x.a.map(v => this.scalar(v, scope, logic));
+      const [a, b] = A;
       const s = {
-        eq: () => `(${a} = ${b})`, key: () => this.d.isNotDistinct(a, b, x.a[0].t),
+        eq: () => `(${a} = ${b})`, ne: () => `(${a} <> ${b})`, key: () => this.d.isNotDistinct(a, b, x.a[0].t),
         isnull: () => `(${a} IS NULL)`, notnull: () => `(${a} IS NOT NULL)`,
         lt: () => `(${a} < ${b})`, le: () => `(${a} <= ${b})`, gt: () => `(${a} > ${b})`, ge: () => `(${a} >= ${b})`,
-        add: () => `(${a} + ${b})`, sub: () => `(${a} - ${b})`, coalesce: () => `COALESCE(${a}, ${b})`,
+        and: () => `(${a} AND ${b})`, or: () => `(${a} OR ${b})`, not: () => `(NOT ${a})`,
+        in: () => `(${a} IN (${A.slice(1).join(', ')}))`,
+        add: () => `(${a} + ${b})`, sub: () => `(${a} - ${b})`, mul: () => `(${a} * ${b})`, div: () => this.d.div(a, b), neg: () => `(-${a})`,
+        coalesce: () => `COALESCE(${A.join(', ')})`, nullif: () => `NULLIF(${a}, ${b})`,
+        cast: () => this.d.cast(a, x.to), concat: () => this.d.concat(a, b),
+        call: () => this.call(x.name, A, x.a),
         true: () => this.d.always, false: () => this.d.never,
       }[x.op]();
       return this.d.boolValues || !isCondOp(x.op) || pred ? s : this.d.value(s);
     }
     return super.scalar(x, scope, pred);
   }
+
+  // A standard function, as the dialect writes it.
+  call(name, a, nodes) {
+    const d = this.d, [x, y] = a;
+    const m = /^(extract|date_trunc|date_diff)_(\w+)$/.exec(name);
+    if (m?.[1] === 'extract') return d.fn(m[2], [x], nodes);
+    if (m?.[1] === 'date_trunc') return d.fn('start_of', [x, d.str(m[2])], nodes);
+    if (m?.[1] === 'date_diff') return d.fn('datediff', [x, y, d.str(m[2])], nodes);
+    switch (name) {
+      case 'add_days': return d.fn('add_interval', [x, y, d.str('day')], nodes);
+      case 'add_months': return d.fn('add_interval', [x, y, d.str('month')], nodes);
+      case 'length': return d.fn('len', a, nodes);
+      case 'substring': return d.fn('mid', a, nodes);
+      case 'trim': return d.fn('trim_ends', a, nodes);
+      case 'contains': return d.fn('containsstringexact', a, nodes);
+      case 'mod': return `(${x} % ${y})`;
+      case 'trunc': return `trunc(${x})`;
+      case 'floor': return `floor(${x})`;
+      case 'raise_error': return d.fn('error', a, nodes);
+    }
+    return d.fn(name, a, nodes);
+  }
   scalarOf(x, scope, pred) {
     if (x.k === 'ref') return this.cn(x.col);
     if (x.k === 'exists') return `EXISTS (${this.rel(x.rel)})`;
+    // A number in its exact digits (a decimal no double holds).
+    if (x.k === 'lit' && x.digits) return x.v;
     return super.scalarOf(x, scope, pred);
   }
   // A whole-number column in arithmetic as 64 bits, as the emitter writes one.

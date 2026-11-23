@@ -7,6 +7,15 @@ name: PostgreSQL
 
 on:
   push:
+    paths:
+      - "src/**"
+      - "formats/**"
+      - "conformance/queries/**"
+      - "conformance/golden/**"
+      - "conformance/runner/**"
+      - "conformance/engines/dax-sql/db.mjs"
+      - "conformance/engines/dax-sql-postgres/**"
+      - ".github/workflows/postgres.yml"
   workflow_dispatch:
 
 env:

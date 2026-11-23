@@ -259,16 +259,18 @@ class Unnest {
     const onlyL = x => !existsOf(x).length && refsOf(x).size > 0 && [...refsOf(x)].every(c => Ls.has(c));
     const R = g.src.src;
     if (readsL(R)) return null;
-    const keys = [], more = [];
+    const keys = [], more = [], conds = [];
     for (const c of conjuncts(g.src.pred)) {
       if (!readsL(c)) { more.push(c); continue; }
       const m = c.k === 'op' && c.op === 'eqs' ? 'key' : c.k === 'pop' && (c.op === 'eq' || c.op === 'key') ? c.op : null;
-      if (!m) return null;
-      const [x, y] = c.a;
-      if (!readsL(x) && onlyL(y)) keys.push({ inner: x, outer: y, m });
-      else if (!readsL(y) && onlyL(x)) keys.push({ inner: y, outer: x, m });
+      const [x, y] = m ? c.a : [];
+      if (m && !readsL(x) && onlyL(y)) keys.push({ inner: x, outer: y, m });
+      else if (m && !readsL(y) && onlyL(x)) keys.push({ inner: y, outer: x, m });
+      // Another condition between l's row and R's (a range of dates): a condition of the join.
+      else if (!existsOf(c).length) conds.push(c);
       else return null;
     }
+    if (conds.length) return this.rangeJoin(r, ctx, { l, R, more, keys, conds, conj, test });
     if (!keys.length) return null;
     const ks = keys.map(k => ({ col: P.newCol('key', k.inner.t), expr: k.inner }));
     const counted = P.aggregate(more.length ? P.select(R, P.and(more)) : R, ks, [{ ...mark }]);
@@ -277,6 +279,29 @@ class Unnest {
     const rest = conj.filter(c => c !== test).map(c => subst(c, s.dc));
     const j = P.join('inner', l, s.rel, on);
     return { rel: rest.length ? P.select(j, P.and(rest)) : j, dc: s.dc };
+  }
+
+  // The semi-join of markJoin on conditions that are not all equalities, l's rows distinct: the
+  // distinct of l joined to R's rows that the conditions read (D pushed in them), on the
+  // conditions: l's rows that match one, each once for each value of D (a range join of the rows
+  // to the few R makes, not l crossed with D). Null when l's rows are not distinct.
+  rangeJoin(r, ctx, { l, R, more, keys, conds, conj, test }) {
+    if (l.k !== 'distinct') return null;
+    const Ls = new Set(l.cols), Fs = new Set(ctx.F);
+    const inner = new Set();
+    for (const c of conds) for (const col of refsOf(c)) if (!Ls.has(col) && !Fs.has(col)) inner.add(col);
+    const ks = keys.map(k => ({ col: P.newCol('key', k.inner.t), expr: k.inner }));
+    const cols = [...inner].map(c => ({ col: P.newCol(c.name, c.t, { lineage: c.lineage }), expr: P.ref(c) }));
+    const rows = P.distinct(P.projectAs(more.length ? P.select(R, P.and(more)) : R, [...ks, ...cols]));
+    const s = this.push(rows, ctx);
+    const as = new Map([...inner].map((c, i) => [c, cols[i].col]));
+    for (const [f, d] of s.dc) as.set(f, d);
+    const on = P.and([...keys.map((k, i) => (k.m === 'eq' ? P.eq : P.key)(k.outer, P.ref(ks[i].col))), ...conds.map(c => subst(c, as))]);
+    const j = P.join('inner', l, s.rel, on);
+    const dcols = ctx.F.map(f => s.dc.get(f));
+    const out = P.distinct(P.projectAs(j, [...l.cols, ...dcols].map(c => ({ col: c, expr: P.ref(c) }))));
+    const rest = conj.filter(c => c !== test).map(c => subst(c, s.dc));
+    return { rel: rest.length ? P.select(out, P.and(rest)) : out, dc: s.dc };
   }
 
   push1(r, ctx) {

@@ -170,6 +170,45 @@ class Unnest {
     }
   }
 
+  // D ⋈ᴬ σ_{m ≠ BLANK ∧ rest}(l ×ᴬ γ_{m: COUNTROWS}(σ_{inner ≡ l.x ∧ more}(R))), l reading no D: a
+  // semi-join of l's rows on equal values whose rows read D (a date in the window of the
+  // group's month). D goes to the semi-join's side: R's rows counted by the inner values and
+  // D's, joined to l on them, so l is not crossed with D. Null when r is not of that kind.
+  markJoin(r, ctx) {
+    const F = ctx.F, Fs = new Set(F);
+    const a = r.src;
+    if (a.k !== 'apply' || a.right.k !== 'aggregate' || a.right.keys.length || a.right.aggs.length !== 1) return null;
+    const g = a.right, mark = g.aggs[0];
+    if (mark.fn !== 'countrows' || g.src.k !== 'select') return null;
+    const conj = conjuncts(r.pred);
+    const test = conj.find(c => c.k === 'pop' && c.op === 'notnull' && c.a[0].k === 'ref' && c.a[0].col === mark.col);
+    if (!test) return null;
+    const l = a.left;
+    if ([...free(l)].some(c => Fs.has(c))) return null;
+    const Ls = new Set(l.cols), readsL = x => [...refsOf(x)].some(c => Ls.has(c)) || existsOf(x).some(e => [...free(e)].some(c => Ls.has(c)));
+    const onlyL = x => !existsOf(x).length && refsOf(x).size > 0 && [...refsOf(x)].every(c => Ls.has(c));
+    const R = g.src.src;
+    if (readsL(R)) return null;
+    const keys = [], more = [];
+    for (const c of conjuncts(g.src.pred)) {
+      if (!readsL(c)) { more.push(c); continue; }
+      const m = c.k === 'op' && c.op === 'eqs' ? 'key' : c.k === 'pop' && (c.op === 'eq' || c.op === 'key') ? c.op : null;
+      if (!m) return null;
+      const [x, y] = c.a;
+      if (!readsL(x) && onlyL(y)) keys.push({ inner: x, outer: y, m });
+      else if (!readsL(y) && onlyL(x)) keys.push({ inner: y, outer: x, m });
+      else return null;
+    }
+    if (!keys.length) return null;
+    const ks = keys.map(k => ({ col: P.newCol('key', k.inner.t), expr: k.inner }));
+    const counted = P.aggregate(more.length ? P.select(R, P.and(more)) : R, ks, [{ ...mark }]);
+    const s = this.push(counted, ctx);
+    const on = P.and(keys.map((k, i) => (k.m === 'eq' ? P.eq : P.key)(k.outer, P.ref(ks[i].col))));
+    const rest = conj.filter(c => c !== test).map(c => subst(c, s.dc));
+    const j = P.join('inner', l, s.rel, on);
+    return { rel: rest.length ? P.select(j, P.and(rest)) : j, dc: s.dc };
+  }
+
   push1(r, ctx) {
     const F = ctx.F;
     const S = (x, dc) => subst(x, dc);
@@ -178,6 +217,8 @@ class Unnest {
     const asMap = items => new Map(F.map((f, i) => [f, items[i].col]));
     switch (r.k) {
       case 'select': {
+        const m = this.markJoin(r, ctx);
+        if (m) return m;
         const s = this.push(r.src, ctx);
         return { rel: P.select(s.rel, S(r.pred, s.dc)), dc: s.dc };
       }

@@ -1,7 +1,7 @@
 // The query plan's contract: every query of the suite, optimized, is made of the plan's simple
-// operators only (src/plan.js): no apply, no correlated EXISTS, nothing else. It lists the DAX
-// operators, functions and aggregates still left in optimized plans (those with no standard
-// writing yet, src/passes/standard.js). Writes how many
+// operators only (src/plan.js): no apply, no correlated EXISTS, no DAX operator, function or
+// aggregate (src/passes/standard.js writes them all as standard ones, or refuses them), nothing
+// else. Writes how many
 // queries use each operator, as it is and optimized (to the job summary in CI), and exits 1
 // when a plan holds anything else.
 //
@@ -38,10 +38,13 @@ function operators(plan) {
       } else if (SCALARS.has(x.k)) {
         // The plan's standard operators by name; DAX's that are left (no standard writing yet).
         if (x.k === 'pop') ops.add(x.op === 'call' ? `fn ${x.name}` : `op ${x.op}`);
-        else if (x.k === 'fn') ops.add(`DAX fn ${x.name}`);
-        else if (x.k === 'op') ops.add(`DAX op ${x.op}`);
+        else if (x.k === 'fn') { ops.add(`DAX fn ${x.name}`); bad.add(`DAX fn ${x.name}`); }
+        else if (x.k === 'op') { ops.add(`DAX op ${x.op}`); bad.add(`DAX op ${x.op}`); }
       } else { ops.add(x.k); bad.add(x.k); }
-      if (x.k === 'aggregate') for (const a of x.aggs) ops.add(STANDARD_AGGS.has(a.fn) ? `agg ${a.fn}` : `DAX agg ${a.fn}`);
+      if (x.k === 'aggregate') for (const a of x.aggs) {
+        ops.add(STANDARD_AGGS.has(a.fn) ? `agg ${a.fn}` : `DAX agg ${a.fn}`);
+        if (!STANDARD_AGGS.has(a.fn)) bad.add(`DAX agg ${a.fn}`);
+      }
     }
     for (const [k, v] of Object.entries(x)) if (k !== 'lineage' && k !== 'table') walk(v);
   };

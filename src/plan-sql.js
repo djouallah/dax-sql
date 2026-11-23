@@ -145,7 +145,20 @@ export class PlanSql extends Emitter {
 
   // A standard function, as the dialect writes it.
   call(name, a, nodes) {
-    const d = this.d, [x, y] = a;
+    const d = this.d, [x, y, z] = a, pg = d.name === 'postgres', ts = d.name === 'tsql';
+    switch (name) {
+      case 'strpos': return ts ? `CHARINDEX(${y}, ${x})` : pg ? `strpos(${x}, ${y})` : `instr(${x}, ${y})`;
+      case 'substring_from': return ts ? `SUBSTRING(${x}, ${y}, LEN(${x}))` : `substring(${x}, ${y})`;
+      case 'regexp_replace': return `regexp_replace(${x}, ${y}, ${z}, 'g')`;
+      case 'code_point': return ts ? `UNICODE(${x})` : pg ? `ascii(${x})` : `unicode(${x})`;
+      case 'extract_dow': return ts ? `(DATEPART(weekday, ${x}) - 1)` : pg ? `CAST(EXTRACT(DOW FROM ${x}) AS BIGINT)` : `dayofweek(${x})`;
+      case 'make_date': return ts ? `DATEFROMPARTS(${a.join(', ')})` : pg ? `make_date(${a.map(v => `CAST(${v} AS INTEGER)`).join(', ')})` : `make_date(${a.join(', ')})`;
+      case 'ceil': return ts ? `CEILING(${x})` : `ceil(${x})`;
+      case 'replace': return `replace(${x}, ${y}, ${z})`;
+      case 'split_part': return pg ? `split_part(${x}, ${y}, CAST(${z} AS INTEGER))` : `split_part(${x}, ${y}, ${z})`;
+      case 'date_diff_microsecond': return ts ? `DATEDIFF_BIG(microsecond, ${x}, ${y})` : pg ? `CAST(EXTRACT(EPOCH FROM (${y} - ${x})) * 1000000 AS BIGINT)` : `date_diff('microsecond', ${x}, ${y})`;
+      case 'add_microseconds': return ts ? `DATEADD(microsecond, ${y}, ${x})` : pg ? `(${x} + ${y} * INTERVAL '1 microsecond')` : `(${x} + to_microseconds(${y}))`;
+    }
     const m = /^(extract|date_trunc|date_diff)_(\w+)$/.exec(name);
     if (m?.[1] === 'extract') return d.fn(m[2], [x], nodes);
     if (m?.[1] === 'date_trunc') return d.fn('start_of', [x, d.str(m[2])], nodes);

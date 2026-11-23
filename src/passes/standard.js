@@ -5,6 +5,7 @@
 // add_days, date_trunc, …). What has no standard writing yet stays DAX's (operators.mjs
 // lists those that are left: text of a number, a date's serial number, FORMAT, PATH, …).
 import * as P from '../plan.js';
+import { unsupported } from '../errors.js';
 import { mapKids, mapScalars } from './decorrelate.js';
 import { clone } from './clone.js';
 
@@ -142,7 +143,11 @@ export function L(x, pred = false) {
   switch (x.k) {
     case 'op': return op(x, pred);
     case 'fn': return fn(x);
-    case 'case': return { ...x, w: x.w.map(([c, v]) => [L(c, true), L(v)]), e: L(x.e) };
+    // Values of different kinds together (a number or a text): as text, as DAX writes them.
+    case 'case': {
+      const V = v => (x.t === 'variant' ? asText(L(v)) : L(v));
+      return { ...x, w: x.w.map(([c, v]) => [L(c, true), V(v)]), e: V(x.e) };
+    }
     case 'pop': return { ...x, a: x.a.map(a => L(a, pred && (x.op === 'and' || x.op === 'or'))) };
     case 'exists': return { ...x, rel: R(x.rel) };
   }
@@ -164,8 +169,13 @@ function op(x, pred) {
   switch (x.op) {
     case 'add': case 'sub': {
       const name = x.op;
-      if (isDate(l.t) && isNum(r.t)) return r.t === 'int' ? call('add_days', [l, name === 'sub' ? pop('neg', [r], 'int') : r], l.t) : keep();
+      if (isDate(l.t) && isNum(r.t)) return r.t === 'int' ? call('add_days', [l, name === 'sub' ? pop('neg', [r], 'int') : r], l.t) : fromSerial(pop(name, [serial(l), r], 'double'));
+      if (name === 'add' && isNum(l.t) && isDate(r.t)) return l.t === 'int' ? call('add_days', [r, l], r.t) : fromSerial(pop('add', [l, serial(r)], 'double'));
       if (name === 'sub' && l.t === 'date' && r.t === 'date') return call('date_diff_day', [r, l], 'int');
+      // A date minus a date: the days between them, a fraction of one with a time; a date and
+      // time plus another: the second's time since day zero added to the first.
+      if (name === 'sub' && isDate(l.t) && isDate(r.t)) return pop('sub', [serial(l), serial(r)], 'double');
+      if (isDate(l.t) && isDate(r.t)) return caseOf([[cond('and', [cond('isnull', [l]), cond('isnull', [r])]), lit(null, 'datetime')]], fromSerial(pop('add', [coalesce(serial(l), int(0)), coalesce(serial(r), int(0))], 'double')), 'datetime');
       if (isDate(l.t) || isDate(r.t)) return keep();
       if (l.nn && r.nn) return pop(name, [N(l), N(r)], x.t, true);
       if (l.nn) return pop(name, [N(l), coalesce(r, lit(0, 'int'))], x.t, true);
@@ -187,9 +197,7 @@ function op(x, pred) {
     case 'not': { const a = bool(l, false); return a ? cond('not', [a]) : keep(); }
     case 'bool': return bool(l, pred) ?? keep();
     case 'concat': {
-      const text = v => (v.t === 'string' || v.t === 'blank' ? v : v.t === 'int' ? cast(v, 'string') : null);
-      const a = text(l), b = text(r);
-      if (!a || !b) return keep();
+      const a = asText(l), b = asText(r);
       const t = v => (v.nn ? v : coalesce(v, lit('', 'string')));
       return pop('concat', [t(a), t(b)], 'string', true);
     }
@@ -227,16 +235,39 @@ function compare(o, l, r, pred) {
 }
 
 const UNIT = s => String(s.v ?? '').toLowerCase();
+const int = v => lit(v, 'int');
+const NOPE = what => { throw unsupported(`${what} in a query plan`); };
+// A value as text: text itself, a whole number its digits, a logical TRUE or FALSE. A number
+// with a fraction or a date as DAX writes it (15 digits, en-US) is not in a query plan.
+function asText(v) {
+  if (v.t === 'string' || v.t === 'blank') return v;
+  if (v.t === 'int') return cast(v, 'string');
+  if (v.t === 'bool') return caseOf([[cond('eq', [v, lit(true, 'bool')]), lit('TRUE', 'string')], [cond('eq', [v, lit(false, 'bool')]), lit('FALSE', 'string')]], lit(null, 'string'), 'string');
+  return NOPE('a number with a fraction or a date written as text');
+}
+// A value read to 15 significant digits, as Power BI does before it cuts one (0.29 * 100 is
+// 28.999999999999996 in binary; ROUNDDOWN(0.29, 2) is 0.29).
+const g15 = v => caseOf([[cond('eq', [v, int(0)]), lit(0, 'double')]],
+  call('round', [v, cast(pop('sub', [int(14), call('floor', [call('log10', [call('abs', [v], 'double')], 'double')], 'double')], 'double'), 'int')], 'double'), 'double');
+// A date and time as days since day zero (1899-12-30), with the fraction; and back.
+const Z0 = lit('1899-12-30 00:00:00', 'datetime');
+const MICRO = lit(86400000000, 'int');
+const serial = v => pop('div', [call('date_diff_microsecond', [Z0, v], 'int'), MICRO], 'double');
+const fromSerial = n => call('add_microseconds', [Z0, cast(call('round', [pop('mul', [n, MICRO], 'double'), int(0)], 'double'), 'int')], 'datetime');
+const dow = v => call('extract_dow', [v], 'int');   // Sunday 0 .. Saturday 6
+const tcat = (...xs) => xs.reduce((l, r) => pop('concat', [l, r], 'string', true));
+
 function fn(x) {
   const a = x.a.map(v => L(v));
   const keep = () => ({ ...x, a });
-  const str = i => a[i]?.t === 'string' || a[i]?.t === 'blank';
+  const T = i => asText(a[i]);
   const [p, q, s] = a;
   switch (x.name) {
     case 'isblank': return cond('isnull', [p]);
     // A fixed decimal: four places (past its range no error, by design: a plan raises none).
     case 'currency': return call('round', [p, lit(4, 'int')], 'decimal');
-    case 'coalesce': return a.length > 1 && a.every(v => v.t === a[0].t || v.t === 'blank' || isNum(v.t) === isNum(a[0].t)) && x.t !== 'variant' ? coalesce(...a) : keep();
+    // Values of different kinds together (a number or a text): as text, as DAX writes them.
+    case 'coalesce': return x.t === 'variant' ? coalesce(...a.map(asText)) : coalesce(...a);
     case 'divide': return a.length === 2 ? pop('div', [p, pop('nullif', [q, lit(0, 'int')], q.t)], x.t)
       : caseOf([[cond('eq', [coalesce(q, lit(0, 'int')), lit(0, 'int')]), s]], pop('div', [p, q], x.t), x.t);
     // A fixed decimal over a whole number: the exact quotient of ten-thousandths, rounded half
@@ -262,21 +293,66 @@ function fn(x) {
     case 'int': return cast(call('floor', [p], 'double'), 'int');
     case 'round': return call('round', [p, cast(q, 'int')], x.t);
     case 'value': return cast(p, 'double');
-    case 'greatest': case 'least': return call(x.name, a, x.t);
-    case 'upper': case 'lower': return str(0) ? call(x.name, a, 'string') : keep();
-    case 'len': return str(0) ? call('length', [p], 'int') : keep();
-    case 'left': case 'right': return str(0) ? call(x.name, [p, q ?? lit(1, 'int')], 'string') : keep();
-    case 'mid': return str(0) ? call('substring', [p, q, s], 'string') : keep();
-    case 'trim_ends': return str(0) ? call('trim', [p], 'string') : keep();
-    case 'exact': return str(0) && str(1) ? cond('eq', [coalesce(p, lit('', 'string')), coalesce(q, lit('', 'string'))]) : keep();
-    case 'containsstringexact': return str(0) && str(1) ? call('contains', [coalesce(p, lit('', 'string')), coalesce(q, lit('', 'string'))], 'bool', true) : keep();
-    case 'containsstring': return str(0) && str(1) ? call('contains', [call('lower', [coalesce(p, lit('', 'string'))], 'string'), call('lower', [coalesce(q, lit('', 'string'))], 'string')], 'bool', true) : keep();
+    case 'greatest': case 'least': return call(x.name, x.t === 'variant' ? a.map(asText) : a, x.t);
+    case 'upper': case 'lower': return call(x.name, [T(0)], 'string');
+    case 'len': return call('length', [T(0)], 'int');
+    case 'left': case 'right': return call(x.name, [T(0), q ?? int(1)], 'string');
+    case 'mid': return call('substring', [T(0), q, s], 'string');
+    case 'trim_ends': return call('trim', [T(0)], 'string');
+    // DAX's TRIM: the spaces at the ends gone, and each run of them inside one space.
+    case 'trim': return call('regexp_replace', [call('trim', [T(0)], 'string'), lit(' {2,}', 'string'), lit(' ', 'string')], 'string');
+    case 'exact': return cond('eq', [coalesce(T(0), lit('', 'string')), coalesce(T(1), lit('', 'string'))]);
+    case 'containsstringexact': return call('contains', [coalesce(T(0), lit('', 'string')), coalesce(T(1), lit('', 'string'))], 'bool', true);
+    case 'containsstring': return call('contains', [call('lower', [coalesce(T(0), lit('', 'string'))], 'string'), call('lower', [coalesce(T(1), lit('', 'string'))], 'string')], 'bool', true);
+    case 'unicode': return call('code_point', [T(0)], 'int');
+    // FIND(text, within, start, notfound), and SEARCH without regard to case.
+    case 'find': case 'search': {
+      const low = v => (x.name === 'search' ? call('lower', [v], 'string') : v);
+      const within = call('substring_from', [coalesce(T(1), lit('', 'string')), s], 'string');
+      const pos = call('strpos', [low(within), low(coalesce(T(0), lit('', 'string')))], 'int');
+      return caseOf([[cond('eq', [pos, int(0)]), a[3]]], pop('add', [pos, pop('sub', [s, int(1)], 'int')], 'int'), 'int');
+    }
+    case 'substitute': return a.length === 3 ? call('replace', [T(0), T(1), T(2)], 'string') : NOPE("SUBSTITUTE's instance number");
+    // A path's items ("|" between them): "" holds none, a blank path's length is blank, a
+    // position past either end is blank.
+    case 'pathlength': return caseOf([[cond('eq', [T(0), lit('', 'string')]), int(0)]], pop('add', [pop('sub', [call('length', [T(0)], 'int'), call('length', [call('replace', [T(0), lit('|', 'string'), lit('', 'string')], 'string')], 'int')], 'int'), int(1)], 'int'), 'int');
+    case 'pathitem': case 'pathitemreverse': {
+      const len = fn({ ...x, name: 'pathlength', a: [x.a[0]] });
+      const at = x.name === 'pathitem' ? cast(q, 'int') : pop('add', [pop('sub', [len, cast(q, 'int')], 'int'), int(1)], 'int');
+      return caseOf([[cond('ge', [q, int(1)]), pop('nullif', [call('split_part', [T(0), lit('|', 'string'), at], 'string'), lit('', 'string')], 'string')]], lit(null, 'string'), 'string');
+    }
+    case 'pathcontains': return coalesce(cond('gt', [call('strpos', [tcat(lit('|', 'string'), pop('nullif', [T(0), lit('', 'string')], 'string'), lit('|', 'string')), tcat(lit('|', 'string'), T(1), lit('|', 'string'))], 'int'), int(0)]), lit(false, 'bool'));
+    case 'weekday': {
+      const d = dow(p), monday = call('mod', [pop('add', [d, int(6)], 'int'), int(7)], 'int');
+      return caseOf([[cond('eq', [cast(q, 'int'), int(2)]), pop('add', [monday, int(1)], 'int')], [cond('eq', [cast(q, 'int'), int(3)]), monday]], pop('add', [d, int(1)], 'int'), 'int');
+    }
+    case 'date': return call('add_days', [call('add_months', [call('make_date', [cast(p, 'int'), int(1), int(1)], 'date'), pop('sub', [cast(q, 'int'), int(1)], 'int')], 'date'), pop('sub', [cast(s, 'int'), int(1)], 'int')], 'date');
+    // A time is a date and time on day zero; hours, minutes and seconds past a day carry, the
+    // day they make dropped.
+    case 'time': {
+      const secs = pop('add', [pop('add', [pop('mul', [cast(p, 'int'), int(3600)], 'int'), pop('mul', [cast(q, 'int'), int(60)], 'int')], 'int'), cast(s, 'double')], 'double');
+      const day = pop('sub', [secs, pop('mul', [lit(86400, 'int'), call('floor', [pop('div', [secs, lit(86400, 'int')], 'double')], 'double')], 'double')], 'double');
+      return fromSerial(pop('div', [day, lit(86400, 'int')], 'double'));
+    }
+    case 'date_serial': return serial(cast(p, 'datetime'));
+    case 'serial_date': return fromSerial(p);
+    case 'roundup': { const k = call('power', [int(10), q], 'double'); return pop('div', [pop('mul', [call('sign', [p], 'int'), call('ceil', [g15(pop('mul', [call('abs', [p], 'double'), k], 'double'))], 'double')], 'double'), k], 'double'); }
+    case 'rounddown': case 'trunc': { const k = call('power', [int(10), q], 'double'); return pop('div', [call('trunc', [g15(pop('mul', [p, k], 'double'))], 'double'), k], 'double'); }
+    case 'ceiling': case 'floor': {
+      const f = x.name === 'ceiling' ? 'ceil' : 'floor';
+      return q ? pop('mul', [call(f, [g15(pop('div', [p, q], 'double'))], 'double'), q], 'double') : call(f, [p], 'double');
+    }
+    case 'mround': return pop('mul', [call('round', [g15(pop('div', [p, q], 'double')), int(0)], 'double'), q], 'double');
+    case 'format_number': case 'format_date': return NOPE('FORMAT');
+    case 'combinevalues': return NOPE('COMBINEVALUES');
     case 'year': case 'month': case 'day': case 'hour': case 'minute': case 'second': case 'quarter':
       return isDate(p.t) ? call(`extract_${x.name}`, [p], 'int') : keep();
     case 'cast': {
       const to = q?.v;
-      if (to === 'datetime' && p.t === 'string') return keep();   // text read as a date: DAX's formats
-      return ['int', 'double', 'decimal', 'string', 'bool', 'datetime'].includes(to) && !(to === 'string' && !['string', 'int', 'blank'].includes(p.t)) ? cast(p, to) : keep();
+      // Text as a date: ISO (YYYY-MM-DD) only; DAX's en-US forms (3/5/2024, March 5, 2024) not.
+      if (to === 'datetime' && p.t === 'string') return p.k === 'lit' && /^\d{4}-\d\d-\d\d([ T]\d\d:\d\d(:\d\d)?)?$/.test(p.v) ? cast(p, to) : NOPE('text read as a date (but an ISO one)');
+      if (to === 'string') return asText(p);
+      return ['int', 'double', 'decimal', 'bool', 'datetime'].includes(to) ? cast(p, to) : keep();
     }
     case 'add_interval': {
       const u = UNIT(s);
@@ -295,7 +371,11 @@ function fn(x) {
       return call('add_days', [next, lit(-1, 'int')], 'date');
     }
     case 'eomonth': return call('add_days', [call('add_months', [call('date_trunc_month', [p], 'date'), pop('add', [cast(q, 'int'), lit(1, 'int')], 'int')], 'date'), lit(-1, 'int')], 'date');
-    case 'datediff': return UNIT(s) !== 'week' && ['day', 'month', 'quarter', 'year', 'hour', 'minute', 'second'].includes(UNIT(s)) ? call(`date_diff_${UNIT(s)}`, [p, q], 'int') : keep();
+    // Weeks that start on Sunday (as SQL Server's DATEDIFF counts them).
+    case 'datediff': {
+      if (UNIT(s) === 'week') return call('idiv', [call('date_diff_day', [call('add_days', [p, pop('neg', [dow(p)], 'int')], 'date'), call('add_days', [q, pop('neg', [dow(q)], 'int')], 'date')], 'int'), int(7)], 'int');
+      return ['day', 'month', 'quarter', 'year', 'hour', 'minute', 'second'].includes(UNIT(s)) ? call(`date_diff_${UNIT(s)}`, [p, q], 'int') : keep();
+    }
   }
   return keep();
 }

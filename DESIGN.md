@@ -237,9 +237,12 @@ expect those errors are on `conformance/engines/dax-sql/known-plan.json`, beside
 for the plan's SQL. The optimizer's last pass (`passes/standard.js`) writes DAX's operators,
 functions and aggregates with those: a blank compared as 0 is a COALESCE, DIVIDE a NULLIF, a count of no rows
 a NULLIF of COUNT, DISTINCTCOUNT a COUNT(DISTINCT) and a count of the blank, a fixed decimal a
-round to four places. What has no standard writing yet stays DAX's, and `operators.mjs` lists
-it: FORMAT, a number or a date written as text, a date's serial number, text read as a date,
-and a few rarer functions (SUBSTITUTE's instance, TRIM, FIND, SEARCH, the path's items, …).
+round to four places, a date's serial number microseconds from day zero, a percentile the
+values numbered and the two around the rank. No DAX operator, function or aggregate is left in
+an optimized plan (`operators.mjs` fails on one). What has no standard writing is not supported
+in a query plan (`UNSUPPORTED`): FORMAT (and FIXED), a number with a fraction or a date written
+as text (`&`, COMBINEVALUES, a COALESCE of a number and a text), text read as a date but an ISO
+one, SUBSTITUTE's instance number; `known-plan.json` lists the suite's queries that use them.
 
 The plan as it is also holds applies and EXISTS correlated to a row; optimized, it holds
 neither. `conformance/engines/dax-sql/operators.mjs` checks every query of the suite against

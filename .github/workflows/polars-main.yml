@@ -1,0 +1,84 @@
+name: Polars main
+
+# Polars built from its main branch, and the released 2.1.0, measured on what dax-sql needs:
+# conformance/engines/dax-sql-polars/repros.py (each SQL shape Polars 2.1 lacked, against DuckDB)
+# and probe.mjs (the suite's SQL, postgres dialect, against DuckDB's answers). Both go to the job
+# summary. Nothing is gated: it is a measure, run by hand or when these files change.
+
+on:
+  push:
+    paths:
+      - "conformance/engines/dax-sql-polars/**"
+      - ".github/workflows/polars-main.yml"
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "pola-rs/polars ref to build"
+        default: main
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+concurrency:
+  group: polars-main-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  polars:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: pola-rs/polars
+          ref: ${{ inputs.ref || 'main' }}
+          path: polars
+      - name: The commit built
+        run: echo "Polars \`$(git -C polars rev-parse HEAD)\` ($(git -C polars log -1 --format=%cs))" >> "$GITHUB_STEP_SUMMARY"
+      - name: Free disk space
+        run: sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Rust, from Polars' rust-toolchain.toml
+        working-directory: polars
+        run: rustup show
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: polars
+          save-if: true
+      - name: Build Polars main (its Makefile's build-fast-release)
+        run: |
+          python -m venv pl-main
+          . pl-main/bin/activate
+          pip install -q uv maturin duckdb
+          uv pip install --no-deps -e polars/py-polars
+          maturin develop -m polars/py-polars/runtime/polars-runtime-32/Cargo.toml --features backtrace_filter --profile fast-release --uv
+          python -c "import polars as pl; print(pl.__version__, getattr(pl, '__build_commit__', ''))"
+      - name: Polars 2.1.0
+        run: |
+          python -m venv pl-21
+          pl-21/bin/pip install -q polars==2.1.0 duckdb
+      - name: The shapes, on main and on 2.1.0
+        run: |
+          pl-main/bin/python conformance/engines/dax-sql-polars/repros.py | tee -a "$GITHUB_STEP_SUMMARY"
+          pl-21/bin/python conformance/engines/dax-sql-polars/repros.py | tee -a "$GITHUB_STEP_SUMMARY"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: The suite's SQL on main
+        env:
+          PY: pl-main/bin/python
+          POLARS_LABEL: main
+        run: node conformance/engines/dax-sql-polars/probe.mjs | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: The suite's SQL on 2.1.0
+        env:
+          PY: pl-21/bin/python
+          POLARS_LABEL: 2.1.0
+        run: node conformance/engines/dax-sql-polars/probe.mjs | tee -a "$GITHUB_STEP_SUMMARY"

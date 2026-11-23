@@ -17,7 +17,7 @@ const { tmslToModel } = await load('formats/tmsl.js');
 const { free } = await load('src/passes/decorrelate.js');
 const { loadQueries, modelDir } = await import(pathToFileURL(join(root, 'conformance', 'tools', 'suite.mjs')));
 
-const RELATIONS = new Set(['scan', 'values', 'select', 'project', 'distinct', 'aggregate', 'join', 'union', 'window', 'series', 'paths', 'shared', 'output']);
+const RELATIONS = new Set(['scan', 'values', 'select', 'project', 'distinct', 'aggregate', 'join', 'union', 'window', 'series', 'shared', 'output']);
 const SCALARS = new Set(['lit', 'op', 'fn', 'case', 'ref', 'exists', 'pop']);
 const STANDARD_AGGS = new Set(['sum', 'avg', 'min', 'max', 'count_values', 'count_star', 'count_distinct', 'string_agg', 'median', 'stdev_s', 'stdev_p', 'var_s', 'var_p', 'product']);
 

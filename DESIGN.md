@@ -142,10 +142,10 @@ filters on its expanded table's columns only.
   it does, and a secured table reaches the filtered table that way and another (it filters
   the table that filters it back), that is DAX's error that join paths must form a tree
   (`securityTree`, where the filter comes back: `conds`, and a fused group's keys).
-- **PATH** is a calculated column's value: the table's paths, over all its rows, are one
-  `MATERIALIZED` CTE per pair of key and parent columns (`paths`), a recursive walk down from
-  the rows with a blank parent, and PATH on a row is the path of the row's key in it. The
-  other path functions are functions of the text.
+- **PATH** is not supported (`UNSUPPORTED`): walking a hierarchy of unknown depth is a
+  transitive closure, which relational algebra cannot express, so no query plan holds it. The
+  path is a column computed in the source, as Power BI requires in DirectQuery; the other path
+  functions (PATHITEM, PATHLENGTH, …) are functions of its text.
 - **Field parameters** are calculated tables with `NAMEOF` cells, which are constants.
   `expandFieldParameter` reads the table's expression to list the fields a selection stands
   for.
@@ -221,7 +221,7 @@ The plan is made of simple operators any engine can run, and nothing else (no SQ
 
 - **Relations:** scan, values, σ select, π project, δ distinct, γ aggregate, join (inner, left,
   cross), ∪ union, ω window (row number, rank, dense rank, count of the partition), series
-  (GENERATESERIES), paths (PATH's recursion), a definition read again (▭ V1), and the result's
+  (GENERATESERIES), a definition read again (▭ V1), and the result's
   sort and limit.
 - **Scalars:** columns, literals, CASE, and standard operators: `=` (NULL matches nothing), `≡`
   (a blank matches a blank: a join's key), `<>` `<` `≤` `>` `≥`, AND OR NOT, IN, IS NULL,
@@ -261,7 +261,7 @@ The SQL `compile` writes is still `emit.js`'s, whose rewrites move onto the plan
 - **Tables:** `scan`, `filter`, `project`, `distinct`, `group`, `topn`, `topnskip`, `cross`,
   the set operations, `rows`, `series`, `join` (NATURALINNERJOIN and its kind), `subindex`
   (SUBSTITUTEWITHINDEX), `generate`, `sc` (SUMMARIZECOLUMNS), `shared` (a table VAR),
-  `onerow`, `prefix`, `paths` (PATH's rows), and `window` (INDEX, OFFSET, WINDOW).
+  `onerow`, `prefix`, and `window` (INDEX, OFFSET, WINDOW).
 - **Scalars added for those:** `wrank` (RANK, ROWNUMBER).
 
 A row is a `RowRef`; an expression names a row's column through it. `freeRows(x)` says which
@@ -821,10 +821,9 @@ and gives each aggregate the filters that reach its table.
   - a year end (`"6/30"`) on the functions of a year that take one.
 - **Values:** logic (`IF`, `SWITCH`, `COALESCE`, `DIVIDE`, …), math, text, dates, `CONVERT`,
   `NAMEOF`.
-- **Parent-child hierarchies:** `PATH`, computed over all the table's rows as a calculated
-  column is (a recursive CTE, once per pair of columns, read on the row by its key);
-  `PATHLENGTH`, `PATHITEM`, `PATHITEMREVERSE` (`TEXT` or `INTEGER`) and `PATHCONTAINS`. A row
-  whose parents never reach a blank one (an error in DAX) has a blank path.
+- **Parent-child hierarchies:** `PATHLENGTH`, `PATHITEM`, `PATHITEMREVERSE` (`TEXT` or
+  `INTEGER`) and `PATHCONTAINS`, over a path column of the source. `PATH` is not (it needs
+  recursion).
 - **FORMAT** writes numbers and dates as DAX does in en-US:
   - the named formats: `General Number`, `Currency`, `Fixed`, `Standard`, `Percent`,
     `Scientific`, `Yes/No`, `True/False`, `On/Off`, `General Date`, `Long Date`, `Medium
@@ -1078,7 +1077,6 @@ engine can apply as it scans.
 - A sum (and an average) of floating-point values is an exact decimal sum, the same in any
   order: Fabric adds FLOATs in an order of its own each time, so one measure written twice (a
   RANKX's row and the rows it ranks) could differ in its last digit. 0.1 + 0.2 is 0.3 here.
-- PATH and the PATH functions are refused: they need a recursive CTE, which Fabric lacks.
 
 What T-SQL has no function for is written with what it has:
 

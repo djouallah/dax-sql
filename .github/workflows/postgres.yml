@@ -128,8 +128,11 @@ jobs:
         env:
           DAXSQL_PLAN: "1"
           PG_TIMES: ${{ runner.temp }}/pg-times.json
-          PG_TIMEOUT_MS: 300000
+          # 30 s a query, so the run ends and says which are slow; PostgreSQL's plan of each, in
+          # the artifact.
+          PG_TIMEOUT_MS: 30000
           PG_SESSIONS: 2
+          PG_PLANS: ${{ runner.temp }}/pg-plans.md
         run: |
           node conformance/runner/run.mjs --adapter "node conformance/engines/dax-sql-postgres/adapter.mjs ." \
             --known conformance/engines/dax-sql-postgres/known.json --report "$RUNNER_TEMP/postgres-plan.json"
@@ -150,3 +153,4 @@ jobs:
           path: |
             ${{ runner.temp }}/postgres-plan.json
             ${{ runner.temp }}/pg-times.json
+            ${{ runner.temp }}/pg-plans.md

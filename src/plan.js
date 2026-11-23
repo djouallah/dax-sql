@@ -30,7 +30,6 @@
 //                                        dense_rank, count of the partition
 //   series    { src, start, end, step }   GENERATESERIES's rows; bounds that are not constants
 //                                        are columns of src, a relation of one row
-//   paths     { src, keyType }            PATH: from src's (k, p) rows, a (key, path) row per key
 //   shared    { def }                     the rows of a definition the query names once and
 //                                        reads at each use (a table VAR, a calculated table):
 //                                        evaluated once, as DAX does, under columns of its own
@@ -97,7 +96,6 @@ export function window(src, part, fns) {
   return { k: 'window', src, part, fns: fs, cols: [...src.cols, ...fs.map(f => f.col)] };
 }
 export const series = (start, end, step, t, name, src = null) => ({ k: 'series', src, start, end, step, t, cols: [newCol(name, t)] });
-export const paths = (src, keyType) => ({ k: 'paths', src, keyType, cols: [newCol('key', keyType), newCol('path', 'string')] });
 export const output = (src, items, order, defs = []) => ({ k: 'output', src, items, order, limit: null, defs, cols: [] });
 // A definition (its relation, its number), and a use of it.
 export const definition = (rel, n) => ({ rel, n });

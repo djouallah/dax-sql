@@ -64,9 +64,9 @@ class Unnest {
     const marks = [];
     const conv = x => this.Ex(x, marks);
     const out = r.k === 'select' ? { ...r, pred: conv(r.pred) } : { ...r, items: r.items.map(i => ({ ...i, expr: conv(i.expr) })) };
-    if (!marks.length) return out;
+    if (!marks.length) return r.k === 'select' ? belowApplies(out) : out;
     const src = marks.reduce((s, m) => P.apply(s, m), r.src);
-    return r.k === 'select' ? { ...out, src, cols: src.cols } : { ...out, src };
+    return r.k === 'select' ? belowApplies({ ...out, src, cols: src.cols }) : { ...out, src };
   }
   // A scalar's EXISTS: correlated, with `marks`, the count of an apply; the others' relations too.
   Ex(x, marks) {
@@ -97,6 +97,9 @@ class Unnest {
     }
     const eq = this.equiAgg(L, a.right, F);
     if (eq) return eq;
+    // A range (a running total, a window of dates): R grouped first by what the range compares.
+    const pre = preAggregate(a.right, F);
+    if (pre) return this.unnest({ ...a, left: L, right: pre });
     // L reads a row around it: unnested with the apply around it.
     if (free(L).size) return P.apply(L, this.T(a.right), a.outer);
     const Ld = this.define(L);
@@ -251,9 +254,9 @@ class Unnest {
 
 const _made = new WeakMap(), _free = new WeakMap();
 
-function kids(r) {
+export function kids(r) {
   switch (r.k) {
-    case 'select': case 'project': case 'distinct': case 'aggregate': case 'window': case 'paths': case 'output': return [r.src];
+    case 'select': case 'project': case 'distinct': case 'aggregate': case 'window': case 'output': return [r.src];
     case 'join': case 'apply': return [r.left, r.right];
     case 'union': return r.srcs;
     case 'series': return r.src ? [r.src] : [];
@@ -261,7 +264,7 @@ function kids(r) {
   return [];
 }
 
-function scalarsOf(r) {
+export function scalarsOf(r) {
   switch (r.k) {
     case 'select': return [r.pred];
     case 'project': return r.items.map(i => i.expr);
@@ -276,7 +279,7 @@ function scalarsOf(r) {
 }
 
 // Every column made in r's tree.
-function made(r) {
+export function made(r) {
   let m = _made.get(r);
   if (!m) {
     m = new Set(r.cols);
@@ -334,7 +337,7 @@ function mapScalar(x, hook) {
 export function mapKids(r, g) {
   switch (r.k) {
     case 'select': case 'distinct': { const src = g(r.src); return { ...r, src, cols: src.cols }; }
-    case 'project': case 'aggregate': case 'paths': case 'output': return { ...r, src: g(r.src) };
+    case 'project': case 'aggregate': case 'output': return { ...r, src: g(r.src) };
     case 'window': { const src = g(r.src); return { ...r, src, cols: [...src.cols, ...r.fns.map(f => f.col)] }; }
     case 'join': case 'apply': { const left = g(r.left), right = g(r.right); return { ...r, left, right, cols: [...left.cols, ...right.cols] }; }
     case 'union': return { ...r, srcs: r.srcs.map(g) };
@@ -375,6 +378,51 @@ function substRel(r, map) {
 }
 
 // The conditions a condition's ANDs hold.
-function conjuncts(x) {
+export function conjuncts(x) {
   return x.k === 'op' && x.op === 'and' ? x.a.flatMap(conjuncts) : [x];
+}
+
+// σ over applies: the conditions that read none of the applies' columns go below them, so the
+// rows are filtered before each apply (and before a definition copies them).
+function belowApplies(s) {
+  if (s.k !== 'select' || s.src.k !== 'apply') return s;
+  const chain = [];
+  let x = s.src;
+  while (x.k === 'apply') { chain.push(x); x = x.left; }
+  // Only conditions on the rows' own columns: one that reads an outer row stays where the
+  // decorrelation finds it (on top, matched as a key).
+  const mine = made(x);
+  const local = c => [...refsOf(c)].every(col => mine.has(col)) && existsOf(c).every(e => [...free(e)].every(col => mine.has(col)));
+  const own = [], rest = [];
+  for (const c of conjuncts(s.pred)) (local(c) ? own : rest).push(c);
+  if (!own.length) return s;
+  let base = P.select(x, P.and(own));
+  for (const a of chain.reverse()) base = { ...P.apply(base, a.right, a.outer), stuck: a.stuck };
+  return rest.length ? P.select(base, P.and(rest)) : base;
+}
+
+// γ(σ_{range ∧ rest} R), the range comparing columns of R with the outer row (F): R's rows
+// grouped first by the columns the range reads, under rest, and the aggregate taken over those
+// groups (sums added up, counts summed, the least and the greatest of theirs), so that what is
+// matched with each outer row is a few groups, not every row. For SUM, MIN, MAX and COUNTROWS,
+// by three columns at most; null otherwise.
+const PARTIAL = { sum: 'sum', min: 'min', max: 'max', countrows: 'sum' };
+function preAggregate(g, F) {
+  if (g.k !== 'aggregate' || g.keys.length || g.src.k !== 'select' || g.pre) return null;
+  if (!g.aggs.every(a => PARTIAL[a.fn] && !a.extra?.exact)) return null;
+  const Fs = new Set(F), R = g.src.src, mine = made(R);
+  const readsF = x => [...refsOf(x)].some(c => Fs.has(c)) || existsOf(x).some(r => [...free(r)].some(c => Fs.has(c)));
+  if ([...free(R)].some(c => Fs.has(c)) || g.aggs.some(a => a.arg && readsF(a.arg))) return null;
+  const range = [], rest = [];
+  for (const c of conjuncts(g.src.pred)) (readsF(c) ? range : rest).push(c);
+  if (!range.length || range.some(c => existsOf(c).length)) return null;
+  const by = [...new Set(range.flatMap(c => [...refsOf(c)].filter(col => mine.has(col))))];
+  if (!by.length || by.length > 3) return null;
+  // The groups: by those columns, each aggregate over the group's rows.
+  const keys = by.map(c => ({ col: P.newCol(c.name, c.t, { lineage: c.lineage, table: c.table }), expr: P.ref(c) }));
+  const parts = g.aggs.map(a => ({ ...a, col: P.newCol(a.col.name, a.fn === 'countrows' ? 'int' : a.col.t) }));
+  const groups = P.aggregate(rest.length ? P.select(R, P.and(rest)) : R, keys, parts);
+  const map = new Map(by.map((c, i) => [c, keys[i].col]));
+  const finals = g.aggs.map((a, i) => ({ col: a.col, fn: PARTIAL[a.fn], arg: P.ref(parts[i].col), extra: { t: parts[i].col.t } }));
+  return { ...P.aggregate(P.select(groups, P.and(range.map(c => subst(c, map)))), [], finals), pre: true };
 }

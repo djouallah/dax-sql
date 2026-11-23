@@ -90,7 +90,6 @@ function node(r) {
     }
     case 'shared': label = `▭  V${r.def.n}`; break;
     case 'series': label = `▭  Series(${S(r.start)}, ${S(r.end)}, ${S(r.step)})`; if (r.src) kids.push(node(r.src)); break;
-    case 'paths': label = '▭  Paths (recursive: each key with the keys above it)'; kids.push(node(r.src)); break;
     default: label = r.k;
   }
   return withSubs({ label, kids }, subs);

@@ -85,11 +85,6 @@ export class PlanSql extends Emitter {
         const d = this.defs.get(r.def);
         return `SELECT ${r.picks.map((c, i) => `${cn(c)} AS ${cn(r.cols[i])}`).join(', ')} FROM ${d.name}`;
       }
-      case 'paths': {
-        const [k, p] = r.src.cols, name = this.alias('pt'), h = this.alias('h');
-        const edges = `SELECT ${cn(k)} AS k, ${cn(p)} AS p FROM ${from(r.src)}`;
-        return `SELECT ${h}.${this.ident('key')} AS ${cn(r.cols[0])}, ${h}.${this.ident('path')} AS ${cn(r.cols[1])} FROM (${this.d.paths(edges, r.keyType, name)}) AS ${h}`;
-      }
     }
     throw new Error(`plan-sql: relation ${r.k}`);
   }

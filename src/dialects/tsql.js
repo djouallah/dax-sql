@@ -141,7 +141,6 @@ export class TSqlDialect extends Dialect {
     return `CAST(${sql} AS VARCHAR(8000))`;
   }
 
-  paths() { throw unsupported('PATH on the SQL endpoint (it has no recursive CTE)'); }
 
   series(start, end, step, t) {
     const n = `CAST(FLOOR(${fl(`(${end}) - (${start})`)} / (${step}) + 1e-9) AS BIGINT)`;

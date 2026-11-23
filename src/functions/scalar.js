@@ -206,18 +206,12 @@ function fixed(c, args, env) {
   return ir.fn('format_number', [x, ir.lit(JSON.stringify(numberFormat(pattern)), 'string')], 'string', { nn: true });
 }
 
-// PATH(T[key], T[parent]): the keys from the hierarchy's root down to the row's, joined by
-// "|". It is computed as a calculated column is, over all of T's rows (no filter, no
-// security), once for the pair of columns (ir.paths), and read on the row by its key. A row
-// whose chain of parents never reaches a blank parent (an orphan, a cycle: an error in DAX)
-// has none.
-function path(c, args, env) {
-  if (args.length !== 2) throw semantic('PATH(<id column>, <parent column>)');
-  const key = c.modelColumn(args[0], env, 'PATH: a column'), parent = c.modelColumn(args[1], env, 'PATH: a column');
-  if (key.table !== parent.table) throw semantic('PATH: the id and parent columns must be of the same table');
-  const t = ir.paths(key, parent), row = ir.rowOf(t);
-  const mine = ir.filter(t, row, ir.op('eqs', ir.col(row, 0), s(c, args[0], env)));
-  return ir.agg('single', mine, row, ir.col(row, 1), 'string');
+// PATH(T[key], T[parent]) is not supported: walking a hierarchy of unknown depth needs
+// recursion, which a relational plan has not (relational algebra cannot express a transitive
+// closure). The path is a column computed in the source, as Power BI requires in DirectQuery;
+// PATHITEM, PATHLENGTH and the rest read it.
+function path() {
+  throw unsupported('PATH (a parent-child path needs recursion: compute it in the source, as Power BI requires in DirectQuery)');
 }
 
 // PATHITEM(path, n[, TEXT | INTEGER]) and PATHITEMREVERSE: the n-th item from the left (the

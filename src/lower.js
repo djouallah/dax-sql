@@ -9,7 +9,7 @@
 // table's, in order, as references.
 import * as ir from './ir.js';
 import * as P from './plan.js';
-import { Ctx, narrow, EMPTY_CTX as EMPTY } from './context.js';
+import { Ctx, narrow } from './context.js';
 import { semantic, unsupported } from './errors.js';
 import { outputNames, daxName } from './emit.js';
 
@@ -172,14 +172,6 @@ export class Lowerer {
       case 'shared':
         if (ir.freeRows(x.src).size) return this.table(x.src, scope);
         return this.fromRel(this.shared(x, () => this.exact(this.table(x.src, new Map()).render())), x.cols);
-      case 'paths': {
-        const r = this.unsecured(() => {
-          const s = this.scanBlock(x.key.table, EMPTY, new Map());
-          s.setOut([{ name: 'k', lineage: null }, { name: 'p', lineage: null }], [s.res.meta(x.key), s.res.meta(x.parent)]);
-          return this.exact(s.render());
-        });
-        return this.fromRel(P.paths(r, x.key.type), x.cols);
-      }
       case 'sc': return this.summarizeColumns(x, scope);
       case 'window': return this.windowRows(x, scope);
       case 'prefix': {

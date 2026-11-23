@@ -1246,7 +1246,8 @@ Fusion.prototype.belowJoins = function belowJoins(g) {
     const cs = after.filter(c => [...R(c).cols].every(x => own.has(x)) && blankFails(c));
     if (!cs.length) continue;
     const { rel, map: m } = clone(j.rel);
-    before.push(P.exists(P.select(rel, P.and([...cs.map(c => subst(c, m)), P.eq(P.ref(m.get(to.col)), fk)]))));
+    // A membership: the scan's column one of the table's kept (emit.js writes it IN).
+    before.push({ ...P.exists(P.select(rel, P.and([...cs.map(c => subst(c, m)), P.eq(P.ref(m.get(to.col)), fk)]))), member: true });
   }
   const cols = [...new Set([...g.keyExprs, ...b.joins.map(j => j.on)].flatMap(e => [...R(e).cols].filter(c => base.has(c))))];
   if (!cols.length) return null;

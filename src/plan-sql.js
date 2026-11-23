@@ -246,11 +246,20 @@ export class PlanSql extends Emitter {
     if (x.k === 'exists') {
       // A membership of one value no blank meets (lower.js's member): IN, which the engine reads
       // as a semi-join on the value (EXISTS correlated by it is unnested over every outer row).
-      const r = x.rel, c = r.pred;
-      if (x.member && r.k === 'select' && c?.k === 'pop' && c.op === 'eq') {
-        const [col, v] = c.a, own = new Set(r.src.cols);
-        if (col.k === 'ref' && own.has(col.col) && ![...refsOf(v)].some(y => own.has(y))) {
-          const s = `${this.scalar(v, EMPTY)} IN (SELECT ${this.cn(col.col)} FROM (${this.rel(r.src)}) AS ${this.alias('i')})`;
+      // Its rows' other conditions, on their own columns alone, are the subquery's WHERE.
+      const r = x.rel;
+      if (x.member && r.k === 'select') {
+        const own = new Set(r.src.cols);
+        const terms = [], flat = c => (c?.k === 'pop' && c.op === 'and' ? c.a.forEach(flat) : terms.push(c));
+        flat(r.pred);
+        const nested = e => !!e && typeof e === 'object' && (e.k === 'exists' || (e.a ?? []).some(nested) || (e.w ?? []).flat().some(nested) || nested(e.e));
+        const ownOnly = e => !nested(e) && [...refsOf(e)].every(y => own.has(y));
+        const at = terms.findIndex(c => c?.k === 'pop' && c.op === 'eq' && c.a[0].k === 'ref' && own.has(c.a[0].col) && ![...refsOf(c.a[1])].some(y => own.has(y)));
+        const rest = terms.filter((_, i) => i !== at);
+        if (at >= 0 && rest.every(ownOnly)) {
+          const [col, v] = terms[at].a;
+          const where = rest.length ? ` WHERE ${rest.map(c => this.scalar(c, EMPTY, true)).join(' AND ')}` : '';
+          const s = `${this.scalar(v, EMPTY)} IN (SELECT ${this.cn(col.col)} FROM (${this.rel(r.src)}) AS ${this.alias('i')}${where})`;
           return pred ? `(${s})` : this.d.orFalse(s);
         }
       }

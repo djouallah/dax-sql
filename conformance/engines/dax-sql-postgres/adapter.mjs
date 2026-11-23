@@ -56,6 +56,8 @@ async function load(client, modelPath, dataDir) {
       await client.query(`INSERT INTO ${table} VALUES ${values.join(', ')}`, params);
     }
   }
+  // The planner's statistics: without, it takes every table for a row or so, and loops.
+  await client.query(`ANALYZE`);
   const sources = new Map(db.bim.model.tables.filter(t => t.partitions?.[0]?.source?.type === 'entity')
     .map(t => [t.partitions[0].source.entityName, `${ident(schema)}.${ident(t.partitions[0].source.entityName)}`]));
   return { model: db.model, tableSource: t => sources.get(t.source?.entity ?? t.name), compilers: new Map() };

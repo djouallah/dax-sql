@@ -30,7 +30,13 @@ export function share(root) {
 
   const defs = new Map();   // key -> definition
   const worth = r => r.k !== 'shared' && !key(r).includes('@') && hasWork(r);
+  // A node the tree holds twice (the same object) becomes one node, read twice.
+  const memo = new Map();
   const S = r => {
+    if (!memo.has(r)) memo.set(r, S1(r));
+    return memo.get(r);
+  };
+  const S1 = r => {
     const k = key(r);
     if (count.get(k) > 1 && worth(r)) {
       let d = defs.get(k);

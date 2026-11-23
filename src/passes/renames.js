@@ -1,68 +1,68 @@
 // Renames: a projection whose values are its input's columns, each once, only names them anew
-// (decorrelation's D, sharing's reads of a definition). It is dropped, and what reads its
-// columns reads its input's. Kept under a distinct, where the columns it leaves out would change
-// the rows, and where it makes no column (SQL has no SELECT of none).
-import { kids } from './decorrelate.js';
-
+// (decorrelation's D, sharing's reads of a definition). It is dropped, and what is above it reads
+// its input's columns. Bottom up, each node takes its kids' renames (a column of a dropped
+// projection -> the input's), so a rename holds above the projection only. Kept where it leaves
+// columns out under a distinct (fewer columns would make fewer rows).
 export function renames(root) {
-  const as = new Map();   // a dropped projection's column -> its input's
-  // How many nodes make each column: a column two make (a table's scan read in two places, and
-  // a projection that names a definition's column as it) is not renamed, nor what reads it.
-  const makers = new Map(), seen = new Set();
-  const count = r => {
-    if (seen.has(r)) return;
-    seen.add(r);
-    kids(r).forEach(count);
-    if (r.k === 'shared') count(r.def.rel);
-    const own = r.k === 'project' ? r.items.map(i => i.col) : r.k === 'aggregate' ? [...r.keys.map(k => k.col), ...r.aggs.map(x => x.col)]
-      : r.k === 'window' ? r.fns.map(f => f.col) : ['scan', 'values', 'union', 'shared', 'series'].includes(r.k) ? r.cols : [];
-    for (const c of own) makers.set(c, (makers.get(c) ?? 0) + 1);
-  };
-  count(root);
-  (root.defs ?? []).forEach(d => count(d.rel));
-  const to = c => { while (as.has(c)) c = as.get(c); return c; };
+  const defMaps = new Map();
   const R = (r, parent) => {
-    let out;
+    const maps = [];
+    let rel;
+    const K = (k, i) => { const o = R(k, r); maps[i] = o.map; return o.rel; };
     switch (r.k) {
-      case 'select': case 'distinct': case 'project': case 'aggregate': case 'window': case 'output': out = { ...r, src: R(r.src, r) }; break;
-      case 'join': out = { ...r, left: R(r.left, r), right: R(r.right, r) }; break;
-      case 'union': out = { ...r, srcs: r.srcs.map(s => R(s, r)) }; break;
-      case 'series': out = r.src ? { ...r, src: R(r.src, r) } : r; break;
-      default: out = r;
+      case 'select': case 'distinct': case 'project': case 'aggregate': case 'window': case 'output': rel = { ...r, src: K(r.src, 0) }; break;
+      case 'join': rel = { ...r, left: K(r.left, 0), right: K(r.right, 1) }; break;
+      case 'union': rel = { ...r, srcs: r.srcs.map((s, i) => K(s, i)) }; break;
+      case 'series': rel = r.src ? { ...r, src: K(r.src, 0) } : { ...r }; break;
+      default: rel = { ...r };
     }
-    if (out.k === 'project' && parent?.k !== 'distinct' && out.items.length && out.items.every(i => i.expr.k === 'ref')) {
-      const srcs = out.items.map(i => to(i.expr.col));
-      if (new Set(srcs).size === srcs.length && srcs.every(c => out.src.cols.includes(c)) && out.items.every(i => makers.get(i.col) === 1)) {
-        out.items.forEach((i, j) => { if (i.col !== srcs[j]) as.set(i.col, srcs[j]); });
-        return out.src;
+    const map = new Map();
+    for (const m of maps) if (m) for (const [a, b] of m) map.set(a, b);
+    const to = c => map.get(c) ?? c, S = x => sub(x, to);
+    switch (rel.k) {
+      case 'select': rel.pred = S(rel.pred); rel.cols = rel.src.cols; break;
+      case 'distinct': rel.cols = rel.src.cols; break;
+      case 'project': rel.items = rel.items.map(i => ({ ...i, expr: S(i.expr) })); break;
+      case 'aggregate':
+        rel.keys = rel.keys.map(k => ({ ...k, expr: S(k.expr) }));
+        rel.aggs = rel.aggs.map(a => ({ ...a, arg: a.arg && S(a.arg), extra: a.extra && { ...a.extra, ...(a.extra.delim ? { delim: S(a.extra.delim) } : {}), ...(a.extra.k ? { k: S(a.extra.k) } : {}), ...(a.extra.order ? { order: a.extra.order.map(o => ({ ...o, expr: S(o.expr) })) } : {}) } }));
+        break;
+      case 'window':
+        rel.part = rel.part.map(S);
+        rel.fns = rel.fns.map(f => ({ ...f, order: f.order.map(o => ({ ...o, expr: S(o.expr) })) }));
+        rel.cols = [...rel.src.cols, ...rel.fns.map(f => f.col)];
+        break;
+      case 'join': rel.on = rel.on && S(rel.on); rel.cols = [...rel.left.cols, ...rel.right.cols]; break;
+      case 'union': rel.picks = rel.picks.map((p, i) => p.map(c => maps[i]?.get(c) ?? c)); break;
+      case 'shared': { const m = defMaps.get(rel.def); if (m) rel.picks = rel.picks.map(c => m.get(c) ?? c); break; }
+      case 'series': rel.start = S(rel.start); rel.end = S(rel.end); rel.step = S(rel.step); break;
+      case 'values': rel.rows = rel.rows.map(row => row.map(S)); break;
+      case 'output': rel.items = rel.items.map(i => ({ ...i, expr: S(i.expr) })); rel.order = rel.order.map(o => ({ ...o, expr: S(o.expr) })); break;
+    }
+    if (rel.k === 'project' && rel.items.length && rel.items.every(i => i.expr.k === 'ref')) {
+      const srcs = rel.items.map(i => i.expr.col);
+      const all = srcs.length === rel.src.cols.length;
+      if (new Set(srcs).size === srcs.length && srcs.every(c => rel.src.cols.includes(c)) && (parent?.k !== 'distinct' || all)) {
+        const out = new Map(map);
+        rel.items.forEach((i, j) => { if (i.col !== srcs[j]) out.set(i.col, srcs[j]); });
+        return { rel: rel.src, map: visible(out, rel.src) };
       }
     }
-    return out;
+    return { rel, map: visible(map, rel) };
   };
-  const top = R(root, null);
-  const defs = (root.defs ?? []).map(d => { d.rel = R(d.rel, null); return d; });
-  // Every column read, as the column it is now.
-  const S = x => sub(x, to);
-  const fix = r => {
-    let out;
-    switch (r.k) {
-      case 'select': { const src = fix(r.src); out = { ...r, src, pred: S(r.pred), cols: src.cols }; break; }
-      case 'distinct': { const src = fix(r.src); out = { ...r, src, cols: src.cols }; break; }
-      case 'project': out = { ...r, src: fix(r.src), items: r.items.map(i => ({ ...i, expr: S(i.expr) })) }; break;
-      case 'aggregate': out = { ...r, src: fix(r.src), keys: r.keys.map(k => ({ ...k, expr: S(k.expr) })), aggs: r.aggs.map(a => ({ ...a, arg: a.arg && S(a.arg), extra: a.extra && { ...a.extra, ...(a.extra.delim ? { delim: S(a.extra.delim) } : {}), ...(a.extra.k ? { k: S(a.extra.k) } : {}), ...(a.extra.order ? { order: a.extra.order.map(o => ({ ...o, expr: S(o.expr) })) } : {}) } })) }; break;
-      case 'window': { const src = fix(r.src); out = { ...r, src, part: r.part.map(S), fns: r.fns.map(f => ({ ...f, order: f.order.map(o => ({ ...o, expr: S(o.expr) })) })), cols: [...src.cols, ...r.fns.map(f => f.col)] }; break; }
-      case 'join': { const left = fix(r.left), right = fix(r.right); out = { ...r, left, right, on: r.on && S(r.on), cols: [...left.cols, ...right.cols] }; break; }
-      case 'union': out = { ...r, srcs: r.srcs.map(fix), picks: r.picks.map(p => p.map(to)) }; break;
-      case 'shared': out = { ...r, picks: r.picks.map(to) }; break;
-      case 'series': out = { ...r, ...(r.src ? { src: fix(r.src) } : {}), start: S(r.start), end: S(r.end), step: S(r.step) }; break;
-      case 'values': out = { ...r, rows: r.rows.map(row => row.map(S)) }; break;
-      case 'output': out = { ...r, src: fix(r.src), items: r.items.map(i => ({ ...i, expr: S(i.expr) })), order: r.order.map(o => ({ ...o, expr: S(o.expr) })) }; break;
-      default: out = r;
-    }
-    return out;
-  };
-  for (const d of defs) d.rel = fix(d.rel);
-  return { ...fix(top), defs };
+  // The definitions first (each reads those before it): what reads one takes its renames.
+  for (const d of root.defs ?? []) {
+    const o = R(d.rel, null);
+    d.rel = o.rel;
+    defMaps.set(d, o.map);
+  }
+  return { ...R(root, null).rel, defs: root.defs ?? [] };
+}
+
+// The renames that hold above r: those to a column r gives (not past a node that makes its own).
+function visible(map, r) {
+  const cols = new Set(r.cols);
+  return new Map([...map].filter(([, b]) => cols.has(b)));
 }
 
 function sub(x, to) {

@@ -39,6 +39,17 @@ export class PlanSql extends Emitter {
   rel(r) {
     const cn = c => this.cn(c);
     const from = (x, p = 's') => { const a = this.alias(p); return `(${this.rel(x)}) AS ${a}`; };
+    // What a SELECT reads x from: a join's FROM, a filter's WHERE, in the SELECT itself (not a
+    // SELECT * around them).
+    const body = x => {
+      if (x.k === 'join') {
+        const l = from(x.left, 'l'), rt = from(x.right, 'r');
+        return { from: x.kind === 'cross' ? `${l} CROSS JOIN ${rt}` : `${l} ${x.kind === 'left' ? 'LEFT JOIN' : 'JOIN'} ${rt} ON ${this.on(x)}`, where: [] };
+      }
+      if (x.k === 'select') { const b = body(x.src); return { from: b.from, where: [...b.where, this.scalar(x.pred, EMPTY, true)] }; }
+      return { from: from(x), where: [] };
+    };
+    const read = x => { const b = body(x); return `${b.from}${b.where.length ? ` WHERE ${b.where.join(' AND ')}` : ''}`; };
     switch (r.k) {
       case 'scan': {
         const a = this.alias('t');
@@ -48,22 +59,22 @@ export class PlanSql extends Emitter {
         if (!r.rows.length) return `SELECT ${r.cols.map(c => `${this.d.nullOf(c.t)} AS ${cn(c)}`).join(', ')} WHERE ${this.d.never}`;
         return r.rows.map(row => `SELECT ${row.map((v, i) => `${this.val(v, r.cols[i])} AS ${cn(r.cols[i])}`).join(', ')}`).join(' UNION ALL ');
       }
-      case 'select': return `SELECT * FROM ${from(r.src)} WHERE ${this.scalar(r.pred, EMPTY, true)}`;
+      case 'select': return `SELECT * FROM ${read(r)}`;
       case 'project': {
         const items = r.items.map(i => `${this.val(i.expr, i.col)} AS ${cn(i.col)}`);
-        return `SELECT ${items.length ? items.join(', ') : `1 AS ${this.alias('_e')}`} FROM ${from(r.src)}`;
+        return `SELECT ${items.length ? items.join(', ') : `1 AS ${this.alias('_e')}`} FROM ${read(r.src)}`;
       }
-      case 'distinct': return `SELECT DISTINCT * FROM ${from(r.src)}`;
+      case 'distinct': {
+        // Over a projection: SELECT DISTINCT of its values.
+        if (r.src.k === 'project' && r.src.items.length) return `SELECT DISTINCT ${r.src.items.map(i => `${this.val(i.expr, i.col)} AS ${cn(i.col)}`).join(', ')} FROM ${read(r.src.src)}`;
+        return `SELECT DISTINCT * FROM ${read(r.src)}`;
+      }
       case 'aggregate': {
         const keys = r.keys.map(k => this.scalar(k.expr, EMPTY));
         const sel = [...keys.map((k, i) => `${k} AS ${cn(r.keys[i].col)}`), ...r.aggs.map(a => `${this.aggSql(a)} AS ${cn(a.col)}`)];
-        return `SELECT ${sel.join(', ')} FROM ${from(r.src)}${keys.length ? ` GROUP BY ${keys.join(', ')}` : ''}`;
+        return `SELECT ${sel.join(', ')} FROM ${read(r.src)}${keys.length ? ` GROUP BY ${keys.join(', ')}` : ''}`;
       }
-      case 'join': {
-        const l = from(r.left, 'l'), rt = from(r.right, 'r');
-        if (r.kind === 'cross') return `SELECT * FROM ${l} CROSS JOIN ${rt}`;
-        return `SELECT * FROM ${l} ${r.kind === 'left' ? 'LEFT JOIN' : 'JOIN'} ${rt} ON ${this.on(r)}`;
-      }
+      case 'join': return `SELECT * FROM ${read(r)}`;
       case 'apply': return `SELECT * FROM ${from(r.left, 'l')}${this.d.lateral(this.rel(r.right), this.alias('a'), r.outer)}`;
       case 'union': return r.srcs.map((s, k) => `SELECT ${r.picks[k].map((c, i) => `${c.t === 'blank' && r.cols[i].t !== 'blank' ? this.d.nullOf(r.cols[i].t) : cn(c)} AS ${cn(r.cols[i])}`).join(', ')} FROM ${from(s, 'u')}`).join(' UNION ALL ');
       case 'window': {
@@ -73,7 +84,7 @@ export class PlanSql extends Emitter {
           const over = [part, this.d.windowOrder(f.order.map(o => this.term(o)))].filter(Boolean).join(' ');
           return `${call} OVER (${over}) AS ${cn(f.col)}`;
         });
-        return `SELECT *, ${fns.join(', ')} FROM ${from(r.src)}`;
+        return `SELECT *, ${fns.join(', ')} FROM ${read(r.src)}`;
       }
       case 'series': {
         const g = this.alias('g');

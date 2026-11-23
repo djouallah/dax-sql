@@ -614,8 +614,19 @@ export class Lowerer {
     const s2 = withRow(scope, x.row, b.res);
     const col = P.newCol(x.fn === 'single' ? 'value' : x.fn, x.t);
     const a = x.fn === 'single' ? { fn: 'single', arg: this.scalar(x.arg, s2, b), extra: {} } : this.aggParts(x, s2, b);
-    blk.applies.push({ rel: P.aggregate(b.body(), [], [{ col, ...a }]), outer: false });
+    (this.hoist(x, scope, blk) ?? blk).applies.push({ rel: P.aggregate(b.body(), [], [{ col, ...a }]), outer: false });
     return P.ref(col);
+  }
+
+  // The block an aggregate is computed in when it reads none of the row of the block it is in
+  // (a window's bound, the current dates' last, beside each date of the window): the innermost
+  // block whose row it reads, still to be rendered, once for each of its rows, not for each row
+  // of the block inside. Null: the block it is in.
+  hoist(x, scope, blk) {
+    const blocks = [...ir.freeRows(x)].map(id => scope.get(id)?.block).filter(Boolean);
+    if (!blocks.length || blocks.includes(blk)) return null;
+    const t = blocks.reduce((a, b) => (b.serial > a.serial ? b : a));
+    return t.rendered ? null : t;
   }
 
   aggParts(x, scope, b) {
@@ -656,6 +667,8 @@ function blankOnly(x) {
 class Block {
   constructor(lw, from, cols) {
     this.lw = lw;
+    this.serial = Block.made = (Block.made ?? 0) + 1;   // blocks made later are inside those made before
+    this.rendered = false;
     this.from = from;          // a relation, or null: one row
     this.cols = cols;          // the table's columns: [{ name, lineage, t }]
     this.joins = [];           // [{ kind, rel, on }]
@@ -686,6 +699,7 @@ class Block {
     return r;
   }
   render() {
+    this.rendered = true;
     const list = this.outList();   // first: a column of a related table joins it
     let r = this.body();
     if (this.qualify) {

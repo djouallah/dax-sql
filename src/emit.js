@@ -442,7 +442,7 @@ export class Emitter {
     const names = uniqNames(x.cols.map(c => c.name));
     if (!x.rows.length) {
       const b = new Block(this, null, x.cols);
-      b.setOut(x.cols, x.cols.map(() => 'NULL'));
+      b.setOut(x.cols, x.cols.map(c => this.d.nullOf(c.t)));
       b.where.push(this.d.never);
       b.open = false;
       return b;
@@ -1231,7 +1231,7 @@ export class Emitter {
       const dims = gs.flatMap(dimsOf);
       keys = gs.length
         ? gs.map(g => `SELECT ${cols(g)} FROM ${g.alias}${kept(g)}`).join(' UNION ')
-        : `SELECT ${active.map(ki => `NULL AS ${this.ident(keyNames[ki])}`).join(', ')} WHERE ${this.d.never}`;
+        : `SELECT ${active.map(ki => `${this.d.nullOf(x.keyCols[ki].type)} AS ${this.ident(keyNames[ki])}`).join(', ')} WHERE ${this.d.never}`;
       // One group, whose keys are distinct (its GROUP BY): its rows are the groups, read once
       // where the engine reads a CTE again at each name (T-SQL), not joined to themselves.
       if (gs.length === 1 && !dims.length && this.d.repeats) from = { g: gs[0], sql: `${gs[0].alias}${this.d.lateral(`SELECT ${cols(gs[0])}`, k, false)}` };
@@ -1242,7 +1242,7 @@ export class Emitter {
     const apply = this.d.repeats && this.optimize ? this.hoistRepeats(items) : '';
     const sel = [
       // A key a level holds one value of (a calculation item, SUMMARIZECOLUMNS' split): that value.
-      ...x.keyCols.map((c, i) => `${active.includes(i) ? `${k}.${this.ident(keyNames[i])}` : L.consts?.has(i) ? this.d.literal(L.consts.get(i), c.type) : 'NULL'} AS ${this.ident(names[i])}`),
+      ...x.keyCols.map((c, i) => `${active.includes(i) ? `${k}.${this.ident(keyNames[i])}` : L.consts?.has(i) ? this.d.literal(L.consts.get(i), c.type) : this.d.nullOf(c.type)} AS ${this.ident(names[i])}`),
       ...L.flags.map((f, i) => `${this.d.bool(f)} AS ${this.ident(names[x.keyCols.length + i])}`),
       ...items.map((s, i) => `${s} AS ${this.ident(names[x.keyCols.length + L.flags.length + i])}`),
     ];

@@ -40,6 +40,8 @@ export class Dialect {
     return { int: 'BIGINT', double: 'DOUBLE PRECISION', decimal: 'DECIMAL(19,4)', string: 'VARCHAR', bool: 'BOOLEAN', datetime: 'TIMESTAMP' }[t];
   }
   cast(sql, t) { return `CAST(${sql} AS ${this.type(t)})`; }
+  // A blank of type t where a column is one (a subtotal's key): NULL, which the engine types.
+  nullOf() { return 'NULL'; }
   bigint(v) { return `CAST(${this.num(v)} AS BIGINT)`; }
 
   // a / b as a number with a fraction.

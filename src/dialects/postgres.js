@@ -29,7 +29,9 @@ export class PostgresDialect extends Dialect {
   get aggFilter() { return true; }
   get sumCurrency() { return true; }
 
-  type(t) { return t === 'string' ? 'TEXT' : super.type(t); }
+  type(t) { return t === 'string' ? 'TEXT' : t === 'date' ? 'DATE' : super.type(t); }
+  // A NULL in a subquery's column is TEXT, which no UNION arm of a number matches: typed.
+  nullOf(t) { return this.type(t) ? `CAST(NULL AS ${this.type(t)})` : 'NULL'; }
 
   // A value more than a column or a constant, written once in a row the body reads:
   // (SELECT body FROM (SELECT x AS "v0") AS b1). One that aggregates or windows the rows around
@@ -43,7 +45,9 @@ export class PostgresDialect extends Dialect {
   }
 
   // An error that has the type of the branch it is in: a cast that fails, its text the message.
-  err(msg, t = 'double') { return `CAST(CAST(${msg} AS INTEGER) AS ${this.type(t)})`; }
+  // A constant is computed when the query is planned, in a branch never taken too: the message
+  // is read under random(), which is not.
+  err(msg, t = 'double') { return `CAST(CAST(CASE WHEN random() < 2 THEN ${msg} END AS INTEGER) AS ${this.type(t)})`; }
 
   // A division by zero is infinity (or NaN), as on DuckDB, not an error.
   div(a, b) {

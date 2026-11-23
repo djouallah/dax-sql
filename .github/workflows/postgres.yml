@@ -37,6 +37,8 @@ jobs:
         image: postgres:17
         env:
           POSTGRES_PASSWORD: postgres
+          # Text sorted and compared by code point, as dax-sql's text is (DuckDB's, T-SQL's BIN2).
+          POSTGRES_INITDB_ARGS: --locale=C --encoding=UTF8
         ports:
           - 5432:5432
         options: >-

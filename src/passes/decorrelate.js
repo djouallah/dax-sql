@@ -29,6 +29,12 @@ export function decorrelate(root) {
 }
 
 const STUCK = Symbol('stuck');
+// The base of a chain of applies each of one row for each row of its left (a grouping of no key:
+// one row, over rows or none): the rows the chain has, and their columns.
+function chainBase(r) {
+  while (r.k === 'apply' && !r.stuck && r.right.k === 'aggregate' && !r.right.keys.length) r = r.left;
+  return r;
+}
 // The aggregates whose value over no rows is a blank (as over a group's rows that the left join
 // from D finds none of); those whose value over none is another.
 const BLANK_OVER_NONE = new Set(['sum', 'avg', 'min', 'max', 'count', 'countrows', 'dcount', 'dcountnb', 'countblank', 'median',
@@ -42,8 +48,12 @@ const OVER_NONE = {
 class Unnest {
   // A definition, before those that read it.
   define(rel) {
+    // One definition of a relation, however many ask for it.
+    this.byRel ??= new Map();
+    if (this.byRel.has(rel)) return this.byRel.get(rel);
     const d = P.definition(rel, 0);
     this.defs.push(d);
+    this.byRel.set(rel, d);
     return d;
   }
 
@@ -82,9 +92,14 @@ class Unnest {
 
   // --- applies: joins ---------------------------------------------------------------------------
 
+  // A relation unnested (once: a relation read in two places is the same one unnested).
   T(r) {
-    if (r.k === 'apply' && !r.stuck) return this.unnest(r);
-    return mapScalars(mapKids(r, k => this.T(k)), x => mapScalar(x, y => (y.k === 'exists' ? { ...y, rel: this.T(y.rel) } : null)));
+    this.tm ??= new Map();
+    if (this.tm.has(r)) return this.tm.get(r);
+    const out = r.k === 'apply' && !r.stuck ? this.unnest(r)
+      : mapScalars(mapKids(r, k => this.T(k)), x => mapScalar(x, y => (y.k === 'exists' ? { ...y, rel: this.T(y.rel) } : null)));
+    this.tm.set(r, out);
+    return out;
   }
 
   unnest(a) {
@@ -100,6 +115,15 @@ class Unnest {
     // A range (a running total, a window of dates): R grouped first by what the range compares.
     const pre = preAggregate(a.right, F);
     if (pre) return this.unnest({ ...a, left: L, right: pre });
+    // A chain of applies of one row each (a measure, then the next, beside the same rows): its
+    // rows are those of its base B, so D is B's distinct values of F, for every apply of the
+    // chain; each joined to the chain in turn (not a D of the chain's rows, inside the next).
+    const base = chainBase(a.left);
+    if (base !== a.left && !free(base).size && F.every(f => base.cols.includes(f))) {
+      const ctx = this.baseCtx(base, F);
+      const { rel, dc } = this.push(a.right, ctx);
+      return P.join(a.outer ? 'left' : 'inner', L, this.T(rel), P.and(ctx.F.map(f => P.key(P.ref(f), P.ref(dc.get(f))))));
+    }
     // L reads a row around it: unnested with the apply around it.
     if (free(L).size) return P.apply(L, this.T(a.right), a.outer);
     const Ld = this.define(L);
@@ -115,6 +139,24 @@ class Unnest {
     const R = this.T(rel);
     const Lr = P.projectAs(sh, L.cols.map((c, i) => ({ col: c, expr: P.ref(sh.cols[i]) })));
     return P.join(a.outer ? 'left' : 'inner', Lr, R, P.and(ctx.F.map(f => P.key(P.ref(f), P.ref(dc.get(f))))));
+  }
+
+  // D for a chain's base: B's distinct values of F (one for each B and F).
+  baseCtx(base, F) {
+    this.bases ??= new Map();
+    let e = this.bases.get(base);
+    if (!e) {
+      const rel = this.T(base);
+      e = { rel, def: this.define(rel), ctxs: new Map() };
+      this.bases.set(base, e);
+    }
+    const key = F.map(f => f.id).join(',');
+    if (!e.ctxs.has(key)) {
+      const s = P.shared(e.def);
+      const at = f => s.cols[e.rel.cols.indexOf(f)];
+      e.ctxs.set(key, { D: this.define(P.distinct(P.project(s, F.map(f => ({ name: f.name, expr: P.ref(at(f)), lineage: f.lineage, t: f.t }))))), F });
+    }
+    return e.ctxs.get(key);
   }
 
   // L ×ᴬ γ(σ_{inner ≡ outer ∧ rest} R), R and rest reading no F: each row's aggregate is that of

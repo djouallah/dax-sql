@@ -156,12 +156,33 @@ class Unnest {
     return { rel: s, dc: new Map(ctx.F.map((f, i) => [f, s.cols[i]])) };
   }
 
+  // D's distinct values of its columns `used` (a definition, one for each D and columns).
+  narrow(ctx, used) {
+    const key = used.map(f => f.id).join(',');
+    ctx.narrowed ??= new Map();
+    if (!ctx.narrowed.has(key)) {
+      const s = P.shared(ctx.D);
+      const at = f => s.cols[ctx.F.indexOf(f)];
+      const D = this.define(P.distinct(P.project(s, used.map(f => ({ name: f.name, expr: P.ref(at(f)), lineage: f.lineage, t: f.t })))));
+      ctx.narrowed.set(key, { D, F: used });
+    }
+    return ctx.narrowed.get(key);
+  }
+
   // D ⋈ᴬ r: a relation of D's columns (dc) and r's (the same columns), reading no F.
   push(r, ctx) {
     const fr = free(r);
     if (!ctx.F.some(f => fr.has(f))) {
       const d = this.dref(ctx);
       return { rel: P.join('cross', d.rel, r), dc: d.dc };
+    }
+    // r reads some of D's columns: r over their distinct values, joined to D on them (not
+    // computed for each value of the columns it does not read).
+    const used = ctx.F.filter(f => fr.has(f));
+    if (used.length < ctx.F.length) {
+      const s = this.push(r, this.narrow(ctx, used));
+      const d = this.dref(ctx);
+      return { rel: P.join('inner', d.rel, s.rel, P.and(used.map(f => P.key(P.ref(d.dc.get(f)), P.ref(s.dc.get(f)))))), dc: d.dc };
     }
     try { return this.push1(r, ctx); } catch (e) {
       if (e !== STUCK) throw e;
@@ -268,6 +289,14 @@ class Unnest {
         return { rel: P.join(r.kind === 'cross' ? 'inner' : r.kind, a.rel, b.rel, P.and([...own, ...match])), dc: a.dc };
       }
       case 'apply': {
+        // An apply whose right reads D but none of its left (a date's window from the current
+        // dates' last, beside each date): D goes to the right, the left crossed with it as is
+        // (not D crossed with the left). An outer apply's right of one row for each value of D.
+        const fr = free(r.right), own = new Set(r.left.cols), lf = free(r.left);
+        if (!F.some(f => lf.has(f)) && ![...fr].some(c => own.has(c)) && (!r.outer || (r.right.k === 'aggregate' && !r.right.keys.length))) {
+          const s = this.push(r.right, ctx);
+          return { rel: P.join('cross', r.left, s.rel), dc: s.dc };
+        }
         // An apply inside: D goes to its left; its right reads D there (and is unnested next).
         const s = this.push(r.left, ctx);
         return { rel: P.apply(s.rel, substRel(r.right, s.dc), r.outer), dc: s.dc };

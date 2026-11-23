@@ -33,6 +33,12 @@ jobs:
   datafusion:
     runs-on: ubuntu-latest
     timeout-minutes: 40
+    # unnested: the optimized plan; correlated: the plan before decorrelation (scalar subqueries,
+    # EXISTS, outer references), which DataFusion unnests itself.
+    strategy:
+      fail-fast: false
+      matrix:
+        mode: [unnested, correlated]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -47,6 +53,7 @@ jobs:
       - name: The suite's plans as Substrait, on DataFusion
         env:
           SUBSTRAIT_PYTHON: python
+          SUBSTRAIT_CORRELATED: ${{ matrix.mode == 'correlated' && '1' || '' }}
           SUBSTRAIT_OUT: ${{ runner.temp }}/plans
           NODE_OPTIONS: --max-old-space-size=6144
         run: |
@@ -56,13 +63,15 @@ jobs:
           tail -40 "$RUNNER_TEMP/run.txt"
       - name: Summary
         if: always()
+        env:
+          MODE: ${{ matrix.mode }}
         run: |
           test -f "$RUNNER_TEMP/substrait.json" || exit 0
           node -e '
             const fs = require("fs");
             const r = JSON.parse(fs.readFileSync(process.argv[1]));
             const t = r.total, out = [];
-            out.push("### Substrait on DataFusion", "", "| match | fail | error | unsupported |", "|---|---|---|---|", `| ${t.match} | ${t.fail} | ${t.error} | ${t.unsupported} |`, "");
+            out.push(`### Substrait on DataFusion: ${process.env.MODE}`, "", "| match | fail | error | unsupported |", "|---|---|---|---|", `| ${t.match} | ${t.fail} | ${t.error} | ${t.unsupported} |`, "");
             const groups = {};
             for (const q of r.queries.filter(q => q.outcome !== "match" && !q.known)) {
               const k = `${q.outcome}: ${String(q.detail ?? "").split("\n")[0].replace(/\d+/g, "N").replace(/got .*/, "got …").slice(0, 140)}`;
@@ -80,7 +89,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: substrait
+          name: substrait-${{ matrix.mode }}
           path: |
             ${{ runner.temp }}/substrait.json
             ${{ runner.temp }}/run.txt

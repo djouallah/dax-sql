@@ -7,6 +7,7 @@
 //   pip install -r engines/dax-sql-substrait/requirements.txt
 //   node runner/run.mjs --adapter "node engines/dax-sql-substrait/adapter.mjs .." --known engines/dax-sql-substrait/known.json
 //
+// SUBSTRAIT_CORRELATED=1: the plan before decorrelation (scalar subqueries, EXISTS, outer references).
 // SUBSTRAIT_PYTHON: the Python to run run.py with (python). SUBSTRAIT_OUT: a folder to keep each
 // query's plan in (<id>.json), with dax.json: the dax-sql functions each plan uses.
 import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
@@ -62,7 +63,7 @@ for (const q of request.queries) {
     if (!db.compilers.has(roles)) db.compilers.set(roles, e.createCompiler(db.model, { columnNames: 'dax', ...(q.roles ? { roles: q.roles } : {}) }));
     const c = db.compilers.get(roles);
     const entity = t => t.source?.entity ?? t.name;
-    const { plan, dax: fns, columns } = c.substrait(q.dax, { tableName: entity, tableSchema: t => db.schemas.get(entity(t)), inline: true });
+    const { plan, dax: fns, columns } = c.substrait(q.dax, { tableName: entity, tableSchema: t => db.schemas.get(entity(t)), inline: true, correlated: !!process.env.SUBSTRAIT_CORRELATED });
     const file = join(work, `q${jobs.length}.json`);
     writeFileSync(file, JSON.stringify(plan));
     if (keep) { const out = join(keep, `${q.id}.json`); mkdirSync(dirname(out), { recursive: true }); writeFileSync(out, JSON.stringify(plan, null, 1)); }

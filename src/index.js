@@ -45,8 +45,23 @@ import { standard } from './passes/standard.js';
 import { fuseApplies } from './passes/fuse-applies.js';
 import { share } from './passes/share.js';
 import { inline } from './passes/inline.js';
+import { kids, scalarsOf } from './passes/decorrelate.js';
 // The correlated plan: the plan before decorrelation, its scalars standard, its measures fused,
 // a subtree held more than once one definition.
+// A plan's size: its operators and its scalars' nodes, its definitions' once each.
+function planSize(root) {
+  let n = 0;
+  const S = x => {
+    if (!x || typeof x !== 'object') return;
+    n++;
+    if (x.k === 'exists') R(x.rel);
+    for (const y of [...(x.a ?? []), ...(x.w ?? []).flat(), x.e]) S(y);
+  };
+  const R = r => { n++; kids(r).forEach(R); scalarsOf(r).forEach(S); };
+  R(root.src);
+  for (const d of root.defs ?? []) R(d.rel);
+  return n;
+}
 const correlated = plan => inline(share(fuseApplies(standard(plan))));
 import { explain as drawPlan } from './explain.js';
 import { optimize } from './passes/index.js';
@@ -220,7 +235,19 @@ export function createCompiler(input, options = {}) {
   function plans(text) {
     if (rolesError) throw semantic(rolesError);
     const opts = { ...options, calcColumn, calcTable, security };
-    const lower = q => base.query(q, statements => statements.map(s => new Lowerer(model, opts).query(s)));
+    const lower1 = q => base.query(q, statements => statements.map(s => new Lowerer(model, opts).query(s)));
+    // SUMMARIZECOLUMNS by one calculation group's column: a level for each item, or one for all
+    // of them; the smaller plan, as compileAll keeps the smaller SQL.
+    const lower = q => {
+      const out = lower1(q);
+      if (!base.splitOne) return out;
+      base.noSplit = true;
+      try {
+        const whole = lower1(q);
+        const size = ps => ps.reduce((n, p) => n + planSize(p.plan), 0);
+        return size(whole) < size(out) ? whole : out;
+      } finally { base.noSplit = false; }
+    };
     if (!isSqlQuery(text)) return lower(text);
     const t = sqlTranslator.translate(text);
     const [p] = lower(t.query);

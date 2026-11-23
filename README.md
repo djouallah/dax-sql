@@ -4,13 +4,13 @@ Initially written by [N.S. Devaraj](https://github.com/nsdevaraj).
 
 Compiles a DAX or SQL query over a semantic model to one SQL `SELECT`. No dependencies. `npm install dax-sql`; API and an example in [DESIGN.md](DESIGN.md#api).
 
-| | DuckDB | T-SQL (Fabric) |
-|---|---|---|
-| Semantic model: `.bim`, TMDL, Ossie YAML | yes | yes |
-| Measure dialect: DAX, Ossie SQL | yes | yes |
-| Query: DAX `SUMMARIZECOLUMNS(…)`, SQL `SELECT dim, AGG(measure) FROM model` | yes | yes |
-
-T-SQL with `dialect: 'tsql'`, limits in [DESIGN.md](DESIGN.md#t-sql). DAX is tested against Power BI's answers ([conformance/](conformance/README.md)), SQL against Apache Ossie's compliance cases. Errors: `SYNTAX`, `SEMANTIC`, `UNSUPPORTED`; `CATALOG` for semantic views. Anything not in [DESIGN.md](DESIGN.md#what-it-does) is not implemented.
+| Feature | Supported |
+|---|---|
+| Semantic model | `.bim`, TMDL, Ossie YAML |
+| Measure dialect | DAX, Ossie SQL |
+| Query | DAX `SUMMARIZECOLUMNS(…)`, SQL `SELECT dim, AGG(measure) FROM model` |
+| Target | DuckDB, T-SQL (Fabric, `dialect: 'tsql'`, limits in [DESIGN.md](DESIGN.md#t-sql)) |
+DAX is tested against Power BI's answers ([conformance/](conformance/README.md)), SQL against Apache Ossie's compliance cases. Errors: `SYNTAX`, `SEMANTIC`, `UNSUPPORTED`; `CATALOG` for semantic views. Anything not in [DESIGN.md](DESIGN.md#what-it-does) is not implemented.
 
 ## Departures from DAX, by design
 

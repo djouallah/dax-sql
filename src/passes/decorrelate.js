@@ -379,7 +379,7 @@ function substRel(r, map) {
 
 // The conditions a condition's ANDs hold.
 export function conjuncts(x) {
-  return x.k === 'op' && x.op === 'and' ? x.a.flatMap(conjuncts) : [x];
+  return (x.k === 'op' || x.k === 'pop') && x.op === 'and' ? x.a.flatMap(conjuncts) : [x];
 }
 
 // σ over applies: the conditions that read none of the applies' columns go below them, so the

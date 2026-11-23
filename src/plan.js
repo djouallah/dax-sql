@@ -53,9 +53,9 @@ export const TRUE = pop('true', []), FALSE = pop('false', []);
 export const isCondOp = op => !['add', 'sub', 'mul', 'div', 'neg', 'coalesce', 'nullif', 'cast', 'concat', 'call'].includes(op);
 
 // Conditions, as SQL has them.
-export const and = xs => xs.length === 1 ? xs[0] : xs.reduce((l, r) => ({ k: 'op', op: 'and', a: [l, r], t: 'bool', nn: true }));
-export const or = xs => xs.length === 1 ? xs[0] : xs.reduce((l, r) => ({ k: 'op', op: 'or', a: [l, r], t: 'bool', nn: true }));
-export const not = x => ({ k: 'op', op: 'not', a: [x], t: 'bool', nn: true });
+export const and = xs => xs.length === 1 ? xs[0] : xs.reduce((l, r) => pop('and', [l, r]));
+export const or = xs => xs.length === 1 ? xs[0] : xs.reduce((l, r) => pop('or', [l, r]));
+export const not = x => pop('not', [x]);
 // ≡: a blank matching a blank (DAX's ==, SQL's IS NOT DISTINCT FROM).
 export const same = (l, r) => ({ k: 'op', op: 'eqs', a: [l, r], t: 'bool', nn: true });
 // =: NULL matching nothing (a relationship's join).

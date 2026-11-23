@@ -139,7 +139,7 @@ function scalar(x, subs, avail) {
     case 'exists': subs.push(x.rel); return `∃${subs.length}`;
     case 'pop': {
       // An argument that is itself an operation, in parentheses.
-      const A = x.a.map(y => (y.k === 'pop' && INFIX[y.op] && x.op !== 'call' && x.op !== 'coalesce' && x.op !== 'cast' ? `(${S(y)})` : S(y)));
+      const A = x.a.map(y => (((y.k === 'pop' && INFIX[y.op]) || (y.k === 'op' && OPS[y.op])) && x.op !== 'call' && x.op !== 'coalesce' && x.op !== 'cast' ? `(${S(y)})` : S(y)));
       const [a, b] = A;
       if (INFIX[x.op]) return `${a} ${INFIX[x.op]} ${b}`;
       return {

@@ -61,6 +61,7 @@ jobs:
             --known conformance/engines/dax-sql/known.json,conformance/engines/dax-sql/known-plan.json \
             --report "$RUNNER_TEMP/substrait.json" > "$RUNNER_TEMP/run.txt" 2>&1 || true
           tail -40 "$RUNNER_TEMP/run.txt"
+          grep -E ": (timeout|its plan took)" "$RUNNER_TEMP/run.txt" || true
       - name: Summary
         if: always()
         env:

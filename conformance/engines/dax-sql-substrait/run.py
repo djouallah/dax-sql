@@ -5,7 +5,10 @@
 import datetime
 import decimal
 import json
+import os
 import sys
+import threading
+import time
 
 from datafusion import SessionContext
 from datafusion import substrait as ss
@@ -68,10 +71,27 @@ def for_datafusion(plan):
     return plan
 
 
+# A query has SUBSTRAIT_TIMEOUT seconds (60): one past it is answered as timed out and the
+# process ends (DataFusion's run cannot be stopped), exit code 3; the adapter runs the rest again.
+TIMEOUT = float(os.environ.get('SUBSTRAIT_TIMEOUT') or 60)
+current = {'id': None, 'since': 0.0}
+
+
+def watchdog():
+    while True:
+        time.sleep(1)
+        q = current['id']
+        if q is not None and time.monotonic() - current['since'] > TIMEOUT:
+            print(json.dumps({'id': q, 'error': f'timeout: no answer from DataFusion in {TIMEOUT:g} s'}), flush=True)
+            os._exit(3)
+
+
 def main():
     jobs = json.load(open(sys.argv[1], encoding='utf-8'))
     contexts = {}
+    threading.Thread(target=watchdog, daemon=True).start()
     for q in jobs['queries']:
+        current['id'], current['since'] = q['id'], time.monotonic()
         try:
             m = q['model']
             if m not in contexts:
@@ -89,6 +109,7 @@ def main():
             print(json.dumps({'id': q['id'], 'rows': rows}), flush=True)
         except Exception as err:  # one query's failure is its answer
             print(json.dumps({'id': q['id'], 'error': ' '.join(str(err).split())[:700]}), flush=True)
+        current['id'] = None
 
 
 main()

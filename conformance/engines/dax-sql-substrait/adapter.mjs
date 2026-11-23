@@ -63,7 +63,10 @@ for (const q of request.queries) {
     if (!db.compilers.has(roles)) db.compilers.set(roles, e.createCompiler(db.model, { columnNames: 'dax', ...(q.roles ? { roles: q.roles } : {}) }));
     const c = db.compilers.get(roles);
     const entity = t => t.source?.entity ?? t.name;
+    const t0 = performance.now();
     const { plan, dax: fns, columns } = c.substrait(q.dax, { tableName: entity, tableSchema: t => db.schemas.get(entity(t)), inline: true, correlated: !!process.env.SUBSTRAIT_CORRELATED });
+    const ms = performance.now() - t0;
+    if (ms > 5000) process.stderr.write(`${q.id}: its plan took ${Math.round(ms / 1000)} s to write\n`);
     const file = join(work, `q${jobs.length}.json`);
     writeFileSync(file, JSON.stringify(plan));
     if (keep) { const out = join(keep, `${q.id}.json`); mkdirSync(dirname(out), { recursive: true }); writeFileSync(out, JSON.stringify(plan, null, 1)); }
@@ -74,12 +77,20 @@ for (const q of request.queries) {
   }
 }
 if (keep) writeFileSync(join(keep, 'dax.json'), JSON.stringify(dax, null, 1));
+// run.py ends at a query past its time (exit code 3, that query answered as timed out): the
+// queries still without an answer are run again, by a new process.
 const jobsFile = join(work, 'jobs.json');
-writeFileSync(jobsFile, JSON.stringify({ models, queries: jobs }));
-const run = spawnSync(process.env.SUBSTRAIT_PYTHON || 'python', [join(dirname(fileURLToPath(import.meta.url)), 'run.py'), jobsFile], { encoding: 'utf8', maxBuffer: 1 << 30 });
-if (run.status !== 0 && !run.stdout) process.stderr.write(run.stderr);
-for (const line of run.stdout.split('\n').filter(Boolean)) {
-  const a = JSON.parse(line), job = jobs.find(j => j.id === a.id);
-  answers.set(a.id, a.error ? a : { id: a.id, columns: job.columns, rows: a.rows });
+let left = jobs;
+while (left.length) {
+  writeFileSync(jobsFile, JSON.stringify({ models, queries: left }));
+  const run = spawnSync(process.env.SUBSTRAIT_PYTHON || 'python', [join(dirname(fileURLToPath(import.meta.url)), 'run.py'), jobsFile], { encoding: 'utf8', maxBuffer: 1 << 30 });
+  if (run.status !== 0 && run.status !== 3) process.stderr.write(run.stderr ?? '');
+  for (const line of (run.stdout ?? '').split('\n').filter(Boolean)) {
+    const a = JSON.parse(line), job = jobs.find(j => j.id === a.id);
+    answers.set(a.id, a.error ? a : { id: a.id, columns: job.columns, rows: a.rows });
+    if (/^timeout/.test(a.error ?? '')) process.stderr.write(`${a.id}: ${a.error}\n`);
+  }
+  if (run.status !== 3) break;
+  left = left.filter(j => !answers.has(j.id));
 }
 for (const q of request.queries) process.stdout.write(`${JSON.stringify(answers.get(q.id) ?? { id: q.id, error: 'no answer from DataFusion' })}\n`);

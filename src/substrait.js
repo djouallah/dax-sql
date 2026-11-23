@@ -78,6 +78,8 @@ const field = i => ({ selection: { directReference: { structField: i ? { field: 
 const emit = map => ({ emit: { outputMapping: map } });
 const range = (from, n) => Array.from({ length: n }, (_, i) => from + i);
 const DAY = 86400000;
+const INLINE_LIMIT = 20000;
+const kidsOf = r => (r.k === 'join' ? [r.left, r.right] : r.k === 'union' ? r.srcs : r.src ? [r.src] : []);
 
 export function toSubstrait(plan, options = {}) {
   const tableName = options.tableName ?? (t => t.source?.entity ?? t.name);
@@ -201,7 +203,7 @@ export function toSubstrait(plan, options = {}) {
       case 'shared': {
         const d = r.def;
         const at = r.picks.map(c => d.rel.cols.indexOf(c));
-        const input = options.inline ? R(d.rel) : { reference: { subtreeOrdinal: D(d) } };
+        const input = options.inline ? inlined(d) : { reference: { subtreeOrdinal: D(d) } };
         return { project: { common: emit(range(d.rel.cols.length, at.length)), input, expressions: at.map(i => field(i)) } };
       }
       case 'series': {
@@ -239,6 +241,17 @@ export function toSubstrait(plan, options = {}) {
 
   // The root: the output's values (cast as the output casts them), its order, its limit.
   const out = plan;
+  // Inline: each definition written once, and the plan refused when, written out where each is
+  // read, it would hold more than INLINE_LIMIT relations (definitions read in definitions read
+  // many times).
+  const memo = new Map();
+  const inlined = d => { if (!memo.has(d)) memo.set(d, R(d.rel)); return memo.get(d); };
+  if (options.inline) {
+    const sizes = new Map();
+    const size = r => (r.k === 'shared' ? (sizes.has(r.def) ? sizes.get(r.def) : (sizes.set(r.def, size(r.def.rel)), sizes.get(r.def))) : 1 + kidsOf(r).reduce((n, k) => n + size(k), 0));
+    const n = size(out.src);
+    if (n > INLINE_LIMIT) throw Object.assign(new Error(`substrait: the plan written out where each definition is read holds ${n} relations (more than ${INLINE_LIMIT})`), { code: 'TOO_LARGE' });
+  }
   for (const d of out.defs ?? []) if (!options.inline) D(d);
   let rel = R(out.src);
   const cols = out.src.cols;

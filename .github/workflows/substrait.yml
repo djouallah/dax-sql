@@ -1,0 +1,87 @@
+name: Substrait
+
+# The suite's query plans as Substrait (src/substrait.js), run by DataFusion's Substrait consumer
+# (conformance/engines/dax-sql-substrait): an engine that never sees dax-sql's SQL, answering from
+# the plan alone, held to Power BI's answers. A measure for now, not a gate: the counts, the most
+# common errors and the dax-sql functions the plans use go to the job summary; the plans and the
+# report to an artifact.
+
+on:
+  push:
+    paths:
+      - "src/**"
+      - "formats/**"
+      - "conformance/queries/**"
+      - "conformance/golden/**"
+      - "conformance/runner/**"
+      - "conformance/engines/dax-sql/db.mjs"
+      - "conformance/engines/dax-sql-substrait/**"
+      - ".github/workflows/substrait.yml"
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+concurrency:
+  group: substrait-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  datafusion:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -q -r conformance/engines/dax-sql-substrait/requirements.txt
+      - name: The suite's plans as Substrait, on DataFusion
+        env:
+          SUBSTRAIT_PYTHON: python
+          SUBSTRAIT_OUT: ${{ runner.temp }}/plans
+          NODE_OPTIONS: --max-old-space-size=6144
+        run: |
+          node conformance/runner/run.mjs --adapter "node conformance/engines/dax-sql-substrait/adapter.mjs ." \
+            --report "$RUNNER_TEMP/substrait.json" > "$RUNNER_TEMP/run.txt" 2>&1 || true
+          tail -40 "$RUNNER_TEMP/run.txt"
+      - name: Summary
+        if: always()
+        run: |
+          test -f "$RUNNER_TEMP/substrait.json" || exit 0
+          node -e '
+            const fs = require("fs");
+            const r = JSON.parse(fs.readFileSync(process.argv[1]));
+            const t = r.total, out = [];
+            out.push("### Substrait on DataFusion", "", "| match | fail | error | unsupported |", "|---|---|---|---|", `| ${t.match} | ${t.fail} | ${t.error} | ${t.unsupported} |`, "");
+            const groups = {};
+            for (const q of r.queries.filter(q => q.outcome !== "match")) {
+              const k = `${q.outcome}: ${String(q.detail ?? "").split("\n")[0].replace(/\d+/g, "N").replace(/got .*/, "got …").slice(0, 140)}`;
+              groups[k] = (groups[k] ?? 0) + 1;
+            }
+            out.push("| queries | why |", "|---|---|", ...Object.entries(groups).sort((a, b) => b[1] - a[1]).slice(0, 40).map(([k, n]) => `| ${n} | ${k.replace(/\|/g, "\\|")} |`), "");
+            const daxFile = process.argv[2] + "/dax.json";
+            if (fs.existsSync(daxFile)) {
+              const uses = {};
+              for (const fns of Object.values(JSON.parse(fs.readFileSync(daxFile)))) for (const f of fns) uses[f] = (uses[f] ?? 0) + 1;
+              out.push("dax-sql functions the plans use (queries): " + (Object.entries(uses).map(([f, n]) => `${f} ${n}`).join(", ") || "none"));
+            }
+            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, out.join("\n") + "\n");
+          ' "$RUNNER_TEMP/substrait.json" "$RUNNER_TEMP/plans"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: substrait
+          path: |
+            ${{ runner.temp }}/substrait.json
+            ${{ runner.temp }}/run.txt
+            ${{ runner.temp }}/plans
+          if-no-files-found: ignore

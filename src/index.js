@@ -42,6 +42,9 @@ import { Lowerer } from './lower.js';
 import { PlanSql } from './plan-sql.js';
 import { toSubstrait } from './substrait.js';
 import { standard } from './passes/standard.js';
+import { fuseApplies } from './passes/fuse-applies.js';
+// The correlated plan: the plan before decorrelation, its scalars standard, its measures fused.
+const correlated = plan => fuseApplies(standard(plan));
 import { explain as drawPlan } from './explain.js';
 import { optimize } from './passes/index.js';
 
@@ -239,7 +242,7 @@ export function createCompiler(input, options = {}) {
     // scalar subqueries, its EXISTS EXISTS: for an engine that unnests them, as DuckDB does).
     planSql(text, o = {}) {
       const p = onePlan(text);
-      const plan = o.correlated ? standard(p.plan) : o.optimize === false ? p.plan : optimize(p.plan);
+      const plan = o.correlated ? correlated(p.plan) : o.optimize === false ? p.plan : optimize(p.plan);
       return { sql: new PlanSql(model, dialect, options).query({ ...p, plan }), columns: p.columns };
     },
     // The query plan as a Substrait plan (substrait.js): { plan (its JSON form), dax (dax-sql's
@@ -250,7 +253,7 @@ export function createCompiler(input, options = {}) {
       // subqueries, EXISTS a set predicate); a plan with a table for each row (a lateral join,
       // which Substrait has none of) as the optimizer unnests it.
       if (o.correlated) {
-        try { return { ...toSubstrait(standard(p.plan), o), columns: p.columns }; } catch (err) { if (err.code !== 'UNSUPPORTED') throw err; }
+        try { return { ...toSubstrait(correlated(p.plan), o), columns: p.columns }; } catch (err) { if (err.code !== 'UNSUPPORTED') throw err; }
       }
       const plan = o.optimize === false ? p.plan : optimize(p.plan);
       return { ...toSubstrait(plan, o), columns: p.columns };

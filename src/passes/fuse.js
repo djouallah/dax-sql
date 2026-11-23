@@ -77,7 +77,7 @@ const same = (x, y) => text(x, new Map()) === text(y, new Map());
 
 // { key, cols, ids }: the relation as text, its columns numbered in the order they are made
 // (a column made outside it named by its own id), and those columns in that order.
-function canon(rel) {
+export function canon(rel) {
   const ids = new Map(), cols = [];
   const number = r => {
     for (const k of kids(r)) number(k);
@@ -110,7 +110,7 @@ function nodeText(r, ids) {
   return scalarsOf(r).map(S).join(',');
 }
 
-function text(x, ids) {
+export function text(x, ids) {
   if (!x || typeof x !== 'object') return String(x);
   const S = y => text(y, ids);
   switch (x.k) {
@@ -126,11 +126,11 @@ function text(x, ids) {
 }
 
 // A scalar with m's columns as n's (`exprs`: map's values are expressions, not columns).
-function remap(x, map, exprs = false) {
+export function remap(x, map, exprs = false) {
   if (!x || typeof x !== 'object') return x;
   if (x.k === 'ref') return map.has(x.col) ? (exprs ? map.get(x.col) : P.ref(map.get(x.col))) : x;
   if (x.k === 'op' || x.k === 'fn' || x.k === 'pop') return { ...x, a: x.a.map(y => remap(y, map, exprs)) };
   if (x.k === 'case') return { ...x, w: x.w.map(([c, v]) => [remap(c, map, exprs), remap(v, map, exprs)]), e: remap(x.e, map, exprs) };
   return x;
 }
-const remapExtra = (e, map) => (e ? { ...e, ...(e.delim ? { delim: remap(e.delim, map) } : {}), ...(e.k ? { k: remap(e.k, map) } : {}), ...(e.order ? { order: e.order.map(o => ({ ...o, expr: remap(o.expr, map) })) } : {}) } : e);
+export const remapExtra = (e, map) => (e ? { ...e, ...(e.delim ? { delim: remap(e.delim, map) } : {}), ...(e.k ? { k: remap(e.k, map) } : {}), ...(e.order ? { order: e.order.map(o => ({ ...o, expr: remap(o.expr, map) })) } : {}) } : e);

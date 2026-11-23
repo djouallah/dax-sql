@@ -19,7 +19,7 @@ import { tmslToModel } from './tmsl.js';
 // Properties that only tie an object to where it came from: nothing here reads them.
 const LINEAGE = new Set(['lineageTag', 'sourceLineageTag', 'changedProperty']);
 // Properties TMSL holds as numbers.
-const NUMBERS = new Set(['compatibilityLevel', 'ordinal']);
+const NUMBERS = new Set(['compatibilityLevel', 'ordinal', 'precedence']);
 
 // A line's depth, by its leading tabs (four spaces count as one, should a file use spaces).
 function depthOf(line) {
@@ -122,7 +122,7 @@ function parseTree(text) {
     const rest = s.slice(word[0].length);
     // key = expression — a property written as an expression (a partition's `source = …`).
     if (rest.startsWith('=')) {
-      const { value, next } = below(d + 1, rest.slice(1).trim());
+      const { value, next } = below(d + 1, rest.slice(1).trim(), false);
       parent.props[word[1]] = value;
       i = next;
       continue;

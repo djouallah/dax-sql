@@ -2,7 +2,7 @@
 
 Initially written by [N.S. Devaraj](https://github.com/nsdevaraj).
 
-Compiles a DAX or SQL query over a semantic model to one SQL `SELECT`. No dependencies. `npm install dax-sql`; API and an example in [DESIGN.md](DESIGN.md#api).
+Compiles a DAX or SQL query over a semantic model to one SQL `SELECT`. No dependencies. `npm install dax-sql`; API, example and everything it does in [DESIGN.md](DESIGN.md); anything not there is not implemented.
 
 | Feature | Supported |
 |---|---|
@@ -11,7 +11,7 @@ Compiles a DAX or SQL query over a semantic model to one SQL `SELECT`. No depend
 | Query | DAX `SUMMARIZECOLUMNS(…)`, SQL `SELECT dim, AGG(measure) FROM model` |
 | Target | DuckDB, T-SQL (Fabric) |
 
-DAX is tested against Power BI's answers ([conformance/](conformance/README.md)), SQL against Apache Ossie's compliance cases. Errors: `SYNTAX`, `SEMANTIC`, `UNSUPPORTED`; `CATALOG` for semantic views. Anything not in [DESIGN.md](DESIGN.md#what-it-does) is not implemented.
+DAX is tested against Power BI's answers ([conformance/](conformance/README.md)), SQL against Apache Ossie's compliance cases. Errors: `SYNTAX`, `SEMANTIC`, `UNSUPPORTED`; `CATALOG` for semantic views.
 
 ## Departures from DAX, by design
 

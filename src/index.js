@@ -227,13 +227,12 @@ export function createCompiler(input, options = {}) {
   return {
     model,
     dialect,
-    // One EVALUATE, or a SELECT over the model -> its query plan (plan.js); with { optimize:
-    // true }, the plan the optimizer's passes make of it (passes/).
-    plan: (text, o = {}) => { const p = onePlan(text).plan; return o.optimize ? optimize(p) : p; },
-    // The query plan drawn as a tree, one per EVALUATE (with { optimize: true }, optimized).
-    explain: (text, o = {}) => plans(text).map(p => drawPlan(o.optimize ? optimize(p.plan) : p.plan)).join('\n\n'),
-    // The SQL of the optimized query plan ({ optimize: false }: the plan as it is): { sql,
-    // columns }, as compile gives.
+    // One EVALUATE, or a SELECT over the model -> its query plan (plan.js, made by lower.js and
+    // the passes/). { optimize: false }: before the passes (the reference CI checks them with).
+    plan: (text, o = {}) => { const p = onePlan(text).plan; return o.optimize === false ? p : optimize(p); },
+    // The query plan drawn as a tree, one per EVALUATE.
+    explain: (text, o = {}) => plans(text).map(p => drawPlan(o.optimize === false ? p.plan : optimize(p.plan))).join('\n\n'),
+    // The query plan's SQL: { sql, columns }, as compile gives.
     planSql(text, o = {}) {
       const p = onePlan(text);
       const plan = o.optimize === false ? p.plan : optimize(p.plan);

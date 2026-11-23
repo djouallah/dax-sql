@@ -64,7 +64,7 @@ for (const q of loadQueries({})) {
   }
   let raw, opt;
   try {
-    raw = compilers.get(key).plan(q.dax);
+    raw = compilers.get(key).plan(q.dax, { optimize: false });
     opt = compilers.get(key).plan(q.dax, { optimize: true });
   } catch { refused++; continue; }   // a DAX error, as compile gives
   planned++;

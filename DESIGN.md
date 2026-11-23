@@ -190,33 +190,38 @@ semi-join, recursively, without returning to where it came from.
 
 ### The query plan
 
-A query's plan is the work an engine has to do for it, as relational algebra, with no rewrite
-and nothing of any engine (`explain(query)` draws it):
+A query's plan is the work an engine has to do for it, as relational algebra, knowing nothing
+of any engine (`explain(query)` draws it):
 
 ```
 π  Category, Sales = sum
 └─ σ  sum ≠ BLANK                                SUMMARIZECOLUMNS leaves out blank rows
-   └─ ×ᴬ Apply                                   the measure, for each group
-      ├─ δ  Distinct                             the groups: the column's values
-      │  └─ π  Category.Category
-      │     └─ ▭  Category
-      └─ γ  SUM(Sales.Amount) → sum              [Sales Amount]
-         └─ σ  ∃1 ∧ (Category.Category ≡ outer.Category)   the group's key; TREATAS
-            ├─ ⟕  Category.CategoryKey = Product.CategoryKey   Sales' expanded table
-            │  ├─ ⟕  Product.ProductKey = Sales.ProductKey
-            │  │  ├─ ⟕  Date.Date = Sales.OrderDate
-            │  │  │  ├─ ▭  Sales
-            │  │  │  └─ ▭  Date
-            │  │  └─ ▭  Product
-            │  └─ ▭  Category
-            └─ ∃1 σ  Value ≡ outer.Date.Year
-               └─ ▭  Values {2024}
+   └─ π  …, sum
+      └─ ⟕  Category ≡ key                       the measure, joined to the groups
+         ├─ δ  Distinct                          the groups: the column's values
+         │  └─ π  Category.Category
+         │     └─ ▭  Category
+         └─ γ  by key = Category.Category; SUM(Sales.Amount) → sum     [Sales Amount]
+            └─ σ  rows ≠ BLANK                   TREATAS: the rows of 2024
+               └─ π  …, rows
+                  └─ ⟕  Date.Year ≡ key
+                     ├─ ⟕  Category.CategoryKey = Product.CategoryKey   Sales' expanded table
+                     │  ├─ ⟕  Product.ProductKey = Sales.ProductKey
+                     │  │  ├─ ⟕  Date.Date = Sales.OrderDate
+                     │  │  │  ├─ ▭  Sales
+                     │  │  │  └─ ▭  Date
+                     │  │  └─ ▭  Product
+                     │  └─ ▭  Category
+                     └─ π  …, rows = NULLIF(count_star, 0)
+                        └─ γ  by key = Value; COUNT(*) → count_star
+                           └─ ▭  Values {2024}
 ```
 
 for `SUMMARIZECOLUMNS(Category[Category], TREATAS({2024}, 'Date'[Year]), "Sales", [Sales Amount])`.
-The filter context is σ and semi-joins (∃) over joins along the relationships; a measure is
-an apply (×ᴬ: the right side for each row of the left) of an aggregate (γ); ≡ is a blank
-matching a blank, and `outer.` a column of the row an apply or a semi-join is correlated to.
+`lower.js` writes the query as DAX evaluates it, a measure for each group and the filter
+context as semi-joins; the optimizer's passes (`passes/`) make that the plan above, for every
+engine: the measure is one grouping by the groups' key, the filter a grouping of its values.
+`≡` is a blank matching a blank, `…` the columns a projection passes on.
 The plan is made of simple operators any engine can run, and nothing else (no SQL text):
 
 - **Relations:** scan, values, σ select, π project, δ distinct, γ aggregate, join (inner, left,
@@ -244,20 +249,21 @@ in a query plan (`UNSUPPORTED`): FORMAT (and FIXED), a number with a fraction or
 as text (`&`, COMBINEVALUES, a COALESCE of a number and a text), text read as a date but an ISO
 one, SUBSTITUTE's instance number; `known-plan.json` lists the suite's queries that use them.
 
-The plan as it is also holds applies and EXISTS correlated to a row; optimized, it holds
-neither. `conformance/engines/dax-sql/operators.mjs` checks every query of the suite against
-that, in CI, and counts the operators the plans use.
+No query plan holds an apply or an EXISTS correlated to a row, as the plan before the passes
+does (`{ optimize: false }`, the reference CI checks the passes against).
+`conformance/engines/dax-sql/operators.mjs` checks every query of the suite against all that,
+in CI, and counts the operators the plans use.
 
 A table VAR and a calculated table are definitions (▭ V1, drawn below the tree): evaluated
 once, as DAX does, and read at each use.
 
-The optimizer (`src/passes/`) rewrites the plan into one that means the same, for every engine;
-`explain(query, { optimize: true })` draws it. Its first pass is decorrelation: an apply, and
+The optimizer (`src/passes/`) rewrites the plan into one that means the same, for every engine.
+Its first pass is decorrelation: an apply, and
 an EXISTS a row reads, become joins and groupings. An aggregate whose rows match the outer row
 on equal values is its rows grouped by those values, left-joined to the outer rows (the plan
 above: one γ by Category, and TREATAS a γ by its value); any other is unnested in general
 (Neumann & Kemper): the distinct values it reads (D) pushed down its operators, joined back.
-`planSql(query)` writes the optimized plan in a dialect's SQL (`{ optimize: false }`: as it is).
+`planSql(query)` writes the query plan in a dialect's SQL.
 The SQL `compile` writes is still `emit.js`'s, whose rewrites move onto the plan pass by pass
 (TODO.md).
 
@@ -521,10 +527,10 @@ const { sql, columns } = dax.compile(`
   for (all of them without `labels`), each `{ label, ref, order, kind, name, tableName }`.
   Power BI resolves a field parameter before it writes the query, so a caller does the same:
   it puts these columns or measures in the query where the parameter goes.
-- `explain(query, { optimize })`: the query plan ([The query plan](#the-query-plan)) drawn as
-  a tree, one per `EVALUATE`, as it is or optimized; `plan(query, { optimize })` is the plan
-  itself (`src/plan.js` says its nodes), and `planSql(query, { optimize = true })` its SQL,
-  `{ sql, columns }` as `compile` gives. Each takes a SQL `SELECT` over the model too.
+- `explain(query)`: the query plan ([The query plan](#the-query-plan)) drawn as a tree, one
+  per `EVALUATE`; `plan(query)` is the plan itself (`src/plan.js` says its nodes), and
+  `planSql(query)` its SQL, `{ sql, columns }` as `compile` gives. Each takes a SQL `SELECT`
+  over the model too, and `{ optimize: false }` for the plan before the optimizer's passes.
 - `model`: the model as read; `dialect`: the dialect it writes.
 
 The package also exports `DaxError`, `Model`, the dialects (`Dialect`, `DuckDBDialect`,

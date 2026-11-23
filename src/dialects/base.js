@@ -18,6 +18,8 @@
 //   hasone count0 dcount0 sum_currency
 export class Dialect {
   name = 'ansi';
+  // Statements a session runs before the SQL (the engine's settings this SQL wants).
+  session = [];
 
   ident(name) { return `"${String(name).replace(/"/g, '""')}"`; }
   str(v) { return `'${String(v).replace(/'/g, "''")}'`; }

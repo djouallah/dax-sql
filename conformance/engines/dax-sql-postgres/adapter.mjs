@@ -33,9 +33,13 @@ pg.types.setTypeParser(1114, v => (/ 00:00:00(?:\.0+)?$/.test(v) ? v.slice(0, 10
 const TIMEOUT_MS = Number(process.env.PG_TIMEOUT_MS || 30000), SESSIONS = Number(process.env.PG_SESSIONS || 4);
 const ident = s => `"${String(s).replace(/"/g, '""')}"`;
 const PG_TYPE = t => (t === 'DOUBLE' ? 'DOUBLE PRECISION' : t === 'VARCHAR' ? 'TEXT' : t);
+// Each session with the settings the dialect's SQL wants (PostgresDialect's session).
+const { PostgresDialect } = await import(pathToFileURL(join(root, 'src', 'index.js')));
+const SESSION = new PostgresDialect().session;
 const connect = async () => {
   const c = new pg.Client({ statement_timeout: TIMEOUT_MS });
   await c.connect();
+  for (const s of SESSION) await c.query(s);
   return c;
 };
 

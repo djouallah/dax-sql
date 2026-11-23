@@ -30,7 +30,9 @@ test('the query plan\'s SQL answers as the compiled SQL does, as it is and optim
   for (const q of [Q,
     'EVALUATE ROW("s", [Sales Amount])',
     'EVALUATE ADDCOLUMNS(VALUES(Product[Name]), "r", RANKX(ALL(Product[Name]), [Sales Amount]))',
-    'EVALUATE GROUPBY(Sales, Product[Color], "n", SUMX(CURRENTGROUP(), Sales[Qty]))']) {
+    'EVALUATE GROUPBY(Sales, Product[Color], "n", SUMX(CURRENTGROUP(), Sales[Qty]))',
+    // Two measures over the same tables by two relationships: not one grouping.
+    'EVALUATE SUMMARIZECOLUMNS(\'Date\'[Year], "o", [Sales Amount], "s", CALCULATE([Sales Amount], USERELATIONSHIP(Sales[ShipDate], \'Date\'[Date])))']) {
     const want = sorted(await h.run(q));
     for (const optimize of [false, true]) assert.deepEqual(sorted(await h.sql(h.dax.planSql(q, { optimize }).sql)), want, `${q} (optimize: ${optimize})`);
   }

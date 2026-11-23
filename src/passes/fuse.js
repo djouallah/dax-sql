@@ -99,7 +99,7 @@ function nodeText(r, ids) {
   switch (r.k) {
     case 'scan': return `${r.table.name}`;
     case 'shared': { if (!defIds.has(r.def)) defIds.set(r.def, nextDef++); return `v${defIds.get(r.def)}`; }
-    case 'join': return `${r.kind}`;
+    case 'join': return `${r.kind}|${r.on ? S(r.on) : ''}`;
     case 'apply': return `${r.outer}`;
     case 'union': return r.picks.map(p => p.map(c => ids.get(c)).join(',')).join('/');
     case 'aggregate': return `${r.keys.map(k => S(k.expr)).join(',')}|${r.aggs.map(a => `${a.fn}(${a.arg ? S(a.arg) : ''})${JSON.stringify({ ...a.extra, delim: a.extra?.delim && S(a.extra.delim), k: a.extra?.k && S(a.extra.k), order: a.extra?.order?.map(o => `${S(o.expr)} ${o.desc}`) })}`).join(',')}`;

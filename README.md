@@ -10,7 +10,7 @@ Compiles a DAX or SQL query over a semantic model to one SQL `SELECT`. No depend
 | Measure dialect: DAX, Ossie SQL | yes | yes |
 | Query: DAX `SUMMARIZECOLUMNS(…)`, SQL `SELECT dim, AGG(measure) FROM model` | yes | yes |
 
-T-SQL with `dialect: 'tsql'`, limits in [DESIGN.md](DESIGN.md#t-sql). DAX is tested against Power BI's answers ([conformance/](conformance/README.md)), SQL against Apache Ossie's compliance cases. Errors:  `SYNTAX`, `SEMANTIC`, `UNSUPPORTED`; `CATALOG` for semantic views. Anything not in [DESIGN.md](DESIGN.md#what-it-does) is not implemented.
+T-SQL with `dialect: 'tsql'`, limits in [DESIGN.md](DESIGN.md#t-sql). DAX is tested against Power BI's answers ([conformance/](conformance/README.md)), SQL against Apache Ossie's compliance cases. Errors: `SYNTAX`, `SEMANTIC`, `UNSUPPORTED`; `CATALOG` for semantic views. Anything not in [DESIGN.md](DESIGN.md#what-it-does) is not implemented.
 
 ## Departures from DAX, by design
 

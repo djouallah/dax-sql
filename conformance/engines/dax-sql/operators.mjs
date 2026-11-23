@@ -77,12 +77,12 @@ function unbounded(plan) {
     const side = (x, S) => { const f = refs(x); return f.size > 0 && [...f].every(c => S.has(c)); };
     return conjuncts(j.on).some(c => c.k === 'pop' && (c.op === 'eq' || c.op === 'key') && ((side(c.a[0], L) && side(c.a[1], R)) || (side(c.a[0], R) && side(c.a[1], L))));
   };
-  let n = 0;
+  const n = { cross: 0, range: 0 };
   const seen = new Set();
   const walk = r => {
     if (seen.has(r)) return;
     seen.add(r);
-    if (r.k === 'join' && !oneRow(r.left) && !oneRow(r.right) && (r.kind === 'cross' || !keyed(r))) n++;
+    if (r.k === 'join' && !oneRow(r.left) && !oneRow(r.right) && (r.kind === 'cross' || !keyed(r))) n[r.kind === 'cross' || !r.on || (r.on.k === 'pop' && r.on.op === 'true') ? 'cross' : 'range']++;
     kids(r).forEach(walk);
   };
   walk(plan.src);
@@ -113,14 +113,14 @@ for (const q of loadQueries({})) {
     if (mode === 'opt' && bad.size) broken.push(`${q.model}/${q.family}/${q.id}: ${[...bad].join(', ')}`);
   }
   const u = unbounded(opt);
-  if (u) multiplying.push({ id: `${q.model}/${q.family}/${q.id}`, n: u });
+  if (u.cross + u.range) multiplying.push({ id: `${q.model}/${q.family}/${q.id}`, n: u.cross + u.range, ...u });
 }
 
 const names = [...new Set([...counts.raw.keys(), ...counts.opt.keys()])].sort();
 const table = `### The query plan's operators\n\n${planned} queries planned (${refused} refused: DAX errors).\n\n| operator | queries, as it is | optimized |\n|---|---|---|\n`
   + names.map(n => `| ${n} | ${counts.raw.get(n) ?? 0} | ${counts.opt.get(n) ?? 0} |`).join('\n')
-  + `\n\n**Joins that can multiply rows** (a cross join, or no equality between the sides; neither side of one row): ${multiplying.reduce((a, m) => a + m.n, 0)} in ${multiplying.length} queries.\n\n`
-  + multiplying.sort((a, b) => b.n - a.n).slice(0, 40).map(m => `- ${m.id}: ${m.n}`).join('\n') + '\n'
+  + `\n\n**Joins that can multiply rows** (a cross join, or no equality between the sides; neither side of one row): ${multiplying.reduce((a, m) => a + m.cross, 0)} cross joins and ${multiplying.reduce((a, m) => a + m.range, 0)} joins on other conditions (ranges), in ${multiplying.length} queries.\n\n`
+  + multiplying.sort((a, b) => b.n - a.n).slice(0, 40).map(m => `- ${m.id}: ${m.cross} cross, ${m.range} other`).join('\n') + '\n'
   + (broken.length ? `\n\n**Outside the contract (${broken.length}):**\n\n${broken.slice(0, 30).map(b => `- ${b}`).join('\n')}\n` : '\n');
 console.log(table);
 if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, table);

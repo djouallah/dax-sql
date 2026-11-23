@@ -15,6 +15,7 @@ import { semantic, unsupported } from './errors.js';
 import { outputNames, daxName } from './emit.js';
 import { canon, text } from './passes/fuse.js';
 import { free, subst } from './passes/decorrelate.js';
+import { clone } from './passes/clone.js';
 
 const lc = s => String(s).toLowerCase();
 const withRow = (scope, row, res) => { const s = new Map(scope); s.set(row.id, res); return s; };
@@ -48,6 +49,7 @@ export class Lowerer {
     this.defs = [];          // the query's definitions, each before those that read it
     this.defOf = new Map();
     this.fusions = [];       // stack: the Fusion an aggregate goes to, or null (inside a table)
+    this.fusedIn = new Map(); // a fused aggregate (its node) -> its group
   }
 
   // f, its aggregates fused into none (a table's, a subquery's: their rows are their own).
@@ -514,13 +516,11 @@ export class Lowerer {
   level(x, L, scope) {
     const active = L.active.map(c => x.keyCols.indexOf(c));
     const counted = L.items.filter(i => !i.ignore);
-    let keyRel, refs = new Map();
-    if (active.length && counted.length && counted.every(i => blankOnly(i.expr))) {
-      keyRel = P.values([], active.map(ki => P.newCol(x.keyCols[ki].name, x.keyCols[ki].type, { lineage: x.keyCols[ki] })));
-      active.forEach((ki, j) => refs.set(ki, P.ref(keyRel.cols[j])));
-    } else if (active.length) ({ rel: keyRel, refs } = this.keyCombinations(x, L, scope));
-    else keyRel = P.oneRow();
-    const kb = new Block(this, keyRel, x.cols);
+    // The level's keys: columns of its own, the rows that hold them chosen once its expressions
+    // are known (from their groups, or every combination of the keys' values).
+    const keyCol = new Map(active.map(ki => [ki, P.newCol(x.keyCols[ki].name, x.keyCols[ki].type, { lineage: x.keyCols[ki] })]));
+    const refs = new Map([...keyCol].map(([ki, c]) => [ki, P.ref(c)]));
+    const kb = new Block(this, null, x.cols);
     kb.res = new WrapRes(this, kb, x.keyCols.map((c, i) => ({ expr: refs.get(i) ?? ir.lit(null, c.type), lineage: c, name: c.name })), this.model.state(x.ctx0.mods));
     const s = withRow(scope, x.keyRow, kb.res);
     // The filters that decide which combinations of the keys there are (keyFilters).
@@ -529,7 +529,26 @@ export class Lowerer {
     this.fusions.push(fusion);
     let items;
     try { items = L.items.map(i => this.scalar(i.expr, s, kb)); } finally { this.fusions.pop(); }
-    fusion.finish(kb, ki => refs.get(ki));
+    // The groups: from the fused aggregates when every expression is blank without their rows,
+    // and those rows are under all the filters that decide the combinations (an expression that
+    // removed one has rows of groups SUMMARIZECOLUMNS does not have); else every combination of
+    // the keys' values.
+    const own = rel => P.projectAs(rel, active.map((ki, j) => ({ col: keyCol.get(ki), expr: P.ref(rel.cols[j]) })));
+    let from = [];
+    if (!active.length) kb.from = P.oneRow();
+    else if (counted.length && counted.every(i => blankOnly(i.expr))) kb.from = P.values([], [...keyCol.values()]);
+    else {
+      const supports = counted.length ? counted.map(i => support(i.expr, this.fusedIn)) : [null];
+      const full = g => g.keys.length === active.length && !g.outside;
+      if (supports.every(sp => sp && [...sp].every(full)) && supports.some(sp => sp.size)) {
+        from = [...new Set(supports.flatMap(sp => [...sp]))];
+        kb.from = own(fusion.keysOf(from, x, L, scope));
+      } else {
+        const kc = this.keyCombinations(x, L, scope);
+        kb.from = P.projectAs(kc.rel, active.map(ki => ({ col: keyCol.get(ki), expr: kc.refs.get(ki) })));
+      }
+    }
+    fusion.finish(kb, ki => refs.get(ki), from);
     kb.setOut(x.cols, [
       ...x.keyCols.map((c, i) => (active.includes(i) ? refs.get(i) : ir.lit(L.consts?.has(i) ? L.consts.get(i) : null, c.type))),
       ...L.flags.map(f => ir.lit(f, 'bool')),
@@ -786,7 +805,12 @@ class Fusion {
       && x.arg?.k === 'col' && x.arg.row === x.row) {
       const at = typeof x.arg.ref === 'number' ? x.arg.ref : S.cols.findIndex(c => c.lineage === x.arg.ref);
       const item = S.src.items[at];
-      if (item?.expr.k === 'col' && item.expr.row === S.src.row) return this.add({ ...x, src: S.src.src, row: S.src.row, arg: item.expr }, scope, blk);
+      if (item?.expr.k === 'col' && item.expr.row === S.src.row) {
+        const y = { ...x, src: S.src.src, row: S.src.row, arg: item.expr };
+        const out = this.add(y, scope, blk);
+        if (out) lw.fusedIn.set(x, lw.fusedIn.get(y));
+        return out;
+      }
     }
     if (S.k !== 'scan' || x.fn === 'single') return null;
     const kid = this.keyRow.id;
@@ -890,9 +914,14 @@ class Fusion {
     const sig = `${S.table.name}|${state.key}|${keyList.join(',')}|${keyExprs.map(e => text(e, c.ids)).join(',')}|${c.key}`;
     let g = this.groups.find(y => y.sig === sig);
     if (!g) {
-      g = { sig, block, keys: keyList, keyExprs, aggs: [], plain: !edge && !readsKeys && !mapped.length };
+      g = { sig, block, table: S.table, keys: keyList, keyExprs, aggs: [], plain: !edge && !readsKeys && !mapped.length };
       this.groups.push(g);
     }
+    // A group with an aggregate whose scan lacks one of the filters that decide the combinations
+    // of the keys can hold keys that are not one of them; so does a mapping's (every value of the
+    // key columns).
+    if (!this.domain.every(d => S.ctx.filters.includes(d)) || mapped.length) g.outside = true;
+    lw.fusedIn.set(x, g);
     const parts = lw.isolated(() => lw.aggParts(x, withRow(new Map(), x.row, g.block.res), g.block));
     const M = new Map(), T = e => (e ? text(e, M) : '');
     const e = parts.extra ?? {};
@@ -910,13 +939,58 @@ class Fusion {
   }
 
   // The groups joined to the level's block kb (a key's value there: keyOf(i)).
-  finish(kb, keyOf) {
+  // Group g's grouping: { by its keys (g0, ...), its aggregates }.
+  relOf(g) {
+    return g.rel ??= this.belowJoins(g) ?? P.aggregate(g.block.body(), g.keyExprs.map((e, j) => ({ name: `g${j}`, expr: e })),
+      g.aggs.map(a => ({ col: a.col, fn: a.fn, arg: a.arg, extra: a.extra })));
+  }
+
+  // The groups joined to the level's block kb (a key's value there: keyOf(i)). Those in `from`
+  // (the level's keys come from them) are definitions, read there too.
+  finish(kb, keyOf, from = []) {
     for (const g of this.groups) {
-      const rel = this.belowJoins(g) ?? P.aggregate(g.block.body(), g.keyExprs.map((e, j) => ({ name: `g${j}`, expr: e })),
-        g.aggs.map(a => ({ col: a.col, fn: a.fn, arg: a.arg, extra: a.extra })));
+      if (from.includes(g)) {
+        // The columns of the grouping are its aggregates': each read of the definition reads them.
+        const rd = this.lw.shared(g, () => clone(this.relOf(g)).rel);
+        const n = g.keys.length;
+        kb.joins.push({ kind: 'left', rel: P.projectAs(rd, [...rd.cols.slice(0, n).map(c => ({ col: P.newCol(c.name, c.t), expr: P.ref(c) })), ...g.aggs.map((a, i) => ({ col: a.col, expr: P.ref(rd.cols[n + i]) }))]),
+          on: null });
+        const j = kb.joins.at(-1);
+        j.on = P.and(g.keys.map((ki, i) => P.key(P.ref(j.rel.cols[i]), keyOf(ki))));
+        continue;
+      }
+      const rel = this.relOf(g);
       if (!g.keys.length) kb.joins.push({ kind: 'cross', rel, on: null });
-      else kb.joins.push({ kind: 'left', rel, on: P.and(g.keys.map((ki, j) => P.key(P.ref(rel.keys[j].col), keyOf(ki)))) });
+      else kb.joins.push({ kind: 'left', rel, on: P.and(g.keys.map((ki, j) => P.key(P.ref(rel.cols[j]), keyOf(ki)))) });
     }
+  }
+
+  // The level's keys from groups gs (each by every active key): each group's keys, those of a
+  // table other than its scan's one of that table's rows (no blank row: a group of the fact's
+  // rows whose key the dimension lacks is no group), all of them once.
+  keysOf(gs, x, L, scope) {
+    const lw = this.lw;
+    const byTable = new Map();
+    for (const ki of this.active) {
+      const t = this.keyCols[ki].table;
+      if (!byTable.has(t)) byTable.set(t, []);
+      byTable.get(t).push(ki);
+    }
+    const parts = gs.map(g => {
+      const rd = lw.shared(g, () => clone(this.relOf(g)).rel);
+      const kc = this.active.map(ki => rd.cols[g.keys.indexOf(ki)]);
+      const has = [];
+      for (const [t, kis] of byTable) {
+        if (t === g.table) continue;
+        const b = lw.isolated(() => lw.scanBlock(t, new Ctx([], x.ctx0.mods), scope));
+        b.setOut(kis.map(ki => ({ name: this.keyCols[ki].name, lineage: this.keyCols[ki] })), kis.map(ki => b.res.meta(this.keyCols[ki])));
+        const v = lw.exact(b.render());
+        has.push(P.exists(P.select(v, P.and(kis.map((ki, j) => P.key(P.ref(v.cols[j]), P.ref(kc[this.active.indexOf(ki)])))))));
+      }
+      const r = has.length ? P.select(rd, P.and(has)) : rd;
+      return P.project(r, this.active.map((ki, j) => ({ name: this.keyCols[ki].name, expr: P.ref(kc[j]), lineage: this.keyCols[ki] })));
+    });
+    return P.distinct(parts.length === 1 ? parts[0] : P.union(parts));
   }
 }
 
@@ -965,6 +1039,41 @@ function scalarReads(x, out = { cols: new Set(), query: false }) {
   else if (x.k === 'case') { x.w.forEach(([c, v]) => { scalarReads(c, out); scalarReads(v, out); }); scalarReads(x.e, out); }
   else if (Array.isArray(x.a)) x.a.forEach(y => scalarReads(y, out));
   return out;
+}
+
+// The fused groups without whose rows an expression is blank, or null if it can be non-blank
+// without any (emit.js's support): whether SUMMARIZECOLUMNS can take its groups from them.
+function support(x, fusedIn) {
+  const all = xs => {
+    const out = new Set();
+    for (const v of xs) {
+      const sp = support(v, fusedIn);
+      if (!sp) return null;
+      sp.forEach(g => out.add(g));
+    }
+    return out;
+  };
+  switch (x.k) {
+    case 'lit': return x.v === null ? new Set() : null;
+    case 'agg': {
+      const g = fusedIn.get(x);
+      return g && !['count0', 'dcount0', 'hasone'].includes(x.fn) ? new Set([g]) : null;
+    }
+    case 'op':
+      if (x.op === 'add' || x.op === 'sub') return all(x.a);
+      // BLANK() * x and BLANK() / x are blank; x / BLANK() is not (it is infinity).
+      if (x.op === 'mul') return support(x.a[0], fusedIn) ?? support(x.a[1], fusedIn);
+      if (x.op === 'div' || x.op === 'neg') return support(x.a[0], fusedIn);
+      return null;
+    case 'fn':
+      if (x.name === 'divide' || x.name === 'cydivide') return x.a.length === 2 || (x.a[2].k === 'lit' && x.a[2].v === null)
+        ? support(x.a[0], fusedIn) ?? support(x.a[1], fusedIn) : null;
+      if (x.name === 'coalesce') return all(x.a);
+      if (x.strict || x.name === 'cast') return support(x.a[0], fusedIn);
+      return null;
+    case 'case': return all([...x.w.map(w => w[1]), x.e]);
+    default: return null;
+  }
 }
 
 // Whether an expression is blank whatever its rows (emit.js's support with nothing fused): a

@@ -169,6 +169,19 @@ export function createCompiler(input, options = {}) {
   }
 
   const cache = new Map();
+  // DuckDB's SQL is the query plan's (lower.js): correlated, as DuckDB unnests it, its measures
+  // fused, a subtree held twice one definition, its columns pruned; its scalars DAX's (the
+  // emitter's writer: DAX's runtime errors raised, which the standard plan has none of). A query
+  // the plan does not take is compiled as before. { viaPlan: false }: compiled as before.
+  const viaPlan = dialect.name === 'duckdb' && options.viaPlan !== false && options.optimize !== false;
+  const planned = opts => statements => statements.map(s => {
+    const o = { ...opts, calcColumn, calcTable, security };
+    let p;
+    try { p = new Lowerer(model, o).query(s); } catch (err) { if (err.code !== 'UNSUPPORTED') throw err; return emit(opts)([s])[0]; }
+    const ps = new PlanSql(model, dialect, o);
+    const sql = ps.query({ ...p, plan: prune(renames(inline(share(fuseApplies(p.plan))))) });
+    return { sql, ctes: [], body: sql, aliases: ps.n, ordered: p.ordered, columns: p.columns, size: planSize(p.plan) };
+  });
   const emit = opts => statements => statements.map(s => {
     const em = new Emitter(model, dialect, { ...opts, calcColumn, calcTable, security });
     const sql = em.query(s);
@@ -186,12 +199,14 @@ export function createCompiler(input, options = {}) {
     if (extra) key = `${key}\u0000${JSON.stringify(extra)}`;
     let out = cache.get(key);
     if (out) return out;
-    out = base.query(dax, emit(opts));
+    const make = viaPlan ? planned(opts) : emit(opts);
+    out = base.query(dax, make);
     if (base.splitOne && dialect.splitOneGroup === 'smaller') {
-      const size = o => o.reduce((n, x) => n + (x.sql ?? '').length, 0);
+      // The smaller: the plan's size (as plans keeps), else the SQL's.
+      const size = o => o.reduce((n, x) => n + (x.size ?? (x.sql ?? '').length), 0);
       base.noSplit = true;
       try {
-        const whole = base.query(dax, emit(opts));
+        const whole = base.query(dax, make);
         if (size(whole) < size(out)) out = whole;
       } finally { base.noSplit = false; }
     }

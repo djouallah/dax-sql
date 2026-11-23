@@ -63,7 +63,7 @@ test('the default is DuckDB', () => {
 // written once.
 const compileAs = (model, dax, dialect = 'tsql') => {
   const bim = JSON.parse(readFileSync(`${modelDir(model)}/model.bim`, 'utf8'));
-  return createCompiler(tmslToModel(bim), dialect ? { dialect } : {}).compile(dax).sql;
+  return createCompiler(tmslToModel(bim), dialect ? { dialect } : { viaPlan: false }).compile(dax).sql;
 };
 const query = id => loadQueries({}).find(q => q.id === id);
 const reads = (sql, table) => sql.split(`FROM "${table}"`).length - 1;

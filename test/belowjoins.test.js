@@ -7,7 +7,7 @@ import { harness, sorted } from './helpers.js';
 import { bim, setup } from './fixtures/contoso.js';
 
 let h;
-before(async () => { h = await harness(bim, setup); });
+before(async () => { h = await harness(bim, setup, { viaPlan: false }); });
 
 // The fused group's CTE: its scan of Sales grouped inside, then joined.
 const groupedFirst = sql => /FROM "Sales" AS \w+ GROUP BY \w+\."(?:CustomerKey|ProductKey)"\) AS p\d+ LEFT JOIN/.test(sql);

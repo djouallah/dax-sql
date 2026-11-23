@@ -78,16 +78,18 @@ test('errors carry their codes', async () => {
 test('the SQL keeps its shape', async () => {
   // A filter of a column's values on the column alone is a condition on the fact's own rows
   // when its keys are the dimension's: no subquery. A measure in the condition keeps one.
-  const ri = await harness(bim, setup, { assumeIntegrity: true });
+  const ri = await harness(bim, setup, { assumeIntegrity: true, viaPlan: false });
+  // The compiler's own SQL (emit.js): DuckDB's is the query plan's, whose shape explain.test.js checks.
+  const hc = await harness(bim, setup, { viaPlan: false });
   assert.doesNotMatch(ri.dax.compile(`EVALUATE ROW("f", CALCULATE([Sales Amount], FILTER(ALL('Date'[Date]), 'Date'[Date] >= DATE(2024, 1, 1))))`).sql, /IN \(SELECT/);
   assert.match(ri.dax.compile(`EVALUATE ROW("m", CALCULATE([Sales Amount], FILTER(ALL('Date'[Year]), [Orders] > 3)))`).sql, /IN \(SELECT/);
   // A total over what is selected, next to the groups, is read off them: one scan of the sales.
   const q = `EVALUATE SUMMARIZECOLUMNS(Product[Color], "s", [Sales Amount],
     "share", DIVIDE([Sales Amount], CALCULATE([Sales Amount], ALLSELECTED(Product))))`;
-  assert.equal(h.dax.compile(q).sql.match(/FROM "Sales" AS t/g).length, 1);
+  assert.equal(hc.dax.compile(q).sql.match(/FROM "Sales" AS t/g).length, 1);
   // So is one by some of the keys (a share within a city), a subtotal level's (it reads the
   // detail level's group), and one with filters of its own on a joined table (a FILTER).
-  const scans = dax => h.dax.compile(dax).sql.match(/FROM "Sales" AS t/g).length;
+  const scans = dax => hc.dax.compile(dax).sql.match(/FROM "Sales" AS t/g).length;
   assert.equal(scans(`EVALUATE SUMMARIZECOLUMNS(Customer[City], Product[Color], "s", [Sales Amount],
     "share", DIVIDE([Sales Amount], CALCULATE([Sales Amount], ALLSELECTED(Product))))`), 1);
   assert.equal(scans(`EVALUATE SUMMARIZECOLUMNS(Customer[City], ROLLUPADDISSUBTOTAL(Product[Color], "t"), "s", [Sales Amount], "a", AVERAGE(Sales[Amount]))`), 1);
@@ -95,9 +97,9 @@ test('the SQL keeps its shape', async () => {
   // Aggregates by the same keys whose filters differ on a joined table: one scan, a FILTER each.
   const red = `EVALUATE SUMMARIZECOLUMNS(Customer[City], "r", CALCULATE([Sales Amount], Product[Color] = "Red"), "b", CALCULATE([Sales Amount], Product[Color] = "Blue"))`;
   assert.equal(scans(red), 1);
-  assert.match(h.dax.compile(red).sql, /FILTER \(WHERE/);
+  assert.match(hc.dax.compile(red).sql, /FILTER \(WHERE/);
   // A column a condition already keeps blanks out of is compared as it is in the others.
-  const range = h.dax.compile(`EVALUATE CALCULATETABLE(ROW("s", [Sales Amount]), Sales[OrderDate] >= DATE(2024, 1, 1), Sales[OrderDate] <= DATE(2024, 6, 30))`).sql;
+  const range = hc.dax.compile(`EVALUATE CALCULATETABLE(ROW("s", [Sales Amount]), Sales[OrderDate] >= DATE(2024, 1, 1), Sales[OrderDate] <= DATE(2024, 6, 30))`).sql;
   assert.doesNotMatch(range, /"OrderDate" IS NULL|COALESCE\(t\d+\."OrderDate"/);
 });
 

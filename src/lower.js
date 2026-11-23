@@ -320,8 +320,8 @@ export class Lowerer {
       const listed = inline ? null : this.listedValues(f, D, res);
       if (listed) return listed;
       const sub = this.table(f.src, scope).render();
-      const on = D.map(c => P.same(sub.list[f.idx[f.cols.indexOf(c)]].expr, res.meta(c)));
-      return P.exists(P.select(sub.rel, P.and(on)));
+      const blanks = D.some(c => (this.blankSide(table, c, state) || mayHoldNull(c)) && mayBeBlank(f.src, f.idx[f.cols.indexOf(c)]));
+      return member(D.map(c => res.meta(c)), D.map(c => sub.list[f.idx[f.cols.indexOf(c)]].expr), sub.rel, blanks);
     }
     // Rows of a model table, as the scan's own rows: its conditions, inline. The filter holds
     // every column, or every column but those its others determine (a column of a table whose
@@ -352,7 +352,10 @@ export class Lowerer {
     const b = this.open(this.table(f.src, scope));
     b.setOut(cols.map(c => ({ name: c.name, lineage: c })), cols.map(c => b.res.meta(c)));
     const sub = b.render();
-    return P.exists(P.select(sub.rel, P.and(cols.map((c, i) => P.same(sub.list[i].expr, res.meta(c))))));
+    // A column read through a relationship is blank for rows that match no row of its table; one
+    // that may hold a NULL can be blank on both sides.
+    const blanks = cols.some(c => mayHoldNull(c) || this.blankSide(table, c, state) && this.blankSide(f.base, c, state));
+    return member(cols.map(c => res.meta(c)), sub.list.map(o => o.expr), sub.rel, blanks);
   }
 
   // Values of a table's columns, unfiltered but for conditions on those columns alone
@@ -713,7 +716,8 @@ export class Lowerer {
       case 'insub': {
         const sub = this.table(x.src, scope).render();
         const left = x.e.map(e => this.scalar(e, scope, blk));
-        return P.exists(P.select(sub.rel, P.and(left.map((l, j) => P.same(sub.list[j].expr, l)))));
+        const blanks = x.e.some((e, j) => !e.nn && mayBeBlank(x.src, j));
+        return member(left, sub.list.map(o => o.expr), sub.rel, blanks);
       }
       case 'wrank': {
         // The current row's rank; several current rows (rows that differ, or ROWNUMBER's equal
@@ -1281,6 +1285,33 @@ const MERGES = new Set(['sum', 'avg', 'min', 'max', 'count', 'count0', 'countrow
 // of, is blank there as the aggregate over no rows is.
 const NULL_EMPTY = new Set(['sum', 'avg', 'min', 'max', 'count', 'countrows', 'dcount', 'dcountnb', 'countblank', 'median', 'stdev_s', 'stdev_p', 'var_s', 'var_p']);
 const mayHoldNull = c => !c.unique && c.nullable !== false;
+// Whether values `left` are a row of relation `rel` (its values `right`), a blank matching a
+// blank as in DAX: where no blank can meet a blank (blanks false), = says the same as ≡, and the
+// test is a membership (`member`: a printer writes one column of it as IN, emit.js's member).
+function member(left, right, rel, blanks) {
+  const on = left.map((l, i) => (blanks ? P.same(right[i], l) : P.eq(right[i], l)));
+  const x = P.exists(P.select(rel, P.and(on)));
+  return blanks ? x : { ...x, member: true };
+}
+// Whether column i of table x can hold a blank, as far as the compiler can tell (emit.js's).
+function mayBeBlank(x, i) {
+  if (i == null || i < 0) return true;
+  const lit = v => v?.k === 'lit' && v.v !== null;
+  switch (x.k) {
+    case 'rows': return x.rows.some(r => !lit(r[i]));
+    case 'onerow': return !lit(x.vals[i]) && !x.vals[i]?.nn;
+    case 'distinct': case 'shared': case 'filter': case 'topn': case 'topnskip': return mayBeBlank(x.src, i);
+    case 'project': {
+      if (x.keep && i < x.src.cols.length) return mayBeBlank(x.src, i);
+      const e = x.items[x.keep ? i - x.src.cols.length : i]?.expr;
+      if (e?.k === 'col' && e.row === x.row) return mayBeBlank(x.src, typeof e.ref === 'number' ? e.ref : x.src.cols.findIndex(c => c.lineage === e.ref));
+      return !e?.nn;
+    }
+    case 'scan': return !(x.cols[i]?.lineage?.table === x.table);
+    case 'union': case 'intersect': case 'except': return x.srcs.some(y => mayBeBlank(y, i));
+  }
+  return true;
+}
 // Whether a value can't be blank: one that never is, or a column that holds none, read on a row
 // of its own table (not through a join that can find no row).
 function nonBlankValue(v) {

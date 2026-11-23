@@ -226,7 +226,19 @@ export class PlanSql extends Emitter {
   }
   scalarOf(x, scope, pred) {
     if (x.k === 'ref') return this.cn(x.col);
-    if (x.k === 'exists') return `EXISTS (${this.rel(x.rel)})`;
+    if (x.k === 'exists') {
+      // A membership of one value no blank meets (lower.js's member): IN, which the engine reads
+      // as a semi-join on the value (EXISTS correlated by it is unnested over every outer row).
+      const r = x.rel, c = r.pred;
+      if (x.member && r.k === 'select' && c?.k === 'pop' && c.op === 'eq') {
+        const [col, v] = c.a, own = new Set(r.src.cols);
+        if (col.k === 'ref' && own.has(col.col) && ![...refsOf(v)].some(y => own.has(y))) {
+          const s = `${this.scalar(v, EMPTY)} IN (SELECT ${this.cn(col.col)} FROM (${this.rel(r.src)}) AS ${this.alias('i')})`;
+          return pred ? `(${s})` : this.d.orFalse(s);
+        }
+      }
+      return `EXISTS (${this.rel(x.rel)})`;
+    }
     // A number in its exact digits (a decimal no double holds).
     if (x.k === 'lit' && x.digits) return x.v;
     return super.scalarOf(x, scope, pred);

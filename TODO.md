@@ -26,8 +26,9 @@ Nothing here blocks a release. DAX on DuckDB has nothing left; T-SQL is the last
 
 1. Done: the plan, as it is (`lower.js`, `plan-sql.js`, `explain.js`); every query of the
    suite answers through `planSql` on DuckDB as it does through `compile`.
-2. **Decorrelation**, the optimizer's first pass: an apply into γ and ⟕, for any correlation
-   (range, shifted keys); the plan path on T-SQL and PostgreSQL, their slow queries under limit.
+2. **Decorrelation**: the correlated plan unnested top down (`unnest.js`, `{ unnest: true }`):
+   no apply left on the suite; its answers on DuckDB, PostgreSQL and DataFusion in CI. Next: the
+   plan path on T-SQL and PostgreSQL through it, their slow queries under limit.
 3. **The emitter's rewrites as passes**, one at a time, each checked against the plan as it
    is: fusion, filters on the scan, grouping below joins, sharing.
 4. Done on DuckDB: `compile()` through the plan, held to `emit.js`'s SQL by `perf.yml` (the

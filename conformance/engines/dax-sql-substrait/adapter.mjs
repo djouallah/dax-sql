@@ -8,6 +8,7 @@
 //   node runner/run.mjs --adapter "node engines/dax-sql-substrait/adapter.mjs .." --known engines/dax-sql-substrait/known.json
 //
 // SUBSTRAIT_CORRELATED=1: the plan before decorrelation (scalar subqueries, EXISTS, outer references).
+// SUBSTRAIT_UNNEST=1: that plan unnested (src/passes/unnest.js: no apply, no correlated EXISTS).
 // SUBSTRAIT_PYTHON: the Python to run run.py with (python). SUBSTRAIT_OUT: a folder to keep each
 // query's plan in (<id>.json), with dax.json: the dax-sql functions each plan uses.
 import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
@@ -64,7 +65,7 @@ for (const q of request.queries) {
     const c = db.compilers.get(roles);
     const entity = t => t.source?.entity ?? t.name;
     const t0 = performance.now();
-    const { plan, dax: fns, columns } = c.substrait(q.dax, { tableName: entity, tableSchema: t => db.schemas.get(entity(t)), inline: true, correlated: !!process.env.SUBSTRAIT_CORRELATED });
+    const { plan, dax: fns, columns } = c.substrait(q.dax, { tableName: entity, tableSchema: t => db.schemas.get(entity(t)), inline: true, correlated: !!process.env.SUBSTRAIT_CORRELATED, unnest: !!process.env.SUBSTRAIT_UNNEST });
     const ms = performance.now() - t0;
     if (ms > 5000) process.stderr.write(`${q.id}: its plan took ${Math.round(ms / 1000)} s to write\n`);
     const file = join(work, `q${jobs.length}.json`);

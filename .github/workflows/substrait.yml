@@ -34,11 +34,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     # unnested: the optimized plan; correlated: the plan before decorrelation (scalar subqueries,
-    # EXISTS, outer references), which DataFusion unnests itself.
+    # EXISTS, outer references), which DataFusion unnests itself; unnest: the correlated plan
+    # unnested (src/passes/unnest.js).
     strategy:
       fail-fast: false
       matrix:
-        mode: [unnested, correlated]
+        mode: [unnested, correlated, unnest]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -54,6 +55,7 @@ jobs:
         env:
           SUBSTRAIT_PYTHON: python
           SUBSTRAIT_CORRELATED: ${{ matrix.mode == 'correlated' && '1' || '' }}
+          SUBSTRAIT_UNNEST: ${{ matrix.mode == 'unnest' && '1' || '' }}
           SUBSTRAIT_OUT: ${{ runner.temp }}/plans
           NODE_OPTIONS: --max-old-space-size=6144
         run: |

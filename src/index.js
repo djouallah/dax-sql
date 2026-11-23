@@ -48,6 +48,10 @@ import { inline } from './passes/inline.js';
 import { prune } from './passes/prune.js';
 import { renames } from './passes/renames.js';
 import { exact } from './passes/exact.js';
+import { unnest } from './passes/unnest.js';
+import { fuse } from './passes/fuse.js';
+import { joins } from './passes/joins.js';
+import { outer } from './passes/outer.js';
 import { kids, scalarsOf } from './passes/decorrelate.js';
 // The correlated plan: the plan before decorrelation, its scalars standard, its measures fused,
 // a subtree held more than once one definition.
@@ -66,6 +70,9 @@ function planSize(root) {
   return n;
 }
 const correlated = plan => prune(renames(inline(share(exact(fuseApplies(standard(plan)))))));
+// The correlated plan unnested (passes/unnest.js), for an engine that does not unnest: no apply,
+// no correlated EXISTS; the σ over × it leaves joins, the measures over the same rows one grouping.
+const unnested = plan => prune(renames(inline(share(outer(fuse(joins(unnest(exact(fuseApplies(standard(plan)))))))))));
 import { explain as drawPlan } from './explain.js';
 import { optimize } from './passes/index.js';
 
@@ -275,6 +282,8 @@ export function createCompiler(input, options = {}) {
     if (t.limit != null || t.offset != null) p.plan.limit = { n: t.limit, offset: t.offset };
     return [p];
   }
+  // The plan a call asks for: { unnest }, { correlated }, { optimize: false } (as lowered), or optimized.
+  const pick = (plan, o) => (o.unnest ? unnested(plan) : o.correlated ? correlated(plan) : o.optimize === false ? plan : optimize(plan));
   const onePlan = text => {
     const out = plans(text);
     if (out.length !== 1) throw new DaxError(`the query has ${out.length} EVALUATE statements`);
@@ -285,15 +294,15 @@ export function createCompiler(input, options = {}) {
     dialect,
     // One EVALUATE, or a SELECT over the model -> its query plan (plan.js, made by lower.js and
     // the passes/). { optimize: false }: before the passes (the reference CI checks them with).
-    plan: (text, o = {}) => { const p = onePlan(text).plan; return o.optimize === false ? p : optimize(p); },
+    plan: (text, o = {}) => pick(onePlan(text).plan, o),
     // The query plan drawn as a tree, one per EVALUATE.
-    explain: (text, o = {}) => plans(text).map(p => drawPlan(o.correlated ? correlated(p.plan) : o.optimize === false ? p.plan : optimize(p.plan))).join('\n\n'),
+    explain: (text, o = {}) => plans(text).map(p => drawPlan(pick(p.plan, o))).join('\n\n'),
     // The query plan's SQL: { sql, columns }, as compile gives.
     // correlated: the plan before decorrelation, its scalars standard (its applies LATERAL or
     // scalar subqueries, its EXISTS EXISTS: for an engine that unnests them, as DuckDB does).
     planSql(text, o = {}) {
       const p = onePlan(text);
-      const plan = o.correlated ? correlated(p.plan) : o.optimize === false ? p.plan : optimize(p.plan);
+      const plan = pick(p.plan, o);
       return { sql: new PlanSql(model, dialect, options).query({ ...p, plan }), columns: p.columns };
     },
     // The query plan as a Substrait plan (substrait.js): { plan (its JSON form), dax (dax-sql's
@@ -303,6 +312,7 @@ export function createCompiler(input, options = {}) {
       // correlated: the plan before decorrelation, its scalars standard (an apply of one row scalar
       // subqueries, EXISTS a set predicate); a plan with a table for each row (a lateral join,
       // which Substrait has none of) as the optimizer unnests it.
+      if (o.unnest) return { ...toSubstrait(unnested(p.plan), o), columns: p.columns };
       if (o.correlated) {
         try { return { ...toSubstrait(correlated(p.plan), o), columns: p.columns }; } catch (err) { if (err.code !== 'UNSUPPORTED') throw err; }
       }

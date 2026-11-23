@@ -1,4 +1,5 @@
-// The query plan's contract: every query of the suite, optimized, is made of the plan's simple
+// The query plan's contract: every query of the suite, optimized and unnested (the correlated
+// plan through passes/unnest.js), is made of the plan's simple
 // operators only (src/plan.js): no apply, no correlated EXISTS, no DAX operator, function or
 // aggregate (src/passes/standard.js writes them all as standard ones, or refuses them), nothing
 // else. Writes how many
@@ -91,8 +92,8 @@ function unbounded(plan) {
 }
 
 const compilers = new Map();
-const multiplying = [];
-const counts = { raw: new Map(), opt: new Map() };
+const multiplying = [], multiplyingU = [];
+const counts = { raw: new Map(), opt: new Map(), unnest: new Map() };
 const broken = [];
 let planned = 0, refused = 0;
 for (const q of loadQueries({})) {
@@ -107,20 +108,28 @@ for (const q of loadQueries({})) {
     opt = compilers.get(key).plan(q.dax, { optimize: true });
   } catch { refused++; continue; }   // a DAX error, as compile gives
   planned++;
-  for (const [mode, p] of [['raw', raw], ['opt', opt]]) {
+  // The correlated plan unnested (passes/unnest.js): the same contract.
+  let un;
+  try { un = compilers.get(key).plan(q.dax, { unnest: true }); } catch (err) { broken.push(`unnest ${q.model}/${q.family}/${q.id}: ${err.message.split('\n')[0]}`); }
+  for (const [mode, p] of [['raw', raw], ['opt', opt], ['unnest', un]]) {
+    if (!p) continue;
     const { ops, bad } = operators(p);
     for (const o of ops) counts[mode].set(o, (counts[mode].get(o) ?? 0) + 1);
-    if (mode === 'opt' && bad.size) broken.push(`${q.model}/${q.family}/${q.id}: ${[...bad].join(', ')}`);
+    if (mode !== 'raw' && bad.size) broken.push(`${mode === 'unnest' ? 'unnest ' : ''}${q.model}/${q.family}/${q.id}: ${[...bad].join(', ')}`);
   }
   const u = unbounded(opt);
   if (u.cross + u.range) multiplying.push({ id: `${q.model}/${q.family}/${q.id}`, n: u.cross + u.range, ...u });
+  const v = un ? unbounded(un) : { cross: 0, range: 0 };
+  if (v.cross + v.range) multiplyingU.push({ id: `${q.model}/${q.family}/${q.id}`, n: v.cross + v.range, ...v });
 }
 
-const names = [...new Set([...counts.raw.keys(), ...counts.opt.keys()])].sort();
-const table = `### The query plan's operators\n\n${planned} queries planned (${refused} refused: DAX errors).\n\n| operator | queries, as it is | optimized |\n|---|---|---|\n`
-  + names.map(n => `| ${n} | ${counts.raw.get(n) ?? 0} | ${counts.opt.get(n) ?? 0} |`).join('\n')
+const names = [...new Set([...counts.raw.keys(), ...counts.opt.keys(), ...counts.unnest.keys()])].sort();
+const table = `### The query plan's operators\n\n${planned} queries planned (${refused} refused: DAX errors).\n\n| operator | queries, as it is | optimized | unnested |\n|---|---|---|---|\n`
+  + names.map(n => `| ${n} | ${counts.raw.get(n) ?? 0} | ${counts.opt.get(n) ?? 0} | ${counts.unnest.get(n) ?? 0} |`).join('\n')
   + `\n\n**Joins that can multiply rows** (a cross join, or no equality between the sides; neither side of one row): ${multiplying.reduce((a, m) => a + m.cross, 0)} cross joins and ${multiplying.reduce((a, m) => a + m.range, 0)} joins on other conditions (ranges), in ${multiplying.length} queries.\n\n`
   + multiplying.sort((a, b) => b.n - a.n).slice(0, 40).map(m => `- ${m.id}: ${m.cross} cross, ${m.range} other`).join('\n') + '\n'
+  + `\n**Unnested** (passes/unnest.js): ${multiplyingU.reduce((a, m) => a + m.cross, 0)} cross joins and ${multiplyingU.reduce((a, m) => a + m.range, 0)} joins on other conditions, in ${multiplyingU.length} queries.\n\n`
+  + multiplyingU.sort((a, b) => b.n - a.n).slice(0, 40).map(m => `- ${m.id}: ${m.cross} cross, ${m.range} other`).join('\n') + '\n'
   + (broken.length ? `\n\n**Outside the contract (${broken.length}):**\n\n${broken.slice(0, 30).map(b => `- ${b}`).join('\n')}\n` : '\n');
 console.log(table);
 if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, table);

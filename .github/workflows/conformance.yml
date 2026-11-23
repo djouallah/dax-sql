@@ -89,6 +89,14 @@ jobs:
           DAXSQL_PLAN: correlated
         run: |
           node conformance/runner/run.mjs --adapter "node conformance/engines/dax-sql/adapter.mjs ."             --known conformance/engines/dax-sql/known.json,conformance/engines/dax-sql/known-plan.json --report "$RUNNER_TEMP/plan-correlated.json"
+      # The correlated plan unnested (src/passes/unnest.js): no apply, no correlated EXISTS, the
+      # plan an engine that does not unnest is given.
+      - name: The suite through the unnested query plan
+        if: always()
+        env:
+          DAXSQL_PLAN: unnest
+        run: |
+          node conformance/runner/run.mjs --adapter "node conformance/engines/dax-sql/adapter.mjs ."             --known conformance/engines/dax-sql/known.json,conformance/engines/dax-sql/known-plan.json --report "$RUNNER_TEMP/plan-unnest.json"
       - name: The suite through the optimized query plan
         if: always()
         env:
@@ -103,4 +111,5 @@ jobs:
           path: |
             ${{ runner.temp }}/plan-raw.json
             ${{ runner.temp }}/plan-correlated.json
+            ${{ runner.temp }}/plan-unnest.json
             ${{ runner.temp }}/plan.json

@@ -217,7 +217,19 @@ for `SUMMARIZECOLUMNS(Category[Category], TREATAS({2024}, 'Date'[Year]), "Sales"
 The filter context is σ and semi-joins (∃) over joins along the relationships; a measure is
 an apply (×ᴬ: the right side for each row of the left) of an aggregate (γ); ≡ is a blank
 matching a blank, and `outer.` a column of the row an apply or a semi-join is correlated to.
-Scalars are DAX's, with its rules for blanks.
+The plan is made of simple operators any engine can run, and nothing else (no SQL text):
+
+- **Relations:** scan, values, σ select, π project, δ distinct, γ aggregate, join (inner, left,
+  cross), ∪ union, ω window (row number, rank, dense rank, count of the partition), series
+  (GENERATESERIES), paths (PATH's recursion), a definition read again (▭ V1), and the result's
+  sort and limit.
+- **Scalars:** columns, literals, CASE, DAX's operators and functions (with its rules for
+  blanks), and the plan's own: `=` (NULL matches nothing), `≡` (a blank matches a blank: a
+  join's key), IS NULL, `<` `≤` `>` `≥`, `+` `-`, COALESCE, TRUE, FALSE.
+
+The plan as it is also holds applies and EXISTS correlated to a row; optimized, it holds
+neither. `conformance/engines/dax-sql/operators.mjs` checks every query of the suite against
+that, in CI, and counts the operators the plans use.
 
 A table VAR and a calculated table are definitions (▭ V1, drawn below the tree): evaluated
 once, as DAX does, and read at each use.

@@ -4,6 +4,7 @@
 // are written as the emitter writes them (its scalar writer, with DAX's rules for blanks); the
 // rest through the dialect's methods. No rewrite: the SQL says what the plan says.
 import { Emitter, orderTerm } from './emit.js';
+import { isCondOp } from './plan.js';
 
 const EMPTY = new Map();
 const MANY = 'A table of multiple values was supplied where a single value was expected.';
@@ -75,7 +76,10 @@ export class PlanSql extends Emitter {
       }
       case 'series': {
         const g = this.alias('g');
-        return `SELECT ${g}.v AS ${cn(r.cols[0])} FROM ${this.d.series(this.scalar(r.start, EMPTY), this.scalar(r.end, EMPTY), this.scalar(r.step, EMPTY), r.t)} AS ${g}`;
+        const rows = this.d.series(this.scalar(r.start, EMPTY), this.scalar(r.end, EMPTY), this.scalar(r.step, EMPTY), r.t);
+        if (!r.src) return `SELECT ${g}.v AS ${cn(r.cols[0])} FROM ${rows} AS ${g}`;
+        // Bounds read off the one row of src: the series for that row.
+        return `SELECT ${g}.v AS ${cn(r.cols[0])} FROM ${from(r.src)}${this.d.lateral(`SELECT * FROM ${rows} AS ${this.alias('g')}`, g, false)}`;
       }
       case 'shared': {
         const d = this.defs.get(r.def);
@@ -117,9 +121,16 @@ export class PlanSql extends Emitter {
   // --- the plan's own scalars ----------------------------------------------------------------
 
   scalar(x, scope = EMPTY, pred = false) {
-    if (x.k === 'sql') {
-      const s = x.write(this.d, x.a.map(a => this.scalar(a, scope)), this);
-      return this.d.boolValues || !x.cond || pred ? s : this.d.value(s);
+    if (x.k === 'pop') {
+      const [a, b] = x.a.map(v => this.scalar(v, scope));
+      const s = {
+        eq: () => `(${a} = ${b})`, key: () => this.d.isNotDistinct(a, b, x.a[0].t),
+        isnull: () => `(${a} IS NULL)`, notnull: () => `(${a} IS NOT NULL)`,
+        lt: () => `(${a} < ${b})`, le: () => `(${a} <= ${b})`, gt: () => `(${a} > ${b})`, ge: () => `(${a} >= ${b})`,
+        add: () => `(${a} + ${b})`, sub: () => `(${a} - ${b})`, coalesce: () => `COALESCE(${a}, ${b})`,
+        true: () => this.d.always, false: () => this.d.never,
+      }[x.op]();
+      return this.d.boolValues || !isCondOp(x.op) || pred ? s : this.d.value(s);
     }
     return super.scalar(x, scope, pred);
   }

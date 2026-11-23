@@ -89,7 +89,7 @@ function node(r) {
       break;
     }
     case 'shared': label = `▭  V${r.def.n}`; break;
-    case 'series': label = `▭  Series(${S(r.start)}, ${S(r.end)}, ${S(r.step)})`; break;
+    case 'series': label = `▭  Series(${S(r.start)}, ${S(r.end)}, ${S(r.step)})`; if (r.src) kids.push(node(r.src)); break;
     case 'paths': label = '▭  Paths (recursive: each key with the keys above it)'; kids.push(node(r.src)); break;
     default: label = r.k;
   }
@@ -135,7 +135,11 @@ function scalar(x, subs, avail) {
     case 'fn': return `${x.name.toUpperCase()}(${x.a.map(S).join(', ')})`;
     case 'case': return `CASE ${x.w.map(([c, v]) => `WHEN ${S(c)} THEN ${S(v)}`).join(' ')}${x.e.k === 'lit' && x.e.v === null ? '' : ` ELSE ${S(x.e)}`} END`;
     case 'exists': subs.push(x.rel); return `∃${subs.length}`;
-    case 'sql': return x.show(x.a.map(S));
+    case 'pop': {
+      const [a, b] = x.a.map(S);
+      return { eq: `${a} = ${b}`, key: `${a} ≡ ${b}`, isnull: `${a} = BLANK`, notnull: `${a} ≠ BLANK`, lt: `${a} < ${b}`, le: `${a} ≤ ${b}`,
+        gt: `${a} > ${b}`, ge: `${a} ≥ ${b}`, add: `${a} + ${b}`, sub: `${a} - ${b}`, coalesce: `COALESCE(${a}, ${b})`, true: 'TRUE', false: 'FALSE' }[x.op];
+    }
   }
   return x.k;
 }

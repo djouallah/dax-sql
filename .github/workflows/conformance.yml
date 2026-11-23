@@ -72,7 +72,10 @@ jobs:
           node-version: "24"
           cache: npm
       - run: npm ci --no-audit --no-fund
+      - name: The query plan's operators (optimized, only the plan's simple operators)
+        run: node conformance/engines/dax-sql/operators.mjs .
       - name: The suite through the query plan as it is
+        if: always()
         env:
           DAXSQL_PLAN: raw
         run: |

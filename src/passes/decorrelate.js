@@ -34,9 +34,9 @@ const STUCK = Symbol('stuck');
 const BLANK_OVER_NONE = new Set(['sum', 'avg', 'min', 'max', 'count', 'countrows', 'dcount', 'dcountnb', 'countblank', 'median',
   'stdev_s', 'stdev_p', 'var_s', 'var_p', 'single', 'onlyone', 'concat', 'pct_inc', 'pct_exc', 'pctx_inc', 'pctx_exc']);
 const OVER_NONE = {
-  count0: x => P.sqlop((d, [a]) => `COALESCE(${a}, 0)`, ([a]) => a, [x], { t: 'int', cond: false }),
-  dcount0: x => P.sqlop((d, [a]) => `COALESCE(${a}, 0)`, ([a]) => a, [x], { t: 'int', cond: false }),
-  hasone: x => P.sqlop((d, [a]) => `COALESCE(${a}, ${d.never})`, ([a]) => a, [x], { t: 'bool', cond: false }),
+  count0: x => P.coalesce(x, { k: 'lit', v: 0, t: 'int', nn: true }),
+  dcount0: x => P.coalesce(x, { k: 'lit', v: 0, t: 'int', nn: true }),
+  hasone: x => P.coalesce(x, { k: 'lit', v: false, t: 'bool', nn: true }),
 };
 
 class Unnest {
@@ -51,6 +51,15 @@ class Unnest {
 
   E(r) {
     r = mapKids(r, k => this.E(k));
+    // One in an inner join's condition: the condition over the rows the join's sides make.
+    if (r.k === 'join' && r.kind !== 'left' && r.on && existsOf(r.on).some(e => free(e).size)) return this.E(P.select(P.join('cross', r.left, r.right), r.on));
+    if (r.k === 'aggregate' || r.k === 'window') {
+      const marks = [];
+      const out = mapScalars(r, x => this.Ex(x, marks));
+      if (!marks.length) return out;
+      const src = marks.reduce((s, m) => P.apply(s, m), r.src);
+      return r.k === 'window' ? { ...out, src, cols: [...src.cols, ...r.fns.map(f => f.col)] } : { ...out, src };
+    }
     if (r.k !== 'select' && r.k !== 'project') return mapScalars(r, x => this.Ex(x, null));
     const marks = [];
     const conv = x => this.Ex(x, marks);
@@ -84,7 +93,7 @@ class Unnest {
     const F = L.cols.filter(c => fr.has(c));
     if (!F.length) {
       const R = this.T(a.right);
-      return a.outer ? P.join('left', L, R, P.always) : P.join('cross', L, R);
+      return a.outer ? P.join('left', L, R, P.TRUE) : P.join('cross', L, R);
     }
     const eq = this.equiAgg(L, a.right, F);
     if (eq) return eq;
@@ -102,7 +111,7 @@ class Unnest {
     const { rel, dc } = this.push(a.right, ctx);
     const R = this.T(rel);
     const Lr = P.projectAs(sh, L.cols.map((c, i) => ({ col: c, expr: P.ref(sh.cols[i]) })));
-    return P.join(a.outer ? 'left' : 'inner', Lr, R, P.and(ctx.F.map(f => P.sameKey(P.ref(f), P.ref(dc.get(f))))));
+    return P.join(a.outer ? 'left' : 'inner', Lr, R, P.and(ctx.F.map(f => P.key(P.ref(f), P.ref(dc.get(f))))));
   }
 
   // L ×ᴬ γ(σ_{inner ≡ outer ∧ rest} R), R and rest reading no F: each row's aggregate is that of
@@ -121,7 +130,7 @@ class Unnest {
     const keys = [], rest = [];
     for (const c of conjuncts(g.src.pred)) {
       if (!reads(c)) { rest.push(c); continue; }
-      const m = c.k === 'op' && c.op === 'eqs' ? 'eqs' : c.k === 'sql' ? c.eq : null;
+      const m = c.k === 'op' && c.op === 'eqs' ? 'eqs' : c.k === 'pop' && (c.op === 'eq' || c.op === 'key') ? c.op : null;
       if (!m) return null;
       const [a, b] = c.a;
       if (!reads(a) && outerOnly(b)) keys.push({ inner: a, outer: b, m });
@@ -132,7 +141,7 @@ class Unnest {
     const ks = keys.map(k => ({ col: P.newCol('key', k.inner.t), expr: k.inner }));
     const as = g.aggs.map(a => ({ ...a, col: P.newCol(a.col.name, a.col.t) }));
     const grouped = this.T(P.aggregate(rest.length ? P.select(R, P.and(rest)) : R, ks, as));
-    const on = P.and(keys.map((k, i) => (k.m === 'eq' ? P.equal : P.sameKey)(k.outer, P.ref(ks[i].col))));
+    const on = P.and(keys.map((k, i) => (k.m === 'eq' ? P.eq : P.key)(k.outer, P.ref(ks[i].col))));
     const j = P.join('left', L, grouped, on);
     const vals = g.aggs.map((a, i) => ({ col: a.col, expr: OVER_NONE[a.fn] ? OVER_NONE[a.fn](P.ref(as[i].col)) : P.ref(as[i].col) }));
     return P.projectAs(j, [...L.cols.map(c => ({ col: c, expr: P.ref(c) })), ...vals]);
@@ -192,7 +201,7 @@ class Unnest {
         const as = aggs(true);
         const g = P.aggregate(s.rel, ds, as);
         const d = this.dref(ctx);
-        const j = P.join('left', d.rel, g, P.and(F.map((f, i) => P.sameKey(P.ref(d.dc.get(f)), P.ref(ds[i].col)))));
+        const j = P.join('left', d.rel, g, P.and(F.map((f, i) => P.key(P.ref(d.dc.get(f)), P.ref(ds[i].col)))));
         const out = dItems(d.dc);
         const vals = r.aggs.map((a, i) => ({ col: a.col, expr: OVER_NONE[a.fn] ? OVER_NONE[a.fn](P.ref(as[i].col)) : P.ref(as[i].col) }));
         return { rel: P.projectAs(j, [...vals, ...out]), dc: asMap(out) };
@@ -210,7 +219,7 @@ class Unnest {
         }
         // Both sides read D (or the right of a left join does): D on each, matched.
         const a = this.push(r.left, ctx), b = this.push(r.right, ctx);
-        const match = F.map(f => P.sameKey(P.ref(a.dc.get(f)), P.ref(b.dc.get(f))));
+        const match = F.map(f => P.key(P.ref(a.dc.get(f)), P.ref(b.dc.get(f))));
         const own = r.on ? [S(r.on, a.dc)] : [];
         return { rel: P.join(r.kind === 'cross' ? 'inner' : r.kind, a.rel, b.rel, P.and([...own, ...match])), dc: a.dc };
       }
@@ -247,6 +256,7 @@ function kids(r) {
     case 'select': case 'project': case 'distinct': case 'aggregate': case 'window': case 'paths': case 'output': return [r.src];
     case 'join': case 'apply': return [r.left, r.right];
     case 'union': return r.srcs;
+    case 'series': return r.src ? [r.src] : [];
   }
   return [];
 }
@@ -295,7 +305,7 @@ export function free(r) {
 function walk(x, f) {
   if (!x || typeof x !== 'object') return;
   f(x);
-  if (x.k === 'op' || x.k === 'fn' || x.k === 'sql') x.a.forEach(y => walk(y, f));
+  if (x.k === 'op' || x.k === 'fn' || x.k === 'pop') x.a.forEach(y => walk(y, f));
   else if (x.k === 'case') { x.w.forEach(([c, v]) => { walk(c, f); walk(v, f); }); walk(x.e, f); }
 }
 function refsOf(x) {
@@ -316,18 +326,19 @@ function mapScalar(x, hook) {
   if (!x || typeof x !== 'object') return x;
   const h = hook(x);
   if (h) return h;
-  if (x.k === 'op' || x.k === 'fn' || x.k === 'sql') return { ...x, a: x.a.map(y => mapScalar(y, hook)) };
+  if (x.k === 'op' || x.k === 'fn' || x.k === 'pop') return { ...x, a: x.a.map(y => mapScalar(y, hook)) };
   if (x.k === 'case') return { ...x, w: x.w.map(([c, v]) => [mapScalar(c, hook), mapScalar(v, hook)]), e: mapScalar(x.e, hook) };
   return x;
 }
 
-function mapKids(r, g) {
+export function mapKids(r, g) {
   switch (r.k) {
     case 'select': case 'distinct': { const src = g(r.src); return { ...r, src, cols: src.cols }; }
     case 'project': case 'aggregate': case 'paths': case 'output': return { ...r, src: g(r.src) };
     case 'window': { const src = g(r.src); return { ...r, src, cols: [...src.cols, ...r.fns.map(f => f.col)] }; }
     case 'join': case 'apply': { const left = g(r.left), right = g(r.right); return { ...r, left, right, cols: [...left.cols, ...right.cols] }; }
     case 'union': return { ...r, srcs: r.srcs.map(g) };
+    case 'series': return r.src ? { ...r, src: g(r.src) } : r;
   }
   return r;
 }

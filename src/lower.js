@@ -16,9 +16,23 @@ import { outputNames, daxName } from './emit.js';
 const lc = s => String(s).toLowerCase();
 const withRow = (scope, row, res) => { const s = new Map(scope); s.set(row.id, res); return s; };
 const isTrue = x => x.k === 'lit' && x.v === true;
-// SQL of the plan's own, written by the printer (plan-sql.js) and drawn by explain.js.
-const lessEq = (a, b) => P.sqlop((d, [x, y]) => `${x} <= ${y}`, ([x, y]) => `${x} ≤ ${y}`, [a, b]);
-const minus1 = a => P.sqlop((d, [x]) => `(${x} - 1)`, ([x]) => `${x} - 1`, [a], { t: 'int', cond: false });
+const int = v => ir.lit(v, 'int');
+// The SQL CASE of the plan's own operators: { w: [[cond, value]], e }, typed t.
+const when = (w, e, t) => ({ k: 'case', w, e, t, nn: false });
+
+// START AT: the rows from the first that is at or after the values, in the order (a blank comes
+// first ascending, last descending); each value counts within the rows equal on those before it.
+function startAt(keys, order, vals, lits) {
+  const after = i => {
+    const k = keys[i], v = vals[i], blank = lits[i].v === null;
+    if (order[i].desc) return blank ? P.FALSE : P.or([P.cmp('lt', k, v), P.isNull(k)]);
+    return blank ? P.notNull(k) : P.cmp('gt', k, v);
+  };
+  const same = i => P.key(keys[i], vals[i]);
+  const alts = vals.map((_, i) => P.and([...vals.slice(0, i).map((__, j) => same(j)), after(i)]));
+  alts.push(P.and(vals.map((_, i) => same(i))));
+  return P.or(alts);
+}
 
 export class Lowerer {
   constructor(model, options = {}) {
@@ -58,12 +72,7 @@ export class Lowerer {
     const b = this.fromRendered(inner, table.cols);
     const scope = new Map([[row.id, b.res]]);
     const keys = order.map(o => this.scalar(o.expr, scope, b));
-    if (start.length) {
-      const vals = start.map(v => this.scalar(v, scope, b));
-      const n = keys.length;
-      b.where.push(P.sqlop((d, a, em) => em.startAt(a.slice(0, n), order, a.slice(n), start),
-        a => `START AT (${a.slice(n).join(', ')})`, [...keys.slice(0, start.length), ...vals]));
-    }
+    if (start.length) b.where.push(startAt(keys, order, start.map(v => this.scalar(v, scope, b)), start));
     const by = typeof this.options.castOutput === 'object' ? this.options.castOutput : null;
     const cast = this.options.castOutput !== false;
     const items = table.cols.map((c, i) => ({
@@ -147,10 +156,8 @@ export class Lowerer {
       case 'series': {
         const b = new Block(this, null, x.cols);
         const [start, end, step] = [x.start, x.end, x.step].map(v => this.scalar(v, scope, b));
-        const s = P.series(start, end, step, x.cols[0].t, x.cols[0].name);
-        if (!b.applies.length) return this.fromRel(s, x.cols);
-        // Bounds that are aggregates (CALENDARAUTO's): the series for the row that holds them.
-        return this.fromList(P.apply(b.body(), s), [{ expr: P.ref(s.cols[0]), lineage: null, name: s.cols[0].name }], x.cols);
+        // Bounds that are aggregates (CALENDARAUTO's): columns of the one row that holds them.
+        return this.fromRel(P.series(start, end, step, x.cols[0].t, x.cols[0].name, b.applies.length ? b.body() : null), x.cols);
       }
       case 'generate': {
         const l = this.wrap(this.table(x.left, scope));
@@ -281,7 +288,7 @@ export class Lowerer {
         const sub = sb.render(), k = sub.list[0].expr, here = res.meta(e.here);
         // A many-to-many relationship matches a blank with a blank.
         const mm = e.rel.fromCard === 'many' && e.rel.toCard === 'many';
-        out.push(P.exists(P.select(sub.rel, mm ? P.same(k, here) : P.equal(k, here))));
+        out.push(P.exists(P.select(sub.rel, mm ? P.same(k, here) : P.eq(k, here))));
       }
     }
     return out;
@@ -375,8 +382,8 @@ export class Lowerer {
     const rk = this.ranked(x.src, x.row, x.order, scope, 'dense_rank');
     const b = this.fromList(rk.rel, rk.list, x.src.cols);
     const n = this.scalar(x.n, scope, b), k = this.scalar(x.skip, scope, b);
-    b.where.push(P.sqlop((d, [rn, s, m]) => `${rn} > COALESCE(${s}, 0) AND ${rn} <= COALESCE(${s}, 0) + ${m}`,
-      ([rn, s, m]) => `${s} < ${rn} ≤ ${s} + ${m}`, [P.ref(rk.rn), k, n]));
+    const rn = P.ref(rk.rn), skip = P.coalesce(k, int(0));
+    b.where.push(P.and([P.cmp('gt', rn, skip), P.cmp('le', rn, P.add(skip, n))]));
     b.setOut(x.cols, rk.list.map(o => o.expr));
     b.open = false;
     return b;
@@ -390,7 +397,7 @@ export class Lowerer {
     const g = P.aggregate(rk.rel, x.on.map(([, j], k) => ({ name: `k${k}`, expr: rk.list[j].expr })), [{ col: first, fn: 'min', arg: P.ref(rk.rn), extra: { t: 'int' } }]);
     const b = this.wrap(this.table(x.src, scope));
     b.joins.push({ kind: 'inner', rel: g, on: P.and(x.on.map(([i], k) => P.same(b.res.col(i), P.ref(g.keys[k].col)))) });
-    b.setOut(x.cols, [...x.rest.map(i => b.res.col(i)), minus1(P.ref(first))]);
+    b.setOut(x.cols, [...x.rest.map(i => b.res.col(i)), P.sub(P.ref(first), int(1))]);
     b.open = false;
     return b;
   }
@@ -450,7 +457,6 @@ export class Lowerer {
   // current row's partition.
   windowRows(x, scope) {
     const r = this.numbered(x, scope);
-    const op = (write, show, a) => P.sqlop(write, show, a);
     let b, c = null;
     if (x.needCur) {
       // The current rows: of a numbering of their own (the plan's columns are each one relation's).
@@ -468,19 +474,17 @@ export class Lowerer {
       c = crn;
     } else b = new Block(this, r.rel, x.rel.cols);
     const rn = r.rn, n = r.n;
-    if (x.fn === 'offset') {
-      const dl = this.scalar(x.delta, scope, b);
-      b.where.push(op((d, [a, cr, v]) => `${a} = ${cr} + ${v}`, ([a, cr, v]) => `${a} = ${cr} + ${v}`, [rn, c, dl]));
-    } else if (x.fn === 'index') {
+    // A position from the start (> 0) or from the end (< 0) of the partition of n rows.
+    const fromEnd = v => P.add(P.add(n, v), int(1));
+    if (x.fn === 'offset') b.where.push(P.eq(rn, P.add(c, this.scalar(x.delta, scope, b))));
+    else if (x.fn === 'index') {
       const p = this.scalar(x.pos, scope, b);
-      b.where.push(op((d, [a, v, m]) => `${a} = CASE WHEN ${v} > 0 THEN ${v} WHEN ${v} < 0 THEN ${m} + ${v} + 1 END`,
-        ([a, v]) => `${a} = position ${v}`, [rn, p, n]));
+      b.where.push(P.eq(rn, when([[P.cmp('gt', p, int(0)), p], [P.cmp('lt', p, int(0)), fromEnd(p)]], ir.lit(null, 'int'), 'int')));
     } else {
       const f = this.scalar(x.from, scope, b), t = this.scalar(x.to, scope, b);
-      const abs = (v, m) => `CASE WHEN ${v} > 0 THEN ${v} WHEN ${v} = 0 THEN 1 ELSE ${m} + ${v} + 1 END`;
-      const { fromAbs, toAbs } = x;
-      b.where.push(op((d, [a, m, lo, hi, cr]) => `${a} BETWEEN ${fromAbs ? abs(lo, m) : `${cr} + ${lo}`} AND ${toAbs ? abs(hi, m) : `${cr} + ${hi}`}`,
-        ([a, , lo, hi]) => `${a} in window ${lo}..${hi}`, [rn, n, f, t, c ?? ir.lit(0)]));
+      // An absolute end: its position (0 is the first row); a relative one: from the current row.
+      const end = (v, abs) => (abs ? when([[P.cmp('gt', v, int(0)), v], [P.eq(v, int(0)), int(1)]], fromEnd(v), 'int') : P.add(c, v));
+      b.where.push(P.and([P.cmp('ge', rn, end(f, x.fromAbs)), P.cmp('le', rn, end(t, x.toAbs))]));
     }
     b.setOut(x.rel.cols, r.own);
     b.open = false;
@@ -694,7 +698,7 @@ class Block {
     let r = this.body();
     if (this.qualify) {
       r = P.window(r, [], [{ name: 'rank', fn: 'rank', order: this.qualify.order }]);
-      r = P.select(r, lessEq(P.ref(r.fns[0].col), this.qualify.n));
+      r = P.select(r, P.cmp('le', P.ref(r.fns[0].col), this.qualify.n));
     }
     const refs = list.every(o => o.expr.k === 'ref' && r.cols.includes(o.expr.col));
     if (refs && !this.distinct) return { rel: r, list };
@@ -745,7 +749,7 @@ class Res {
     if (!this.block) throw semantic(`'${hop.to.table.name}' cannot be joined here`);
     const rel = this.lw.source(hop.to.table);
     const to = P.ref(colOf(rel, hop.to));
-    this.block.joins.push({ kind: 'left', rel, on: P.equal(to, from) });
+    this.block.joins.push({ kind: 'left', rel, on: P.eq(to, from) });
     this.joinRel.set(key, rel);
     this.joinKey.set(rel, to);
     return rel;

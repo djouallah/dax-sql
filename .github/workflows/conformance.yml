@@ -76,7 +76,8 @@ jobs:
         env:
           DAXSQL_PLAN: "1"
         run: |
-          node conformance/runner/run.mjs --adapter "node conformance/engines/dax-sql/adapter.mjs ."             --known conformance/engines/dax-sql/known.json --report "$RUNNER_TEMP/plan.json"
+          node conformance/runner/run.mjs --adapter "node conformance/engines/dax-sql/adapter.mjs ." \
+            --known conformance/engines/dax-sql/known.json --report "$RUNNER_TEMP/plan.json"
       - uses: actions/upload-artifact@v4
         if: always()
         with:

@@ -108,7 +108,7 @@ const named = (name, expr) => (expr === name || expr.endsWith(`.${name}`) ? expr
 const colName = c => (c.table ? `${c.table.name}.${c.name}` : c.name);
 
 const AGG = { avg: 'AVERAGE', countrows: 'COUNTROWS', dcount: 'DISTINCTCOUNT', dcountnb: 'DISTINCTCOUNTNOBLANK', count0: 'COUNT', dcount0: 'DISTINCTCOUNT', concat: 'CONCATENATEX',
-  count: 'COUNT', string_agg: 'STRING_AGG' };
+  count_values: 'COUNT', string_agg: 'STRING_AGG' };
 function agg(a, S) {
   if (a.fn === 'count_star') return 'COUNT(*)';
   if (a.fn === 'count_distinct') return `COUNT(DISTINCT ${S(a.arg)})`;

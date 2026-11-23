@@ -32,8 +32,8 @@ function aggregates(r) {
     const x = a.arg, n = aggs.length;
     let v = null;
     switch (a.fn) {
-      case 'count0': v = agg('count', x); break;
-      case 'count': v = nonzero(agg('count', x)); break;
+      case 'count0': v = agg('count_values', x); break;
+      case 'count': v = nonzero(agg('count_values', x)); break;
       case 'countrows': v = nonzero(agg('count_star', null)); break;
       case 'dcount0': if (x.k !== 'fn') v = agg('count_distinct', x); break;
       case 'dcountnb': if (x.k !== 'fn') v = nonzero(agg('count_distinct', x)); break;

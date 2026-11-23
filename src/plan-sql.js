@@ -110,7 +110,7 @@ export class PlanSql extends Emitter {
     if (fn === 'onlyone') return `CASE WHEN COUNT(*) = 1 THEN MIN(${x}) END`;
     // The standard aggregates, under the names the dialect knows them by.
     if (fn === 'count_star') return 'COUNT(*)';
-    if (fn === 'count') return this.d.agg('count0', x, {});
+    if (fn === 'count_values') return this.d.agg('count0', x, {});
     if (fn === 'count_distinct') return this.d.agg('dcount0', x, {});
     if (fn === 'string_agg') fn = 'concat';
     const e = { t: extra.t, ...(extra.exact ? { exact: true } : {}) };

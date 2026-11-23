@@ -23,7 +23,8 @@ env:
 
 concurrency:
   group: postgres-${{ github.ref }}
-  cancel-in-progress: true
+  # A run waits for the one before (its plan job takes long): none is cut short by the next push.
+  cancel-in-progress: false
 
 permissions:
   contents: read

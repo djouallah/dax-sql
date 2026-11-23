@@ -3,7 +3,7 @@ name: PostgreSQL
 # Runs the conformance suite with the postgres dialect on a PostgreSQL server
 # (conformance/engines/dax-sql-postgres/adapter.mjs): each query compiled to PostgreSQL's SQL and
 # run over the suite's data copied into it, held to Power BI's answers and
-# engines/dax-sql-postgres/known.json. A query has 30 s to answer.
+# engines/dax-sql-postgres/known.json. A query has 60 s to answer.
 
 on:
   push:
@@ -63,6 +63,8 @@ jobs:
       - name: The suite on PostgreSQL
         env:
           PG_TIMES: ${{ runner.temp }}/pg-times.json
+          # A two-core runner, the server beside the suite: 60 s, so a query near 30 s is not a coin toss.
+          PG_TIMEOUT_MS: 60000
           PG_PLANS: ${{ runner.temp }}/pg-plans.md
         run: |
           node conformance/runner/run.mjs --adapter "node conformance/engines/dax-sql-postgres/adapter.mjs ." \

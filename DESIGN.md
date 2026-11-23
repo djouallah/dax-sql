@@ -493,7 +493,7 @@ SELECT * FROM (SHOW SEMANTIC METRICS IN sales) WHERE ...;   -- each one reads as
 | Option | |
 |---|---|
 | `tableSource` | `(table) => SQL` naming a model table's rows. Default: its partition's entity, `"schema"."entity"`. |
-| `dialect` | `'duckdb'` (default), `'tsql'` (the Fabric SQL endpoint and Warehouse; see T-SQL below), or an instance of a `Dialect` subclass. |
+| `dialect` | `'duckdb'` (default), `'tsql'` (the Fabric SQL endpoint and Warehouse; see T-SQL below), `'postgres'` (PostgreSQL; see below), or an instance of a `Dialect` subclass. |
 | `columnNames` | `'short'` (default): the column's or the expression's name. `'dax'`: `Table[Column]`, `[Measure]`. |
 | `castOutput` | `true` (default): whole numbers as `BIGINT`, other numbers as `DOUBLE`. Or an object, by the column's type (`int`, `double`, `decimal`, `datetime`, `string`, `bool`), of a function of its SQL: `{ int: s => \`CAST(${s} AS INTEGER)\` }`; a type it leaves out is not cast. |
 | `assumeIntegrity` | `true`: every relationship relies on referential integrity, so a dimension key is read off the fact's foreign key without a join. By default only relationships whose `assumeIntegrity` is set (TMSL's `relyOnReferentialIntegrity`) are treated this way. |
@@ -919,7 +919,7 @@ SELECT m.*, p.n FROM m JOIN (SELECT "Color", COUNT(*) AS n FROM "Product" GROUP 
 | `ir.js` | the intermediate form: scalars, tables, rows, aggregates over scans |
 | `emit.js` | the intermediate form into SQL |
 | `format.js` | FORMAT's patterns, read into what a dialect writes |
-| `dialects/` | what differs between SQL engines: `base.js` (the interface), `duckdb.js`, `duckdb-format.js`, `tsql.js`, `tsql-format.js` |
+| `dialects/` | what differs between SQL engines: `base.js` (the interface), `duckdb.js`, `duckdb-format.js`, `tsql.js`, `tsql-format.js`, `postgres.js`, `postgres-format.js` |
 | `errors.js` | `DaxError` and its codes |
 
 The SQL it writes:
@@ -1027,6 +1027,32 @@ the tables a model reads, run by Fabric's distributed engine. It has its own dri
 package depends on nothing new. `tsql.yml` runs it on each push that changes the compiler or the
 suite, signed in as the Oracle is (an OIDC federated login); a query has 30 s to answer.
 
+### PostgreSQL
+
+`dialect: 'postgres'` writes PostgreSQL's SQL (tested on 17). It has what DuckDB has but `QUALIFY`
+(a SELECT around the window) and lists (an array, or a value bound in a subquery's row), and it
+runs a correlated subquery as a loop, as Fabric does, so the emitter fuses rows, hoists repeats and
+aggregates over a SELECT of a subquery as for T-SQL. Where PostgreSQL differs from DuckDB:
+
+- A blank-safe join key is `ARRAY[CAST(a AS t)] = ARRAY[CAST(b AS t)]` (an array's `=` takes NULL
+  for equal to NULL, and is hashed): `IS NOT DISTINCT FROM` it joins in a loop.
+- A constant is computed when the query is planned, in a branch never taken too: `ERROR`'s
+  failing cast reads its message under `random()`.
+- `/` of two whole numbers is a whole number and a division by zero an error: both are written
+  out (a double's division; infinity or NaN for zero, as on DuckDB).
+- A NULL in a subquery's column is TEXT, which no UNION arm of a number matches: a blank where a
+  column is (a subtotal's key, a measure blank at a level) is cast to the column's type.
+- An aggregate belongs to the query whose columns it reads, so one over a subquery that reads an
+  outer row is over a SELECT of it.
+- Text is compared and sorted as the database's collation does: `C` gives DuckDB's code-point
+  order.
+
+`conformance/engines/dax-sql-postgres` runs the suite on a PostgreSQL server, the data copied in
+from DuckDB's reading of the CSVs (the same values, of the same types), with its own known list
+(DuckDB's, an expression of blanks only that PostgreSQL types as text, and five queries past 30 s:
+a subquery of each group the mapping does not reach yet, as on Fabric). `postgres.yml` runs it on
+each push that changes the compiler or the suite, on a `postgres:17` service with `--locale=C`.
+
 ### Tests
 
 ```sh
@@ -1080,6 +1106,8 @@ In CI:
   compiled by the code on main before it is published.
 - `tsql.yml` (a push that changes the compiler or the suite): the suite as T-SQL on the Fabric
   lakehouse's SQL endpoint, against its own known list, with the slowest queries in its summary.
+- `postgres.yml` (a push that changes the compiler or the suite): the suite on PostgreSQL 17,
+  against its own known list, with the slowest queries and the plans of those past 30 s.
 - `oracle.yml`, by hand: Power BI's answers for the suite's new or stale queries.
 - [analytics-as-code](https://github.com/djouallah/analytics-as-code) runs its model's measures
   and its dashboard's queries through this package on every push, and compares them with its

@@ -111,6 +111,7 @@ The engines tested here are under `engines/`, each with its known list.
 | Engine | Adapter | Run |
 |---|---|---|
 | dax-sql (this repo) | `engines/dax-sql/adapter.mjs <repo root>`: compiles each query with that checkout and runs the SQL on DuckDB | the `Conformance` workflow (repo root), on every push; it also compiles each query with and without the emitter's rewrites (`engines/dax-sql/agree.mjs`): the rows must be the same |
+| dax-sql, PostgreSQL | `engines/dax-sql-postgres/adapter.mjs <repo root>`: compiles each query for PostgreSQL and runs it on a PostgreSQL server, over the suite's data copied in from DuckDB's reading of the CSVs | `postgres.yml`, on a push that changes the compiler or the suite, on a `postgres:17` service |
 | dax-sql, T-SQL | `engines/dax-sql-tsql/adapter.mjs <repo root>`: compiles each query as T-SQL and runs it on a Fabric lakehouse's SQL endpoint, over the suite's data as the lakehouse's Delta tables (`lakehouse.py`) | `tsql.yml`, on a push that changes the compiler or the suite, through the Oracle's federated login |
 
 ## Power BI, the oracle

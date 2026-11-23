@@ -3,7 +3,7 @@
   "version": "0.2.4",
   "license": "MIT",
   "author": "N.S. Devaraj (https://github.com/nsdevaraj)",
-  "description": "DAX and Apache Ossie SQL queries over semantic models (TMSL, Ossie) compiled to one SQL SELECT for DuckDB or T-SQL (Microsoft Fabric), held to Power BI's answers",
+  "description": "DAX and Apache Ossie SQL queries over semantic models (TMSL, TMDL, Ossie) compiled to one SQL SELECT for DuckDB or T-SQL (Microsoft Fabric), held to Power BI's answers",
   "keywords": [
     "dax",
     "sql",
@@ -11,6 +11,7 @@
     "semantic-model",
     "tabular",
     "tmsl",
+    "tmdl",
     "duckdb",
     "tsql",
     "fabric",
@@ -28,11 +29,13 @@
   "exports": {
     ".": "./src/index.js",
     "./formats/tmsl.js": "./formats/tmsl.js",
+    "./formats/tmdl.js": "./formats/tmdl.js",
     "./formats/ossie.js": "./formats/ossie.js"
   },
   "files": [
     "src/",
     "formats/tmsl.js",
+    "formats/tmdl.js",
     "formats/ossie.js",
     "formats/ossie-sql.js",
     "DESIGN.md"

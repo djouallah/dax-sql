@@ -374,11 +374,17 @@ What the README leaves out: the API, what the compiler does, and how.
 Only a name, a measure's `dax` and a relationship's ends are required. `src/model.js` says
 the same at its top.
 
-A file is read into a model object by a reader in `formats/`, exported as `dax-sql/formats/tmsl.js`
-and `dax-sql/formats/ossie.js`. The compiler never imports them.
+A file is read into a model object by a reader in `formats/`, exported as `dax-sql/formats/tmsl.js`,
+`dax-sql/formats/tmdl.js` and `dax-sql/formats/ossie.js`. The compiler never imports them.
 
 - `formats/tmsl.js`: `tmslToModel(bim)` reads a TMSL model (`model.bim`, the JSON of Power BI
   and Analysis Services).
+- `formats/tmdl.js`: `tmdlToModel(text)` reads a TMDL model, through `tmdlToTmsl(text)`, which
+  returns it as TMSL. `text` is one file (the whole model, inside a `createOrReplace` script or
+  not, as Fabric publishes a semantic view) or a folder's files (a PBIP's `definition/`: their
+  texts as an array, or `{ path: text }`). It reads tables, columns, measures and their
+  annotations, partitions, calculation groups, relationships, roles (filters and object-level
+  security) and expressions; lineage tags, perspectives and cultures are left out.
 - `formats/ossie.js` reads an [Apache Ossie](https://github.com/apache/ossie) model and goes
   both ways between it and TMSL. `ossieToModel(doc)`, `tmslToOssie(bim)` and `ossieToTmsl(doc)`
   take parsed objects, so the YAML is the caller's to parse. A column is a field whose `sql` is
@@ -408,6 +414,20 @@ and `dax-sql/formats/ossie.js`. The compiler never imports them.
   and the expression it read are not kept.
 
 ### API
+
+```js
+import { createCompiler } from 'dax-sql';
+import { tmslToModel } from 'dax-sql/formats/tmsl.js';   // or formats/ossie.js for Apache Ossie
+
+const model = tmslToModel(JSON.parse(bimText));           // a model.bim
+const dax = createCompiler(model, { tableSource: t => `read_parquet('data/${t.name}.parquet')` });
+
+const { sql, columns } = dax.compile(`
+  EVALUATE
+  SUMMARIZECOLUMNS('Date'[Year], "Sales", [Sales Amount])
+  ORDER BY 'Date'[Year]`);
+// sql: one SELECT for the engine; columns: [{ name: 'Year', type: 'int', ... }, { name: 'Sales', ... }]
+```
 
 `createCompiler(model, options)` returns:
 

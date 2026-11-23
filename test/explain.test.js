@@ -12,17 +12,17 @@ const Q = 'EVALUATE SUMMARIZECOLUMNS(Category[Category], TREATAS({2024}, \'Date\
 test('explain draws the query plan: the groups, the measure one grouping joined to them (inner: the blank rows are dropped), TREATAS a grouping of its values', () => {
   const tree = h.dax.explain(Q);
   assert.doesNotMatch(tree, /Apply|∃/);
-  assert.match(tree, /^π {2}Category, Sales = sum\n└─ σ {2}sum ≠ BLANK\n/);
-  assert.match(tree, /⋈ {2}Category ≡ key\n.*├─ δ {2}Distinct\n.*└─ π {2}Category\.Category\n.*└─ ▭ {2}Category\n/);
-  assert.match(tree, /γ {2}by key = Category\.Category; SUM\(Sales\.Amount\) → sum/);
+  assert.match(tree, /^π {2}Category, Sales = sum\n└─ ⋈ {2}\(g0 ≡ Category\) ∧ sum ≠ BLANK\n.*├─ δ {2}Distinct\n.*└─ π {2}Category\.Category\n.*└─ ▭ {2}Category\n/);
+  assert.match(tree, /γ {2}by g0 = Category\.Category; SUM\(Sales\.Amount\) → sum/);
   assert.match(tree, /⟕ {2}Date\.Date = Sales\.OrderDate/);
   assert.match(tree, /γ {2}by key = Value; COUNT\(\*\) → count_star\n.*└─ ▭ {2}Values \{2024\}/);
 });
 
-test('before the optimizer: the measure an apply for each group, the filter a semi-join', () => {
+test('before the optimizer: the measure one grouping by the level\'s key, joined to the groups; the filter a semi-join', () => {
   const tree = h.dax.explain(Q, { optimize: false });
-  assert.match(tree, /×ᴬ Apply/);
-  assert.match(tree, /σ {2}∃1 ∧ \(Category\.Category ≡ outer\.Category\)/);
+  assert.doesNotMatch(tree, /×ᴬ Apply/);
+  assert.match(tree, /⟕ {2}g0 ≡ Category\n/);
+  assert.match(tree, /γ {2}by g0 = Category\.Category; SUM\(Sales\.Amount\) → sum\n.*└─ σ {2}∃1\n/);
 });
 
 test('the query plan\'s SQL answers as the compiled SQL does, as it is and optimized', async () => {

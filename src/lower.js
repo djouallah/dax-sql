@@ -1,6 +1,7 @@
 // The compiled query -> its query plan (plan.js): the work an engine has to do, as relational
-// algebra, with no rewrite and nothing of any engine. It means what emit.js writes with
-// `optimize: false`: each aggregate over its own rows, under the filter context as it is.
+// algebra, with nothing of any engine. It makes emit.js's decisions: the aggregates of a
+// SUMMARIZECOLUMNS level over the same rows by the level's keys are one grouping (Fusion); any
+// other aggregate is over its own rows, under the filter context as it is, for each row.
 //
 // A table is built as a Block: a relation (`from`), the joins that reach the columns of the
 // tables its rows expand to (added as expressions read them), the applies that compute the
@@ -12,6 +13,7 @@ import * as P from './plan.js';
 import { Ctx, narrow } from './context.js';
 import { semantic, unsupported } from './errors.js';
 import { outputNames, daxName } from './emit.js';
+import { canon, text } from './passes/fuse.js';
 
 const lc = s => String(s).toLowerCase();
 const withRow = (scope, row, res) => { const s = new Map(scope); s.set(row.id, res); return s; };
@@ -44,6 +46,13 @@ export class Lowerer {
     this.calcBusy = new Set();
     this.defs = [];          // the query's definitions, each before those that read it
     this.defOf = new Map();
+    this.fusions = [];       // stack: the Fusion an aggregate goes to, or null (inside a table)
+  }
+
+  // f, its aggregates fused into none (a table's, a subquery's: their rows are their own).
+  isolated(f) {
+    this.fusions.push(null);
+    try { return f(); } finally { this.fusions.pop(); }
   }
 
   // The rows of a definition (a table VAR, a calculated table), built once and read at each use.
@@ -90,7 +99,8 @@ export class Lowerer {
 
   // --- tables ------------------------------------------------------------------------------
 
-  table(x, scope) {
+  table(x, scope) { return this.isolated(() => this.table1(x, scope)); }
+  table1(x, scope) {
     switch (x.k) {
       case 'scan': return this.scanBlock(x.table, x.ctx, scope);
       case 'filter': {
@@ -507,7 +517,11 @@ export class Lowerer {
     const kb = new Block(this, keyRel, x.cols);
     kb.res = new WrapRes(this, kb, x.keyCols.map((c, i) => ({ expr: refs.get(i) ?? ir.lit(null, c.type), lineage: c, name: c.name })), this.model.state(x.ctx0.mods));
     const s = withRow(scope, x.keyRow, kb.res);
-    const items = L.items.map(i => this.scalar(i.expr, s, kb));
+    const fusion = new Fusion(this, x.keyRow, active, x.keyCols);
+    this.fusions.push(fusion);
+    let items;
+    try { items = L.items.map(i => this.scalar(i.expr, s, kb)); } finally { this.fusions.pop(); }
+    fusion.finish(kb, ki => refs.get(ki));
     kb.setOut(x.cols, [
       ...x.keyCols.map((c, i) => (active.includes(i) ? refs.get(i) : ir.lit(L.consts?.has(i) ? L.consts.get(i) : null, c.type))),
       ...L.flags.map(f => ir.lit(f, 'bool')),
@@ -612,7 +626,15 @@ export class Lowerer {
       this.grouping.aggs.push({ col, ...this.aggParts(x, scope, this.grouping.block) });
       return P.ref(col);
     }
+    const fusion = this.fusions.at(-1);
+    if (fusion) {
+      const v = fusion.add(x, scope, blk);
+      if (v) return v;
+    }
     if (!blk) throw unsupported('plan: an aggregate where no row is');
+    return this.isolated(() => this.agg1(x, scope, blk));
+  }
+  agg1(x, scope, blk) {
     const b = this.open(this.table(x.src, scope));
     const s2 = withRow(scope, x.row, b.res);
     const col = P.newCol(x.fn === 'single' ? 'value' : x.fn, x.t);
@@ -643,6 +665,106 @@ export class Lowerer {
       extra.text = x.arg.t;
     } else if (/^pctx?_/.test(x.fn)) extra.k = this.scalar(x.a[0], scope, b);
     return { fn: x.fn, arg, extra };
+  }
+}
+
+// --- fusion ------------------------------------------------------------------------------
+
+// The aggregates of one SUMMARIZECOLUMNS level that can share a grouping (emit.js's Fusion): over
+// a scan, reading no row but the level's keys, which they filter it by. A group is one grouping:
+// the scan's table and its other filters (compared as plan, up to columns' ids), by the keys
+// that filter it, joined to the level's rows on them (a blank matching a blank); an aggregate
+// the same in it as another is the other.
+class Fusion {
+  constructor(lw, keyRow, active, keyCols) {
+    this.lw = lw;
+    this.keyRow = keyRow;
+    this.active = active;
+    this.keyCols = keyCols;
+    this.groups = [];
+  }
+
+  // Aggregate x as a column of its group, or null (not fused: computed for each row).
+  add(x, scope, blk) {
+    const lw = this.lw, S = x.src;
+    // MIN or MAX over the distinct values of a scan's column (VALUES, MAX of the visible dates):
+    // over the scan's rows, the same values.
+    if ((x.fn === 'min' || x.fn === 'max') && S.k === 'distinct' && S.src.k === 'project' && !S.src.keep && S.src.src.k === 'scan'
+      && x.arg?.k === 'col' && x.arg.row === x.row) {
+      const at = typeof x.arg.ref === 'number' ? x.arg.ref : S.cols.findIndex(c => c.lineage === x.arg.ref);
+      const item = S.src.items[at];
+      if (item?.expr.k === 'col' && item.expr.row === S.src.row) return this.add({ ...x, src: S.src.src, row: S.src.row, arg: item.expr }, scope, blk);
+    }
+    if (S.k !== 'scan' || x.fn === 'single') return null;
+    const kid = this.keyRow.id;
+    const state = lw.model.state(S.ctx.mods);
+    const exp = lw.model.expand(S.table, state);
+    // A bind of a column that does not filter the scan (a group's country on a scan of rates) is
+    // left out: it reads no row of the scan's. So is one a filter replaces.
+    const idle = f => f.kind === 'bind' && (f.implied && S.ctx.filters.includes(f.implied) || !exp.has(f.cols[0].table.name) && !lw.model.reaches(f.cols[0].table, S.table, state));
+    const reads = f => ir.freeRows({ k: 'scan', ctx: new Ctx([f]) });
+    for (const id of ir.freeRows(x)) {
+      if (id === kid) continue;
+      for (const f of S.ctx.filters) if (!idle(f) && reads(f).has(id)) return null;
+    }
+    for (const part of [x.arg, ...(x.a ?? []), ...(x.order ?? []).map(o => o.expr)]) {
+      if (!part) continue;
+      for (const id of ir.freeRows(part)) if (id !== x.row.id) return null;
+    }
+    const keys = new Set(), rest = [], guards = [];
+    for (const f of S.ctx.filters) {
+      if (idle(f)) continue;
+      if (f.kind === 'bind' && f.val.k === 'col' && f.val.row === this.keyRow) {
+        const c = f.cols[0];
+        const ref = typeof f.val.ref === 'number' ? f.val.ref : this.keyRow.cols.findIndex(k => k.lineage === f.val.ref);
+        if (ref < 0 || !this.active.includes(ref)) return null;
+        if (exp.has(c.table.name)) keys.add(ref);
+        // A key whose filter reaches the scan over a relationship that filters back: not fused.
+        else if (lw.model.reaches(c.table, S.table, state)) return null;
+        else continue;
+        // A guarded key (a value of the group, when a condition on the group holds): the
+        // condition is the group's, read where the group is.
+        if (f.guard && !guards.includes(f.guard)) guards.push(f.guard);
+        continue;
+      }
+      rest.push(f);
+    }
+    // The other filters read no row: those are the scan's own conditions, row by row.
+    if (rest.some(f => reads(f).size)) return null;
+    const keyList = [...keys].sort((a, b) => a - b);
+    const block = lw.isolated(() => lw.scanBlock(S.table, new Ctx(rest, S.ctx.mods), new Map()));
+    const keyExprs = lw.isolated(() => keyList.map(i => block.res.meta(this.keyCols[i])));
+    const c = canon(block.body());
+    const sig = `${S.table.name}|${state.key}|${keyList.join(',')}|${keyExprs.map(e => text(e, c.ids)).join(',')}|${c.key}`;
+    let g = this.groups.find(y => y.sig === sig);
+    if (!g) {
+      g = { sig, block, keys: keyList, keyExprs, aggs: [] };
+      this.groups.push(g);
+    }
+    const parts = lw.isolated(() => lw.aggParts(x, withRow(new Map(), x.row, g.block.res), g.block));
+    const M = new Map(), T = e => (e ? text(e, M) : '');
+    const e = parts.extra ?? {};
+    const key = [parts.fn, T(parts.arg), e.t, e.exact, e.text, T(e.delim), T(e.k), (e.order ?? []).map(o => `${T(o.expr)} ${o.desc}`).join(',')].join('|');
+    let a = g.aggs.find(y => y.key === key);
+    if (!a) {
+      a = { key, col: P.newCol(x.fn, x.t), fn: parts.fn, arg: parts.arg, extra: parts.extra };
+      g.aggs.push(a);
+    }
+    const v = P.ref(a.col);
+    if (!guards.length) return v;
+    const test = P.and(guards.map(gd => lw.scalar(gd, scope, blk)));
+    const zero = x.fn === 'count0' || x.fn === 'dcount0';
+    return when([[test, v]], zero ? ir.lit(0, x.t) : ir.lit(null, x.t), x.t);
+  }
+
+  // The groups joined to the level's block kb (a key's value there: keyOf(i)).
+  finish(kb, keyOf) {
+    for (const g of this.groups) {
+      const rel = P.aggregate(g.block.body(), g.keyExprs.map((e, j) => ({ name: `g${j}`, expr: e })),
+        g.aggs.map(a => ({ col: a.col, fn: a.fn, arg: a.arg, extra: a.extra })));
+      if (!g.keys.length) kb.joins.push({ kind: 'cross', rel, on: null });
+      else kb.joins.push({ kind: 'left', rel, on: P.and(g.keys.map((ki, j) => P.key(P.ref(rel.keys[j].col), keyOf(ki)))) });
+    }
   }
 }
 

@@ -239,7 +239,7 @@ export function createCompiler(input, options = {}) {
     // the passes/). { optimize: false }: before the passes (the reference CI checks them with).
     plan: (text, o = {}) => { const p = onePlan(text).plan; return o.optimize === false ? p : optimize(p); },
     // The query plan drawn as a tree, one per EVALUATE.
-    explain: (text, o = {}) => plans(text).map(p => drawPlan(o.optimize === false ? p.plan : optimize(p.plan))).join('\n\n'),
+    explain: (text, o = {}) => plans(text).map(p => drawPlan(o.correlated ? correlated(p.plan) : o.optimize === false ? p.plan : optimize(p.plan))).join('\n\n'),
     // The query plan's SQL: { sql, columns }, as compile gives.
     // correlated: the plan before decorrelation, its scalars standard (its applies LATERAL or
     // scalar subqueries, its EXISTS EXISTS: for an engine that unnests them, as DuckDB does).

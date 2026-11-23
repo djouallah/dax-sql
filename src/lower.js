@@ -890,7 +890,7 @@ class Fusion {
     const sig = `${S.table.name}|${state.key}|${keyList.join(',')}|${keyExprs.map(e => text(e, c.ids)).join(',')}|${c.key}`;
     let g = this.groups.find(y => y.sig === sig);
     if (!g) {
-      g = { sig, block, keys: keyList, keyExprs, aggs: [] };
+      g = { sig, block, keys: keyList, keyExprs, aggs: [], plain: !edge && !readsKeys && !mapped.length };
       this.groups.push(g);
     }
     const parts = lw.isolated(() => lw.aggParts(x, withRow(new Map(), x.row, g.block.res), g.block));
@@ -912,13 +912,45 @@ class Fusion {
   // The groups joined to the level's block kb (a key's value there: keyOf(i)).
   finish(kb, keyOf) {
     for (const g of this.groups) {
-      const rel = P.aggregate(g.block.body(), g.keyExprs.map((e, j) => ({ name: `g${j}`, expr: e })),
+      const rel = this.belowJoins(g) ?? P.aggregate(g.block.body(), g.keyExprs.map((e, j) => ({ name: `g${j}`, expr: e })),
         g.aggs.map(a => ({ col: a.col, fn: a.fn, arg: a.arg, extra: a.extra })));
       if (!g.keys.length) kb.joins.push({ kind: 'cross', rel, on: null });
       else kb.joins.push({ kind: 'left', rel, on: P.and(g.keys.map((ki, j) => P.key(P.ref(rel.keys[j].col), keyOf(ki)))) });
     }
   }
 }
+
+// Group g's grouping with its scan's rows aggregated before the joins, or null (emit.js's
+// belowJoins): the scan grouped by the columns of its own the keys and the joins read, those
+// groups joined to the other tables, and aggregated again by the keys. An engine that joins every
+// row before a GROUP BY above the join cannot know the other side's key is unique; the model can.
+// Only for sums, counts, mins and maxes of the scan's own columns, under conditions on its own
+// columns or on the joined tables alone, over joins to the one side of its expanded table (each
+// row meets at most one row of each, so it is counted once).
+Fusion.prototype.belowJoins = function belowJoins(g) {
+  const OVER = { sum: 'sum', min: 'min', max: 'max', count: 'sum', countrows: 'sum' };
+  const b = g.block;
+  if (!g.plain || b.from?.k !== 'scan' || !g.keyExprs.length || !b.joins.length || b.applies.length) return null;
+  if (!b.joins.every(j => j.kind === 'left')) return null;
+  const base = new Set(b.from.cols);
+  const joined = new Set(b.joins.flatMap(j => j.rel.cols));
+  const R = e => scalarReads(e);
+  if ([...g.keyExprs, ...b.joins.map(j => j.on), ...b.where].some(e => R(e).query)) return null;
+  if (!g.aggs.every(a => OVER[a.fn] && !a.extra?.exact && !a.extra?.k && !a.extra?.delim && !a.extra?.order?.length && (!a.arg || [...R(a.arg).cols].every(c => base.has(c))))) return null;
+  const readsJoined = e => [...R(e).cols].some(c => joined.has(c)), readsBase = e => [...R(e).cols].some(c => base.has(c));
+  if (b.where.some(c => readsJoined(c) && readsBase(c))) return null;
+  const after = b.where.filter(readsJoined), before = b.where.filter(c => !readsJoined(c));
+  const cols = [...new Set([...g.keyExprs, ...b.joins.map(j => j.on)].flatMap(e => [...R(e).cols].filter(c => base.has(c))))];
+  if (!cols.length) return null;
+  const inner = P.aggregate(before.length ? P.select(b.from, P.and(before)) : b.from, cols.map(c => ({ name: c.name, expr: P.ref(c), lineage: c.lineage })),
+    g.aggs.map(a => ({ name: a.col.name, t: a.col.t, fn: a.fn, arg: a.arg, extra: a.extra })));
+  const map = new Map(cols.map((c, i) => [c, inner.keys[i].col]));
+  let r = inner;
+  for (const j of b.joins) r = P.join(j.kind, r, j.rel, subst(j.on, map));
+  if (after.length) r = P.select(r, P.and(after));
+  return P.aggregate(r, g.keyExprs.map((e, j) => ({ name: `g${j}`, expr: subst(e, map) })),
+    g.aggs.map((a, i) => ({ col: a.col, fn: OVER[a.fn], arg: P.ref(inner.aggs[i].col), extra: { ...a.extra, t: a.col.t } })));
+};
 
 // The aggregates that are blank over no rows: one a mapping takes, by keys its rows have none
 // of, is blank there as the aggregate over no rows is.

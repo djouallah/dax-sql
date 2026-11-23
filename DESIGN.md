@@ -1049,9 +1049,10 @@ aggregates over a SELECT of a subquery as for T-SQL. Where PostgreSQL differs fr
 
 `conformance/engines/dax-sql-postgres` runs the suite on a PostgreSQL server, the data copied in
 from DuckDB's reading of the CSVs (the same values, of the same types), with its own known list
-(DuckDB's, an expression of blanks only that PostgreSQL types as text, and five queries past 30 s:
-a subquery of each group the mapping does not reach yet, as on Fabric). `postgres.yml` runs it on
-each push that changes the compiler or the suite, on a `postgres:17` service with `--locale=C`.
+(DuckDB's, an expression of blanks only that PostgreSQL types as text, and three queries past
+10 min: a subquery of each group the mapping does not reach yet, as on Fabric). `postgres.yml`
+runs it on each push that changes the compiler or the suite, on a `postgres:17` service with
+`--locale=C`: the answers are checked, and the slowest queries reported (a query has 5 min).
 
 ### Tests
 

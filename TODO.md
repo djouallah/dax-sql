@@ -13,7 +13,9 @@ Nothing here blocks a release. DAX on DuckDB has nothing left; T-SQL is the last
 
 # Wave 3: PostgreSQL
 
-- **5 queries past 30 s** on the CI's PostgreSQL 17, on its known list as slow: the same kind as
-  Fabric's, a subquery of each group the mapping does not reach (a calculation item over a
-  running total or a segmentation, SAMEPERIODLASTYEAR in SUMMARIZE, PERCENTILEX.EXC by quarter,
-  a calculation item as a CALCULATE filter). PostgreSQL runs each such subquery as a loop.
+- **3 queries past 10 min** on the CI's PostgreSQL 17, on its known list as slow: a calculation
+  item over a running total (`segmentation-cumulative-calc-group`) or a segmentation
+  (`segmentation-customer-bands-calc-group`), and a calculation item as a CALCULATE filter
+  (`filters-calcgroup-item-as-calculate-filter`). The same kind as Fabric's: a subquery of each
+  group the mapping does not reach, which PostgreSQL runs as a loop. Others take 15 s to 132 s
+  (`segmentation-summarize-sply-quarter-band`); the run's summary lists them.

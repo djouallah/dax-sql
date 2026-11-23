@@ -66,7 +66,7 @@ jobs:
           # Answers are what is checked, not time (a two-core runner beside the server: a query near
           # any limit passes or not by chance); the limit is for a query that would not end. The
           # slowest are in the summary. One session a core.
-          PG_TIMEOUT_MS: 600000
+          PG_TIMEOUT_MS: 300000
           PG_SESSIONS: 2
           PG_PLANS: ${{ runner.temp }}/pg-plans.md
         run: |

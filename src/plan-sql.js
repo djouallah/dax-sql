@@ -64,7 +64,7 @@ export class PlanSql extends Emitter {
         return `SELECT * FROM ${l} ${r.kind === 'left' ? 'LEFT JOIN' : 'JOIN'} ${rt} ON ${this.scalar(r.on, EMPTY, true)}`;
       }
       case 'apply': return `SELECT * FROM ${from(r.left, 'l')}${this.d.lateral(this.rel(r.right), this.alias('a'), r.outer)}`;
-      case 'union': return r.srcs.map((s, k) => `SELECT ${r.picks[k].map((c, i) => `${cn(c)} AS ${cn(r.cols[i])}`).join(', ')} FROM ${from(s, 'u')}`).join(' UNION ALL ');
+      case 'union': return r.srcs.map((s, k) => `SELECT ${r.picks[k].map((c, i) => `${c.t === 'blank' && r.cols[i].t !== 'blank' ? this.d.nullOf(r.cols[i].t) : cn(c)} AS ${cn(r.cols[i])}`).join(', ')} FROM ${from(s, 'u')}`).join(' UNION ALL ');
       case 'window': {
         const part = r.part.length ? `PARTITION BY ${r.part.map(p => this.scalar(p, EMPTY)).join(', ')}` : '';
         const fns = r.fns.map(f => {

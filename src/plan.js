@@ -89,7 +89,9 @@ export const join = (kind, left, right, on = null) => ({ k: 'join', kind, left, 
 export const apply = (left, right, outer = false) => ({ k: 'apply', outer, left, right, cols: [...left.cols, ...right.cols] });
 // UNION ALL of relations of the same columns (as positions), under columns of its own.
 // picks: the columns of each branch it reads, in order (a rewrite can give a branch more).
-export const union = (srcs, cols = copy(srcs[0].cols)) => ({ k: 'union', srcs, picks: srcs.map(s => s.cols.slice(0, cols.length)), cols });
+// A column's type: the first branch's that has one (a branch's BLANK() is of no type).
+const unionCols = srcs => copy(srcs[0].cols).map((c, i) => (c.t === 'blank' ? { ...c, t: srcs.find(s => s.cols[i].t !== 'blank')?.cols[i].t ?? c.t } : c));
+export const union = (srcs, cols = unionCols(srcs)) => ({ k: 'union', srcs, picks: srcs.map(s => s.cols.slice(0, cols.length)), cols });
 // Each function with its own order: [{ name, fn, order }].
 export function window(src, part, fns) {
   const fs = fns.map(f => ({ ...f, col: f.col ?? newCol(f.name, 'int', { nn: true }) }));

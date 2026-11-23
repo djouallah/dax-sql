@@ -14,7 +14,7 @@ const root = resolve(process.argv[2] ?? '.');
 const load = p => import(pathToFileURL(join(root, p)));
 const { createCompiler } = await load('src/index.js');
 const { tmslToModel } = await load('formats/tmsl.js');
-const { free } = await load('src/passes/decorrelate.js');
+const { free, kids } = await load('src/passes/decorrelate.js');
 const { loadQueries, modelDir } = await import(pathToFileURL(join(root, 'conformance', 'tools', 'suite.mjs')));
 
 const RELATIONS = new Set(['scan', 'values', 'select', 'project', 'distinct', 'aggregate', 'join', 'union', 'window', 'series', 'shared', 'output']);
@@ -52,7 +52,46 @@ function operators(plan) {
   return { ops, bad };
 }
 
+// Joins that can multiply rows: a cross join, or a join whose condition has no equality between
+// a column of each side, neither side of one row. Decorrelation's general path leaves them (D
+// crossed with the rows it is pushed into): their size is the product of the sides', growing as
+// the data does (m distinct values by n rows). One per such join of the plan, its definitions
+// counted once.
+function unbounded(plan) {
+  const one = new Map();
+  const oneRow = r => {
+    if (one.has(r)) return one.get(r);
+    let v = false;
+    if (r.k === 'aggregate') v = !r.keys.length;
+    else if (r.k === 'values') v = r.rows.length <= 1;
+    else if (r.k === 'shared') v = oneRow(r.def.rel);
+    else if (r.k === 'project' || r.k === 'select' || r.k === 'distinct' || r.k === 'window') v = oneRow(r.src);
+    else if (r.k === 'join') v = oneRow(r.left) && oneRow(r.right);
+    one.set(r, v);
+    return v;
+  };
+  const conjuncts = x => (x && x.k === 'pop' && x.op === 'and' ? x.a.flatMap(conjuncts) : x ? [x] : []);
+  const refs = (x, out = new Set()) => { if (!x || typeof x !== 'object') return out; if (x.k === 'ref') out.add(x.col); if (x.k === 'case') { x.w.forEach(([a, b]) => { refs(a, out); refs(b, out); }); refs(x.e, out); } if (Array.isArray(x.a)) x.a.forEach(y => refs(y, out)); return out; };
+  const keyed = j => {
+    const L = new Set(j.left.cols), R = new Set(j.right.cols);
+    const side = (x, S) => { const f = refs(x); return f.size > 0 && [...f].every(c => S.has(c)); };
+    return conjuncts(j.on).some(c => c.k === 'pop' && (c.op === 'eq' || c.op === 'key') && ((side(c.a[0], L) && side(c.a[1], R)) || (side(c.a[0], R) && side(c.a[1], L))));
+  };
+  let n = 0;
+  const seen = new Set();
+  const walk = r => {
+    if (seen.has(r)) return;
+    seen.add(r);
+    if (r.k === 'join' && !oneRow(r.left) && !oneRow(r.right) && (r.kind === 'cross' || !keyed(r))) n++;
+    kids(r).forEach(walk);
+  };
+  walk(plan.src);
+  (plan.defs ?? []).forEach(d => walk(d.rel));
+  return n;
+}
+
 const compilers = new Map();
+const multiplying = [];
 const counts = { raw: new Map(), opt: new Map() };
 const broken = [];
 let planned = 0, refused = 0;
@@ -73,11 +112,15 @@ for (const q of loadQueries({})) {
     for (const o of ops) counts[mode].set(o, (counts[mode].get(o) ?? 0) + 1);
     if (mode === 'opt' && bad.size) broken.push(`${q.model}/${q.family}/${q.id}: ${[...bad].join(', ')}`);
   }
+  const u = unbounded(opt);
+  if (u) multiplying.push({ id: `${q.model}/${q.family}/${q.id}`, n: u });
 }
 
 const names = [...new Set([...counts.raw.keys(), ...counts.opt.keys()])].sort();
 const table = `### The query plan's operators\n\n${planned} queries planned (${refused} refused: DAX errors).\n\n| operator | queries, as it is | optimized |\n|---|---|---|\n`
   + names.map(n => `| ${n} | ${counts.raw.get(n) ?? 0} | ${counts.opt.get(n) ?? 0} |`).join('\n')
+  + `\n\n**Joins that can multiply rows** (a cross join, or no equality between the sides; neither side of one row): ${multiplying.reduce((a, m) => a + m.n, 0)} in ${multiplying.length} queries.\n\n`
+  + multiplying.sort((a, b) => b.n - a.n).slice(0, 40).map(m => `- ${m.id}: ${m.n}`).join('\n') + '\n'
   + (broken.length ? `\n\n**Outside the contract (${broken.length}):**\n\n${broken.slice(0, 30).map(b => `- ${b}`).join('\n')}\n` : '\n');
 console.log(table);
 if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, table);

@@ -1,0 +1,10 @@
+{
+  "name": "dax-conformance-postgres",
+  "private": true,
+  "license": "MIT",
+  "description": "The conformance suite's adapter for dax-sql's PostgreSQL dialect, run on a PostgreSQL server",
+  "type": "module",
+  "dependencies": {
+    "pg": "8.13.1"
+  }
+}

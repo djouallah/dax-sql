@@ -8,8 +8,8 @@
 // in formats/ (dax-sql/formats/tmsl.js, dax-sql/formats/ossie.js) make one from a TMSL
 // model.bim or an Apache Ossie model.
 // Options:
-//   dialect        'duckdb' (the default), 'tsql' (the Fabric SQL endpoint and Warehouse), or a
-//                  Dialect instance (see dialects/base.js)
+//   dialect        'duckdb' (the default), 'tsql' (the Fabric SQL endpoint and Warehouse),
+//                  'postgres' (PostgreSQL), or a Dialect instance (see dialects/base.js)
 //   tableSource    (table) => SQL that names a model table's rows; by default its source's
 //                  entity ("schema"."entity"), else its name
 //   columnNames    'short' (the default: the column or the expression's name) or 'dax'
@@ -32,6 +32,7 @@ import { Emitter } from './emit.js';
 import { parseExpression } from './parser.js';
 import { DuckDBDialect } from './dialects/duckdb.js';
 import { TSqlDialect } from './dialects/tsql.js';
+import { PostgresDialect } from './dialects/postgres.js';
 import { Dialect } from './dialects/base.js';
 import { newRow } from './ir.js';
 import { DaxError, semantic, unsupported } from './errors.js';
@@ -42,6 +43,7 @@ export { DaxError } from './errors.js';
 export { Dialect } from './dialects/base.js';
 export { DuckDBDialect } from './dialects/duckdb.js';
 export { TSqlDialect } from './dialects/tsql.js';
+export { PostgresDialect } from './dialects/postgres.js';
 export { parseQuery, parseExpression } from './parser.js';
 export { parseSql, modelRelations } from './sql.js';
 
@@ -50,7 +52,7 @@ import { makeViews } from './views.js';
 export const createViews = options => makeViews(createCompiler, options);
 export { Model } from './model.js';
 
-const DIALECTS = { duckdb: () => new DuckDBDialect(), tsql: () => new TSqlDialect() };
+const DIALECTS = { duckdb: () => new DuckDBDialect(), tsql: () => new TSqlDialect(), postgres: () => new PostgresDialect() };
 
 export function createCompiler(input, options = {}) {
   const model = input instanceof Model ? input : new Model(input);

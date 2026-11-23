@@ -16,6 +16,7 @@
 // no apply is left.
 import * as P from '../plan.js';
 import { mapKids, mapScalars, subst, refsOf, conjuncts, free } from './decorrelate.js';
+import { clone } from './clone.js';
 
 export function unnest(root) {
   const u = new Unnest();
@@ -178,10 +179,11 @@ class Unnest {
     return { rel: on.length ? P.join('inner', d.rel, s.rel, P.and(on)) : P.join('cross', d.rel, s.rel), dc, op };
   }
 
-  // δ(π_cols L): a relation of its own (columns of its own) at each use.
+  // δ(π_cols L): a relation of its own at each use, over a copy of L under columns of its own (L
+  // is read at the top too, and a column is one relation's; sharing makes the copies one).
   D(ctx, cols) {
-    const src = ctx.src;
-    const p = P.project(src, cols.map(f => ({ name: f.name, expr: P.ref(f), lineage: f.lineage, t: f.t })));
+    const { rel: src, map } = clone(ctx.src);
+    const p = P.project(src, cols.map(f => ({ name: f.name, expr: P.ref(map.get(f) ?? f), lineage: f.lineage, t: f.t })));
     const rel = P.distinct(p);
     return { rel, at: new Map(cols.map((f, i) => [f, rel.cols[i]])) };
   }

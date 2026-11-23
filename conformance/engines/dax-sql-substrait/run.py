@@ -23,7 +23,10 @@ def value(v):
 
 # DataFusion's consumer reads its own names for some of Substrait's functions, and no enum
 # argument: the plan as DataFusion reads it (the plan itself stays Substrait's).
-RENAME = {'sign': 'signum', 'std_dev': 'stddev', 'variance': 'var_samp', 'day_of_week': 'date_part'}
+RENAME = {'sign': 'signum', 'std_dev': 'stddev', 'variance': 'var_samp', 'extract': 'date_part', 'round_calendar': 'date_trunc'}
+# extract's component as date_part's unit (indexing ONE is date_part's own, but the day of the
+# week from Sunday, which date_part counts from 0).
+UNIT = {'DAY_OF_YEAR': 'doy', 'MONDAY_DAY_OF_WEEK': 'isodow'}
 
 
 def for_datafusion(plan):
@@ -32,10 +35,10 @@ def for_datafusion(plan):
         f = e.get('extensionFunction')
         if f:
             names[f.get('functionAnchor', 0)] = f['name']
-            if f['name'] in RENAME:
-                f['name'] = RENAME[f['name']]
-            elif f['name'] == 'extract':
-                f['name'] = 'date_part'
+            f['name'] = RENAME.get(f['name'], f['name'])
+
+    def text(v):
+        return {'value': {'literal': {'string': v}}}
 
     def walk(x):
         if isinstance(x, dict):
@@ -43,10 +46,18 @@ def for_datafusion(plan):
             if f is not None:
                 name = names.get(f.get('functionReference', 0))
                 args = f.get('arguments', [])
-                if name == 'extract' and args and 'enum' in args[0]:
-                    args[0] = {'value': {'literal': {'string': args[0]['enum'].lower()}}}
-                elif name == 'day_of_week':
-                    f['arguments'] = [{'value': {'literal': {'string': 'dow'}}}] + args
+                if name == 'extract':
+                    enums = [a['enum'] for a in args if 'enum' in a]
+                    value = [a for a in args if 'value' in a]
+                    component = enums[0]
+                    unit = 'dow' if component == 'SUNDAY_DAY_OF_WEEK' else UNIT.get(component, component.lower())
+                    f['arguments'] = [text(unit)] + value
+                    if component == 'SUNDAY_DAY_OF_WEEK' and enums[1:] == ['ONE']:
+                        raise ValueError('extract SUNDAY_DAY_OF_WEEK indexed from one')
+                elif name == 'round_calendar':
+                    x_, _rounding, unit, _origin, multiple = args
+                    n = int(multiple['value']['literal']['i64'])
+                    f['arguments'] = [text('quarter' if unit['enum'] == 'MONTH' and n == 3 else unit['enum'].lower()), x_]
             for v in x.values():
                 walk(v)
         elif isinstance(x, list):

@@ -44,19 +44,12 @@ const FNS = {
 // dax-sql's functions, each with its meaning (docs/substrait/functions_dax_sql.yaml).
 export const EXTENSION = {
   to_text: 'a number with a fraction or a date as DAX writes it: 15 significant digits; a date M/D/YYYY, with the time when not midnight',
-  format_number: "FORMAT and FIXED of a number by a pattern (the pattern parsed, as JSON: sections, digits, separators)",
+  format_number: 'FORMAT and FIXED of a number by a pattern (the pattern parsed, as JSON: sections, digits, separators)',
   format_date: 'FORMAT of a date by a pattern (parsed, as JSON)',
   combinevalues: 'COMBINEVALUES: the values as text joined by the separator',
   replace_nth: "SUBSTITUTE's instance number: the n-th occurrence of a text replaced",
   parse_datetime: 'text read as a date and time: ISO, or as en-US writes one (3/5/2024, March 5, 2024)',
-  trunc: 'a number with its fraction cut',
-  date_trunc: 'a date at the start of its year, quarter or month (the unit the first argument)',
-  date_diff: 'the whole number of units (day, month, …, microsecond) from a date to another',
-  add_microseconds: 'a date and time moved by a number of microseconds',
-  split_part: 'the n-th piece of a text split on a separator',
-  code_point: "a text's first character's code point",
-  day_of_week: 'the day of the week, Sunday 0 to Saturday 6',
-  make_date: 'the date of a year, a month and a day',
+  code_point: "a text's first character's code point (Substrait's string functions have none)",
 };
 const AGGS = {
   sum: ['arithmetic', 'sum'], avg: ['arithmetic', 'avg'], min: ['arithmetic', 'min'], max: ['arithmetic', 'max'], product: ['arithmetic', 'product'],
@@ -78,6 +71,7 @@ const field = i => ({ selection: { directReference: { structField: i ? { field: 
 const emit = map => ({ emit: { outputMapping: map } });
 const range = (from, n) => Array.from({ length: n }, (_, i) => from + i);
 const DAY = 86400000;
+const FIRST_DAY = -719162;   // 0001-01-01, in days from 1970-01-01
 const INLINE_LIMIT = 20000;
 const kidsOf = r => (r.k === 'join' ? [r.left, r.right] : r.k === 'union' ? r.srcs : r.src ? [r.src] : []);
 
@@ -135,22 +129,72 @@ export function toSubstrait(plan, options = {}) {
     if (OPS[x.op]) return call(OPS[x.op], args(), x.t);
     throw new Error(`substrait: operator ${x.op}`);
   };
+  // Substrait's datetime functions (functions_datetime): extract, with its indexing where the
+  // component has one; round_calendar; add and multiply of intervals.
+  const I = v => ({ literal: { i64: String(v) } });
+  const ar = (name, xs) => call(['arithmetic', name], xs, 'int');
+  const INDEXED = new Set(['QUARTER', 'MONTH', 'DAY', 'DAY_OF_YEAR', 'MONDAY_DAY_OF_WEEK', 'SUNDAY_DAY_OF_WEEK']);
+  const extract = (component, x, indexing = INDEXED.has(component) ? 'ONE' : null) => ({ scalarFunction: { functionReference: fn(['datetime', 'extract']),
+    arguments: [{ enum: component }, ...(indexing ? [{ enum: indexing }] : []), { value: x }], outputType: typeOf('int') } });
+  // A date's day number: 365 (y - 1) + (y - 1) / 4 - (y - 1) / 100 + (y - 1) / 400 + its day of the year.
+  const dayNumber = x => {
+    const y1 = ar('subtract', [extract('YEAR', x), I(1)]);
+    return ar('add', [ar('add', [ar('subtract', [ar('add', [ar('multiply', [I(365), y1]), ar('divide', [y1, I(4)])]), ar('divide', [y1, I(100)])]), ar('divide', [y1, I(400)])]), extract('DAY_OF_YEAR', x)]);
+  };
+  // A date and time as a count of a unit: two differ by the units between them (DATEDIFF's).
+  const count = (unit, x) => {
+    switch (unit) {
+      case 'year': return extract('YEAR', x);
+      case 'quarter': return ar('add', [ar('multiply', [extract('YEAR', x), I(4)]), extract('QUARTER', x)]);
+      case 'month': return ar('add', [ar('multiply', [extract('YEAR', x), I(12)]), extract('MONTH', x)]);
+      case 'week': return ar('divide', [ar('subtract', [dayNumber(x), extract('SUNDAY_DAY_OF_WEEK', x, 'ZERO')]), I(7)]);
+      case 'day': return dayNumber(x);
+    }
+    const h = ar('add', [ar('multiply', [dayNumber(x), I(24)]), extract('HOUR', x)]);
+    if (unit === 'hour') return h;
+    const mi = ar('add', [ar('multiply', [h, I(60)]), extract('MINUTE', x)]);
+    if (unit === 'minute') return mi;
+    const sec = ar('add', [ar('multiply', [mi, I(60)]), extract('SECOND', x)]);
+    if (unit === 'second') return sec;
+    if (unit === 'microsecond') return ar('multiply', [sec, I(1000000)]);
+    throw new Error(`substrait: DATEDIFF by ${unit}`);
+  };
+  // n intervals of one unit (multiply: the integer first).
+  const interval = (n, by) => call(['datetime', 'multiply'], [n, { literal: by }], 'int');
+  const DAY1 = { intervalDayToSecond: { days: 1, seconds: 0, precision: 6 } }, MONTH1 = { intervalYearToMonth: { months: 1 } };
   const named = (x, S) => {
     const a = x.a.map(y => S(y, x.t));
     const m = /^(extract|date_trunc|date_diff)_(\w+)$/.exec(x.name);
-    if (m?.[1] === 'extract' && m[2] !== 'dow') return { scalarFunction: { functionReference: fn(['datetime', 'extract']), arguments: [{ enum: m[2].toUpperCase() }, { value: a[0] }], outputType: typeOf('int') } };
-    if (x.name === 'extract_dow') return call(['dax', 'day_of_week'], a, 'int');
-    if (m?.[1] === 'date_trunc' || m?.[1] === 'date_diff') return call(['dax', m[1]], [literal(m[2], 'string'), ...a], x.t);
+    if (x.name === 'extract_dow') return extract('SUNDAY_DAY_OF_WEEK', a[0], 'ZERO');
+    if (m?.[1] === 'extract') return extract(m[2].toUpperCase(), a[0]);
+    if (m?.[1] === 'date_trunc') {
+      const [unit, multiple] = { year: ['YEAR', 1], quarter: ['MONTH', 3], month: ['MONTH', 1] }[m[2]] ?? [m[2].toUpperCase(), 1];
+      return { scalarFunction: { functionReference: fn(['datetime', 'round_calendar']), arguments: [{ value: a[0] }, { enum: 'FLOOR' }, { enum: unit }, { enum: 'YEAR' }, { value: I(multiple) }], outputType: typeOf(x.t) } };
+    }
+    if (m?.[1] === 'date_diff') return ar('subtract', [count(m[2], a[1]), count(m[2], a[0])]);
     if (x.name === 'add_days' || x.name === 'add_months') {
-      const unit = x.name === 'add_days' ? { intervalDayToSecond: { days: 1, precision: 6 } } : { intervalYearToMonth: { months: 1 } };
       const n = x.a[1];
       const by = n.k === 'lit' && Number.isInteger(n.v)
-        ? { literal: x.name === 'add_days' ? { intervalDayToSecond: { days: n.v, precision: 6 } } : { intervalYearToMonth: { months: n.v } } }
-        : call(['datetime', 'multiply'], [a[1], { literal: unit }], 'int');
+        ? { literal: x.name === 'add_days' ? { intervalDayToSecond: { days: n.v, seconds: 0, precision: 6 } } : { intervalYearToMonth: { months: n.v } } }
+        : interval(a[1], x.name === 'add_days' ? DAY1 : MONTH1);
       return call(['datetime', 'add'], [a[0], by], x.t);
     }
+    if (x.name === 'add_microseconds') return call(['datetime', 'add'], [a[0], interval(a[1], { intervalDayToSecond: { days: 0, seconds: 0, subseconds: '1', precision: 6 } })], x.t);
+    // DATE(y, m, d): 0001-01-01 moved by y - 1 years, m - 1 months and d - 1 days.
+    if (x.name === 'make_date') {
+      const y = call(['datetime', 'add'], [{ literal: { date: FIRST_DAY } }, interval(ar('subtract', [a[0], I(1)]), { intervalYearToMonth: { years: 1 } })], 'datetime');
+      const mo = call(['datetime', 'add'], [y, interval(ar('subtract', [a[1], I(1)]), MONTH1)], 'datetime');
+      return call(['datetime', 'add'], [mo, interval(ar('subtract', [a[2], I(1)]), DAY1)], x.t);
+    }
+    // A number with its fraction cut: floor of one not negative, ceil of a negative.
+    if (x.name === 'trunc') return { ifThen: { ifs: [{ if: call(['comparison', 'gte'], [a[0], I(0)], 'bool'), then: call(['rounding', 'floor'], [a[0]], x.t) }], else: call(['rounding', 'ceil'], [a[0]], x.t) } };
+    // The n-th piece of a text: string_split's list, its element n - 1 (n a constant).
+    if (x.name === 'split_part') {
+      const n = x.a[2];
+      if (n.k !== 'lit' || !Number.isInteger(n.v)) throw new Error('substrait: the piece of a text whose number is not a constant');
+      return { selection: { directReference: { listElement: { offset: n.v - 1 } }, expression: call(['string', 'string_split'], [a[0], a[1]], 'string') } };
+    }
     if (x.name === 'substring_from') return call(['string', 'substring'], [a[0], a[1], call(['string', 'char_length'], [a[0]], 'int')], 'string');
-    if (x.name === 'date_diff_microsecond') return call(['dax', 'date_diff'], [literal('microsecond', 'string'), ...a], 'int');
     if (FNS[x.name]) return call(FNS[x.name], a, x.t);
     if (EXTENSION[x.name]) return call(['dax', x.name], a, x.t);
     throw new Error(`substrait: function ${x.name}`);

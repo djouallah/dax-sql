@@ -20,9 +20,13 @@ import { clone } from './clone.js';
 
 export function unnest(root) {
   const u = new Unnest();
-  for (const d of root.defs ?? []) d.rel = u.U(marks(d.rel));
+  // Each definition after those it reads (the rows D is made of are one, made as it goes).
+  const defs = u.defs = [];
+  for (const d of root.defs ?? []) { d.rel = u.U(marks(d.rel)); defs.push(d); }
   const src = u.U(marks(root.src));
-  return mapScalars({ ...root, src, defs: root.defs ?? [] }, x => u.Ux(x));
+  const out = mapScalars({ ...root, src, defs }, x => u.Ux(x));
+  defs.forEach((d, i) => { d.n = i + 1; });
+  return out;
 }
 
 // An AND of none: TRUE.
@@ -117,11 +121,18 @@ class Unnest {
     let base = a.left;
     while (base.k === 'apply' && oneRow(base.right)) base = base.left;
     const Bu = base !== a.left && !free(base).size ? this.U(base) : null;
-    const ctx = { F, src: Bu && F.every(f => Bu.cols.includes(f)) ? Bu : L };
-    const top = this.oneRowTop(L, a.right, ctx);
+    const ctx = { F, L, src: Bu && F.every(f => Bu.cols.includes(f)) ? Bu : L };
+    const top = this.oneRowTop(a.right, ctx);
     if (top) return top;
     const s = this.push(a.right, ctx);
-    return P.join(a.outer ? 'left' : 'inner', L, s.rel, this.match(F, s));
+    return P.join(a.outer ? 'left' : 'inner', this.Lof(ctx), s.rel, this.match(F, s));
+  }
+
+  // L as the join reads it: when D was made of L, L's definition, read under L's columns.
+  Lof(ctx) {
+    if (!ctx.def || ctx.src !== ctx.L) return ctx.L;
+    const s = P.shared(ctx.def);
+    return P.projectAs(s, ctx.L.cols.map((c, i) => ({ col: c, expr: P.ref(s.cols[i]) })));
   }
 
   // L ⋈ R' on F ≡ F' (= for F' an x bound by =).
@@ -132,12 +143,13 @@ class Unnest {
   // L ×ᴬ π…(γ aggs(R)), a grouping of no key (a measure of L's row): R' grouped by F', left-
   // joined from L, each aggregate over no rows its value over none, the projections over the
   // join (they read L's row as it is). Null when the apply is not of that kind.
-  oneRowTop(L, right, ctx) {
+  oneRowTop(right, ctx) {
     const chain = [];
     let g = right;
     while (g.k === 'project') { chain.push(g); g = g.src; }
     if (g.k !== 'aggregate' || g.keys.length) return null;
     const { rel, keys, as, s } = this.grouped(g, ctx);
+    const L = this.Lof(ctx);
     let out = P.join('left', L, rel, AND(ctx.F.filter(f => s.dc.has(f)).map((f, i) => (s.op.get(f) === 'eq' ? P.eq : P.key)(P.ref(f), P.ref(keys.get(f))))));
     const keep = () => L.cols.map(c => ({ col: c, expr: P.ref(c) }));
     out = P.projectAs(out, [...keep(), ...g.aggs.map((x, i) => ({ col: x.col, expr: overNone(x.fn, P.ref(as[i].col)) }))]);
@@ -179,11 +191,19 @@ class Unnest {
     return { rel: on.length ? P.join('inner', d.rel, s.rel, P.and(on)) : P.join('cross', d.rel, s.rel), dc, op };
   }
 
-  // δ(π_cols L): a relation of its own at each use, over a copy of L under columns of its own (L
-  // is read at the top too, and a column is one relation's; sharing makes the copies one).
+  // δ(π_cols L): L (or the chain's base) a definition, made at the first D, each D a read of it
+  // under columns of its own (a column is one relation's: L is read at the top too).
   D(ctx, cols) {
-    const { rel: src, map } = clone(ctx.src);
-    const p = P.project(src, cols.map(f => ({ name: f.name, expr: P.ref(map.get(f) ?? f), lineage: f.lineage, t: f.t })));
+    if (!ctx.def) {
+      // The chain's base is in L's tree: the definition a copy of it.
+      const c = ctx.src === ctx.L ? { rel: ctx.L, map: new Map() } : clone(ctx.src);
+      ctx.def = P.definition(c.rel, 0);
+      ctx.map = c.map;
+      this.defs.push(ctx.def);
+    }
+    const sh = P.shared(ctx.def);
+    const at = f => sh.cols[ctx.def.rel.cols.indexOf(ctx.map.get(f) ?? f)];
+    const p = P.project(sh, cols.map(f => ({ name: f.name, expr: P.ref(at(f)), lineage: f.lineage, t: f.t })));
     const rel = P.distinct(p);
     return { rel, at: new Map(cols.map((f, i) => [f, rel.cols[i]])) };
   }

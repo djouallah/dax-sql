@@ -188,6 +188,16 @@ export class PlanSql extends Emitter {
   // A standard function, as the dialect writes it.
   call(name, a, nodes) {
     const d = this.d, [x, y, z] = a, pg = d.name === 'postgres', ts = d.name === 'tsql';
+    // The last day of a month (EOMONTH, the end of a period: the month's start, q months on, a day
+    // back) as DuckDB's last_day, which it pushes below a join as a condition on the column
+    // (the month ends of SAMEPERIODLASTYEAR: 1.2 million rows tested after a join, 39 thousand so).
+    if (name === 'add_days' && d.name === 'duckdb') {
+      const [m, k] = nodes, call = (v, n) => v?.k === 'pop' && v.op === 'call' && v.name === n;
+      if (k?.k === 'lit' && k.v === -1 && call(m, 'add_months') && call(m.a[0], 'date_trunc_month')) {
+        const p = this.scalar(m.a[0].a[0], EMPTY), q = m.a[1];
+        return q.k === 'lit' && q.v === 1 ? `last_day(${p})` : `last_day(${p} + to_months(CAST((${this.scalar(q, EMPTY)}) - 1 AS INTEGER)))`;
+      }
+    }
     switch (name) {
       case 'strpos': return ts ? `CHARINDEX(${y}, ${x})` : pg ? `strpos(${x}, ${y})` : `instr(${x}, ${y})`;
       case 'substring_from': return ts ? `SUBSTRING(${x}, ${y}, LEN(${x}))` : `substring(${x}, ${y})`;

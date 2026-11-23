@@ -180,8 +180,11 @@ export function createCompiler(input, options = {}) {
     let p;
     try { p = new Lowerer(model, o).query(s); } catch (err) { if (err.code !== 'UNSUPPORTED') throw err; return emit(opts)([s])[0]; }
     const ps = new PlanSql(model, dialect, o);
-    const sql = ps.query({ ...p, plan: prune(renames(inline(share(exact(fuseApplies(p.plan)))))) });
-    return { sql, ctes: [], body: sql, aliases: ps.n, ordered: p.ordered, columns: p.columns, size: planSize(p.plan) };
+    const passed = prune(renames(inline(share(exact(fuseApplies(p.plan))))));
+    const sql = ps.query({ ...p, plan: passed });
+    // Its size (the smaller of a calculation group's two forms is kept): the plan's as DuckDB is
+    // given it, after the passes.
+    return { sql, ctes: [], body: sql, aliases: ps.n, ordered: p.ordered, columns: p.columns, size: planSize(passed) };
   });
   const emit = opts => statements => statements.map(s => {
     const em = new Emitter(model, dialect, { ...opts, calcColumn, calcTable, security });

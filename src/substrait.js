@@ -59,6 +59,7 @@ const AGGS = {
 const WINDOWS = { row_number: ['arithmetic', 'row_number'], rank: ['arithmetic', 'rank'], dense_rank: ['arithmetic', 'dense_rank'], count: ['aggregate', 'count'] };
 
 const N = 'NULLABILITY_NULLABLE';
+const ARITH = new Set(['add', 'sub', 'mul', 'div', 'neg']);
 const KIND = { int: 'i64', double: 'fp64', decimal: 'decimal(19,4)', string: 'string', bool: 'bool', datetime: 'timestamp', blank: 'string' };
 function type(kind) {
   const m = /^decimal\((\d+),(\d+)\)$/.exec(kind);
@@ -122,10 +123,19 @@ export function toSubstrait(plan, options = {}) {
       case 'false': return { literal: { boolean: false } };
       case 'in': return { singularOrList: { value: S(a), options: x.a.slice(1).map(y => S(y, a.t)) } };
       case 'cast': return { cast: { type: typeOf(x.to), input: S(a, x.to), failureBehavior: 'FAILURE_BEHAVIOR_THROW_EXCEPTION' } };
-      case 'and': case 'or':
-        return call(OPS[x.op], args(), 'bool');
+      // Substrait's and / or take any number of arguments: a chain of them is one call (not one
+      // nested in another for each term, past a consumer's depth).
+      case 'and': case 'or': {
+        const terms = [], flat = y => (y.k === 'pop' && y.op === x.op ? y.a.forEach(flat) : terms.push(y));
+        flat(x);
+        return call(OPS[x.op], terms.map(y => S(y)), 'bool');
+      }
       case 'call': return named(x, S);
     }
+    // Arithmetic of a number with a fraction over floating-point values: Substrait's divide of two
+    // integers is the integer quotient, a decimal's keeps its scale (DAX's / and the plan's are
+    // neither).
+    if (ARITH.has(x.op) && x.t === 'double') return call(OPS[x.op], x.a.map((y, i) => (y.t === 'double' ? S(y) : { cast: { type: typeOf('double'), input: S(y, peer(i)), failureBehavior: 'FAILURE_BEHAVIOR_THROW_EXCEPTION' } })), x.t);
     if (OPS[x.op]) return call(OPS[x.op], args(), x.t);
     throw new Error(`substrait: operator ${x.op}`);
   };
@@ -173,9 +183,10 @@ export function toSubstrait(plan, options = {}) {
     }
     if (m?.[1] === 'date_diff') return ar('subtract', [count(m[2], a[1]), count(m[2], a[0])]);
     if (x.name === 'add_days' || x.name === 'add_months') {
-      const n = x.a[1];
-      const by = n.k === 'lit' && Number.isInteger(n.v)
-        ? { literal: x.name === 'add_days' ? { intervalDayToSecond: { days: n.v, seconds: 0, precision: 6 } } : { intervalYearToMonth: { months: n.v } } }
+      // A constant number of them (12 * -1 months): one interval.
+      const n = constant(x.a[1]);
+      const by = Number.isInteger(n)
+        ? { literal: x.name === 'add_days' ? { intervalDayToSecond: { days: n, seconds: 0, precision: 6 } } : { intervalYearToMonth: { months: n } } }
         : interval(a[1], x.name === 'add_days' ? DAY1 : MONTH1);
       return call(['datetime', 'add'], [a[0], by], x.t);
     }
@@ -332,4 +343,20 @@ function literal(v, t) {
     }
   }
   return { literal: { string: String(v) } };
+}
+
+// The number a scalar of constants is (arithmetic and casts of literals), else undefined.
+function constant(x) {
+  if (x.k === 'lit') return typeof x.v === 'number' ? x.v : undefined;
+  if (x.k !== 'pop') return undefined;
+  const v = x.a.map(constant);
+  if (v.some(n => n === undefined)) return undefined;
+  switch (x.op) {
+    case 'cast': return x.to === 'int' ? Math.trunc(v[0]) : v[0];
+    case 'neg': return -v[0];
+    case 'add': return v[0] + v[1];
+    case 'sub': return v[0] - v[1];
+    case 'mul': return v[0] * v[1];
+  }
+  return undefined;
 }

@@ -88,7 +88,7 @@ def main():
             rows = [[value(c[r]) for c in cols] for r in range(table.num_rows)]
             print(json.dumps({'id': q['id'], 'rows': rows}), flush=True)
         except Exception as err:  # one query's failure is its answer
-            print(json.dumps({'id': q['id'], 'error': str(err).split('\n')[0][:400]}), flush=True)
+            print(json.dumps({'id': q['id'], 'error': ' '.join(str(err).split())[:700]}), flush=True)
 
 
 main()

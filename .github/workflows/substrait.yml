@@ -116,8 +116,8 @@ jobs:
           node -e '
             const fs = require("fs"), dir = process.argv[1];
             const v = JSON.parse(fs.readFileSync(dir + "/validation.json")), refused = JSON.parse(fs.readFileSync(dir + "/refused.json"));
-            const n = Object.keys(v).length, ok = Object.values(v).filter(x => x.valid).length;
-            const out = ["### Substrait validator", "", `${ok} of ${n} plans valid; ${Object.keys(refused).length} queries refused by the export.`, ""];
+            const n = Object.keys(v).length, by = {}; for (const x of Object.values(v)) by[x.verdict] = (by[x.verdict] ?? 0) + 1;
+            const out = ["### Substrait validator", "", `${n} plans: ${Object.entries(by).map(([k, c]) => `${c} ${k}`).join(", ")}; ${Object.keys(refused).length} queries refused by the export.`, ""];
             const groups = {};
             for (const x of Object.values(v)) for (const d of new Set(x.diagnostics.map(s => s.replace(/\d+/g, "N").slice(0, 160)))) groups[d] = (groups[d] ?? 0) + 1;
             out.push("| plans | diagnostic |", "|---|---|", ...Object.entries(groups).sort((a, b) => b[1] - a[1]).slice(0, 40).map(([k, c]) => `| ${c} | ${k.replace(/\|/g, "\|")} |`), "");

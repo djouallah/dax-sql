@@ -1,5 +1,6 @@
 # The official Substrait validator (substrait-validator) over every plan export.mjs wrote:
-# each plan's verdict and its diagnostics, to <out>/validation.json, and a summary on stdout.
+# each plan's verdict (check_plan: 1 valid, -1 invalid, 0 undetermined) and its diagnostics,
+# to <out>/validation.json, and a summary on stdout.
 #
 #   python conformance/engines/dax-sql-substrait/validate.py <plans folder>
 import json
@@ -8,39 +9,24 @@ import sys
 
 import substrait_validator as sv
 
+VERDICT = {1: 'valid', -1: 'invalid', 0: 'undetermined'}
+
 
 def verdict(path):
-    data = open(path, 'rb').read()
     try:
-        result = sv.check_plan(data, sv.Config()) if hasattr(sv, 'check_plan') else None
+        plan = sv.load_plan_from_json(open(path, encoding='utf-8').read())
+        v = sv.check_plan(plan)
+        # The errors and warnings: one line each, the info lines left out.
+        text = sv.plan_to_diagnostics_str(plan)
+        lines = [' '.join(l.split()) for l in text.splitlines() if l.strip() and 'Info' not in l.split(' ')[0:2]]
+        return {'verdict': VERDICT.get(v, str(v)), 'diagnostics': lines[:30]}
     except Exception as err:  # a plan the validator cannot read at all
-        return {'valid': False, 'diagnostics': [' '.join(str(err).split())[:400]]}
-    if result is None:
-        raise SystemExit('substrait_validator has no check_plan: ' + ', '.join(n for n in dir(sv) if not n.startswith('_')))
-    # Its diagnostics: errors and warnings, as text.
-    lines = []
-    for name in ('export_diagnostics', 'diagnostics'):
-        f = getattr(result, name, None)
-        if f:
-            d = f() if callable(f) else f
-            lines = [' '.join(str(x).split()) for x in (d.splitlines() if isinstance(d, str) else d)]
-            break
-    valid = None
-    for name in ('check', 'valid', 'is_valid'):
-        f = getattr(result, name, None)
-        if f is not None:
-            try:
-                v = f() if callable(f) else f
-                valid = True if v is None else bool(v) if not isinstance(v, int) else v >= 0
-            except Exception as err:
-                valid = False
-                lines = lines or [' '.join(str(err).split())[:400]]
-            break
-    return {'valid': valid, 'diagnostics': lines[:20]}
+        return {'verdict': 'unreadable', 'diagnostics': [' '.join(str(err).split())[:400]]}
 
 
 def main():
     folder = sys.argv[1]
+    print('substrait-validator', sv.version() if callable(getattr(sv, 'version', None)) else '', 'for Substrait', sv.substrait_version() if callable(getattr(sv, 'substrait_version', None)) else '')
     out = {}
     for base, _, files in os.walk(folder):
         for f in files:
@@ -48,8 +34,10 @@ def main():
                 path = os.path.join(base, f)
                 out[os.path.relpath(path, folder).replace(os.sep, '/')[:-5]] = verdict(path)
     json.dump(out, open(os.path.join(folder, 'validation.json'), 'w'), indent=1)
-    valid = sum(1 for v in out.values() if v['valid'])
-    print(f'{valid} of {len(out)} plans valid')
+    counts = {}
+    for v in out.values():
+        counts[v['verdict']] = counts.get(v['verdict'], 0) + 1
+    print(f'{len(out)} plans:', ', '.join(f'{n} {k}' for k, n in sorted(counts.items())))
 
 
 main()

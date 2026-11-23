@@ -41,6 +41,7 @@ import { SqlTranslator, isSql, isSqlQuery, printDaxQuery, modelRelations, splice
 import { Lowerer } from './lower.js';
 import { PlanSql } from './plan-sql.js';
 import { explain as drawPlan } from './explain.js';
+import { optimize } from './passes/index.js';
 
 export { DaxError } from './errors.js';
 export { Dialect } from './dialects/base.js';
@@ -226,14 +227,17 @@ export function createCompiler(input, options = {}) {
   return {
     model,
     dialect,
-    // One EVALUATE, or a SELECT over the model -> its query plan (plan.js).
-    plan: text => onePlan(text).plan,
-    // The query plan drawn as a tree, one per EVALUATE.
-    explain: text => plans(text).map(p => drawPlan(p.plan)).join('\n\n'),
-    // The SQL of the query plan as it is, no rewrite: { sql, columns }, as compile gives.
-    planSql(text) {
+    // One EVALUATE, or a SELECT over the model -> its query plan (plan.js); with { optimize:
+    // true }, the plan the optimizer's passes make of it (passes/).
+    plan: (text, o = {}) => { const p = onePlan(text).plan; return o.optimize ? optimize(p) : p; },
+    // The query plan drawn as a tree, one per EVALUATE (with { optimize: true }, optimized).
+    explain: (text, o = {}) => plans(text).map(p => drawPlan(o.optimize ? optimize(p.plan) : p.plan)).join('\n\n'),
+    // The SQL of the optimized query plan ({ optimize: false }: the plan as it is): { sql,
+    // columns }, as compile gives.
+    planSql(text, o = {}) {
       const p = onePlan(text);
-      return { sql: new PlanSql(model, dialect, options).query(p), columns: p.columns };
+      const plan = o.optimize === false ? p.plan : optimize(p.plan);
+      return { sql: new PlanSql(model, dialect, options).query({ ...p, plan }), columns: p.columns };
     },
     // One EVALUATE, or a SELECT over the model -> { sql, columns: [{ name, dax, type, lineage }] }.
     compile(dax) {

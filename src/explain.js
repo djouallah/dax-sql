@@ -59,7 +59,14 @@ function node(r) {
         : `▭  Values ${r.rows.length ? `{${r.rows.map(row => (row.length === 1 ? S(row[0]) : `(${row.map(S).join(', ')})`)).join(', ')}}` : '{}'}`;
       break;
     case 'select': label = `σ  ${S(r.pred)}`; kids.push(node(r.src)); break;
-    case 'project': label = `π  ${r.items.map(i => named(colName(i.col), S(i.expr))).join(', ')}`; kids.push(node(r.src)); break;
+    case 'project': {
+      // The columns a rewrite passes through as they are: "…".
+      const same = r.items.filter(i => i.expr.k === 'ref' && i.expr.col === i.col);
+      const own = r.items.filter(i => !same.includes(i)).map(i => named(colName(i.col), S(i.expr)));
+      label = `π  ${[...(same.length ? ['…'] : []), ...own].join(', ')}`;
+      kids.push(node(r.src));
+      break;
+    }
     case 'distinct': label = 'δ  Distinct'; kids.push(node(r.src)); break;
     case 'aggregate': {
       const keys = r.keys.map(k => named(colName(k.col), S(k.expr)));

@@ -6,13 +6,13 @@
 //
 // The checkout and the models are read by db.mjs. DAXSQL_OPTIMIZE=0: the SQL with none of the
 // emitter's rewrites (CI checks that the answers are the same: agree.mjs). DAXSQL_PLAN=1: the
-// SQL of the query plan, as it is (planSql).
+// SQL of the query plan, optimized (planSql); DAXSQL_PLAN=raw: the plan as it is.
 import { readFileSync } from 'node:fs';
 import { engine, value } from './db.mjs';
 
 const e = await engine(process.argv[2]);
 const OPTIMIZE = process.env.DAXSQL_OPTIMIZE === '0' ? { optimize: false } : {};
-const PLAN = process.env.DAXSQL_PLAN === '1';
+const PLAN = process.env.DAXSQL_PLAN;
 
 const request = JSON.parse(readFileSync(process.argv[3], 'utf8'));
 const dbs = new Map();
@@ -25,7 +25,7 @@ for (const q of request.queries) {
     const roles = JSON.stringify(q.roles ?? null);
     if (!db.compilers.has(roles)) db.compilers.set(roles, e.createCompiler(db.model, { columnNames: 'dax', ...OPTIMIZE, ...(q.roles ? { roles: q.roles } : {}) }));
     const c = db.compilers.get(roles);
-    const { sql, columns } = PLAN ? c.planSql(q.dax) : c.compile(q.dax);
+    const { sql, columns } = PLAN ? c.planSql(q.dax, { optimize: PLAN !== 'raw' }) : c.compile(q.dax);
     const reader = await db.con.runAndReadAll(sql);
     answer = { id: q.id, columns: columns.map(c => c.name), rows: reader.getRowsJS().map(r => r.map(value)) };
   } catch (err) {

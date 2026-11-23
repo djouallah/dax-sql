@@ -10,7 +10,8 @@
 // The driver, pg, is this folder's own dependency: dax-sql only writes SQL. A query has
 // PG_TIMEOUT_MS (30 s) to answer; PG_SESSIONS (4) run side by side; with PG_TIMES, each query's
 // time to answer and its SQL's length are written to that file; with PG_PLANS, the plan (EXPLAIN)
-// and the SQL of each query past its time.
+// and the SQL of each query past its time. DAXSQL_PLAN=1: the SQL of the optimized query plan
+// (planSql).
 import { readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { basename, dirname, join, resolve } from 'node:path';
@@ -70,7 +71,8 @@ async function answer(client, db, q) {
     if (!db.compilers.has(roles)) {
       db.compilers.set(roles, e.createCompiler(db.model, { dialect: 'postgres', columnNames: 'dax', tableSource: db.tableSource, ...(q.roles ? { roles: q.roles } : {}) }));
     }
-    const { sql, columns } = db.compilers.get(roles).compile(q.dax);
+    const c = db.compilers.get(roles);
+    const { sql, columns } = process.env.DAXSQL_PLAN ? c.planSql(q.dax, { optimize: process.env.DAXSQL_PLAN !== 'raw' }) : c.compile(q.dax);
     if (process.env.PG_SHOW) console.error(`${q.id}\n${sql}\n`);
     const t0 = performance.now();
     const r = await client.query({ text: sql, rowMode: 'array' }).catch(err => { err.sql = sql; throw err; });

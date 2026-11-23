@@ -19,14 +19,20 @@ test('explain draws the query plan: groups, an apply of the measure, the filter 
   assert.match(tree, /∃1 σ {2}Value ≡ outer\.Date\.Year\n.*└─ ▭ {2}Values \{2024\}/);
 });
 
-test('the query plan\'s SQL answers as the compiled SQL does', async () => {
+test('the optimized plan has no apply left: the measure is one grouping, joined to the groups', () => {
+  const tree = h.dax.explain(Q, { optimize: true });
+  assert.doesNotMatch(tree, /Apply/);
+  assert.match(tree, /⟕ {2}Category ≡ key/);
+  assert.match(tree, /γ {2}by key = Category\.Category; SUM\(Sales\.Amount\) → sum/);
+});
+
+test('the query plan\'s SQL answers as the compiled SQL does, as it is and optimized', async () => {
   for (const q of [Q,
     'EVALUATE ROW("s", [Sales Amount])',
     'EVALUATE ADDCOLUMNS(VALUES(Product[Name]), "r", RANKX(ALL(Product[Name]), [Sales Amount]))',
     'EVALUATE GROUPBY(Sales, Product[Color], "n", SUMX(CURRENTGROUP(), Sales[Qty]))']) {
     const want = sorted(await h.run(q));
-    const got = sorted(await h.sql(h.dax.planSql(q).sql));
-    assert.deepEqual(got, want, q);
+    for (const optimize of [false, true]) assert.deepEqual(sorted(await h.sql(h.dax.planSql(q, { optimize }).sql)), want, `${q} (optimize: ${optimize})`);
   }
 });
 

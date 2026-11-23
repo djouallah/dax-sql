@@ -24,7 +24,7 @@
 //   join      { kind: inner|left|cross, left, right, on }
 //   apply     { outer, left, right }      right evaluated for each row of left (outer: a row of
 //                                        left with none of right kept, right's columns blank)
-//   union     { srcs }                    all rows of each
+//   union     { srcs, picks }             all rows of each, its columns picks[i] of the i-th
 //   window    { src, part: [scalar], fns: [{ col, fn, order: [term] }] }   ω: row_number, rank,
 //                                        dense_rank, count of the partition
 //   series    { start, end, step }        GENERATESERIES's rows
@@ -40,7 +40,7 @@
 let nextId = 1;
 export const newCol = (name, t, { nn = false, lineage = null, table = null } = {}) => ({ id: nextId++, name, t, nn, lineage, table });
 export const ref = col => ({ k: 'ref', col, t: col.t, nn: col.nn });
-export const sqlop = (write, show, a, { t = 'bool', nn = true, cond = true } = {}) => ({ k: 'sql', a, write, show, t, nn, cond });
+export const sqlop = (write, show, a, { t = 'bool', nn = true, cond = true, eq = null } = {}) => ({ k: 'sql', a, write, show, t, nn, cond, eq });
 export const exists = rel => ({ k: 'exists', rel, t: 'bool', nn: true });
 
 // Conditions, as SQL has them.
@@ -50,7 +50,10 @@ export const not = x => ({ k: 'op', op: 'not', a: [x], t: 'bool', nn: true });
 // ≡: a blank matching a blank (DAX's ==, SQL's IS NOT DISTINCT FROM).
 export const same = (l, r) => ({ k: 'op', op: 'eqs', a: [l, r], t: 'bool', nn: true });
 // =: NULL matching nothing (a relationship's join).
-export const equal = (l, r) => sqlop((d, [a, b]) => `${a} = ${b}`, ([a, b]) => `${a} = ${b}`, [l, r]);
+export const equal = (l, r) => sqlop((d, [a, b]) => `${a} = ${b}`, ([a, b]) => `${a} = ${b}`, [l, r], { eq: 'eq' });
+// ≡ as a join's key, typed (an engine that hashes only some writings of it: PostgreSQL's arrays).
+export const sameKey = (l, r) => sqlop((d, [a, b]) => d.isNotDistinct(a, b, l.t), ([a, b]) => `${a} ≡ ${b}`, [l, r], { eq: 'eqs' });
+export const always = sqlop(d => d.always, () => 'TRUE', []);
 export const notNull = x => sqlop((d, [a]) => `${a} IS NOT NULL`, ([a]) => `${a} ≠ BLANK`, [x]);
 export const isNull = x => sqlop((d, [a]) => `${a} IS NULL`, ([a]) => `${a} = BLANK`, [x]);
 
@@ -64,22 +67,24 @@ export function values(rows, cols) { return { k: 'values', rows, cols }; }
 export const oneRow = () => values([[{ k: 'lit', v: 1, t: 'int', nn: true }]], [newCol('one', 'int', { nn: true })]);
 export const select = (src, pred) => ({ k: 'select', src, pred, cols: src.cols });
 export function project(src, items) {
-  const its = items.map(i => ({ col: newCol(i.name, i.t ?? i.expr.t, { nn: !!i.expr.nn, lineage: i.lineage ?? null, table: i.table ?? null }), expr: i.expr }));
-  return { k: 'project', src, items: its, cols: its.map(i => i.col) };
+  return projectAs(src, items.map(i => ({ col: newCol(i.name, i.t ?? i.expr.t, { nn: !!i.expr.nn, lineage: i.lineage ?? null, table: i.table ?? null }), expr: i.expr })));
 }
+// A projection onto columns given: [{ col, expr }] (a rewrite keeps the columns it replaces).
+export const projectAs = (src, items) => ({ k: 'project', src, items, cols: items.map(i => i.col) });
 export const distinct = src => ({ k: 'distinct', src, cols: src.cols });
 export function aggregate(src, keys, aggs) {
-  const ks = keys.map(k => ({ col: newCol(k.name, k.expr.t, { lineage: k.lineage ?? null }), expr: k.expr }));
+  const ks = keys.map(k => ({ col: k.col ?? newCol(k.name, k.expr.t, { lineage: k.lineage ?? null }), expr: k.expr }));
   const as = aggs.map(a => ({ ...a, col: a.col ?? newCol(a.name ?? 'v', a.t) }));
   return { k: 'aggregate', src, keys: ks, aggs: as, cols: [...ks.map(k => k.col), ...as.map(a => a.col)] };
 }
 export const join = (kind, left, right, on = null) => ({ k: 'join', kind, left, right, on, cols: [...left.cols, ...right.cols] });
 export const apply = (left, right, outer = false) => ({ k: 'apply', outer, left, right, cols: [...left.cols, ...right.cols] });
 // UNION ALL of relations of the same columns (as positions), under columns of its own.
-export const union = srcs => ({ k: 'union', srcs, cols: copy(srcs[0].cols) });
+// picks: the columns of each branch it reads, in order (a rewrite can give a branch more).
+export const union = (srcs, cols = copy(srcs[0].cols)) => ({ k: 'union', srcs, picks: srcs.map(s => s.cols.slice(0, cols.length)), cols });
 // Each function with its own order: [{ name, fn, order }].
 export function window(src, part, fns) {
-  const fs = fns.map(f => ({ ...f, col: newCol(f.name, 'int', { nn: true }) }));
+  const fs = fns.map(f => ({ ...f, col: f.col ?? newCol(f.name, 'int', { nn: true }) }));
   return { k: 'window', src, part, fns: fs, cols: [...src.cols, ...fs.map(f => f.col)] };
 }
 export const series = (start, end, step, t, name) => ({ k: 'series', start, end, step, t, cols: [newCol(name, t)] });
@@ -87,4 +92,4 @@ export const paths = (src, keyType) => ({ k: 'paths', src, keyType, cols: [newCo
 export const output = (src, items, order, defs = []) => ({ k: 'output', src, items, order, limit: null, defs, cols: [] });
 // A definition (its relation, its number), and a use of it.
 export const definition = (rel, n) => ({ rel, n });
-export const shared = def => ({ k: 'shared', def, cols: copy(def.rel.cols) });
+export const shared = def => ({ k: 'shared', def, picks: def.rel.cols.slice(), cols: copy(def.rel.cols) });

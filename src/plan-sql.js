@@ -63,7 +63,7 @@ export class PlanSql extends Emitter {
         return `SELECT * FROM ${l} ${r.kind === 'left' ? 'LEFT JOIN' : 'JOIN'} ${rt} ON ${this.scalar(r.on, EMPTY, true)}`;
       }
       case 'apply': return `SELECT * FROM ${from(r.left, 'l')}${this.d.lateral(this.rel(r.right), this.alias('a'), r.outer)}`;
-      case 'union': return r.srcs.map(s => `SELECT ${s.cols.map((c, i) => `${cn(c)} AS ${cn(r.cols[i])}`).join(', ')} FROM ${from(s, 'u')}`).join(' UNION ALL ');
+      case 'union': return r.srcs.map((s, k) => `SELECT ${r.picks[k].map((c, i) => `${cn(c)} AS ${cn(r.cols[i])}`).join(', ')} FROM ${from(s, 'u')}`).join(' UNION ALL ');
       case 'window': {
         const part = r.part.length ? `PARTITION BY ${r.part.map(p => this.scalar(p, EMPTY)).join(', ')}` : '';
         const fns = r.fns.map(f => {
@@ -79,7 +79,7 @@ export class PlanSql extends Emitter {
       }
       case 'shared': {
         const d = this.defs.get(r.def);
-        return `SELECT ${r.def.rel.cols.map((c, i) => `${cn(c)} AS ${cn(r.cols[i])}`).join(', ')} FROM ${d.name}`;
+        return `SELECT ${r.picks.map((c, i) => `${cn(c)} AS ${cn(r.cols[i])}`).join(', ')} FROM ${d.name}`;
       }
       case 'paths': {
         const [k, p] = r.src.cols, name = this.alias('pt'), h = this.alias('h');

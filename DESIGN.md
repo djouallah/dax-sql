@@ -229,12 +229,17 @@ The plan is made of simple operators any engine can run, and nothing else (no SQ
   length, substring, extract_year, add_days, add_months, date_trunc_month, date_diff_day, …).
 - **Aggregates:** SUM, AVG, MIN, MAX, COUNT, COUNT(*), COUNT(DISTINCT), STRING_AGG, MEDIAN.
 
-The optimizer's last pass (`passes/standard.js`) writes DAX's operators, functions and
-aggregates with those: a blank compared as 0 is a COALESCE, DIVIDE a NULLIF, a count of no rows
+A query plan raises no error, by design: DAX's runtime errors are not relational, and an
+engine's SQL has no error function to raise one with (DuckDB's aside). A fixed decimal past
+its range is rounded all the same, several values where one is expected (a scalar subquery's
+table) give the least, a percentile's rank outside 1..n is blank. The suite's queries that
+expect those errors are on `conformance/engines/dax-sql/known-plan.json`, beside `known.json`,
+for the plan's SQL. The optimizer's last pass (`passes/standard.js`) writes DAX's operators,
+functions and aggregates with those: a blank compared as 0 is a COALESCE, DIVIDE a NULLIF, a count of no rows
 a NULLIF of COUNT, DISTINCTCOUNT a COUNT(DISTINCT) and a count of the blank, a fixed decimal a
 round to four places. What has no standard writing yet stays DAX's, and `operators.mjs` lists
-it: exact fixed-decimal division, a distinct count of several columns, the percentiles, FORMAT,
-PATH's functions, a number written as text, and a few rarer functions.
+it: FORMAT, a number or a date written as text, a date's serial number, text read as a date,
+and a few rarer functions (SUBSTITUTE's instance, TRIM, FIND, SEARCH, the path's items, …).
 
 The plan as it is also holds applies and EXISTS correlated to a row; optimized, it holds
 neither. `conformance/engines/dax-sql/operators.mjs` checks every query of the suite against

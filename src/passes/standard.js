@@ -45,10 +45,10 @@ function percentile(r, a) {
   const [rr, lo, hi, nn] = ['rank', 'lo', 'hi', 'n'].map(nm => P.newCol(nm, nm === 'n' ? 'int' : 'double'));
   const g = P.aggregate(w, outKeys, [{ col: rr, fn: 'max', arg: rank, extra: {} }, { col: lo, fn: 'max', arg: at(0), extra: {} }, { col: hi, fn: 'max', arg: at(1), extra: {} }, { col: nn, fn: 'max', arg: n, extra: {} }]);
   const R = P.ref(rr), low = coalesce(P.ref(lo), lit(0, 'int'));
-  const range = a.fn.endsWith('_inc') ? 'PERCENTILE.INC: k must lie in 0..1' : 'PERCENTILE.EXC: k must lie in 1/(n + 1)..n/(n + 1)';
+  // A rank outside 1..n: blank (DAX's error, by design: a plan raises none).
   const value = caseOf([
     [cond('isnull', [P.ref(nn)]), lit(null, a.col.t)],
-    [cond('or', [cond('lt', [R, lit(1, 'int')]), cond('gt', [R, P.ref(nn)])]), call('raise_error', [lit(range, 'string')], a.col.t)],
+    [cond('or', [cond('lt', [R, lit(1, 'int')]), cond('gt', [R, P.ref(nn)])]), lit(null, a.col.t)],
     [cond('eq', [R, call('floor', [R], 'double')]), P.ref(lo)],
   ], pop('add', [low, pop('mul', [pop('sub', [R, call('floor', [R], 'double')], 'double'), pop('sub', [P.ref(hi), low], 'double')], 'double')], 'double'), a.col.t);
   return { rel: g, keys: outKeys, value };
@@ -109,7 +109,8 @@ function plainAggregates(r) {
       case 'countblank': v = nonzero(agg('sum', blanks(x))); break;
       case 'hasone': if (x.k !== 'fn') v = coalesce(cond('eq', [pop('add', [agg('count_distinct', x), agg('max', blanks(x))], 'int'), one]), lit(false, 'bool')); break;
       case 'onlyone': v = caseOf([[cond('eq', [agg('count_star', null), one]), agg('min', x, a.col.t)]], lit(null, a.col.t), a.col.t); break;
-      case 'single': v = caseOf([[cond('gt', [agg('count_star', null), one]), call('raise_error', [lit(MANY, 'string')], a.col.t)]], agg('min', x, a.col.t), a.col.t); break;
+      // Several values where one is expected: the least (DAX's error, by design: a plan raises none).
+      case 'single': v = agg('min', x, a.col.t); break;
       case 'concat': aggs.push({ ...a, fn: 'string_agg' }); break;
     }
     if (v) out.push({ col: a.col, expr: v });
@@ -120,7 +121,6 @@ function plainAggregates(r) {
   const post = new Map(out.map(o => [o.col, o.expr]));
   return P.projectAs(g, [...r.keys.map(k => ({ col: k.col, expr: P.ref(k.col) })), ...r.aggs.map(a => ({ col: a.col, expr: post.get(a.col) ?? P.ref(a.col) }))]);
 }
-const MANY = 'A table of multiple values was supplied where a single value was expected.';
 
 // --- the plan's standard operators -------------------------------------------------------
 const lit = (v, t) => ({ k: 'lit', v, t, nn: v !== null });
@@ -234,10 +234,8 @@ function fn(x) {
   const [p, q, s] = a;
   switch (x.name) {
     case 'isblank': return cond('isnull', [p]);
-    // A fixed decimal: four places, within a 64-bit count of ten-thousandths.
-    case 'currency': return caseOf([[cond('ge', [call('abs', [p], p.t), { k: 'lit', v: '922337203685477.5808', t: 'decimal', nn: true, digits: true }]),
-      call('raise_error', [lit('DAX: the result of a conversion or arithmetic operation is too large or too small for a fixed decimal number', 'string')], 'decimal')]],
-    call('round', [p, lit(4, 'int')], 'decimal'), 'decimal');
+    // A fixed decimal: four places (past its range no error, by design: a plan raises none).
+    case 'currency': return call('round', [p, lit(4, 'int')], 'decimal');
     case 'coalesce': return a.length > 1 && a.every(v => v.t === a[0].t || v.t === 'blank' || isNum(v.t) === isNum(a[0].t)) && x.t !== 'variant' ? coalesce(...a) : keep();
     case 'divide': return a.length === 2 ? pop('div', [p, pop('nullif', [q, lit(0, 'int')], q.t)], x.t)
       : caseOf([[cond('eq', [coalesce(q, lit(0, 'int')), lit(0, 'int')]), s]], pop('div', [p, q], x.t), x.t);

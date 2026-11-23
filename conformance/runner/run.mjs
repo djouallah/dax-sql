@@ -9,7 +9,7 @@
 // unsupported (the engine says it does not handle the query); pending (no golden yet, or a
 // stale one); invalid (Power BI rejected the query: the query is to be fixed, unless it says
 // `expect: error`, a rule of DAX the engine must enforce too).
-// --known lists ids ([{ id, reason }]) the engine is known to get wrong. The exit code is 1
+// --known lists ids ([{ id, reason }]) the engine is known to get wrong (several files: a,b). The exit code is 1
 // when a query fails, errs or is unsupported without being listed, or a listed one matches.
 import { spawn } from 'node:child_process';
 import { mkdtempSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
@@ -25,7 +25,8 @@ if (!adapter) {
   process.exit(2);
 }
 const knownFile = opt('known');
-const known = new Map(knownFile && existsSync(knownFile) ? JSON.parse(readFileSync(knownFile, 'utf8')).map(k => [k.id, k.reason]) : []);
+// Several lists, comma-separated: the ids of all of them.
+const known = new Map((knownFile ? knownFile.split(',') : []).filter(f => existsSync(f)).flatMap(f => JSON.parse(readFileSync(f, 'utf8')).map(k => [k.id, k.reason])));
 const grep = opt('grep') && new RegExp(opt('grep'));
 
 const queries = loadQueries({ model: opt('model') })

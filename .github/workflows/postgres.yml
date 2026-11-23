@@ -135,7 +135,7 @@ jobs:
           PG_PLANS: ${{ runner.temp }}/pg-plans.md
         run: |
           node conformance/runner/run.mjs --adapter "node conformance/engines/dax-sql-postgres/adapter.mjs ." \
-            --known conformance/engines/dax-sql-postgres/known.json --report "$RUNNER_TEMP/postgres-plan.json"
+            --known conformance/engines/dax-sql-postgres/known.json,conformance/engines/dax-sql/known-plan.json --report "$RUNNER_TEMP/postgres-plan.json"
       - name: The slowest queries, and those known as slow
         if: always()
         run: |

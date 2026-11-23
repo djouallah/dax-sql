@@ -162,7 +162,6 @@ export class PlanSql extends Emitter {
       case 'idiv': return d.name === 'duckdb' ? `(${x} // ${y})` : d.name === 'postgres' ? `div(${x}, ${y})` : `(${x} / ${y})`;
       case 'trunc': return `trunc(${x})`;
       case 'floor': return `floor(${x})`;
-      case 'raise_error': return d.fn('error', a, nodes);
     }
     return d.fn(name, a, nodes);
   }

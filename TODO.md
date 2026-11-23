@@ -24,8 +24,8 @@ Nothing here blocks a release. DAX on DuckDB has nothing left; T-SQL is the last
 
 `DAX → query plan → optimizer (every engine) → engine passes (only what one needs) → SQL`.
 
-1. **The plan, as it is** (`lower.js`, `plan-sql.js`, `explain.js`): every query of the suite
-   through `planSql` answers as Power BI does on DuckDB; `known-plan.json` down to `known.json`.
+1. Done: the plan, as it is (`lower.js`, `plan-sql.js`, `explain.js`); every query of the
+   suite answers through `planSql` on DuckDB as it does through `compile`.
 2. **Decorrelation**, the optimizer's first pass: an apply into γ and ⟕, for any correlation
    (range, shifted keys); the plan path on T-SQL and PostgreSQL, their slow queries under limit.
 3. **The emitter's rewrites as passes**, one at a time, each checked against the plan as it

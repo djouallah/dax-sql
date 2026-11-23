@@ -1129,8 +1129,7 @@ In CI:
   `conformance/engines/dax-sql/agree.mjs`: every query of the suite compiled with the emitter's
   rewrites and with `optimize: false`, run on one DuckDB: the rows must be the same, on the
   known queries too. A release waits for it. Its `plan` job runs the suite through the query
-  plan's SQL (`DAXSQL_PLAN=1`) against `known-plan.json`, and reports until that list is
-  `known.json`.
+  plan's SQL as it is (`DAXSQL_PLAN=1`), against the same known list.
 - `perf.yml` (`conformance/engines/dax-sql/bench.mjs`): every query timed by the commit and by
   the one before, on one runner, the fastest of three rounds each: more than 10% slower in all,
   or a query 1.5 times as slow and 50 ms more, fails.

@@ -235,9 +235,11 @@ export function createCompiler(input, options = {}) {
     // The query plan drawn as a tree, one per EVALUATE.
     explain: (text, o = {}) => plans(text).map(p => drawPlan(o.optimize === false ? p.plan : optimize(p.plan))).join('\n\n'),
     // The query plan's SQL: { sql, columns }, as compile gives.
+    // correlated: the plan before decorrelation, its scalars standard (its applies LATERAL or
+    // scalar subqueries, its EXISTS EXISTS: for an engine that unnests them, as DuckDB does).
     planSql(text, o = {}) {
       const p = onePlan(text);
-      const plan = o.optimize === false ? p.plan : optimize(p.plan);
+      const plan = o.correlated ? standard(p.plan) : o.optimize === false ? p.plan : optimize(p.plan);
       return { sql: new PlanSql(model, dialect, options).query({ ...p, plan }), columns: p.columns };
     },
     // The query plan as a Substrait plan (substrait.js): { plan (its JSON form), dax (dax-sql's

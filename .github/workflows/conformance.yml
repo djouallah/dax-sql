@@ -61,7 +61,7 @@ jobs:
 
   plan:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       # Named, so that called from another workflow it still checks out this repository.
       - uses: actions/checkout@v4
@@ -81,6 +81,14 @@ jobs:
         run: |
           node conformance/runner/run.mjs --adapter "node conformance/engines/dax-sql/adapter.mjs ." \
             --known conformance/engines/dax-sql/known.json --report "$RUNNER_TEMP/plan-raw.json"
+      # The plan before decorrelation, its scalars standard: its applies LATERAL and scalar
+      # subqueries, which DuckDB unnests itself (the plan Substrait exports, correlated).
+      - name: The suite through the correlated query plan
+        if: always()
+        env:
+          DAXSQL_PLAN: correlated
+        run: |
+          node conformance/runner/run.mjs --adapter "node conformance/engines/dax-sql/adapter.mjs ."             --known conformance/engines/dax-sql/known.json,conformance/engines/dax-sql/known-plan.json --report "$RUNNER_TEMP/plan-correlated.json"
       - name: The suite through the optimized query plan
         if: always()
         env:
@@ -94,4 +102,5 @@ jobs:
           name: plan-report
           path: |
             ${{ runner.temp }}/plan-raw.json
+            ${{ runner.temp }}/plan-correlated.json
             ${{ runner.temp }}/plan.json

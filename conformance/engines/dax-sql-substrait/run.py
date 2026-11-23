@@ -107,7 +107,11 @@ def main():
             cols = [table.column(i).to_pylist() for i in range(table.num_columns)]
             rows = [[value(c[r]) for c in cols] for r in range(table.num_rows)]
             print(json.dumps({'id': q['id'], 'rows': rows}), flush=True)
-        except Exception as err:  # one query's failure is its answer
+        # One query's failure is its answer, a panic of DataFusion's too (pyo3's PanicException
+        # is a BaseException).
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except BaseException as err:
             print(json.dumps({'id': q['id'], 'error': ' '.join(str(err).split())[:700]}), flush=True)
         current['id'] = None
 

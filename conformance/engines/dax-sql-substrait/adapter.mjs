@@ -77,7 +77,8 @@ for (const q of request.queries) {
   }
 }
 if (keep) writeFileSync(join(keep, 'dax.json'), JSON.stringify(dax, null, 1));
-// run.py ends at a query past its time (exit code 3, that query answered as timed out): the
+// run.py ends at a query past its time (exit code 3, that query answered as timed out), or
+// DataFusion ends it (a crash: the query it was on, the first with no answer, answered so): the
 // queries still without an answer are run again, by a new process.
 const jobsFile = join(work, 'jobs.json');
 let left = jobs;
@@ -90,7 +91,14 @@ while (left.length) {
     answers.set(a.id, a.error ? a : { id: a.id, columns: job.columns, rows: a.rows });
     if (/^timeout/.test(a.error ?? '')) process.stderr.write(`${a.id}: ${a.error}\n`);
   }
-  if (run.status !== 3) break;
+  if (run.status === 0) break;
+  const at = left.find(j => !answers.has(j.id));
+  if (!at) break;
+  if (run.status !== 3) {
+    const error = `crash: DataFusion ended (${run.signal ?? `exit code ${run.status}`}) on this plan`;
+    answers.set(at.id, { id: at.id, error });
+    process.stderr.write(`${at.id}: ${error}\n`);
+  }
   left = left.filter(j => !answers.has(j.id));
 }
 for (const q of request.queries) process.stdout.write(`${JSON.stringify(answers.get(q.id) ?? { id: q.id, error: 'no answer from DataFusion' })}\n`);

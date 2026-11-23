@@ -229,10 +229,17 @@ export function toSubstrait(plan, options = {}) {
         return { project: { common: emit(range(n, r.items.length)), input: R(r.src), expressions: r.items.map(i => E(i.expr, r.src.cols, i.col.t)) } };
       }
       case 'distinct': {
+        // Of no column: one row when there is one (a count of the rows, kept when not 0, of no column).
+        if (!r.src.cols.length) {
+          const n = { aggregate: { input: R(r.src), groupings: [], measures: [{ measure: countRows() }] } };
+          return { filter: { common: emit([]), input: n, condition: call(['comparison', 'gt'], [field(0), I(0)], 'bool') } };
+        }
         const g = r.src.cols.map((c, i) => field(i));
         return { aggregate: { input: R(r.src), groupings: [{ expressionReferences: g.map((_, i) => i) }], groupingExpressions: g, measures: [] } };
       }
       case 'aggregate': {
+        // Of no key and no aggregate: its one row (a count of the rows, of no column).
+        if (!r.keys.length && !r.aggs.length) return { aggregate: { common: emit([]), input: R(r.src), groupings: [], measures: [{ measure: countRows() }] } };
         const g = r.keys.map(k => E(k.expr, r.src.cols));
         return { aggregate: { input: R(r.src), groupings: g.length ? [{ expressionReferences: g.map((_, i) => i) }] : [], groupingExpressions: g, measures: r.aggs.map(a => ({ measure: measure(a, r.src.cols) })) } };
       }
@@ -275,6 +282,7 @@ export function toSubstrait(plan, options = {}) {
     }
     throw new Error(`substrait: relation ${r.k}`);
   };
+  const countRows = () => ({ functionReference: fn(AGGS.count_star), arguments: [], outputType: typeOf('int'), phase: 'AGGREGATION_PHASE_INITIAL_TO_RESULT', invocation: 'AGGREGATION_INVOCATION_ALL' });
   const measure = (a, cols) => {
     const f = AGGS[a.fn];
     if (!f) throw new Error(`substrait: aggregate ${a.fn}`);
@@ -338,7 +346,8 @@ function literal(v, t) {
     case 'bool': return { literal: { boolean: v } };
     case 'datetime': {
       const s = String(v);
-      if (/^\d{4}-\d\d-\d\d$/.test(s)) return { literal: { date: Math.round(Date.parse(`${s}T00:00:00Z`) / DAY) } };
+      // A date and time, as the plan's datetime is (a date alone at midnight).
+      if (/^\d{4}-\d\d-\d\d$/.test(s)) return { literal: { precisionTimestamp: { precision: 6, value: String(Date.parse(`${s}T00:00:00Z`) * 1000) } } };
       return { literal: { precisionTimestamp: { precision: 6, value: String(Date.parse(`${s.replace(' ', 'T')}Z`) * 1000) } } };
     }
   }

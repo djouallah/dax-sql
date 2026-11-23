@@ -47,6 +47,7 @@ export class Dialect {
   // a / b as a number with a fraction.
   div(a, b) { return `(CAST(${a} AS DOUBLE PRECISION) / ${b})`; }
 
+  // a = b, a blank equal to a blank; t, where it is known, the DAX type both are of (a join's key).
   isNotDistinct(a, b) { return `${a} IS NOT DISTINCT FROM ${b}`; }
 
   // A query's LIMIT and OFFSET, after its ORDER BY.

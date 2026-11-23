@@ -1068,7 +1068,7 @@ export class Emitter {
     let out;
     try { out = f(); } finally { this.fusions.pop(); }
     for (const g of fusion.finish()) {
-      const on = g.keys.map((ki, j) => this.d.isNotDistinct(`${g.alias}.g${j}`, b.res.col(ki)));
+      const on = g.keys.map((ki, j) => this.d.isNotDistinct(`${g.alias}.g${j}`, b.res.col(ki), keyCols[ki]?.type));
       const outer = (g.outer ?? []).map((o, j) => this.d.isNotDistinct(`${g.alias}.g${g.keys.length + j}`, o.sql));
       // The outer values in the join's ON where the engine takes that (T-SQL), else in a LATERAL
       // subquery of the group's rows (DuckDB takes no outer reference in an outer join's ON).
@@ -1461,10 +1461,10 @@ class Fusion {
       const here = block.res.meta(c);
       // A key the scan is grouped by already (its own row's, the group's category) is the
       // mapping's too: the same value. One it is not grouped by is the mapping's.
-      const on = [mayHoldNull(c) ? em.d.isNotDistinct(`${mp}.v`, here) : `${mp}.v = ${here}`];
+      const on = [mayHoldNull(c) ? em.d.isNotDistinct(`${mp}.v`, here, c.type) : `${mp}.v = ${here}`];
       for (const i of refs) {
         const k = `${mp}.${em.ident(`k${i}`)}`;
-        if (keys.has(i)) on.push(em.d.isNotDistinct(k, keyExpr.get(i) ?? block.res.meta(this.keyCols[i])));
+        if (keys.has(i)) on.push(em.d.isNotDistinct(k, keyExpr.get(i) ?? block.res.meta(this.keyCols[i]), this.keyCols[i]?.type));
         else { keys.add(i); keyExpr.set(i, k); }
       }
       block.joins.push(`JOIN ${mp} ON ${on.join(' AND ')}`);
@@ -1519,7 +1519,7 @@ class Fusion {
         if (this.ofRows && e.code === 'SEMANTIC') return null;
         throw e;
       }
-      g.on = onKeys(em, g, keyList);
+      g.on = onKeys(em, g, keyList, keyList.map(i => this.keyCols[i]?.type));
       this.groups.push(g);
     }
     if (!nullEmpty) g.nullEmpty = false;
@@ -1869,9 +1869,9 @@ const ownConds = (cs, base) => cs.filter(c => c.split(/('(?:[^']|'')*')/).some((
 
 // How a fused group's CTE is joined to the groups of the level: on its keys, a blank
 // matching a blank (none: its one row).
-function onKeys(em, g, keys) {
+function onKeys(em, g, keys, types = []) {
   return (k, keyNames) => keys.length
-    ? keys.map((ki, j) => em.d.isNotDistinct(`${g.alias}.g${j}`, `${k}.${em.ident(keyNames[ki])}`)).join(' AND ')
+    ? keys.map((ki, j) => em.d.isNotDistinct(`${g.alias}.g${j}`, `${k}.${em.ident(keyNames[ki])}`, types[j])).join(' AND ')
     : em.d.always;
 }
 

@@ -35,8 +35,13 @@ export class PostgresDialect extends Dialect {
   get sumCurrency() { return true; }
 
   // IS NOT DISTINCT FROM is no join key Postgres hashes (a loop over both sides: a currency's
-  // groups past 30 s); an array's = takes a NULL element for equal to a NULL, and is hashed.
-  isNotDistinct(a, b) { return `ARRAY[${a}] = ARRAY[${b}]`; }
+  // groups past 30 s); an array's = takes a NULL element for equal to a NULL, and is hashed. Its
+  // elements are of one type: both cast to the key's (a date and time to TIMESTAMP, which a DATE
+  // column and a date moved by an interval both are), where it is known.
+  isNotDistinct(a, b, t) {
+    const T = t === 'date' || t === 'datetime' ? 'TIMESTAMP' : this.type(t);
+    return T ? `ARRAY[CAST(${a} AS ${T})] = ARRAY[CAST(${b} AS ${T})]` : super.isNotDistinct(a, b);
+  }
 
   type(t) { return t === 'string' ? 'TEXT' : t === 'date' ? 'DATE' : super.type(t); }
   // A NULL in a subquery's column is TEXT, which no UNION arm of a number matches: typed.

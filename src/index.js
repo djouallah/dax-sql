@@ -46,6 +46,7 @@ import { fuseApplies } from './passes/fuse-applies.js';
 import { share } from './passes/share.js';
 import { inline } from './passes/inline.js';
 import { prune } from './passes/prune.js';
+import { renames } from './passes/renames.js';
 import { kids, scalarsOf } from './passes/decorrelate.js';
 // The correlated plan: the plan before decorrelation, its scalars standard, its measures fused,
 // a subtree held more than once one definition.
@@ -63,7 +64,7 @@ function planSize(root) {
   for (const d of root.defs ?? []) R(d.rel);
   return n;
 }
-const correlated = plan => prune(inline(share(fuseApplies(standard(plan)))));
+const correlated = plan => prune(renames(inline(share(fuseApplies(standard(plan))))));
 import { explain as drawPlan } from './explain.js';
 import { optimize } from './passes/index.js';
 

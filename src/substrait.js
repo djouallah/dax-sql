@@ -97,18 +97,30 @@ export function toSubstrait(plan, options = {}) {
     return defIndex.get(def);
   };
 
+  // The records of the rows around a subquery, innermost last: a column of one of them is an outer
+  // reference, steps out the number of subqueries between.
+  const scopes = [];
+  const outer = c => {
+    for (let k = scopes.length - 1; k >= 0; k--) {
+      const i = scopes[k].indexOf(c);
+      if (i >= 0) return { selection: { directReference: { structField: i ? { field: i } : {} }, outerReference: { stepsOut: scopes.length - k } } };
+    }
+    throw new Error(`substrait: column ${c.name} (${c.id}) not in the input`);
+  };
+  // A relation read by a subquery of a row of `cols`.
+  const sub = (rel, cols) => { scopes.push(cols); try { return R(rel); } finally { scopes.pop(); } };
+
   // A scalar over the columns `cols` (its input's record), of type hint where it is a blank.
   const E = (x, cols, hint) => {
-    const at = c => { const i = cols.indexOf(c); if (i < 0) throw new Error(`substrait: column ${c.name} (${c.id}) not in the input`); return i; };
     const S = (y, h) => E(y, cols, h);
     switch (x.k) {
-      case 'ref': return field(at(x.col));
+      case 'ref': { const i = cols.indexOf(x.col); return i >= 0 ? field(i) : outer(x.col); }
       case 'lit': return literal(x.v, x.t === 'blank' ? hint ?? 'string' : x.t);
       case 'case': {
         const h = x.t !== 'blank' ? x.t : hint;
         return { ifThen: { ifs: x.w.map(([c, v]) => ({ if: S(c), then: S(v, h) })), else: S(x.e, h) } };
       }
-      case 'exists': return { subquery: { setPredicate: { predicateOp: 'PREDICATE_OP_EXISTS', tuples: R(x.rel) } } };
+      case 'exists': return { subquery: { setPredicate: { predicateOp: 'PREDICATE_OP_EXISTS', tuples: sub(x.rel, cols) } } };
       case 'pop': return pop(x, S);
     }
     throw new Error(`substrait: scalar ${x.k}`);
@@ -261,6 +273,16 @@ export function toSubstrait(plan, options = {}) {
           return { windowFunction: { functionReference: fn(WINDOWS[f.fn]), partitions: part, sorts, outputType: typeOf('int'), phase: 'AGGREGATION_PHASE_INITIAL_TO_RESULT', invocation: 'AGGREGATION_INVOCATION_ALL',
             boundsType: 'BOUNDS_TYPE_RANGE', lowerBound: { unbounded: {} }, upperBound: whole ? { unbounded: {} } : { currentRow: {} } } };
         }), common: emit(range(0, n + r.fns.length)) } };
+      }
+      // An apply whose right is one row for each row of its left (a grouping of no key): its left with
+      // a scalar subquery for each of the right's columns, reading the left's row. One of several
+      // rows (a table for each row, as GENERATE's): a lateral join, which Substrait has none of.
+      case 'apply': {
+        const one = x => (x.k === 'aggregate' && !x.keys.length) || (x.k === 'project' && one(x.src));
+        if (!one(r.right)) throw Object.assign(new Error('substrait: a table for each row (a lateral join: Substrait has none)'), { code: 'UNSUPPORTED' });
+        const input = R(r.left), n = r.left.cols.length, m = r.right.cols.length;
+        const subs = r.right.cols.map((c, i) => ({ subquery: { scalar: { input: { project: { common: emit([m]), input: sub(r.right, r.left.cols), expressions: [field(i)] } } } } }));
+        return { project: { common: emit(range(0, n + m)), input, expressions: subs } };
       }
       case 'shared': {
         const d = r.def;

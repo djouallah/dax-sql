@@ -16,7 +16,10 @@ export function outer(root) {
     // rows it drops.
     if (r.k === 'select') {
       const src = inner(r.src, r.pred);
-      if (src !== r.src) return { ...r, src, cols: src.cols };
+      const sel = src === r.src ? r : { ...r, src, cols: src.cols };
+      // Over an inner join (or one just made so): its condition (no EXISTS in it).
+      if (sel.src.k === 'join' && sel.src.kind === 'inner' && !hasExists(sel.pred)) return uncross(P.join('inner', sel.src.left, sel.src.right, sel.src.on ? P.and([sel.src.on, sel.pred]) : sel.pred));
+      return sel;
     }
     if (r.k === 'join' && r.kind === 'inner') return uncross(r);
     return r;
@@ -58,7 +61,22 @@ function uncross(j) {
   // A condition's terms that read one side only, a cross join there: that cross join's condition
   // (an inner join filters its sides by them).
   for (const side of ['left', 'right']) {
-    const c = j[side];
+    let c = j[side];
+    // (A × B) ⟕ G on B's and G's columns only is A × (B ⟕ G): its columns in the same order.
+    if (c.k === 'join' && c.kind === 'left' && c.left.k === 'join' && c.left.kind === 'cross' && c.on) {
+      const A = new Set(c.left.left.cols);
+      if (![...refs(c.on)].some(col => A.has(col))) c = P.join('cross', c.left.left, P.join('left', c.left.right, c.right, c.on));
+    }
+    // An inner join on this side: the terms that read its columns only, its condition too.
+    if (c.k === 'join' && c.kind === 'inner') {
+      const S = new Set(c.cols), cs = conjuncts(j.on);
+      const mine = cs.filter(t => { const f = refs(t); return f.size > 0 && !hasExists(t) && [...f].every(col => S.has(col)); });
+      if (!mine.length) continue;
+      const rest = cs.filter(t => !mine.includes(t));
+      const below = uncross(P.join('inner', c.left, c.right, P.and([...conjuncts(c.on), ...mine])));
+      const on = rest.length ? P.and(rest) : P.TRUE;
+      return uncross(side === 'left' ? P.join('inner', below, j.right, on) : P.join('inner', j.left, below, on));
+    }
     if (c.k !== 'join' || c.kind !== 'cross') continue;
     const S = new Set(c.cols), O = new Set(c.left.cols), Q = new Set(c.right.cols);
     const cs = conjuncts(j.on);
@@ -156,4 +174,9 @@ function put(x, m) {
   if (Array.isArray(x.a)) return { ...x, a: x.a.map(y => put(y, m)) };
   return x;
 }
-
+function hasExists(x) {
+  if (!x || typeof x !== 'object') return false;
+  if (x.k === 'exists') return true;
+  if (x.k === 'case') return x.w.some(([c, v]) => hasExists(c) || hasExists(v)) || hasExists(x.e);
+  return Array.isArray(x.a) && x.a.some(hasExists);
+}

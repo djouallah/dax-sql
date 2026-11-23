@@ -41,6 +41,7 @@ import { SqlTranslator, isSql, isSqlQuery, printDaxQuery, modelRelations, splice
 import { Lowerer } from './lower.js';
 import { PlanSql } from './plan-sql.js';
 import { toSubstrait } from './substrait.js';
+import { standard } from './passes/standard.js';
 import { explain as drawPlan } from './explain.js';
 import { optimize } from './passes/index.js';
 
@@ -243,6 +244,12 @@ export function createCompiler(input, options = {}) {
     // functions it uses), columns }. o: optimize, inline, tableName, tableSchema.
     substrait(text, o = {}) {
       const p = onePlan(text);
+      // correlated: the plan before decorrelation, its scalars standard (an apply of one row scalar
+      // subqueries, EXISTS a set predicate); a plan with a table for each row (a lateral join,
+      // which Substrait has none of) as the optimizer unnests it.
+      if (o.correlated) {
+        try { return { ...toSubstrait(standard(p.plan), o), columns: p.columns }; } catch (err) { if (err.code !== 'UNSUPPORTED') throw err; }
+      }
       const plan = o.optimize === false ? p.plan : optimize(p.plan);
       return { ...toSubstrait(plan, o), columns: p.columns };
     },

@@ -761,7 +761,16 @@ export class Lowerer {
     const col = P.newCol(x.fn === 'single' ? 'value' : x.fn, x.t);
     const a = x.fn === 'single' ? { fn: 'single', arg: this.scalar(x.arg, s2, b), extra: {} } : this.rowFused(b, x, () => this.aggParts(x, s2, b), scope);
     const rel = (x.src.k === 'scan' && ir.freeRows(x).size && this.groupedFirst(b, a, col, x.src.table)) || P.aggregate(b.body(), [], [{ col, ...a }]);
-    (this.hoist(x, scope, blk) ?? blk).applies.push({ rel, outer: false });
+    // An apply the same as one the block has already (the same operators over the same tables, up
+    // to their columns' ids, reading the same outer columns: a measure a calculation item names
+    // again, PY in the PY, YoY and YoY % items) is that one, as the compiled SQL writes a
+    // subquery repeated once (emit.js's once, hoistRepeats).
+    const t = this.hoist(x, scope, blk) ?? blk;
+    const key = canon(rel, true).key;
+    const seen = (t.applyKeys ??= new Map()).get(key);
+    if (seen) return P.ref(seen);
+    t.applyKeys.set(key, rel.cols[0]);
+    t.applies.push({ rel, outer: false });
     return P.ref(col);
   }
 

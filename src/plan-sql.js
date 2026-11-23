@@ -75,7 +75,15 @@ export class PlanSql extends Emitter {
         return `SELECT ${sel.join(', ')} FROM ${read(r.src)}${keys.length ? ` GROUP BY ${keys.join(', ')}` : ''}`;
       }
       case 'join': return `SELECT * FROM ${read(r)}`;
-      case 'apply': return `SELECT * FROM ${from(r.left, 'l')}${this.d.lateral(this.rel(r.right), this.alias('a'), r.outer)}`;
+      case 'apply': {
+        // A value for each row of the left (one column of a grouping of no key: one row): a scalar
+        // subquery reading the left's row, as the compiled SQL has it (an engine unnests one in a
+        // value apart from a lateral join's: DuckDB's of a LASTNONBLANK took 522 million rows as a
+        // lateral join, a million so). A table for each row: a lateral join.
+        const one = x => (x.k === 'aggregate' && !x.keys.length) || (x.k === 'project' && one(x.src));
+        if (one(r.right) && r.right.cols.length === 1) return `SELECT *, (${this.rel(r.right)}) AS ${cn(r.right.cols[0])} FROM ${from(r.left, 'l')}`;
+        return `SELECT * FROM ${from(r.left, 'l')}${this.d.lateral(this.rel(r.right), this.alias('a'), r.outer)}`;
+      }
       case 'union': return r.srcs.map((s, k) => `SELECT ${r.picks[k].map((c, i) => `${c.t === 'blank' && r.cols[i].t !== 'blank' ? this.d.nullOf(r.cols[i].t) : cn(c)} AS ${cn(r.cols[i])}`).join(', ')} FROM ${from(s, 'u')}`).join(' UNION ALL ');
       case 'window': {
         const part = r.part.length ? `PARTITION BY ${r.part.map(p => this.scalar(p, EMPTY)).join(', ')}` : '';

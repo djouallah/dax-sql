@@ -6,7 +6,9 @@ import { joins } from './joins.js';
 import { standard } from './standard.js';
 import { exact } from './exact.js';
 import { share } from './share.js';
+import { renames } from './renames.js';
+import { prune } from './prune.js';
 
-export const PASSES = [decorrelate, fuse, joins, standard, exact, share];
+export const PASSES = [decorrelate, fuse, joins, standard, exact, share, renames, prune];
 
 export const optimize = plan => PASSES.reduce((p, pass) => pass(p), plan);

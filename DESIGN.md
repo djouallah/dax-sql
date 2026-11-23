@@ -269,7 +269,10 @@ on them. Then fusion (`fuse.js`: measures grouped by the same keys over the same
 grouping), joins (`joins.js`: a filter over a cross join, a join), the standard operators
 (`standard.js`), exact sums (`exact.js`: a comparison of two sums of floating-point values, as
 a running total's, has them added as decimals, the same in any order) and sharing (`share.js`:
-a subtree held more than once, up to its columns' ids, one definition read where each was).
+a subtree held more than once, up to its columns' ids, one definition read where each was),
+renames (`renames.js`: a projection that only names its input's columns anew, dropped) and
+pruning (`prune.js`: each relation keeps the columns something above it reads; a distinct all
+its columns, a grouping all its keys).
 `planSql(query)` writes the query plan in a dialect's SQL.
 The SQL `compile` writes is still `emit.js`'s, whose rewrites move onto the plan pass by pass
 (TODO.md).
@@ -1008,7 +1011,7 @@ SELECT m.*, p.n FROM m JOIN (SELECT "Color", COUNT(*) AS n FROM "Product" GROUP 
 | `ir.js` | the intermediate form: scalars, tables, rows, aggregates over scans |
 | `emit.js` | the intermediate form into SQL, rewritten |
 | `lower.js`, `plan.js` | the intermediate form into the query plan, and the plan's nodes |
-| `passes/` | the optimizer: passes over the query plan (`decorrelate.js`, `fuse.js`, `joins.js`, `standard.js`, `exact.js`, `share.js`) |
+| `passes/` | the optimizer: passes over the query plan (`decorrelate.js`, `fuse.js`, `joins.js`, `standard.js`, `exact.js`, `share.js`, `renames.js`, `prune.js`) |
 | `plan-sql.js`, `explain.js` | the query plan as SQL; drawn as a tree |
 | `format.js` | FORMAT's patterns, read into what a dialect writes |
 | `dialects/` | what differs between SQL engines: `base.js` (the interface), `duckdb.js`, `duckdb-format.js`, `tsql.js`, `tsql-format.js`, `postgres.js`, `postgres-format.js` |

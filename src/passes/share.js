@@ -6,6 +6,7 @@
 // is not (reading one is no work).
 import * as P from '../plan.js';
 import { kids, scalarsOf, mapKids } from './decorrelate.js';
+import { clone } from './clone.js';
 
 export function share(root) {
   const keys = new WeakMap(), count = new Map();
@@ -36,7 +37,8 @@ export function share(root) {
       if (!d) {
         d = P.definition(null, 0);
         defs.set(k, d);
-        d.rel = mapKids(r, S);
+        // Under columns of its own: each place reads it through a projection to its columns.
+        d.rel = clone(mapKids(r, S)).rel;
       }
       const s = P.shared(d);
       return P.projectAs(s, r.cols.map((c, i) => ({ col: c, expr: P.ref(s.cols[i]) })));

@@ -15,7 +15,14 @@ export class PlanSql extends Emitter {
     super(model, dialect, { ...options, optimize: false });
   }
 
-  cn(c) { return `_c${c.id}`; }
+  // A column's name: numbered in the query in the order its columns are first written, so that
+  // a query's SQL is the same each time it is compiled (the plan's ids are the process's).
+  cn(c) {
+    this.names ??= new Map();
+    let n = this.names.get(c.id);
+    if (n == null) this.names.set(c.id, n = this.names.size + 1);
+    return `_c${n}`;
+  }
 
   query({ plan: root }) {
     this.defs = new Map();

@@ -43,8 +43,11 @@ import { PlanSql } from './plan-sql.js';
 import { toSubstrait } from './substrait.js';
 import { standard } from './passes/standard.js';
 import { fuseApplies } from './passes/fuse-applies.js';
-// The correlated plan: the plan before decorrelation, its scalars standard, its measures fused.
-const correlated = plan => fuseApplies(standard(plan));
+import { share } from './passes/share.js';
+import { inline } from './passes/inline.js';
+// The correlated plan: the plan before decorrelation, its scalars standard, its measures fused,
+// a subtree held more than once one definition.
+const correlated = plan => inline(share(fuseApplies(standard(plan))));
 import { explain as drawPlan } from './explain.js';
 import { optimize } from './passes/index.js';
 

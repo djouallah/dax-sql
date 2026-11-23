@@ -85,6 +85,7 @@ function own(r, S) {
     case 'scan': return `${r.table.name}`;
     case 'shared': return `${ids(r.def)}|${r.picks.map(c => r.def.rel.cols.indexOf(c)).join(',')}`;
     case 'join': return `${r.kind}|${r.on ? S(r.on) : ''}`;
+    case 'apply': return `${r.outer ? 'outer' : 'inner'}`;
     case 'union': return r.picks.map((p, k) => p.map(c => r.srcs[k].cols.indexOf(c)).join(',')).join('/');
     case 'aggregate': return `${r.keys.map(k => S(k.expr)).join(',')}|${r.aggs.map(a => `${a.fn}(${a.arg ? S(a.arg) : ''})${extra(a.extra, S)}`).join(',')}`;
     case 'window': return `${r.part.map(S).join(',')}|${r.fns.map(f => `${f.fn}(${f.order.map(o => `${S(o.expr)} ${o.desc} ${o.mode} ${o.blanks} ${o.t}`).join(',')})`).join(',')}`;

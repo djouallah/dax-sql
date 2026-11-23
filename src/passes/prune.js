@@ -44,6 +44,14 @@ export function prune(root) {
         const left = N(r.left, union(want, on)), right = N(r.right, union(want, on));
         return { ...r, left, right, on: r.on && S(r.on), cols: [...left.cols, ...right.cols] };
       }
+      case 'apply': {
+        // The correlated plan's: the right for each row of the left. One row for each (a grouping
+        // of no key) that nothing reads is no work; the left keeps what the right reads of it.
+        const one = x => (x.k === 'aggregate' && !x.keys.length) || (x.k === 'project' && one(x.src));
+        if (one(r.right) && !r.right.cols.some(c => want.has(c))) return N(r.left, want);
+        const left = N(r.left, union(want, free(r.right))), right = N(r.right, want);
+        return { ...r, left, right, cols: [...left.cols, ...right.cols] };
+      }
       case 'union': {
         let at = r.cols.map((c, i) => (want.has(c) ? i : -1)).filter(i => i >= 0);
         if (!at.length) at = [0];

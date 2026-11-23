@@ -84,6 +84,12 @@ export class Emitter {
       if (start.length) sql += ` WHERE ${this.startAt(keys, order, start.map(v => this.scalar(v, scope)), start)}`;
       sql += ` ORDER BY ${keys.map((k, i) => this.orderBy(k, order[i].desc)).join(', ')}`;
     }
+    // CTEs of the same SQL as one before them (sameCtes): that one, read under its name.
+    const same = this.optimize ? sameCtes(this.ctes) : new Map();
+    if (same.size) {
+      this.ctes = this.ctes.filter(c => !same.has(cteName(c))).map(c => readAs(c, same));
+      sql = readAs(sql, same);
+    }
     const body = sql;
     if (this.ctes.length) sql = `WITH ${this.ctes.join(',\n')}\n${sql}`;
     return {
@@ -704,9 +710,10 @@ export class Emitter {
   scalar(x, scope, pred = false) {
     if (this.bound?.has(x)) return this.bound.get(x);
     // Not where aggregates are fused: their values are a group's columns already.
-    if (this.d.bindsOnce && this.optimize && !this.fusions.at(-1) && !this.binding?.has(x) && (x.k === 'case' || x.k === 'op' || x.k === 'fn')) {
+    if (this.d.bindsOnce && this.optimize && !this.fusions.at(-1) &&!this.binding?.has(x) && (x.k === 'case' || x.k === 'op' || x.k === 'fn')) {
       const reps = repeatedValues(x, scope);
-      if (reps.length) return this.bindOnce(x, reps, scope, pred);
+      const b = reps.length ? this.bindOnce(x, reps, scope, pred) : null;
+      if (b != null) return b;
     }
     // Inside an aggregate or a subquery the bound values are not named (repeatedValues counts
     // them outside): what is written there can go to a CTE, where the row that binds them is not.
@@ -723,12 +730,16 @@ export class Emitter {
   // An expression that names one value more than once (a measure's VAR read in its test and
   // in its result: IF(NOT ISBLANK(cur), cur - prev)), each such value a subquery: the values
   // computed once, in a row the expression reads, (SELECT expr FROM (SELECT v AS b0, ...)).
+  // Only values written as a subquery: one a fused group's column (f1.a0) is no cost to repeat.
+  // None: null.
   bindOnce(x, reps, scope, pred) {
     const a = this.alias('b');
-    const vals = reps.map(({ y, exact }, i) => {
-      if (exact) this.exact++;
-      try { return `${this.scalar(y, scope)} AS ${this.ident(`b${i}`)}`; } finally { if (exact) this.exact--; }
-    });
+    reps = reps.map(r => {
+      if (r.exact) this.exact++;
+      try { return { ...r, sql: this.scalar(r.y, scope) }; } finally { if (r.exact) this.exact--; }
+    }).filter(r => isQuery(r.sql));
+    if (!reps.length) return null;
+    const vals = reps.map(({ sql }, i) => `${sql} AS ${this.ident(`b${i}`)}`);
     const bound = new Map(this.bound ?? []), binding = new Set(this.binding ?? []);
     reps.forEach(({ y }, i) => bound.set(y, `${a}.${this.ident(`b${i}`)}`));
     binding.add(x);
@@ -809,9 +820,13 @@ export class Emitter {
     // Values written out in megabytes (calculation groups crossed, each item's CASE holding
     // the others') are left as they are: finding their subqueries costs more than it saves.
     if (sqls.reduce((n, s) => n + s.length, 0) > HOIST_LIMIT) return '';
+    // A value's copies each read a CTE of their own of the same SQL (a measure's group, in a
+    // test and again in a result): read under one name, they are the same subquery.
+    const same = sameCtes(this.ctes);
+    const subs = s => same.size ? subqueries(s).map(q => ({ ...q, key: canonical(renameAliases(q.sql, same)) })) : subqueries(s);
     const count = new Map();
     for (const s of sqls) {
-      const all = subqueries(s);
+      const all = subs(s);
       for (const q of all) if (hoistable(s, q, all)) count.set(q.key, (count.get(q.key) ?? 0) + 1);
     }
     const keys = [...count].filter(([key, n]) => n > 1 && /\bFROM "/.test(key)).map(([key]) => key);
@@ -822,7 +837,7 @@ export class Emitter {
     for (const key of keys) {
       let first = null;
       for (let i = 0; i < sqls.length; i++) {
-        const all = subqueries(sqls[i]), qs = all.filter(q => q.key === key && hoistable(sqls[i], q, all));
+        const all = subs(sqls[i]), qs = all.filter(q => q.key === key && hoistable(sqls[i], q, all));
         if (!qs.length) continue;
         first ??= qs[0].sql;
         let s = sqls[i];
@@ -1793,7 +1808,10 @@ function hoistable(s, q, all) {
   // Innermost first, each is such a row, or the subquery that reads the row just inside it.
   const row = e => /^\s*AS [bh]\d+\)/.exec(s.slice(e.end))?.[0].length;
   const outer = all.filter(e => e.start < q.start && e.end > q.end).sort((a, b) => a.sql.length - b.sql.length);
-  if (!outer.every((e, i) => row(e) || i > 0 && row(outer[i - 1]) && e.end === outer[i - 1].end + row(outer[i - 1]))) return false;
+  // A value read through such a row (T-SQL's CASE with subqueries: SELECT CASE WHEN test THEN
+  // h1."v0" END FROM (SELECT ... AS "v0") AS h1) is the row's too, in its test as in its row.
+  const reads = e => all.some(r => r.start > e.start && row(r) && r.end + row(r) === e.end && s.slice(r.start - 6, r.start) === ' FROM ');
+  if (!outer.every((e, i) => row(e) || i > 0 && row(outer[i - 1]) && e.end === outer[i - 1].end + row(outer[i - 1]) || reads(e))) return false;
   if (/\b(?:FROM|JOIN|APPLY|IN|EXISTS|ANY|ALL|SOME|UNION|INTERSECT|EXCEPT)\s*$/i.test(s.slice(0, q.start))
     || /^\s*(?:UNION|INTERSECT|EXCEPT)\b/i.test(s.slice(q.end))) return false;
   const own = new Set([...q.sql.matchAll(/\bAS ([a-z]\d+)\b/g)].map(m => m[1]));
@@ -2189,6 +2207,26 @@ function outputNames(cols, style) {
     seen.add(lc(n));
     return n;
   }));
+}
+
+// The CTEs (`name AS (...)`) whose SQL, read with the same names for the CTEs it reads, is
+// that of one before them: name -> that one's name.
+function sameCtes(ctes) {
+  const to = new Map(), seen = new Map();
+  for (const c of ctes) {
+    const name = cteName(c), key = canonical(renameAliases(c.slice(name.length), to));
+    if (seen.has(key)) to.set(name, seen.get(key));
+    else seen.set(key, name);
+  }
+  return to;
+}
+const cteName = c => /^\w+/.exec(c)[0];
+// SQL reading, for each CTE `to` names, the one it names instead, under its own name as an alias
+// (FROM f2 AS f5): its columns (f5.a0) read as before, and two such in one FROM are two names.
+function readAs(sql, to) {
+  return sql.split(/('(?:[^']|'')*'|"(?:[^"]|"")*")/).map((part, i) => i % 2 ? part
+    : part.replace(/\b(FROM|JOIN)(\s+)([a-z]\d+)(?![\w.])(\s+AS\b)?/g, (m, kw, sp, name, as) => !to.has(name) ? m
+      : as ? `${kw}${sp}${to.get(name)}${as}` : `${kw}${sp}${to.get(name)} AS ${name}`)).join('');
 }
 
 // SQL with its aliases renamed, outside its string literals.

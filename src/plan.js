@@ -29,7 +29,11 @@
 //                                        dense_rank, count of the partition
 //   series    { start, end, step }        GENERATESERIES's rows
 //   paths     { src, keyType }            PATH: from src's (k, p) rows, a (key, path) row per key
-//   output    { src, items: [{ name, expr, cast }], order: [{ expr, desc }], limit }   the result
+//   shared    { def }                     the rows of a definition the query names once and
+//                                        reads at each use (a table VAR, a calculated table):
+//                                        evaluated once, as DAX does, under columns of its own
+//   output    { src, items: [{ name, expr, cast }], order: [{ expr, desc }], limit, defs }
+//                                        the result; defs: the definitions, in order
 // An order term: { expr, desc, mode: 'dax' (a blank first ascending), 'term' (DAX's ORDER BY
 // rules, with `blanks` and `t`), 'plain' (ascending, NULLs first) }.
 
@@ -52,7 +56,7 @@ export const isNull = x => sqlop((d, [a]) => `${a} IS NULL`, ([a]) => `${a} = BL
 
 // --- relations ---------------------------------------------------------------------------
 
-const copy = (cols, src = cols) => cols.map((c, i) => newCol(c.name, c.t, { nn: c.nn, lineage: src[i]?.lineage ?? null }));
+const copy = (cols, src = cols) => cols.map((c, i) => newCol(c.name, c.t, { nn: c.nn, lineage: src[i]?.lineage ?? null, table: src[i]?.table ?? null }));
 
 export const scan = table => ({ k: 'scan', table,
   cols: table.columns.filter(c => !c.expr).map(c => newCol(c.name, c.type, { lineage: c, table })) });
@@ -80,4 +84,7 @@ export function window(src, part, fns) {
 }
 export const series = (start, end, step, t, name) => ({ k: 'series', start, end, step, t, cols: [newCol(name, t)] });
 export const paths = (src, keyType) => ({ k: 'paths', src, keyType, cols: [newCol('key', keyType), newCol('path', 'string')] });
-export const output = (src, items, order, limit = null) => ({ k: 'output', src, items, order, limit, cols: [] });
+export const output = (src, items, order, defs = []) => ({ k: 'output', src, items, order, limit: null, defs, cols: [] });
+// A definition (its relation, its number), and a use of it.
+export const definition = (rel, n) => ({ rel, n });
+export const shared = def => ({ k: 'shared', def, cols: copy(def.rel.cols) });

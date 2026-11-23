@@ -16,6 +16,8 @@ export class PlanSql extends Emitter {
   cn(c) { return `_c${c.id}`; }
 
   query({ plan: root }) {
+    this.defs = new Map();
+    for (const d of root.defs) this.defs.set(d, { name: this.alias('v'), sql: this.rel(d.rel) });
     const a = this.alias('q');
     const items = root.items.map(i => {
       let s = this.scalar(i.expr, EMPTY);
@@ -26,6 +28,8 @@ export class PlanSql extends Emitter {
     let sql = `SELECT ${items.join(', ') || '1 AS one'} FROM (${this.rel(root.src)}) AS ${a}`;
     if (root.order.length) sql += ` ORDER BY ${root.order.map(o => this.orderBy(this.scalar(o.expr, EMPTY), o.desc)).join(', ')}`;
     if (root.limit) sql += this.d.limit(root.limit.n, root.limit.offset, root.order.length > 0);
+    // The definitions, each evaluated once.
+    if (this.defs.size) sql = `WITH ${[...this.defs.values()].map(d => `${d.name} AS ${this.d.materialized}(${d.sql})`).join(',\n')}\n${sql}`;
     return this.d.finish(sql);
   }
 
@@ -72,6 +76,10 @@ export class PlanSql extends Emitter {
       case 'series': {
         const g = this.alias('g');
         return `SELECT ${g}.v AS ${cn(r.cols[0])} FROM ${this.d.series(this.scalar(r.start, EMPTY), this.scalar(r.end, EMPTY), this.scalar(r.step, EMPTY), r.t)} AS ${g}`;
+      }
+      case 'shared': {
+        const d = this.defs.get(r.def);
+        return `SELECT ${r.def.rel.cols.map((c, i) => `${cn(c)} AS ${cn(r.cols[i])}`).join(', ')} FROM ${d.name}`;
       }
       case 'paths': {
         const [k, p] = r.src.cols, name = this.alias('pt'), h = this.alias('h');

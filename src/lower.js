@@ -28,6 +28,20 @@ export class Lowerer {
     this.exactSums = 0;          // > 0 inside a value whose floating-point sums are added exactly
     this.grouping = null;    // GROUPBY's aggregates over CURRENTGROUP(): { aggs, block }
     this.calcBusy = new Set();
+    this.defs = [];          // the query's definitions, each before those that read it
+    this.defOf = new Map();
+  }
+
+  // The rows of a definition (a table VAR, a calculated table), built once and read at each use.
+  shared(key, build) {
+    let d = this.defOf.get(key);
+    if (!d) {
+      d = P.definition(build(), 0);
+      this.defs.push(d);
+      d.n = this.defs.length;
+      this.defOf.set(key, d);
+    }
+    return P.shared(d);
   }
 
   unsecured(f) {
@@ -58,7 +72,7 @@ export class Lowerer {
       cast: !by && cast && ir.isNum(c.t) ? (c.t === 'int' ? 'int' : 'double') : null,
     }));
     return {
-      plan: P.output(b.body(), items, keys.map((k, i) => ({ expr: k, desc: order[i].desc }))),
+      plan: P.output(b.body(), items, keys.map((k, i) => ({ expr: k, desc: order[i].desc })), this.defs),
       ordered: order.length > 0,
       columns: table.cols.map((c, i) => ({ name: outNames[i], dax: daxName(c), type: c.t, lineage: c.lineage ? `'${c.lineage.table.name}'[${c.lineage.name}]` : null })),
     };
@@ -133,8 +147,10 @@ export class Lowerer {
       case 'series': {
         const b = new Block(this, null, x.cols);
         const [start, end, step] = [x.start, x.end, x.step].map(v => this.scalar(v, scope, b));
-        if (b.applies.length) throw unsupported('plan: GENERATESERIES of an aggregate');
-        return this.fromRel(P.series(start, end, step, x.cols[0].t, x.cols[0].name), x.cols);
+        const s = P.series(start, end, step, x.cols[0].t, x.cols[0].name);
+        if (!b.applies.length) return this.fromRel(s, x.cols);
+        // Bounds that are aggregates (CALENDARAUTO's): the series for the row that holds them.
+        return this.fromList(P.apply(b.body(), s), [{ expr: P.ref(s.cols[0]), lineage: null, name: s.cols[0].name }], x.cols);
       }
       case 'generate': {
         const l = this.wrap(this.table(x.left, scope));
@@ -145,8 +161,10 @@ export class Lowerer {
         l.cols = x.cols;
         return l;
       }
-      // A table VAR: written where it is read (the plan shares nothing).
-      case 'shared': return this.table(x.src, ir.freeRows(x.src).size ? scope : new Map());
+      // A table VAR: evaluated once (one that reads a row around it, for each).
+      case 'shared':
+        if (ir.freeRows(x.src).size) return this.table(x.src, scope);
+        return this.fromRel(this.shared(x, () => this.exact(this.table(x.src, new Map()).render())), x.cols);
       case 'paths': {
         const r = this.unsecured(() => {
           const s = this.scanBlock(x.key.table, EMPTY, new Map());
@@ -189,7 +207,7 @@ export class Lowerer {
   // A model table's rows: its stored rows; a calculated table's expression (as at refresh: no
   // filter, no security); a calculation group's items.
   source(table) {
-    if (table.calc) {
+    if (table.calc) return this.shared(table, () => {
       const x = this.options.calcTable(table);
       const inner = this.unsecured(() => this.table(x, new Map()).render());
       const strip = s => lc(String(s).replace(/^.*\[(.*)\]$/, '$1'));
@@ -201,7 +219,7 @@ export class Lowerer {
         if (j < 0) throw semantic(`calculated table '${table.name}': its expression has no column ${c.source}`);
         return { name: c.name, expr: inner.list[j].expr, lineage: c, t: c.type, table };
       }));
-    }
+    });
     if (table.calcGroup) {
       const g = table.calcGroup;
       const cols = [g.column, g.ordinal].filter(Boolean);

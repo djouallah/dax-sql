@@ -10,7 +10,8 @@
 //
 // ▭ a table's rows · σ select · π project · δ distinct · γ aggregate · ⟕ left join · ⋈ join ·
 // × cross join · ×ᴬ/⟕ᴬ apply (for each row of the first, the second) · ∪ union · ω window ·
-// τ sort · ∃ a semi-join (the rows of its relation that the condition naming it reads).
+// τ sort · ∃ a semi-join (the rows of its relation that the condition naming it reads) ·
+// ▭ V1 the rows of a definition (a table VAR, a calculated table), evaluated once, drawn below.
 // A column is Table.Column when it is a model table's, its name otherwise, and outer.Column
 // when it is a column of a row around the operator's (an apply's, a correlated EXISTS');
 // ≡ is a blank matching a blank.
@@ -18,6 +19,11 @@
 export function explain(root) {
   const lines = [];
   draw(node(root), '', true, true, lines);
+  // The definitions read by name (▭ V1): each drawn once, below.
+  for (const d of root.defs ?? []) {
+    lines.push('', `V${d.n} =`);
+    draw(node(d.rel), '', true, true, lines);
+  }
   return lines.join('\n');
 }
 
@@ -75,6 +81,7 @@ function node(r) {
       kids.push(node(r.src));
       break;
     }
+    case 'shared': label = `▭  V${r.def.n}`; break;
     case 'series': label = `▭  Series(${S(r.start)}, ${S(r.end)}, ${S(r.step)})`; break;
     case 'paths': label = '▭  Paths (recursive: each key with the keys above it)'; kids.push(node(r.src)); break;
     default: label = r.k;

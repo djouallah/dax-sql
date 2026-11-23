@@ -1,0 +1,84 @@
+name: T-SQL
+
+# Runs the conformance suite with the tsql dialect on a Fabric lakehouse's SQL analytics endpoint
+# (conformance/engines/dax-sql-tsql/adapter.mjs): each query compiled to T-SQL and run by Fabric
+# over the suite's data as the lakehouse's Delta tables (written by lakehouse.py), held to Power
+# BI's answers and engines/dax-sql-tsql/known.json. A query has 30 s to answer.
+#
+# The identity is the Oracle's OIDC federated login (repository variables AZURE_CLIENT_ID,
+# AZURE_TENANT_ID); the endpoint is TSQL_HOST and its database TSQL_DB. It costs the capacity's
+# CU: on a push that changes the compiler or the suite, and by hand.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "formats/**"
+      - "conformance/queries/**"
+      - "conformance/golden/**"
+      - "conformance/runner/**"
+      - "conformance/engines/dax-sql-tsql/**"
+      - ".github/workflows/tsql.yml"
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+concurrency:
+  group: tsql
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  id-token: write   # OIDC federated login to Azure
+
+jobs:
+  tsql:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      TSQL_HOST: ${{ vars.TSQL_HOST }}
+      TSQL_DB: ${{ vars.TSQL_DB }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm ci --no-audit --no-fund
+        working-directory: conformance/engines/dax-sql-tsql
+      - name: Azure federated login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          allow-no-subscriptions: true
+      - name: Mint the SQL endpoint's token
+        run: |
+          TOKEN=$(az account get-access-token --resource https://database.windows.net --query accessToken -o tsv)
+          echo "::add-mask::$TOKEN"
+          echo "TSQL_TOKEN=$TOKEN" >> "$GITHUB_ENV"
+      - name: The suite on Fabric
+        env:
+          TSQL_TIMES: ${{ runner.temp }}/tsql-times.json
+        run: |
+          node conformance/runner/run.mjs --adapter "node conformance/engines/dax-sql-tsql/adapter.mjs ." \
+            --known conformance/engines/dax-sql-tsql/known.json --report "$RUNNER_TEMP/tsql.json"
+      - name: The slowest queries
+        if: always()
+        run: |
+          test -f "$RUNNER_TEMP/tsql-times.json" || exit 0
+          node -e '
+            const t = require(process.argv[1]).slice(0, 15);
+            const rows = t.map(x => `| ${x.id} | ${(x.ms / 1000).toFixed(1)} |`).join("\n");
+            require("fs").appendFileSync(process.env.GITHUB_STEP_SUMMARY, `### The slowest on Fabric\n\n| query | s |\n|---|---|\n${rows}\n`);
+          ' "$RUNNER_TEMP/tsql-times.json"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: tsql-report
+          path: |
+            ${{ runner.temp }}/tsql.json
+            ${{ runner.temp }}/tsql-times.json

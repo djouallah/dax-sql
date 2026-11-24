@@ -12,4 +12,9 @@ jobs:
         with:
           node-version: "24"
           cache: npm
-      - run: npm ci --no-audit --no-fund && npm test
+      - run: npm ci --no-audit --no-fund
+      # The unit tests, and what of src/ they reach (c8: lines, branches, functions per file).
+      - run: npx c8 --all --include 'src/**' --include 'formats/*.js' --reporter=json-summary --report-dir "$RUNNER_TEMP/cov" npm test
+      - name: Coverage of the unit tests
+        if: always()
+        run: node conformance/tools/coverage.mjs "$RUNNER_TEMP/cov/coverage-summary.json" "Coverage of the unit tests (npm test)"

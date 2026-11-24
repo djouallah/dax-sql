@@ -131,3 +131,28 @@ jobs:
             ${{ runner.temp }}/plan-correlated.json
             ${{ runner.temp }}/plan-unnest.json
             ${{ runner.temp }}/plan.json
+
+  # What of src/ the suite reaches (c8 over the adapter, compile and the unnested and optimized
+  # plans, merged), beside the unit tests' (test.yml). A measure, not a gate: the jobs above gate.
+  coverage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: djouallah/dax-sql
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: The suite under c8, three ways
+        run: |
+          run() { npx c8 --clean=false --all --include 'src/**' --reporter=json-summary --report-dir "$RUNNER_TEMP/cov" \
+            node conformance/runner/run.mjs --adapter "node conformance/engines/dax-sql/adapter.mjs ." \
+            --known conformance/engines/dax-sql/known.json --report "$RUNNER_TEMP/$1.json" > /dev/null || true; }
+          run compile
+          DAXSQL_PLAN=unnest run unnest
+          DAXSQL_PLAN=1 run optimized
+      - name: Coverage of the suite
+        run: node conformance/tools/coverage.mjs "$RUNNER_TEMP/cov/coverage-summary.json" "Coverage of the conformance suite (compile, unnested, optimized)"

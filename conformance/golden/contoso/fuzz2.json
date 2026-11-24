@@ -1,0 +1,6162 @@
+{
+ "fuzz2-0001": {
+  "hash": "e9d01aac937643844293c0039c04a25c36f75733",
+  "columns": [
+   "Product[Name]",
+   "Product[PriceBand]",
+   "[m0]",
+   "[m1]"
+  ],
+  "rows": [
+   [
+    "Road Bike",
+    "High",
+    0,
+    1000.0
+   ],
+   [
+    "Mountain Bike",
+    "High",
+    0,
+    800.0
+   ],
+   [
+    "Jersey",
+    "Low",
+    0,
+    250.0
+   ],
+   [
+    "Cap",
+    "Low",
+    0,
+    120.0
+   ],
+   [
+    "Helmet",
+    "Low",
+    0,
+    0
+   ]
+  ]
+ },
+ "fuzz2-0002": {
+  "hash": "1ec850d083e861aa54f71ce971a5bed9fe3ca6da",
+  "columns": [
+   "Date[Month]",
+   "[m0]",
+   "[m1]",
+   "[m2]"
+  ],
+  "rows": [
+   [
+    1,
+    2,
+    5,
+    null
+   ],
+   [
+    2,
+    4,
+    5,
+    2
+   ],
+   [
+    3,
+    1,
+    5,
+    1
+   ],
+   [
+    6,
+    2,
+    5,
+    null
+   ],
+   [
+    7,
+    1,
+    5,
+    null
+   ],
+   [
+    12,
+    1,
+    5,
+    null
+   ],
+   [
+    4,
+    null,
+    5,
+    null
+   ],
+   [
+    5,
+    null,
+    5,
+    null
+   ],
+   [
+    8,
+    null,
+    5,
+    null
+   ],
+   [
+    9,
+    null,
+    5,
+    null
+   ],
+   [
+    10,
+    null,
+    5,
+    null
+   ],
+   [
+    11,
+    null,
+    5,
+    null
+   ]
+  ]
+ },
+ "fuzz2-0003": {
+  "hash": "43a6839e61d268d4d52c1117180344004a36593f",
+  "columns": [
+   "Product[Price]",
+   "[m0]"
+  ],
+  "rows": [
+   [
+    20.0,
+    4
+   ],
+   [
+    50.0,
+    4
+   ],
+   [
+    60.0,
+    4
+   ],
+   [
+    800.0,
+    4
+   ],
+   [
+    1000.0,
+    4
+   ]
+  ]
+ },
+ "fuzz2-0004": {
+  "hash": "0ef5854798d55c291b9d25f7d965f4a9130d8fc1",
+  "columns": [
+   "Customer[City]",
+   "[m0]"
+  ],
+  "rows": [
+   [
+    "Paris",
+    6
+   ],
+   [
+    "Rome",
+    5
+   ],
+   [
+    "Berlin",
+    1
+   ],
+   [
+    "London",
+    3
+   ]
+  ]
+ },
+ "fuzz2-0005": {
+  "hash": "9813d699986456b1dfff882cdc6f561939146639",
+  "columns": [
+   "Date[Month]",
+   "[m0]"
+  ],
+  "rows": [
+   [
+    1,
+    1
+   ],
+   [
+    2,
+    1
+   ],
+   [
+    3,
+    1
+   ],
+   [
+    4,
+    null
+   ],
+   [
+    5,
+    null
+   ],
+   [
+    6,
+    1
+   ],
+   [
+    7,
+    1
+   ],
+   [
+    8,
+    null
+   ],
+   [
+    9,
+    null
+   ],
+   [
+    10,
+    null
+   ],
+   [
+    11,
+    null
+   ],
+   [
+    12,
+    1
+   ]
+  ]
+ },
+ "fuzz2-0006": {
+  "hash": "593540071b543e36cfbfa651465583a75e3a0965",
+  "columns": [
+   "Product[PriceBand]",
+   "[m0]"
+  ],
+  "rows": []
+ },
+ "fuzz2-0007": {
+  "hash": "7a1bb48cb3f1ec65fb1395e9ff011927853f89cd",
+  "columns": [
+   "Product[Color]",
+   "Date[Quarter]",
+   "[m0]",
+   "[m1]"
+  ],
+  "rows": []
+ },
+ "fuzz2-0008": {
+  "hash": "c41e2f7c6697fa4fcf68325833e7b0a517911488",
+  "columns": [
+   "Customer[City]",
+   "[m0]",
+   "[m1]"
+  ],
+  "rows": [
+   [
+    "Paris",
+    1,
+    0.2222222222222222
+   ],
+   [
+    "London",
+    1,
+    2.0
+   ],
+   [
+    "Berlin",
+    1,
+    null
+   ],
+   [
+    "Rome",
+    1,
+    2.0
+   ]
+  ]
+ },
+ "fuzz2-0009": {
+  "hash": "1a13a6fabe3cceeb3e8732742c88a716a993f9e5",
+  "columns": [
+   "Date[Year]",
+   "[m0]"
+  ],
+  "rows": [
+   [
+    2023,
+    1
+   ],
+   [
+    2024,
+    1
+   ]
+  ]
+ },
+ "fuzz2-0010": {
+  "hash": "90ca5f14bc4eb249138ff5895477775d008cbf16",
+  "columns": [
+   "Product[PriceBand]",
+   "[m0]"
+  ],
+  "rows": [
+   [
+    "High",
+    4600.0
+   ],
+   [
+    "Low",
+    450.0
+   ]
+  ]
+ },
+ "fuzz2-0011": {
+  "hash": "2b1e3e438ddbba4ef3f55fecaf77d4dbcabb51d0",
+  "columns": [
+   "Product[Price]",
+   "[m0]"
+  ],
+  "rows": [
+   [
+    1000.0,
+    1
+   ],
+   [
+    800.0,
+    1
+   ],
+   [
+    50.0,
+    1
+   ],
+   [
+    20.0,
+    1
+   ]
+  ]
+ },
+ "fuzz2-0012": {
+  "hash": "0e4084b7fc1dcaf6e4aaa862b80df9c00e7f5365",
+  "columns": [
+   "Category[Category]",
+   "[m0]",
+   "[m1]"
+  ],
+  "rows": [
+   [
+    "Bikes",
+    4,
+    null
+   ],
+   [
+    "Clothing",
+    4,
+    null
+   ],
+   [
+    "Accessories",
+    4,
+    null
+   ]
+  ]
+ },
+ "fuzz2-0013": {
+  "hash": "ee053c8e469399bdf79bfed3d45ef2b5891a46ec",
+  "columns": [
+   "[m0]",
+   "[m1]"
+  ],
+  "rows": [
+   [
+    0,
+    22.0
+   ]
+  ]
+ },
+ "fuzz2-0014": {
+  "hash": "0003de06ba4f63a202803a17819c0e97728c60cd",
+  "columns": [
+   "Product[PriceBand]",
+   "[m0]"
+  ],
+  "rows": [
+   [
+    "High",
+    2000.0
+   ],
+   [
+    "Low",
+    250.0
+   ]
+  ]
+ },
+ "fuzz2-0015": {
+  "hash": "e2a1b73ca7e9ce26026502bf1c92baa0e923d717",
+  "columns": [
+   "Product[Name]",
+   "[m0]"
+  ],
+  "rows": [
+   [
+    "Road Bike",
+    3000.0
+   ],
+   [
+    "Mountain Bike",
+    800.0
+   ],
+   [
+    "Jersey",
+    200.0
+   ],
+   [
+    "Cap",
+    120.0
+   ]
+  ]
+ },
+ "fuzz2-0016": {
+  "hash": "de661dd12eb7936b12bdb082ed16555040109ac0",
+  "columns": [
+   "Product[Color]",
+   "[m0]",
+   "[m1]"
+  ],
+  "rows": [
+   [
+    "Black",
+    800.0,
+    800.0
+   ]
+  ]
+ },
+ "fuzz2-0017": {
+  "hash": "3d30160f77ba93ce4f339d797e8ccb04475817d5",
+  "columns": [
+   "Date[Year]",
+   "Customer[Customer]",
+   "[m0]"
+  ],
+  "rows": [
+   [
+    2023,
+    "Alice",
+    550.0
+   ],
+   [
+    2023,
+    "Bob",
+    425.0
+   ],
+   [
+    2024,
+    "Alice",
+    450.0
+   ],
+   [
+    2024,
+    "Chloe",
+    1100.0
+   ],
+   [
+    2024,
+    "Erin",
+    20.0
+   ]
+  ]
+ },
+ "fuzz2-0018": {
+  "hash": "334e58266c904e702957c4d89fed0fe4025349be",
+  "columns": [
+   "Customer[City]",
+   "[m0]"
+  ],
+  "rows": []
+ },
+ "fuzz2-0019": {
+  "hash": "453e6943c31a074e406f41f293400d3c3ab68bb0",
+  "columns": [
+   "Date[Quarter]",
+   "[m0]"
+  ],
+  "rows": [
+   [
+    1,
+    386.0
+   ],
+   [
+    2,
+    386.0
+   ],
+   [
+    3,
+    386.0
+   ],
+   [
+    4,
+    386.0
+   ]
+  ]
+ },
+ "fuzz2-0020": {
+  "hash": "42eb5c05e179f4cfa06fda6c29873da8a0a749ae",
+  "columns": [
+   "Product[Color]",
+   "[m0]"
+  ],
+  "rows": [
+   [
+    "Red",
+    1
+   ],
+   [
+    "Blue",
+    1
+   ]
+  ]
+ },
+ "fuzz2-0021": {
+  "hash": "3e8697c4f8ad1bc8e0671c9e3113146a4b300b40",
+  "columns": [
+   "Product[PriceBand]",
+   "[m0]",
+   "[m1]",
+   "[m2]"
+  ],
+  "rows": [
+   [
+    "High",
+    1,
+    6,
+    null
+   ],
+   [
+    "Low",
+    1,
+    16,
+    null
+   ]
+  ]
+ },
+ "fuzz2-0022": {
+  "hash": "2c5f8c634bdab00cb84c75adab5bd38c191a4ff6",
+  "columns": [
+   "Date[Year]",
+   "[m0]",
+   "[m1]"
+  ],
+  "rows": [
+   [
+    2023,
+    null,
+    2
+   ],
+   [
+    2024,
+    null,
+    4
+   ]
+  ]
+ },
+ "fuzz2-0023": {
+  "hash": "0e06970fc6b400e8ee1b8a41f133ae8233ef1e71",
+  "columns": [
+   "Customer[City]",
+   "[m0]",
+   "[m1]",
+   "[m2]"
+  ],
+  "rows": [
+   [
+    "Paris",
+    1,
+    0,
+    1
+   ],
+   [
+    "London",
+    1,
+    0,
+    1
+   ],
+   [
+    "Berlin",
+    1,
+    0,
+    null
+   ],
+   [
+    "Rome",
+    1,
+    0,
+    null
+   ]
+  ]
+ },
+ "fuzz2-0024": {
+  "hash": "996ecd4bb5550baf2069a7e2132c0f6bbb485764",
+  "columns": [
+   "Date[Year]",
+   "Product[PriceBand]",
+   "[m0]"
+  ],
+  "rows": []
+ },
+ "fuzz2-0025": {
+  "hash": "acb2b6b5736d5cb90de93183810adcff99f4c75c",
+  "columns": [
+   "[m0]"
+  ],
+  "rows": []
+ },
+ "fuzz2-0026": {
+  "hash": "06e191a36a9ddd1472607ef92a78c9f2e5db1835",
+  "columns": [
+   "[m0]"
+  ],
+  "rows": [
+   [
+    24
+   ]
+  ]
+ },
+ "fuzz2-0027": {
+  "hash": "c2982b00e89126989ecd1b0cd328ceb384d1f03a",
+  "columns": [
+   "Customer[City]",
+   "Product[Name]",
+   "[m0]",
+   "[m1]",
+   "[m2]"
+  ],
+  "rows": [
+   [
+    "Paris",
+    "Road Bike",
+    0.7,
+    null,
+    0
+   ],
+   [
+    "Paris",
+    "Mountain Bike",
+    0.2,
+    1,
+    0
+   ],
+   [
+    "Paris",
+    "Jersey",
+    0.1,
+    1,
+    0
+   ],
+   [
+    "Paris",
+    "Cap",
+    0.0,
+    2,
+    0
+   ],
+   [
+    "London",
+    "Road Bike",
+    0.5,
+    null,
+    0
+   ],
+   [
+    "London",
+    "Mountain Bike",
+    0.4,
+    1,
+    0
+   ],
+   [
+    "London",
+    "Jersey",
+    0.0,
+    1,
+    0
+   ],
+   [
+    "Rome",
+    "Cap",
+    1.0,
+    2,
+    0
+   ],
+   [
+    "Berlin",
+    "Mountain Bike",
+    null,
+    1,
+    0
+   ],
+   [
+    "Rome",
+    "Mountain Bike",
+    null,
+    1,
+    0
+   ],
+   [
+    "Berlin",
+    "Jersey",
+    null,
+    1,
+    0
+   ],
+   [
+    "Rome",
+    "Jersey",
+    null,
+    1,
+    0
+   ],
+   [
+    "London",
+    "Cap",
+    null,
+    2,
+    0
+   ],
+   [
+    "Berlin",
+    "Cap",
+    null,
+    2,
+    0
+   ],
+   [
+    "Berlin",
+    "Road Bike",
+    null,
+    null,
+    0
+   ],
+   [
+    "Rome",
+    "Road Bike",
+    null,
+    null,
+    0
+   ],
+   [
+    "Paris",
+    "Helmet",
+    null,
+    null,
+    0
+   ],
+   [
+    "London",
+    "Helmet",
+    null,
+    null,
+    0
+   ],
+   [
+    "Berlin",
+    "Helmet",
+    null,
+    null,
+    0
+   ],
+   [
+    "Rome",
+    "Helmet",
+    null,
+    null,
+    0
+   ]
+  ]
+ },
+ "fuzz2-0028": {
+  "hash": "ffb83185f4b5c0e1cf6b13757b6403848df536fa",
+  "columns": [
+   "Product[Name]",
+   "Date[Year]",
+   "[m0]",
+   "[m1]"
+  ],
+  "rows": [
+   [
+    "Jersey",
+    2023,
+    1.0,
+    2.5
+   ],
+   [
+    "Mountain Bike",
+    2024,
+    1.0,
+    1.0
+   ],
+   [
+    "Cap",
+    2024,
+    1.0,
+    4.0
+   ],
+   [
+    "Road Bike",
+    2023,
+    null,
+    1.5
+   ],
+   [
+    "Road Bike",
+    2024,
+    null,
+    1.5
+   ],
+   [
+    "Mountain Bike",
+    2023,
+    null,
+    1.0
+   ],
+   [
+    "Jersey",
+    2024,
+    null,
+    2.5
+   ],
+   [
+    "Cap",
+    2023,
+    null,
+    4.0
+   ]
+  ]
+ },
+ "fuzz2-0029": {
+  "hash": "90f18622f69b562595e39a628f0942a7687fe626",
+  "columns": [
+   "Product[Price]",
+   "[m0]"
+  ],
+  "rows": [
+   [
+    20.0,
+    2.0
+   ],
+   [
+    50.0,
+    1.0
+   ],
+   [
+    800.0,
+    1.0
+   ]
+  ]
+ },
+ "fuzz2-0030": {
+  "hash": "c1d4175affcd88a980356c317e6965fe90f055dc",
+  "columns": [
+   "Customer[Customer]",
+   "[m0]"
+  ],
+  "rows": [
+   [
+    "Alice",
+    9
+   ],
+   [
+    "Bob",
+    3
+   ],
+   [
+    "Chloe",
+    9
+   ],
+   [
+    "Erin",
+    1
+   ]
+  ]
+ },
+ "fuzz2-0031": {
+  "hash": "7efa862f4fbd28d0fc1f7a57c39b7b7c3f003d7e",
+  "columns": [
+   "Category[Category]",
+   "Date[Year]",
+   "[m0]",
+   "[m1]"
+  ],
+  "rows": []
+ },
+ "fuzz2-0032": {
+  "hash": "b51f0b948a4517b6395658f3751595439a871495",
+  "columns": [
+   "Customer[Customer]",
+   "Date[Quarter]",
+   "Category[Category]",
+   "[m0]",
+   "[m1]"
+  ],
+  "rows": [
+   [
+    "Alice",
+    1,
+    "Clothing",
+    0.02,
+    200.0
+   ],
+   [
+    "Bob",
+    1,
+    "Clothing",
+    0.02,
+    null
+   ],
+   [
+    "Chloe",
+    1,
+    "Clothing",
+    0.02,
+    200.0
+   ],
+   [
+    "Dan",
+    1,
+    "Clothing",
+    0.02,
+    null
+   ],
+   [
+    "Erin",
+    1,
+    "Clothing",
+    0.02,
+    null
+   ],
+   [
+    "Alice",
+    2,
+    "Clothing",
+    0.03333333333333333,
+    null
+   ],
+   [
+    "Bob",
+    2,
+    "Clothing",
+    0.03333333333333333,
+    null
+   ],
+   [
+    "Chloe",
+    2,
+    "Clothing",
+    0.03333333333333333,
+    60.0
+   ],
+   [
+    "Dan",
+    2,
+    "Clothing",
+    0.03333333333333333,
+    null
+   ],
+   [
+    "Erin",
+    2,
+    "Clothing",
+    0.03333333333333333,
+    null
+   ],
+   [
+    "Alice",
+    4,
+    "Clothing",
+    0.04,
+    null
+   ],
+   [
+    "Bob",
+    4,
+    "Clothing",
+    0.04,
+    50.0
+   ],
+   [
+    "Chloe",
+    4,
+    "Clothing",
+    0.04,
+    null
+   ],
+   [
+    "Dan",
+    4,
+    "Clothing",
+    0.04,
+    null
+   ],
+   [
+    "Erin",
+    4,
+    "Clothing",
+    0.04,
+    null
+   ],
+   [
+    "Alice",
+    1,
+    "Bikes",
+    0.0011111111111111111,
+    1800.0
+   ],
+   [
+    "Bob",
+    1,
+    "Bikes",
+    0.0011111111111111111,
+    800.0
+   ],
+   [
+    "Chloe",
+    1,
+    "Bikes",
+    0.0011111111111111111,
+    2000.0
+   ],
+   [
+    "Dan",
+    1,
+    "Bikes",
+    0.0011111111111111111,
+    null
+   ],
+   [
+    "Erin",
+    1,
+    "Bikes",
+    0.0011111111111111111,
+    null
+   ],
+   [
+    "Bob",
+    2,
+    "Bikes",
+    null,
+    1000.0
+   ],
+   [
+    "Erin",
+    3,
+    "Clothing",
+    null,
+    20.0
+   ]
+  ]
+ },
+ "fuzz2-0033": {
+  "hash": "051abd95f4c6c8439f8a3e1a03a28ee7e72d9430",
+  "columns": [
+   "[m0]"
+  ],
+  "rows": [
+   [
+    6130.0
+   ]
+  ]
+ },
+ "fuzz2-0034": {
+  "hash": "a374f4302c7c07c85c112c8cd3f029a6a1512055",
+  "columns": [
+   "Product[Color]",
+   "[m0]"
+  ],
+  "rows": [
+   [
+    "Red",
+    0.00125
+   ],
+   [
+    "Black",
+    0.0025
+   ]
+  ]
+ },
+ "fuzz2-0035": {
+  "hash": "4207d3b60aa8e2cddc1d9cd98b23e3994abe01d0",
+  "columns": [
+   "Date[Year]",
+   "[m0]"
+  ],
+  "rows": [
+   [
+    2023,
+    1
+   ],
+   [
+    2024,
+    1
+   ]
+  ]
+ },
+ "fuzz2-0036": {
+  "hash": "6997cc80b7389af06edfc858ea3c05506c4bcb9c",
+  "columns": [
+   "Customer[City]",
+   "[m0]"
+  ],
+  "rows": [
+   [
+    "Rome",
+    60.0
+   ]
+  ]
+ },
+ "fuzz2-0037": {
+  "hash": "1a181c795a98ca930baf2bb3a1c7a66105645c53",
+  "columns": [
+   "Product[PriceBand]",
+   "[m0]"
+  ],
+  "rows": [
+   [
+    "High",
+    5600.0
+   ],
+   [
+    "Low",
+    530.0
+   ]
+  ]
+ },
+ "fuzz2-0038": {
+  "hash": "0b87faeb0a863beb1c64d76be0f36722ec7ff48c",
+  "columns": [
+   "Product[Name]",
+   "[m0]",
+   "[m1]",
+   "[m2]"
+  ],
+  "rows": [
+   [
+    "Road Bike",
+    1,
+    null,
+    null
+   ],
+   [
+    "Mountain Bike",
+    1,
+    null,
+    null
+   ],
+   [
+    "Jersey",
+    1,
+    null,
+    null
+   ],
+   [
+    "Cap",
+    1,
+    null,
+    null
+   ],
+   [
+    "Helmet",
+    1,
+    null,
+    null
+   ]
+  ]
+ },
+ "fuzz2-0039": {
+  "hash": "1d31c3e3005380ff472a5ffee43fa26394150656",
+  "columns": [
+   "Product[Name]",
+   "Customer[Customer]",
+   "[m0]"
+  ],
+  "rows": [
+   [
+    "Road Bike",
+    "Alice",
+    1000.0
+   ],
+   [
+    "Mountain Bike",
+    "Alice",
+    800.0
+   ],
+   [
+    "Jersey",
+    "Alice",
+    100.0
+   ],
+   [
+    "Cap",
+    "Alice",
+    100.0
+   ],
+   [
+    "Road Bike",
+    "Bob",
+    1000.0
+   ],
+   [
+    "Mountain Bike",
+    "Bob",
+    800.0
+   ],
+   [
+    "Jersey",
+    "Bob",
+    50.0
+   ],
+   [
+    "Road Bike",
+    "Chloe",
+    2000.0
+   ],
+   [
+    "Jersey",
+    "Chloe",
+    200.0
+   ],
+   [
+    "Cap",
+    "Chloe",
+    60.0
+   ],
+   [
+    "Cap",
+    "Erin",
+    20.0
+   ]
+  ]
+ },
+ "fuzz2-0040": {
+  "hash": "3fbd7ce7cf19cf72cc9184059e27911164625d6e",
+  "columns": [
+   "Date[Year]",
+   "[m0]"
+  ],
+  "rows": [
+   [
+    2023,
+    1
+   ],
+   [
+    2024,
+    2
+   ]
+  ]
+ },
+ "fuzz2-0041": {
+  "hash": "20590df50eb60ea852ea79687e709112923d419e",
+  "columns": [
+   "Date[Month]",
+   "[m0]"
+  ],
+  "rows": []
+ },
+ "fuzz2-0042": {
+  "hash": "1ea401570ab852db1db55e4d2feb5166501f0400",
+  "columns": [
+   "Product[Color]",
+   "[m0]"
+  ],
+  "rows": [
+   [
+    "Red",
+    2
+   ],
+   [
+    "Black",
+    2
+   ],
+   [
+    "Blue",
+    1
+   ]
+  ]
+ },
+ "fuzz2-0043": {
+  "hash": "e4498b721c969e6d2163d085e7731060f29c4399",
+  "columns": [
+   "Product[Color]",
+   "[m0]",
+   "[m1]"
+  ],
+  "rows": [
+   [
+    "Red",
+    1,
+    27
+   ],
+   [
+    "Black",
+    1,
+    27
+   ],
+   [
+    "Blue",
+    1,
+    27
+   ]
+  ]
+ },
+ "fuzz2-0044": {
+  "hash": "8d090fbcf6a128da74eaa3802a3650c6c304c946",
+  "columns": [
+   "Product[Color]",
+   "[m0]",
+   "[m1]"
+  ],
+  "rows": [
+   [
+    "Black",
+    0,
+    1
+   ],
+   [
+    "Red",
+    null,
+    1
+   ],
+   [
+    "Blue",
+    null,
+    1
+   ]
+  ]
+ },
+ "fuzz2-0045": {
+  "hash": "21b76d95bf94dd89ac55f85bebf6d9110a8848dd",
+  "columns": [
+   "[m0]",
+   "[m1]"
+  ],
+  "rows": [
+   [
+    0.0629690048939641,
+    4
+   ]
+  ]
+ },
+ "fuzz2-0046": {
+  "hash": "509e432911e3307d83fb659f5296567ecd37be97",
+  "columns": [
+   "Date[Month]",
+   "Product[Name]",
+   "[m0]"
+  ],
+  "rows": [
+   [
+    1,
+    "Road Bike",
+    12130.0
+   ],
+   [
+    2,
+    "Mountain Bike",
+    7730.0
+   ],
+   [
+    2,
+    "Jersey",
+    6730.0
+   ],
+   [
+    2,
+    "Cap",
+    6330.0
+   ],
+   [
+    3,
+    "Mountain Bike",
+    7730.0
+   ],
+   [
+    6,
+    "Road Bike",
+    8130.0
+   ],
+   [
+    6,
+    "Cap",
+    6250.0
+   ],
+   [
+    12,
+    "Jersey",
+    6230.0
+   ],
+   [
+    2,
+    "Road Bike",
+    6130.0
+   ],
+   [
+    3,
+    "Road Bike",
+    6130.0
+   ],
+   [
+    4,
+    "Road Bike",
+    6130.0
+   ],
+   [
+    5,
+    "Road Bike",
+    6130.0
+   ],
+   [
+    7,
+    "Road Bike",
+    6130.0
+   ],
+   [
+    8,
+    "Road Bike",
+    6130.0
+   ],
+   [
+    9,
+    "Road Bike",
+    6130.0
+   ],
+   [
+    10,
+    "Road Bike",
+    6130.0
+   ],
+   [
+    11,
+    "Road Bike",
+    6130.0
+   ],
+   [
+    12,
+    "Road Bike",
+    6130.0
+   ],
+   [
+    1,
+    "Mountain Bike",
+    6130.0
+   ],
+   [
+    4,
+    "Mountain Bike",
+    6130.0
+   ],
+   [
+    5,
+    "Mountain Bike",
+    6130.0
+   ],
+   [
+    6,
+    "Mountain Bike",
+    6130.0
+   ],
+   [
+    7,
+    "Mountain Bike",
+    6130.0
+   ],
+   [
+    8,
+    "Mountain Bike",
+    6130.0
+   ],
+   [
+    9,
+    "Mountain Bike",
+    6130.0
+   ],
+   [
+    10,
+    "Mountain Bike",
+    6130.0
+   ],
+   [
+    11,
+    "Mountain Bike",
+    6130.0
+   ],
+   [
+    12,
+    "Mountain Bike",
+    6130.0
+   ],
+   [
+    1,
+    "Jersey",
+    6130.0
+   ],
+   [
+    3,
+    "Jersey",
+    6130.0
+   ],
+   [
+    4,
+    "Jersey",
+    6130.0
+   ],
+   [
+    5,
+    "Jersey",
+    6130.0
+   ],
+   [
+    6,
+    "Jersey",
+    6130.0
+   ],
+   [
+    7,
+    "Jersey",
+    6130.0
+   ],
+   [
+    8,
+    "Jersey",
+    6130.0
+   ],
+   [
+    9,
+    "Jersey",
+    6130.0
+   ],
+   [
+    10,
+    "Jersey",
+    6130.0
+   ],
+   [
+    11,
+    "Jersey",
+    6130.0
+   ],
+   [
+    1,
+    "Cap",
+    6130.0
+   ],
+   [
+    3,
+    "Cap",
+    6130.0
+   ],
+   [
+    4,
+    "Cap",
+    6130.0
+   ],
+   [
+    5,
+    "Cap",
+    6130.0
+   ],
+   [
+    7,
+    "Cap",
+    6130.0
+   ],
+   [
+    8,
+    "Cap",
+    6130.0
+   ],
+   [
+    9,
+    "Cap",
+    6130.0
+   ],
+   [
+    10,
+    "Cap",
+    6130.0
+   ],
+   [
+    11,
+    "Cap",
+    6130.0
+   ],
+   [
+    12,
+    "Cap",
+    6130.0
+   ],
+   [
+    1,
+    "Helmet",
+    6130.0
+   ],
+   [
+    2,
+    "Helmet",
+    6130.0
+   ],
+   [
+    3,
+    "Helmet",
+    6130.0
+   ],
+   [
+    4,
+    "Helmet",
+    6130.0
+   ],
+   [
+    5,
+    "Helmet",
+    6130.0
+   ],
+   [
+    6,
+    "Helmet",
+    6130.0
+   ],
+   [
+    7,
+    "Helmet",
+    6130.0
+   ],
+   [
+    8,
+    "Helmet",
+    6130.0
+   ],
+   [
+    9,
+    "Helmet",
+    6130.0
+   ],
+   [
+    10,
+    "Helmet",
+    6130.0
+   ],
+   [
+    11,
+    "Helmet",
+    6130.0
+   ],
+   [
+    12,
+    "Helmet",
+    6130.0
+   ]
+  ]
+ },
+ "fuzz2-0047": {
+  "hash": "170e3cec5cc52f874230e1fb9aae5d2e709f4497",
+  "columns": [
+   "[m0]",
+   "[m1]",
+   "[m2]"
+  ],
+  "rows": [
+   [
+    1,
+    11,
+    4
+   ]
+  ]
+ },
+ "fuzz2-0048": {
+  "hash": "2996d266adaf31a74c30b91e9126c79b3251398e",
+  "columns": [
+   "Date[Year]",
+   "[m0]"
+  ],
+  "rows": [
+   [
+    2023,
+    3
+   ],
+   [
+    2024,
+    4
+   ]
+  ]
+ },
+ "fuzz2-0049": {
+  "hash": "1939ed0a54f348dbed870c5aa7caf8a054a6bfee",
+  "columns": [
+   "Product[Name]",
+   "[m0]"
+  ],
+  "rows": [
+   [
+    "Road Bike",
+    500.0
+   ],
+   [
+    "Mountain Bike",
+    800.0
+   ],
+   [
+    "Jersey",
+    25.0
+   ],
+   [
+    "Cap",
+    10.0
+   ]
+  ]
+ },
+ "fuzz2-0050": {
+  "hash": "e10ef06111760dd4c1d896ef2c3070ef49381987",
+  "columns": [
+   "[m0]"
+  ],
+  "rows": [
+   [
+    4
+   ]
+  ]
+ },
+ "fuzz2-0051": {
+  "hash": "f6c94e7f7a01ccdba05758796d9067342cce6725",
+  "columns": [
+   "Category[Category]",
+   "[m0]"
+  ],
+  "rows": [
+   [
+    "Clothing",
+    16.25
+   ]
+  ]
+ },
+ "fuzz2-0052": {
+  "hash": "cc0574fbcc96eda6f9e416ade219e50abbb3f051",
+  "columns": [
+   "[m0]"
+  ],
+  "rows": [
+   [
+    0.2
+   ]
+  ]
+ },
+ "fuzz2-0053": {
+  "hash": "8ea5fa8e55397dbc1e0a69feabc97cae919ab58a",
+  "columns": [
+   "[m0]"
+  ],
+  "rows": [
+   [
+    1
+   ]
+  ]
+ },
+ "fuzz2-0054": {
+  "hash": "d90b6633d16d193c266521c66559eb569b855bae",
+  "columns": [
+   "Product[Price]",
+   "[m0]"
+  ],
+  "rows": [
+   [
+    1000.0,
+    1000.0
+   ]
+  ]
+ },
+ "fuzz2-0055": {
+  "hash": "61574381e38a4d0c2340348b6526d89124eb48e3",
+  "columns": [
+   "Product[Price]",
+   "[m0]"
+  ],
+  "rows": []
+ },
+ "fuzz2-0056": {
+  "hash": "de6e7f88f476c59fa80db88640deb2ee3d3661b1",
+  "columns": [
+   "[m0]"
+  ],
+  "rows": [
+   [
+    0.0007092198581560284
+   ]
+  ]
+ },
+ "fuzz2-0057": {
+  "hash": "d64d15475925b6001ce8c3d070fd5b536f7f5d42",
+  "columns": [
+   "Date[Quarter]",
+   "[m0]"
+  ],
+  "rows": [
+   [
+    1,
+    16
+   ],
+   [
+    2,
+    4
+   ],
+   [
+    3,
+    1
+   ],
+   [
+    4,
+    1
+   ]
+  ]
+ },
+ "fuzz2-0058": {
+  "hash": "daee3983b18b8c8f64b19512f581df4f4f76325b",
+  "columns": [
+   "Category[Category]",
+   "Product[Color]",
+   "Customer[City]",
+   "[m0]",
+   "[m1]",
+   "[m2]"
+  ],
+  "rows": [
+   [
+    "Clothing",
+    "Red",
+    "Paris",
+    100.0,
+    1,
+    1.0
+   ],
+   [
+    "Clothing",
+    "Blue",
+    "Paris",
+    60.0,
+    2,
+    2.0
+   ],
+   [
+    "Clothing",
+    "Red",
+    "London",
+    50.0,
+    1,
+    1.0
+   ],
+   [
+    "Bikes",
+    "Black",
+    "London",
+    800.0,
+    1,
+    1.0
+   ],
+   [
+    "Clothing",
+    "Red",
+    "Berlin",
+    null,
+    1,
+    1.0
+   ],
+   [
+    "Clothing",
+    "Red",
+    "Rome",
+    null,
+    1,
+    1.0
+   ],
+   [
+    "Bikes",
+    "Black",
+    "Paris",
+    null,
+    1,
+    1.0
+   ],
+   [
+    "Bikes",
+    "Black",
+    "Berlin",
+    null,
+    1,
+    1.0
+   ],
+   [
+    "Bikes",
+    "Black",
+    "Rome",
+    null,
+    1,
+    1.0
+   ],
+   [
+    "Clothing",
+    "Blue",
+    "London",
+    null,
+    2,
+    2.0
+   ],
+   [
+    "Clothing",
+    "Blue",
+    "Berlin",
+    null,
+    2,
+    2.0
+   ],
+   [
+    "Clothing",
+    "Blue",
+    "Rome",
+    null,
+    2,
+    2.0
+   ]
+  ]
+ },
+ "fuzz2-0059": {
+  "hash": "38aac4a6042e3cfe60356bfbccb7651539564a20",
+  "columns": [
+   "Customer[City]",
+   "[m0]",
+   "[m1]"
+  ],
+  "rows": [
+   [
+    "Paris",
+    1.0,
+    1
+   ],
+   [
+    "London",
+    1.0,
+    1
+   ],
+   [
+    "Berlin",
+    null,
+    1
+   ],
+   [
+    "Rome",
+    1.0,
+    1
+   ]
+  ]
+ },
+ "fuzz2-0060": {
+  "hash": "4563a3239cce1c96f8acde9906e67c543d1f73a1",
+  "columns": [
+   "[m0]",
+   "[m1]",
+   "[m2]"
+  ],
+  "rows": [
+   [
+    2,
+    8000.0,
+    null
+   ]
+  ]
+ },
+ "fuzz2-0061": {
+  "hash": "e11bef45d2c2179d3908577201b86b3673ece414",
+  "columns": [
+   "Date[Month]",
+   "[m0]"
+  ],
+  "rows": [
+   [
+    4,
+    -1.0
+   ],
+   [
+    5,
+    -1.0
+   ],
+   [
+    8,
+    -1.0
+   ],
+   [
+    9,
+    -1.0
+   ],
+   [
+    10,
+    -1.0
+   ],
+   [
+    11,
+    -1.0
+   ]
+  ]
+ },
+ "fuzz2-0062": {
+  "hash": "c70b34a5d15962b30d054891adc24e06baacdde6",
+  "columns": [
+   "[m0]",
+   "[m1]"
+  ],
+  "rows": [
+   [
+    11,
+    5
+   ]
+  ]
+ },
+ "fuzz2-0063": {
+  "hash": "a33b22f6a7425f421bfc0cd99978a600617740d6",
+  "columns": [
+   "[m0]",
+   "[m1]",
+   "[m2]"
+  ],
+  "rows": [
+   [
+    4,
+    1,
+    6130.0
+   ]
+  ]
+ },
+ "fuzz2-0064": {
+  "hash": "518b8338a6b74d43a1b2db62870ed17f190b1303",
+  "columns": [
+   "Date[Month]",
+   "Product[Color]",
+   "Product[Name]",
+   "[m0]",
+   "[m1]"
+  ],
+  "rows": [
+   [
+    1,
+    "Red",
+    "Road Bike",
+    1,
+    1
+   ],
+   [
+    2,
+    "Red",
+    "Road Bike",
+    1,
+    1
+   ],
+   [
+    3,
+    "Red",
+    "Road Bike",
+    1,
+    1
+   ],
+   [
+    4,
+    "Red",
+    "Road Bike",
+    1,
+    1
+   ],
+   [
+    5,
+    "Red",
+    "Road Bike",
+    1,
+    1
+   ],
+   [
+    6,
+    "Red",
+    "Road Bike",
+    1,
+    1
+   ],
+   [
+    7,
+    "Red",
+    "Road Bike",
+    1,
+    1
+   ],
+   [
+    8,
+    "Red",
+    "Road Bike",
+    1,
+    1
+   ],
+   [
+    9,
+    "Red",
+    "Road Bike",
+    1,
+    1
+   ],
+   [
+    10,
+    "Red",
+    "Road Bike",
+    1,
+    1
+   ],
+   [
+    11,
+    "Red",
+    "Road Bike",
+    1,
+    1
+   ],
+   [
+    12,
+    "Red",
+    "Road Bike",
+    1,
+    1
+   ],
+   [
+    1,
+    "Red",
+    "Jersey",
+    1,
+    null
+   ],
+   [
+    2,
+    "Red",
+    "Jersey",
+    1,
+    1
+   ],
+   [
+    3,
+    "Red",
+    "Jersey",
+    1,
+    1
+   ],
+   [
+    4,
+    "Red",
+    "Jersey",
+    1,
+    1
+   ],
+   [
+    5,
+    "Red",
+    "Jersey",
+    1,
+    1
+   ],
+   [
+    6,
+    "Red",
+    "Jersey",
+    1,
+    1
+   ],
+   [
+    7,
+    "Red",
+    "Jersey",
+    1,
+    1
+   ],
+   [
+    8,
+    "Red",
+    "Jersey",
+    1,
+    1
+   ],
+   [
+    9,
+    "Red",
+    "Jersey",
+    1,
+    1
+   ],
+   [
+    10,
+    "Red",
+    "Jersey",
+    1,
+    1
+   ],
+   [
+    11,
+    "Red",
+    "Jersey",
+    1,
+    1
+   ],
+   [
+    12,
+    "Red",
+    "Jersey",
+    1,
+    1
+   ],
+   [
+    1,
+    "Black",
+    "Mountain Bike",
+    1,
+    null
+   ],
+   [
+    2,
+    "Black",
+    "Mountain Bike",
+    1,
+    1
+   ],
+   [
+    3,
+    "Black",
+    "Mountain Bike",
+    1,
+    1
+   ],
+   [
+    4,
+    "Black",
+    "Mountain Bike",
+    1,
+    1
+   ],
+   [
+    5,
+    "Black",
+    "Mountain Bike",
+    1,
+    1
+   ],
+   [
+    6,
+    "Black",
+    "Mountain Bike",
+    1,
+    1
+   ],
+   [
+    7,
+    "Black",
+    "Mountain Bike",
+    1,
+    1
+   ],
+   [
+    8,
+    "Black",
+    "Mountain Bike",
+    1,
+    1
+   ],
+   [
+    9,
+    "Black",
+    "Mountain Bike",
+    1,
+    1
+   ],
+   [
+    10,
+    "Black",
+    "Mountain Bike",
+    1,
+    1
+   ],
+   [
+    11,
+    "Black",
+    "Mountain Bike",
+    1,
+    1
+   ],
+   [
+    12,
+    "Black",
+    "Mountain Bike",
+    1,
+    1
+   ],
+   [
+    1,
+    "Black",
+    "Helmet",
+    1,
+    null
+   ],
+   [
+    2,
+    "Black",
+    "Helmet",
+    1,
+    null
+   ],
+   [
+    3,
+    "Black",
+    "Helmet",
+    1,
+    null
+   ],
+   [
+    4,
+    "Black",
+    "Helmet",
+    1,
+    null
+   ],
+   [
+    5,
+    "Black",
+    "Helmet",
+    1,
+    null
+   ],
+   [
+    6,
+    "Black",
+    "Helmet",
+    1,
+    null
+   ],
+   [
+    7,
+    "Black",
+    "Helmet",
+    1,
+    null
+   ],
+   [
+    8,
+    "Black",
+    "Helmet",
+    1,
+    null
+   ],
+   [
+    9,
+    "Black",
+    "Helmet",
+    1,
+    null
+   ],
+   [
+    10,
+    "Black",
+    "Helmet",
+    1,
+    null
+   ],
+   [
+    11,
+    "Black",
+    "Helmet",
+    1,
+    null
+   ],
+   [
+    12,
+    "Black",
+    "Helmet",
+    1,
+    null
+   ],
+   [
+    1,
+    "Blue",
+    "Cap",
+    1,
+    null
+   ],
+   [
+    2,
+    "Blue",
+    "Cap",
+    1,
+    1
+   ],
+   [
+    3,
+    "Blue",
+    "Cap",
+    1,
+    1
+   ],
+   [
+    4,
+    "Blue",
+    "Cap",
+    1,
+    1
+   ],
+   [
+    5,
+    "Blue",
+    "Cap",
+    1,
+    1
+   ],
+   [
+    6,
+    "Blue",
+    "Cap",
+    1,
+    1
+   ],
+   [
+    7,
+    "Blue",
+    "Cap",
+    1,
+    1
+   ],
+   [
+    8,
+    "Blue",
+    "Cap",
+    1,
+    1
+   ],
+   [
+    9,
+    "Blue",
+    "Cap",
+    1,
+    1
+   ],
+   [
+    10,
+    "Blue",
+    "Cap",
+    1,
+    1
+   ],
+   [
+    11,
+    "Blue",
+    "Cap",
+    1,
+    1
+   ],
+   [
+    12,
+    "Blue",
+    "Cap",
+    1,
+    1
+   ]
+  ]
+ },
+ "fuzz2-0065": {
+  "hash": "8e6c1ac7b0ed3f8b0d293f73599e68502c6ce072",
+  "columns": [
+   "[m0]",
+   "[m1]",
+   "[m2]"
+  ],
+  "rows": [
+   [
+    2000.0,
+    -2999.0,
+    4.1797281131049484e-05
+   ]
+  ]
+ },
+ "fuzz2-0066": {
+  "hash": "66984922e231900c96ad43137a6df4ffd440a754",
+  "columns": [
+   "Product[Price]",
+   "[m0]"
+  ],
+  "rows": [
+   [
+    1000.0,
+    4000.0
+   ]
+  ]
+ },
+ "fuzz2-0067": {
+  "hash": "99cb67cd745bb189d40d5f9564715149260e34eb",
+  "columns": [
+   "[m0]"
+  ],
+  "rows": [
+   [
+    9
+   ]
+  ]
+ },
+ "fuzz2-0068": {
+  "hash": "bb91c974f473d0e89ae284ed89250910f08f63f3",
+  "columns": [
+   "Product[Price]",
+   "[m0]",
+   "[m1]"
+  ],
+  "rows": [
+   [
+    20.0,
+    1,
+    20.0
+   ],
+   [
+    800.0,
+    1,
+    800.0
+   ],
+   [
+    50.0,
+    null,
+    50.0
+   ],
+   [
+    60.0,
+    null,
+    60.0
+   ],
+   [
+    1000.0,
+    null,
+    1000.0
+   ]
+  ]
+ },
+ "fuzz2-0069": {
+  "hash": "0bc2348c77f80d13544a53b3806f24917db82f7f",
+  "columns": [
+   "[m0]"
+  ],
+  "rows": [
+   [
+    1
+   ]
+  ]
+ },
+ "fuzz2-0070": {
+  "hash": "b244297559f7225161493a2add1e5aaa7958f457",
+  "columns": [
+   "Product[Color]",
+   "Product[Price]",
+   "[m0]",
+   "[m1]"
+  ],
+  "rows": [
+   [
+    "Red",
+    1000.0,
+    2000.0,
+    0.6525285481239804
+   ]
+  ]
+ },
+ "fuzz2-0071": {
+  "hash": "565bf213d6b3f7b74948cb3aceaf29c5c2c14869",
+  "columns": [
+   "Customer[Customer]",
+   "Customer[City]",
+   "[m0]"
+  ],
+  "rows": [
+   [
+    "Alice",
+    "Paris",
+    4
+   ],
+   [
+    "Chloe",
+    "Paris",
+    4
+   ],
+   [
+    "Bob",
+    "London",
+    4
+   ]
+  ]
+ },
+ "fuzz2-0072": {
+  "hash": "6573aef413f7099e3034263f145cedd5af0b09c9",
+  "columns": [
+   "Category[Category]",
+   "[m0]"
+  ],
+  "rows": [
+   [
+    "Bikes",
+    7602.0
+   ],
+   [
+    "Clothing",
+    530.0
+   ],
+   [
+    "Accessories",
+    1
+   ]
+  ]
+ },
+ "fuzz2-0073": {
+  "hash": "33ea558a1e3621307858c858e6798228b677b263",
+  "columns": [
+   "[m0]",
+   "[m1]",
+   "[m2]"
+  ],
+  "rows": [
+   [
+    0,
+    4,
+    null
+   ]
+  ]
+ },
+ "fuzz2-0074": {
+  "hash": "0490853c2b4f785e9e92b81b22d81b4e71b5c7b9",
+  "columns": [
+   "Customer[Customer]",
+   "Product[Name]",
+   "[m0]",
+   "[m1]"
+  ],
+  "rows": [
+   [
+    "Alice",
+    "Cap",
+    1,
+    1
+   ],
+   [
+    "Bob",
+    "Cap",
+    1,
+    1
+   ],
+   [
+    "Chloe",
+    "Cap",
+    1,
+    1
+   ],
+   [
+    "Dan",
+    "Cap",
+    1,
+    1
+   ],
+   [
+    "Erin",
+    "Cap",
+    1,
+    1
+   ],
+   [
+    "Alice",
+    "Road Bike",
+    1,
+    1
+   ],
+   [
+    "Bob",
+    "Road Bike",
+    1,
+    1
+   ],
+   [
+    "Chloe",
+    "Road Bike",
+    1,
+    1
+   ],
+   [
+    "Dan",
+    "Road Bike",
+    1,
+    1
+   ],
+   [
+    "Erin",
+    "Road Bike",
+    1,
+    1
+   ],
+   [
+    "Alice",
+    "Helmet",
+    1,
+    1
+   ],
+   [
+    "Bob",
+    "Helmet",
+    1,
+    1
+   ],
+   [
+    "Chloe",
+    "Helmet",
+    1,
+    1
+   ],
+   [
+    "Dan",
+    "Helmet",
+    1,
+    1
+   ],
+   [
+    "Erin",
+    "Helmet",
+    1,
+    1
+   ],
+   [
+    "Alice",
+    "Mountain Bike",
+    1,
+    1
+   ],
+   [
+    "Bob",
+    "Mountain Bike",
+    1,
+    1
+   ],
+   [
+    "Chloe",
+    "Mountain Bike",
+    1,
+    1
+   ],
+   [
+    "Dan",
+    "Mountain Bike",
+    1,
+    1
+   ],
+   [
+    "Erin",
+    "Mountain Bike",
+    1,
+    1
+   ],
+   [
+    "Alice",
+    "Jersey",
+    1,
+    1
+   ],
+   [
+    "Bob",
+    "Jersey",
+    1,
+    1
+   ],
+   [
+    "Chloe",
+    "Jersey",
+    1,
+    1
+   ],
+   [
+    "Dan",
+    "Jersey",
+    1,
+    1
+   ],
+   [
+    "Erin",
+    "Jersey",
+    1,
+    1
+   ]
+  ]
+ },
+ "fuzz2-0075": {
+  "hash": "edf0ba31d72844428e3ab1c79bb8795b72e62554",
+  "columns": [
+   "Date[Year]",
+   "[m0]",
+   "[m1]"
+  ],
+  "rows": [
+   [
+    2023,
+    1800.0,
+    1000.0
+   ],
+   [
+    2024,
+    3800.0,
+    3000.0
+   ]
+  ]
+ },
+ "fuzz2-0076": {
+  "hash": "13b0fad7af11c14806e2e4c7dbbe9d6455f1149e",
+  "columns": [
+   "Customer[City]",
+   "Product[Price]",
+   "Product[Color]",
+   "[m0]",
+   "[m1]",
+   "[m2]"
+  ],
+  "rows": [
+   [
+    "Paris",
+    1000.0,
+    "Red",
+    1.3333333333333333,
+    0.0,
+    2000.0
+   ],
+   [
+    "Paris",
+    50.0,
+    "Red",
+    0.6666666666666666,
+    1.0,
+    200.0
+   ],
+   [
+    "London",
+    800.0,
+    "Black",
+    1.0,
+    1.0,
+    800.0
+   ],
+   [
+    "Paris",
+    20.0,
+    "Blue",
+    0.5,
+    2.0,
+    100.0
+   ],
+   [
+    "London",
+    50.0,
+    "Red",
+    1.0,
+    1.0,
+    50.0
+   ],
+   [
+    "Paris",
+    800.0,
+    "Black",
+    1.0,
+    1.0,
+    800.0
+   ],
+   [
+    "London",
+    1000.0,
+    "Red",
+    1.0,
+    0.0,
+    1000.0
+   ],
+   [
+    "Rome",
+    20.0,
+    "Blue",
+    1.0,
+    2.0,
+    20.0
+   ],
+   [
+    "London",
+    20.0,
+    "Blue",
+    null,
+    2.0,
+    null
+   ],
+   [
+    "Berlin",
+    20.0,
+    "Blue",
+    null,
+    2.0,
+    null
+   ],
+   [
+    "Berlin",
+    50.0,
+    "Red",
+    null,
+    1.0,
+    null
+   ],
+   [
+    "Rome",
+    50.0,
+    "Red",
+    null,
+    1.0,
+    null
+   ],
+   [
+    "Berlin",
+    800.0,
+    "Black",
+    null,
+    1.0,
+    null
+   ],
+   [
+    "Rome",
+    800.0,
+    "Black",
+    null,
+    1.0,
+    null
+   ],
+   [
+    "Paris",
+    60.0,
+    "Black",
+    null,
+    0.0,
+    null
+   ],
+   [
+    "London",
+    60.0,
+    "Black",
+    null,
+    0.0,
+    null
+   ],
+   [
+    "Berlin",
+    60.0,
+    "Black",
+    null,
+    0.0,
+    null
+   ],
+   [
+    "Rome",
+    60.0,
+    "Black",
+    null,
+    0.0,
+    null
+   ],
+   [
+    "Berlin",
+    1000.0,
+    "Red",
+    null,
+    0.0,
+    null
+   ],
+   [
+    "Rome",
+    1000.0,
+    "Red",
+    null,
+    0.0,
+    null
+   ]
+  ]
+ },
+ "fuzz2-0077": {
+  "hash": "805253f1e4ac0e0fa6a01601a500f535b963066c",
+  "columns": [
+   "[m0]",
+   "[m1]"
+  ],
+  "rows": [
+   [
+    null,
+    386.0
+   ]
+  ]
+ },
+ "fuzz2-0078": {
+  "hash": "b112abb568a00bce435dbead9ce703c3fb175098",
+  "columns": [
+   "Date[Month]",
+   "Customer[Customer]",
+   "[m0]",
+   "[m1]"
+  ],
+  "rows": [
+   [
+    1,
+    "Alice",
+    1000.0,
+    0
+   ],
+   [
+    1,
+    "Chloe",
+    2000.0,
+    1
+   ],
+   [
+    2,
+    "Alice",
+    200.0,
+    null
+   ],
+   [
+    2,
+    "Bob",
+    800.0,
+    0
+   ],
+   [
+    2,
+    "Chloe",
+    200.0,
+    1
+   ],
+   [
+    3,
+    "Alice",
+    800.0,
+    1
+   ],
+   [
+    6,
+    "Bob",
+    1000.0,
+    1
+   ],
+   [
+    6,
+    "Chloe",
+    60.0,
+    null
+   ],
+   [
+    7,
+    "Erin",
+    20.0,
+    null
+   ],
+   [
+    12,
+    "Bob",
+    50.0,
+    null
+   ],
+   [
+    1,
+    "Bob",
+    null,
+    0
+   ],
+   [
+    3,
+    "Bob",
+    null,
+    0
+   ],
+   [
+    4,
+    "Bob",
+    null,
+    0
+   ],
+   [
+    5,
+    "Bob",
+    null,
+    0
+   ],
+   [
+    1,
+    "Dan",
+    null,
+    0
+   ],
+   [
+    2,
+    "Dan",
+    null,
+    0
+   ],
+   [
+    3,
+    "Dan",
+    null,
+    0
+   ],
+   [
+    4,
+    "Dan",
+    null,
+    0
+   ],
+   [
+    5,
+    "Dan",
+    null,
+    0
+   ],
+   [
+    6,
+    "Dan",
+    null,
+    0
+   ],
+   [
+    7,
+    "Dan",
+    null,
+    0
+   ],
+   [
+    8,
+    "Dan",
+    null,
+    0
+   ],
+   [
+    9,
+    "Dan",
+    null,
+    0
+   ],
+   [
+    10,
+    "Dan",
+    null,
+    0
+   ],
+   [
+    11,
+    "Dan",
+    null,
+    0
+   ],
+   [
+    12,
+    "Dan",
+    null,
+    0
+   ],
+   [
+    1,
+    "Erin",
+    null,
+    0
+   ],
+   [
+    2,
+    "Erin",
+    null,
+    0
+   ],
+   [
+    3,
+    "Erin",
+    null,
+    0
+   ],
+   [
+    4,
+    "Erin",
+    null,
+    0
+   ],
+   [
+    5,
+    "Erin",
+    null,
+    0
+   ],
+   [
+    6,
+    "Erin",
+    null,
+    0
+   ]
+  ]
+ },
+ "fuzz2-0079": {
+  "hash": "e8d7111eca60299893b94e6b645d0b09c98bfb3d",
+  "columns": [
+   "Product[PriceBand]",
+   "Category[Category]",
+   "Date[Year]",
+   "[m0]"
+  ],
+  "rows": [
+   [
+    "High",
+    "Bikes",
+    2023,
+    14
+   ],
+   [
+    "High",
+    "Bikes",
+    2024,
+    14
+   ],
+   [
+    "Low",
+    "Clothing",
+    2023,
+    14
+   ],
+   [
+    "Low",
+    "Clothing",
+    2024,
+    14
+   ],
+   [
+    "Low",
+    "Accessories",
+    2023,
+    13
+   ],
+   [
+    "Low",
+    "Accessories",
+    2024,
+    13
+   ],
+   [
+    "Low",
+    "Bikes",
+    2024,
+    12
+   ],
+   [
+    "High",
+    "Clothing",
+    2024,
+    12
+   ],
+   [
+    "High",
+    "Accessories",
+    2024,
+    12
+   ],
+   [
+    "Low",
+    "Bikes",
+    2023,
+    12
+   ],
+   [
+    "High",
+    "Clothing",
+    2023,
+    12
+   ],
+   [
+    "High",
+    "Accessories",
+    2023,
+    12
+   ]
+  ]
+ },
+ "fuzz2-0080": {
+  "hash": "0282da8a41ff22005301fc117050a43693246cba",
+  "columns": [
+   "Product[Color]",
+   "[m0]"
+  ],
+  "rows": [
+   [
+    "Red",
+    1
+   ],
+   [
+    "Black",
+    1
+   ],
+   [
+    "Blue",
+    1
+   ]
+  ]
+ },
+ "fuzz2-0081": {
+  "hash": "64147331a50f270eec4fa68fa9d66d61c963aefa",
+  "columns": [
+   "Product[Name]",
+   "Date[Year]",
+   "[m0]"
+  ],
+  "rows": [
+   [
+    "Jersey",
+    2023,
+    50.0
+   ],
+   [
+    "Cap",
+    2023,
+    60.0
+   ],
+   [
+    "Cap",
+    2024,
+    20.0
+   ],
+   [
+    "Jersey",
+    2024,
+    200.0
+   ]
+  ]
+ },
+ "fuzz2-0082": {
+  "hash": "d4938b887e0d03ebd9eaae350fcf927c89ce77c1",
+  "columns": [
+   "Product[Price]",
+   "[m0]"
+  ],
+  "rows": [
+   [
+    800.0,
+    1.0
+   ],
+   [
+    50.0,
+    1.0
+   ]
+  ]
+ },
+ "fuzz2-0083": {
+  "hash": "cc4185f46a78915d6b683bed2982c6b4e90369be",
+  "columns": [
+   "[m0]",
+   "[m1]"
+  ],
+  "rows": [
+   [
+    null,
+    2000.0
+   ]
+  ]
+ },
+ "fuzz2-0084": {
+  "hash": "c4a44d1a1c5ef98175e24e81bfdd31c8d2594365",
+  "columns": [
+   "Product[Name]",
+   "Date[Year]",
+   "[m0]",
+   "[m1]",
+   "[m2]"
+  ],
+  "rows": [
+   [
+    "Road Bike",
+    2023,
+    null,
+    1000.0,
+    null
+   ],
+   [
+    "Mountain Bike",
+    2023,
+    null,
+    800.0,
+    null
+   ],
+   [
+    "Mountain Bike",
+    2024,
+    null,
+    800.0,
+    null
+   ],
+   [
+    "Road Bike",
+    2024,
+    null,
+    2000.0,
+    null
+   ]
+  ]
+ },
+ "fuzz2-0085": {
+  "hash": "b410da7cfd575424501d68e5d7e1fd9e5e9715d5",
+  "columns": [
+   "[m0]",
+   "[m1]"
+  ],
+  "rows": [
+   [
+    2260.0,
+    11
+   ]
+  ]
+ },
+ "fuzz2-0086": {
+  "hash": "1797b091464cfe8b1d9e5d175fe8ff393f679e39",
+  "columns": [
+   "[m0]"
+  ],
+  "rows": []
+ },
+ "fuzz2-0087": {
+  "hash": "f30b8332c43934a7750ecf859bf06449ea8b2fe5",
+  "columns": [
+   "Product[Color]",
+   "Product[Price]",
+   "[m0]"
+  ],
+  "rows": [
+   [
+    "Black",
+    800.0,
+    0.5
+   ],
+   [
+    "Black",
+    60.0,
+    0.5
+   ]
+  ]
+ },
+ "fuzz2-0088": {
+  "hash": "31ca7003176ccfad5ba53213fd8f8d05c9346d08",
+  "columns": [
+   "Date[Year]",
+   "Customer[City]",
+   "[m0]",
+   "[m1]"
+  ],
+  "rows": [
+   [
+    2023,
+    "Paris",
+    1160.0,
+    5000.0
+   ],
+   [
+    2023,
+    "London",
+    850.0,
+    2000.0
+   ],
+   [
+    2024,
+    "Paris",
+    3100.0,
+    5000.0
+   ],
+   [
+    2024,
+    "London",
+    1000.0,
+    2000.0
+   ]
+  ]
+ },
+ "fuzz2-0089": {
+  "hash": "5e229389a95f522b50340d001e194b53b51c51ed",
+  "columns": [
+   "Date[Month]",
+   "[m0]",
+   "[m1]"
+  ],
+  "rows": [
+   [
+    1,
+    4,
+    5
+   ],
+   [
+    2,
+    4,
+    5
+   ],
+   [
+    3,
+    4,
+    5
+   ],
+   [
+    4,
+    4,
+    5
+   ],
+   [
+    5,
+    4,
+    5
+   ],
+   [
+    6,
+    4,
+    5
+   ],
+   [
+    7,
+    4,
+    5
+   ],
+   [
+    8,
+    4,
+    5
+   ],
+   [
+    9,
+    4,
+    5
+   ],
+   [
+    10,
+    4,
+    5
+   ],
+   [
+    11,
+    4,
+    5
+   ],
+   [
+    12,
+    4,
+    5
+   ]
+  ]
+ },
+ "fuzz2-0090": {
+  "hash": "7f3f70a5cfc6ab98fcb55113becf71c8a8b4e8ce",
+  "columns": [
+   "[m0]",
+   "[m1]"
+  ],
+  "rows": [
+   [
+    5,
+    2260.0
+   ]
+  ]
+ },
+ "fuzz2-0091": {
+  "hash": "814e67dfbbc6a7dccb33baf195428fa07e10657e",
+  "columns": [
+   "Product[Name]",
+   "[m0]"
+  ],
+  "rows": [
+   [
+    "Road Bike",
+    12.0
+   ],
+   [
+    "Mountain Bike",
+    12.0
+   ],
+   [
+    "Jersey",
+    12.0
+   ],
+   [
+    "Cap",
+    12.0
+   ],
+   [
+    "Helmet",
+    12.0
+   ]
+  ]
+ },
+ "fuzz2-0092": {
+  "hash": "b3dd5f0a484e53bf43cceb919cf65f65d2c2cb92",
+  "columns": [
+   "Product[Color]",
+   "[m0]"
+  ],
+  "rows": [
+   [
+    "Red",
+    4
+   ],
+   [
+    "Black",
+    2
+   ]
+  ]
+ },
+ "fuzz2-0093": {
+  "hash": "aefc3c46f4e139dc51523a78504c000d7fcbf096",
+  "columns": [
+   "Date[Year]",
+   "[m0]",
+   "[m1]"
+  ],
+  "rows": [
+   [
+    2023,
+    4,
+    null
+   ],
+   [
+    2024,
+    4,
+    1
+   ]
+  ]
+ },
+ "fuzz2-0094": {
+  "hash": "1ed266dc0dc243afc6f717921f200bf5f4a1e50d",
+  "columns": [
+   "Category[Category]",
+   "[m0]"
+  ],
+  "rows": [
+   [
+    "Bikes",
+    1.0
+   ],
+   [
+    "Clothing",
+    1.5
+   ]
+  ]
+ },
+ "fuzz2-0095": {
+  "hash": "43d6319711b52a6f702ce4f45daadc5cd2de59f8",
+  "columns": [
+   "[m0]"
+  ],
+  "rows": [
+   [
+    6130.0
+   ]
+  ]
+ },
+ "fuzz2-0096": {
+  "hash": "b80a39b638c6cfbe409ce0f20e58a3a35d01c06f",
+  "columns": [
+   "Category[Category]",
+   "[m0]",
+   "[m1]"
+  ],
+  "rows": [
+   [
+    "Bikes",
+    557.2727,
+    1.3333333333333333
+   ],
+   [
+    "Clothing",
+    557.2727,
+    1.3333333333333333
+   ],
+   [
+    "Accessories",
+    null,
+    1.3333333333333333
+   ]
+  ]
+ },
+ "fuzz2-0097": {
+  "hash": "e1cba03b9f7e35a593a6f7140e13feb516949a13",
+  "columns": [
+   "Customer[Customer]",
+   "[m0]"
+  ],
+  "rows": [
+   [
+    "Alice",
+    1
+   ],
+   [
+    "Bob",
+    1
+   ],
+   [
+    "Chloe",
+    2
+   ],
+   [
+    "Erin",
+    1
+   ]
+  ]
+ },
+ "fuzz2-0098": {
+  "hash": "4cd49934d974d0aa85be4750d6e6028670c0c4a2",
+  "columns": [
+   "[m0]"
+  ],
+  "rows": [
+   [
+    4
+   ]
+  ]
+ },
+ "fuzz2-0099": {
+  "hash": "1f5b687e04138cfa2b1cf330416af6352822483e",
+  "columns": [
+   "Date[Month]",
+   "Category[Category]",
+   "[m0]",
+   "[m1]"
+  ],
+  "rows": [
+   [
+    2,
+    "Clothing",
+    200.0,
+    1
+   ],
+   [
+    6,
+    "Clothing",
+    120.0,
+    1
+   ],
+   [
+    7,
+    "Clothing",
+    40.0,
+    1
+   ],
+   [
+    1,
+    "Clothing",
+    null,
+    1
+   ],
+   [
+    3,
+    "Clothing",
+    null,
+    1
+   ],
+   [
+    4,
+    "Clothing",
+    null,
+    1
+   ],
+   [
+    5,
+    "Clothing",
+    null,
+    1
+   ],
+   [
+    8,
+    "Clothing",
+    null,
+    1
+   ],
+   [
+    9,
+    "Clothing",
+    null,
+    1
+   ],
+   [
+    10,
+    "Clothing",
+    null,
+    1
+   ],
+   [
+    11,
+    "Clothing",
+    null,
+    1
+   ],
+   [
+    12,
+    "Clothing",
+    null,
+    1
+   ]
+  ]
+ },
+ "fuzz2-0100": {
+  "hash": "e03eb4e37db4f2742cfca72f0b18cbec3e8c2473",
+  "columns": [
+   "Product[Name]",
+   "Date[Year]",
+   "[m0]",
+   "[m1]"
+  ],
+  "rows": [
+   [
+    "Jersey",
+    2023,
+    1,
+    1.0
+   ],
+   [
+    "Mountain Bike",
+    2024,
+    1,
+    1.0
+   ],
+   [
+    "Cap",
+    2024,
+    2,
+    1.0
+   ],
+   [
+    "Road Bike",
+    2023,
+    null,
+    1.0
+   ],
+   [
+    "Mountain Bike",
+    2023,
+    null,
+    1.0
+   ],
+   [
+    "Cap",
+    2023,
+    null,
+    1.0
+   ],
+   [
+    "Helmet",
+    2023,
+    null,
+    1.0
+   ],
+   [
+    "Road Bike",
+    2024,
+    null,
+    1.0
+   ],
+   [
+    "Jersey",
+    2024,
+    null,
+    1.0
+   ],
+   [
+    "Helmet",
+    2024,
+    null,
+    1.0
+   ]
+  ]
+ },
+ "fuzz2-0101": {
+  "hash": "aaaf36d6c95c4f673aebeea4b796ece43a9bf8f7",
+  "columns": [
+   "Product[Color]",
+   "[m0]"
+  ],
+  "rows": [
+   [
+    "Red",
+    3200.0
+   ],
+   [
+    "Black",
+    800.0
+   ],
+   [
+    "Blue",
+    120.0
+   ]
+  ]
+ },
+ "fuzz2-0102": {
+  "hash": "adcb500160048cb3da890e7c4ac1b0e5f495fadc",
+  "columns": [
+   "Product[PriceBand]",
+   "Date[Quarter]",
+   "[m0]"
+  ],
+  "rows": [
+   [
+    "Low",
+    1,
+    200.0
+   ],
+   [
+    "Low",
+    4,
+    50.0
+   ]
+  ]
+ },
+ "fuzz2-0103": {
+  "hash": "0f8fc0eae06ac9c10b9dd88fe011b6e2c319b871",
+  "columns": [
+   "Customer[City]",
+   "Date[Year]",
+   "[m0]",
+   "[m1]",
+   "[m2]"
+  ],
+  "rows": [
+   [
+    "Paris",
+    2023,
+    1666.6666666666667,
+    null,
+    386.6667
+   ],
+   [
+    "Paris",
+    2024,
+    1250.0,
+    0.004310344827586207,
+    775.0
+   ],
+   [
+    "London",
+    2023,
+    1000.0,
+    null,
+    425.0
+   ],
+   [
+    "London",
+    2024,
+    2000.0,
+    0.001176470588235294,
+    1000.0
+   ],
+   [
+    "Rome",
+    2024,
+    1000.0,
+    null,
+    20.0
+   ]
+  ]
+ },
+ "fuzz2-0104": {
+  "hash": "45483aba27e3f0d29c6747620d8349eaabcb9723",
+  "columns": [
+   "Date[Month]",
+   "[m0]",
+   "[m1]"
+  ],
+  "rows": [
+   [
+    1,
+    0.6666666666666666,
+    2000.0
+   ],
+   [
+    2,
+    0.05555555555555555,
+    2300.0
+   ],
+   [
+    3,
+    2.0,
+    3100.0
+   ],
+   [
+    4,
+    null,
+    3100.0
+   ],
+   [
+    5,
+    null,
+    3100.0
+   ],
+   [
+    6,
+    0.25,
+    4100.0
+   ],
+   [
+    7,
+    2.0,
+    4120.0
+   ],
+   [
+    8,
+    null,
+    4120.0
+   ],
+   [
+    9,
+    null,
+    4120.0
+   ],
+   [
+    10,
+    null,
+    4120.0
+   ],
+   [
+    11,
+    null,
+    4120.0
+   ],
+   [
+    12,
+    2.0,
+    4120.0
+   ]
+  ]
+ },
+ "fuzz2-0105": {
+  "hash": "d637fc22e5485ddfdc6a95a22a97f7fee2f15df2",
+  "columns": [
+   "Product[Name]",
+   "Date[Year]",
+   "[m0]",
+   "[m1]",
+   "[m2]"
+  ],
+  "rows": [
+   [
+    "Jersey",
+    2023,
+    0.7142857142857143,
+    null,
+    2
+   ],
+   [
+    "Mountain Bike",
+    2024,
+    0.8333333333333334,
+    null,
+    0
+   ],
+   [
+    "Cap",
+    2024,
+    0.7142857142857143,
+    null,
+    2
+   ],
+   [
+    "Road Bike",
+    2023,
+    null,
+    null,
+    0
+   ],
+   [
+    "Mountain Bike",
+    2023,
+    null,
+    null,
+    0
+   ],
+   [
+    "Cap",
+    2023,
+    null,
+    null,
+    1
+   ],
+   [
+    "Helmet",
+    2023,
+    null,
+    null,
+    0
+   ],
+   [
+    "Road Bike",
+    2024,
+    null,
+    null,
+    0
+   ],
+   [
+    "Jersey",
+    2024,
+    null,
+    null,
+    1
+   ],
+   [
+    "Helmet",
+    2024,
+    null,
+    null,
+    0
+   ]
+  ]
+ },
+ "fuzz2-0106": {
+  "hash": "596607992de80d185b075ac361ea965f0548d3c9",
+  "columns": [
+   "Category[Category]",
+   "[m0]",
+   "[m1]"
+  ],
+  "rows": [
+   [
+    "Clothing",
+    50.0,
+    50.0
+   ]
+  ]
+ },
+ "fuzz2-0107": {
+  "hash": "55566ee55037597e5d30407d2574d8cd051d24c4",
+  "columns": [
+   "Date[Quarter]",
+   "Category[Category]",
+   "Product[Price]",
+   "[m0]",
+   "[m1]",
+   "[m2]"
+  ],
+  "rows": [
+   [
+    1,
+    "Bikes",
+    20.0,
+    0,
+    12260.0,
+    6130.0
+   ],
+   [
+    2,
+    "Bikes",
+    20.0,
+    0,
+    12260.0,
+    6130.0
+   ],
+   [
+    3,
+    "Bikes",
+    20.0,
+    0,
+    12260.0,
+    6130.0
+   ],
+   [
+    4,
+    "Bikes",
+    20.0,
+    0,
+    12260.0,
+    6130.0
+   ],
+   [
+    1,
+    "Clothing",
+    20.0,
+    0,
+    12260.0,
+    6130.0
+   ],
+   [
+    2,
+    "Clothing",
+    20.0,
+    0,
+    12260.0,
+    6130.0
+   ],
+   [
+    3,
+    "Clothing",
+    20.0,
+    0,
+    12260.0,
+    6130.0
+   ],
+   [
+    4,
+    "Clothing",
+    20.0,
+    0,
+    12260.0,
+    6130.0
+   ],
+   [
+    1,
+    "Accessories",
+    20.0,
+    0,
+    12260.0,
+    6130.0
+   ],
+   [
+    2,
+    "Accessories",
+    20.0,
+    0,
+    12260.0,
+    6130.0
+   ],
+   [
+    3,
+    "Accessories",
+    20.0,
+    0,
+    12260.0,
+    6130.0
+   ],
+   [
+    4,
+    "Accessories",
+    20.0,
+    0,
+    12260.0,
+    6130.0
+   ],
+   [
+    1,
+    "Bikes",
+    50.0,
+    0,
+    12260.0,
+    6130.0
+   ],
+   [
+    2,
+    "Bikes",
+    50.0,
+    0,
+    12260.0,
+    6130.0
+   ],
+   [
+    3,
+    "Bikes",
+    50.0,
+    0,
+    12260.0,
+    6130.0
+   ],
+   [
+    4,
+    "Bikes",
+    50.0,
+    0,
+    12260.0,
+    6130.0
+   ],
+   [
+    1,
+    "Clothing",
+    50.0,
+    5,
+    12260.0,
+    6130.0
+   ],
+   [
+    2,
+    "Clothing",
+    50.0,
+    0,
+    12260.0,
+    6130.0
+   ],
+   [
+    3,
+    "Clothing",
+    50.0,
+    0,
+    12260.0,
+    6130.0
+   ],
+   [
+    4,
+    "Clothing",
+    50.0,
+    0,
+    12260.0,
+    6130.0
+   ],
+   [
+    1,
+    "Accessories",
+    50.0,
+    0,
+    12260.0,
+    6130.0
+   ],
+   [
+    2,
+    "Accessories",
+    50.0,
+    0,
+    12260.0,
+    6130.0
+   ],
+   [
+    3,
+    "Accessories",
+    50.0,
+    0,
+    12260.0,
+    6130.0
+   ],
+   [
+    4,
+    "Accessories",
+    50.0,
+    0,
+    12260.0,
+    6130.0
+   ],
+   [
+    1,
+    "Bikes",
+    60.0,
+    0,
+    12260.0,
+    6130.0
+   ],
+   [
+    2,
+    "Bikes",
+    60.0,
+    0,
+    12260.0,
+    6130.0
+   ],
+   [
+    3,
+    "Bikes",
+    60.0,
+    0,
+    12260.0,
+    6130.0
+   ],
+   [
+    4,
+    "Bikes",
+    60.0,
+    0,
+    12260.0,
+    6130.0
+   ],
+   [
+    1,
+    "Clothing",
+    60.0,
+    0,
+    12260.0,
+    6130.0
+   ],
+   [
+    2,
+    "Clothing",
+    60.0,
+    0,
+    12260.0,
+    6130.0
+   ],
+   [
+    3,
+    "Clothing",
+    60.0,
+    0,
+    12260.0,
+    6130.0
+   ],
+   [
+    4,
+    "Clothing",
+    60.0,
+    0,
+    12260.0,
+    6130.0
+   ],
+   [
+    1,
+    "Accessories",
+    60.0,
+    0,
+    12260.0,
+    6130.0
+   ],
+   [
+    2,
+    "Accessories",
+    60.0,
+    0,
+    12260.0,
+    6130.0
+   ],
+   [
+    3,
+    "Accessories",
+    60.0,
+    0,
+    12260.0,
+    6130.0
+   ],
+   [
+    4,
+    "Accessories",
+    60.0,
+    0,
+    12260.0,
+    6130.0
+   ],
+   [
+    1,
+    "Bikes",
+    800.0,
+    5,
+    12260.0,
+    6130.0
+   ],
+   [
+    2,
+    "Bikes",
+    800.0,
+    0,
+    12260.0,
+    6130.0
+   ],
+   [
+    3,
+    "Bikes",
+    800.0,
+    0,
+    12260.0,
+    6130.0
+   ],
+   [
+    4,
+    "Bikes",
+    800.0,
+    0,
+    12260.0,
+    6130.0
+   ],
+   [
+    1,
+    "Clothing",
+    800.0,
+    0,
+    12260.0,
+    6130.0
+   ],
+   [
+    2,
+    "Clothing",
+    800.0,
+    0,
+    12260.0,
+    6130.0
+   ],
+   [
+    3,
+    "Clothing",
+    800.0,
+    0,
+    12260.0,
+    6130.0
+   ],
+   [
+    4,
+    "Clothing",
+    800.0,
+    0,
+    12260.0,
+    6130.0
+   ],
+   [
+    1,
+    "Accessories",
+    800.0,
+    0,
+    12260.0,
+    6130.0
+   ],
+   [
+    2,
+    "Accessories",
+    800.0,
+    0,
+    12260.0,
+    6130.0
+   ],
+   [
+    3,
+    "Accessories",
+    800.0,
+    0,
+    12260.0,
+    6130.0
+   ],
+   [
+    4,
+    "Accessories",
+    800.0,
+    0,
+    12260.0,
+    6130.0
+   ],
+   [
+    1,
+    "Bikes",
+    1000.0,
+    5,
+    12260.0,
+    6130.0
+   ],
+   [
+    2,
+    "Bikes",
+    1000.0,
+    5,
+    12260.0,
+    6130.0
+   ],
+   [
+    3,
+    "Bikes",
+    1000.0,
+    0,
+    12260.0,
+    6130.0
+   ],
+   [
+    4,
+    "Bikes",
+    1000.0,
+    0,
+    12260.0,
+    6130.0
+   ],
+   [
+    1,
+    "Clothing",
+    1000.0,
+    0,
+    12260.0,
+    6130.0
+   ],
+   [
+    2,
+    "Clothing",
+    1000.0,
+    0,
+    12260.0,
+    6130.0
+   ],
+   [
+    3,
+    "Clothing",
+    1000.0,
+    0,
+    12260.0,
+    6130.0
+   ],
+   [
+    4,
+    "Clothing",
+    1000.0,
+    0,
+    12260.0,
+    6130.0
+   ],
+   [
+    1,
+    "Accessories",
+    1000.0,
+    0,
+    12260.0,
+    6130.0
+   ],
+   [
+    2,
+    "Accessories",
+    1000.0,
+    0,
+    12260.0,
+    6130.0
+   ],
+   [
+    3,
+    "Accessories",
+    1000.0,
+    0,
+    12260.0,
+    6130.0
+   ],
+   [
+    4,
+    "Accessories",
+    1000.0,
+    0,
+    12260.0,
+    6130.0
+   ]
+  ]
+ },
+ "fuzz2-0108": {
+  "hash": "9da90be641b57ec9344128f57d9ee41bd42806d9",
+  "columns": [
+   "Customer[Customer]",
+   "[m0]",
+   "[m1]"
+  ],
+  "rows": [
+   [
+    "Alice",
+    0.4444444444444444,
+    2000.0
+   ],
+   [
+    "Bob",
+    1.3333333333333333,
+    1850.0
+   ],
+   [
+    "Chloe",
+    0.4444444444444444,
+    2260.0
+   ],
+   [
+    "Dan",
+    null,
+    null
+   ],
+   [
+    "Erin",
+    4.0,
+    20.0
+   ]
+  ]
+ },
+ "fuzz2-0109": {
+  "hash": "bdb9125ee0d7eb233191c06a3480b74d44582406",
+  "columns": [
+   "Date[Month]",
+   "Date[Quarter]",
+   "[m0]",
+   "[m1]"
+  ],
+  "rows": [
+   [
+    3,
+    1,
+    5002.0,
+    1
+   ],
+   [
+    1,
+    1,
+    5000,
+    1
+   ],
+   [
+    2,
+    1,
+    5000,
+    1
+   ],
+   [
+    4,
+    2,
+    5000,
+    1
+   ],
+   [
+    5,
+    2,
+    5000,
+    1
+   ],
+   [
+    6,
+    2,
+    5000,
+    1
+   ],
+   [
+    7,
+    3,
+    5000,
+    1
+   ],
+   [
+    8,
+    3,
+    5000,
+    1
+   ],
+   [
+    9,
+    3,
+    5000,
+    1
+   ],
+   [
+    10,
+    4,
+    5000,
+    1
+   ],
+   [
+    11,
+    4,
+    5000,
+    1
+   ],
+   [
+    12,
+    4,
+    5000,
+    1
+   ]
+  ]
+ },
+ "fuzz2-0110": {
+  "hash": "cf97615ff3a5897c910fafb94784c394802df883",
+  "columns": [
+   "Date[Year]",
+   "Customer[City]",
+   "[m0]",
+   "[m1]",
+   "[m2]"
+  ],
+  "rows": []
+ },
+ "fuzz2-0111": {
+  "hash": "6f4e8723ef007a1499880ff5f4ad0ff7919d87d2",
+  "columns": [
+   "Category[Category]",
+   "[m0]"
+  ],
+  "rows": [
+   [
+    "Bikes",
+    5600.0
+   ],
+   [
+    "Clothing",
+    530.0
+   ]
+  ]
+ },
+ "fuzz2-0112": {
+  "hash": "c8cdca59a1f5c998e46cf9cf42216be25f27d9d9",
+  "columns": [
+   "Product[Name]",
+   "Date[Year]",
+   "[m0]",
+   "[m1]"
+  ],
+  "rows": [
+   [
+    "Jersey",
+    2023,
+    0.006666666666666667,
+    4
+   ],
+   [
+    "Mountain Bike",
+    2024,
+    0.00125,
+    4
+   ],
+   [
+    "Cap",
+    2024,
+    0.008333333333333333,
+    4
+   ],
+   [
+    "Road Bike",
+    2023,
+    null,
+    4
+   ],
+   [
+    "Mountain Bike",
+    2023,
+    null,
+    4
+   ],
+   [
+    "Cap",
+    2023,
+    null,
+    4
+   ],
+   [
+    "Helmet",
+    2023,
+    null,
+    4
+   ],
+   [
+    "Road Bike",
+    2024,
+    null,
+    4
+   ],
+   [
+    "Jersey",
+    2024,
+    null,
+    4
+   ],
+   [
+    "Helmet",
+    2024,
+    null,
+    4
+   ]
+  ]
+ },
+ "fuzz2-0113": {
+  "hash": "67b1d4025b6ebc412e5458145ac04b2530ebe507",
+  "columns": [
+   "Product[PriceBand]",
+   "Date[Month]",
+   "Product[Price]",
+   "[m0]",
+   "[m1]",
+   "[m2]"
+  ],
+  "rows": [
+   [
+    "High",
+    1,
+    1000.0,
+    1000.0,
+    null,
+    2
+   ],
+   [
+    "Low",
+    2,
+    50.0,
+    300.0,
+    null,
+    2
+   ],
+   [
+    "Low",
+    6,
+    20.0,
+    60.0,
+    null,
+    1
+   ],
+   [
+    "Low",
+    12,
+    50.0,
+    50.0,
+    null,
+    1
+   ],
+   [
+    "Low",
+    2,
+    20.0,
+    100.0,
+    null,
+    1
+   ],
+   [
+    "High",
+    6,
+    1000.0,
+    1000.0,
+    null,
+    1
+   ],
+   [
+    "Low",
+    7,
+    20.0,
+    20.0,
+    null,
+    1
+   ]
+  ]
+ },
+ "fuzz2-0114": {
+  "hash": "be593ef8c2c142cb67a6638e7b2068a1316dc4bb",
+  "columns": [
+   "Product[Name]",
+   "[m0]"
+  ],
+  "rows": [
+   [
+    "Road Bike",
+    2
+   ],
+   [
+    "Mountain Bike",
+    2
+   ],
+   [
+    "Jersey",
+    2
+   ],
+   [
+    "Cap",
+    2
+   ],
+   [
+    "Helmet",
+    2
+   ]
+  ]
+ },
+ "fuzz2-0115": {
+  "hash": "dc644b04298bb832a5a0f90d4b416471b44e6ba9",
+  "columns": [
+   "Date[Month]",
+   "[m0]",
+   "[m1]",
+   "[m2]"
+  ],
+  "rows": []
+ },
+ "fuzz2-0116": {
+  "hash": "404e63327acfdeb1350f90093fa90cbece614d74",
+  "columns": [
+   "[m0]"
+  ],
+  "rows": [
+   [
+    1.3333333333333333
+   ]
+  ]
+ },
+ "fuzz2-0117": {
+  "hash": "2d721a88f376a2b6c772070a497acacada0fd456",
+  "columns": [
+   "Product[Color]",
+   "[m0]"
+  ],
+  "rows": [
+   [
+    "Black",
+    800.0
+   ]
+  ]
+ },
+ "fuzz2-0118": {
+  "hash": "9dd89fbe84d378af1d925a58237032c49b021424",
+  "columns": [
+   "Date[Quarter]",
+   "Product[PriceBand]",
+   "[m0]"
+  ],
+  "rows": [
+   [
+    1,
+    "High",
+    3000.0
+   ],
+   [
+    1,
+    "Low",
+    300.0
+   ],
+   [
+    2,
+    "High",
+    1000.0
+   ],
+   [
+    4,
+    "Low",
+    50.0
+   ]
+  ]
+ },
+ "fuzz2-0119": {
+  "hash": "6abcbc7b5a0cce08b2fd2073040e3eb16f81b1b4",
+  "columns": [
+   "Date[Quarter]",
+   "Product[Price]",
+   "[m0]",
+   "[m1]",
+   "[m2]"
+  ],
+  "rows": [
+   [
+    1,
+    20.0,
+    null,
+    100.0,
+    1
+   ],
+   [
+    1,
+    50.0,
+    null,
+    300.0,
+    1
+   ],
+   [
+    1,
+    800.0,
+    null,
+    1600.0,
+    1
+   ],
+   [
+    1,
+    1000.0,
+    null,
+    3000.0,
+    1
+   ],
+   [
+    2,
+    20.0,
+    null,
+    60.0,
+    1
+   ],
+   [
+    2,
+    1000.0,
+    null,
+    1000.0,
+    1
+   ],
+   [
+    3,
+    20.0,
+    null,
+    20.0,
+    1
+   ],
+   [
+    4,
+    50.0,
+    null,
+    50.0,
+    1
+   ],
+   [
+    4,
+    20.0,
+    null,
+    null,
+    1
+   ],
+   [
+    2,
+    50.0,
+    null,
+    null,
+    1
+   ],
+   [
+    3,
+    50.0,
+    null,
+    null,
+    1
+   ],
+   [
+    1,
+    60.0,
+    null,
+    null,
+    1
+   ],
+   [
+    2,
+    60.0,
+    null,
+    null,
+    1
+   ],
+   [
+    3,
+    60.0,
+    null,
+    null,
+    1
+   ],
+   [
+    4,
+    60.0,
+    null,
+    null,
+    1
+   ],
+   [
+    2,
+    800.0,
+    null,
+    null,
+    1
+   ],
+   [
+    3,
+    800.0,
+    null,
+    null,
+    1
+   ],
+   [
+    4,
+    800.0,
+    null,
+    null,
+    1
+   ],
+   [
+    3,
+    1000.0,
+    null,
+    null,
+    1
+   ],
+   [
+    4,
+    1000.0,
+    null,
+    null,
+    1
+   ]
+  ]
+ },
+ "fuzz2-0120": {
+  "hash": "4020b5fb21b9f19fc9855477ee3bdfd26a35f047",
+  "columns": [
+   "Customer[City]",
+   "[m0]",
+   "[m1]",
+   "[m2]"
+  ],
+  "rows": [
+   [
+    "Paris",
+    4260.0,
+    4,
+    2
+   ],
+   [
+    "London",
+    1850.0,
+    4,
+    2
+   ],
+   [
+    "Berlin",
+    0,
+    4,
+    2
+   ],
+   [
+    "Rome",
+    20.0,
+    4,
+    2
+   ]
+  ]
+ },
+ "fuzz2-0121": {
+  "hash": "c5d36b76852f422705b9abe57b443e3b4a1151cd",
+  "columns": [
+   "[m0]",
+   "[m1]"
+  ],
+  "rows": [
+   [
+    6130.0,
+    5000.0
+   ]
+  ]
+ },
+ "fuzz2-0122": {
+  "hash": "8f489b9cb5da5e9487a9e6688d5460c878c5165b",
+  "columns": [
+   "Date[Quarter]",
+   "[m0]"
+  ],
+  "rows": []
+ },
+ "fuzz2-0123": {
+  "hash": "d77ec80a53321f9342848f83ff035c8f6f71e18c",
+  "columns": [
+   "[m0]",
+   "[m1]"
+  ],
+  "rows": [
+   [
+    null,
+    2000.0
+   ]
+  ]
+ },
+ "fuzz2-0124": {
+  "hash": "2de51fd419cd13c54e80f1d55cb84c8da52ef9e7",
+  "columns": [
+   "Customer[Customer]",
+   "Date[Year]",
+   "Product[PriceBand]",
+   "[m0]"
+  ],
+  "rows": [
+   [
+    "Alice",
+    2023,
+    "Low",
+    100.0
+   ],
+   [
+    "Alice",
+    2024,
+    "Low",
+    100.0
+   ],
+   [
+    "Bob",
+    2023,
+    "High",
+    800.0
+   ],
+   [
+    "Bob",
+    2024,
+    "High",
+    800.0
+   ],
+   [
+    "Chloe",
+    2023,
+    "Low",
+    200.0
+   ],
+   [
+    "Chloe",
+    2024,
+    "Low",
+    200.0
+   ]
+  ]
+ },
+ "fuzz2-0125": {
+  "hash": "790472ff7dbb20a8557e82ff70693cc2c5568bca",
+  "columns": [
+   "Date[Month]",
+   "Category[Category]",
+   "Date[Year]",
+   "[m0]"
+  ],
+  "rows": [
+   [
+    1,
+    "Bikes",
+    2023,
+    1
+   ],
+   [
+    1,
+    "Bikes",
+    2024,
+    2
+   ],
+   [
+    2,
+    "Bikes",
+    2023,
+    1
+   ],
+   [
+    2,
+    "Clothing",
+    2023,
+    2
+   ],
+   [
+    2,
+    "Clothing",
+    2024,
+    9
+   ],
+   [
+    3,
+    "Bikes",
+    2024,
+    1
+   ],
+   [
+    6,
+    "Clothing",
+    2023,
+    3
+   ],
+   [
+    6,
+    "Bikes",
+    2024,
+    1
+   ],
+   [
+    7,
+    "Clothing",
+    2024,
+    1
+   ],
+   [
+    12,
+    "Clothing",
+    2023,
+    1
+   ]
+  ]
+ },
+ "fuzz2-0126": {
+  "hash": "614addd44e52e3e8a6762fa06b8ee719ebb42f37",
+  "columns": [
+   "[m0]",
+   "[m1]",
+   "[m2]"
+  ],
+  "rows": [
+   [
+    2260.0,
+    4.0,
+    1
+   ]
+  ]
+ },
+ "fuzz2-0127": {
+  "hash": "4db9533094a8cc76c84a330bf3e400a2c56731a7",
+  "columns": [
+   "Product[PriceBand]",
+   "[m0]"
+  ],
+  "rows": [
+   [
+    "High",
+    2000.0
+   ],
+   [
+    "Low",
+    260.0
+   ]
+  ]
+ },
+ "fuzz2-0128": {
+  "hash": "74387674f65b6cfed6628f63511f11c6c10c9745",
+  "columns": [
+   "[m0]",
+   "[m1]"
+  ],
+  "rows": [
+   [
+    -6126.0,
+    0.009734513274336283
+   ]
+  ]
+ },
+ "fuzz2-0129": {
+  "hash": "7fdd81ccae9ade10efbd241ec33e2708d3e1789e",
+  "columns": [
+   "Product[Color]",
+   "Date[Year]",
+   "Category[Category]",
+   "[m0]"
+  ],
+  "rows": [
+   [
+    "Red",
+    2023,
+    "Clothing",
+    50.0
+   ],
+   [
+    "Black",
+    2024,
+    "Bikes",
+    800.0
+   ],
+   [
+    "Blue",
+    2024,
+    "Clothing",
+    10.0
+   ]
+  ]
+ },
+ "fuzz2-0130": {
+  "hash": "62a93caabca7abef659fac393ef5d7d693ced89b",
+  "columns": [
+   "Product[Name]",
+   "Date[Year]",
+   "[m0]",
+   "[m1]"
+  ],
+  "rows": [
+   [
+    "Road Bike",
+    2023,
+    1000.0,
+    1.0
+   ],
+   [
+    "Mountain Bike",
+    2023,
+    800.0,
+    1.0
+   ],
+   [
+    "Jersey",
+    2023,
+    150.0,
+    1.5
+   ],
+   [
+    "Cap",
+    2023,
+    60.0,
+    3.0
+   ],
+   [
+    "Mountain Bike",
+    2024,
+    800.0,
+    1.0
+   ],
+   [
+    "Jersey",
+    2024,
+    200.0,
+    4.0
+   ],
+   [
+    "Cap",
+    2024,
+    120.0,
+    3.0
+   ],
+   [
+    "Road Bike",
+    2024,
+    null,
+    1.5
+   ]
+  ]
+ },
+ "fuzz2-0131": {
+  "hash": "4c37e7a66db294c7d481ade3bcb8f9b865641fe2",
+  "columns": [
+   "[m0]"
+  ],
+  "rows": []
+ },
+ "fuzz2-0132": {
+  "hash": "a77a36d9e7f3616502face00dc79e88328fbd291",
+  "columns": [
+   "Product[Price]",
+   "Date[Quarter]",
+   "[m0]",
+   "[m1]"
+  ],
+  "rows": [
+   [
+    1000.0,
+    1,
+    -7997,
+    1247.1134
+   ],
+   [
+    20.0,
+    2,
+    -23997,
+    110.0
+   ],
+   [
+    50.0,
+    4,
+    -7999,
+    10.0
+   ],
+   [
+    800.0,
+    1,
+    -7999,
+    273.9175
+   ],
+   [
+    1000.0,
+    2,
+    -7999,
+    10.0
+   ],
+   [
+    20.0,
+    3,
+    -7999,
+    12.3529
+   ],
+   [
+    800.0,
+    2,
+    null,
+    10.0
+   ],
+   [
+    800.0,
+    3,
+    null,
+    10.0
+   ],
+   [
+    800.0,
+    4,
+    null,
+    10.0
+   ],
+   [
+    1000.0,
+    3,
+    null,
+    2951.1765
+   ],
+   [
+    1000.0,
+    4,
+    null,
+    10.0
+   ],
+   [
+    20.0,
+    1,
+    null,
+    10.0
+   ],
+   [
+    20.0,
+    4,
+    null,
+    10.0
+   ],
+   [
+    50.0,
+    1,
+    null,
+    22.8866
+   ],
+   [
+    50.0,
+    2,
+    null,
+    10.0
+   ],
+   [
+    50.0,
+    3,
+    null,
+    10.0
+   ],
+   [
+    60.0,
+    1,
+    null,
+    10.0
+   ],
+   [
+    60.0,
+    2,
+    null,
+    10.0
+   ],
+   [
+    60.0,
+    3,
+    null,
+    10.0
+   ],
+   [
+    60.0,
+    4,
+    null,
+    10.0
+   ]
+  ]
+ },
+ "fuzz2-0133": {
+  "hash": "67f526145503fc8ecead90a07ca2c559a15cf6a1",
+  "columns": [
+   "Date[Year]",
+   "[m0]",
+   "[m1]",
+   "[m2]"
+  ],
+  "rows": [
+   [
+    2023,
+    3,
+    487.5,
+    1
+   ],
+   [
+    2024,
+    4,
+    1000.0,
+    1
+   ]
+  ]
+ },
+ "fuzz2-0134": {
+  "hash": "d168dcc6692bbbdf225919831fc59f67bc0429a6",
+  "columns": [
+   "Customer[City]",
+   "Date[Month]",
+   "[m0]"
+  ],
+  "rows": [
+   [
+    "Rome",
+    7,
+    3.0
+   ],
+   [
+    "London",
+    12,
+    3.0
+   ]
+  ]
+ },
+ "fuzz2-0135": {
+  "hash": "6cd006579e09b6434e513f963c8d6222c3a7bc1e",
+  "columns": [
+   "[m0]"
+  ],
+  "rows": [
+   [
+    null
+   ]
+  ]
+ },
+ "fuzz2-0136": {
+  "hash": "fa5f92e18927cb6d9bc399ef37b4f8338dccc069",
+  "columns": [
+   "Date[Quarter]",
+   "Customer[Customer]",
+   "[m0]"
+  ],
+  "rows": [
+   [
+    1,
+    "Alice",
+    1
+   ],
+   [
+    1,
+    "Bob",
+    1
+   ],
+   [
+    1,
+    "Chloe",
+    2
+   ],
+   [
+    3,
+    "Erin",
+    1
+   ]
+  ]
+ },
+ "fuzz2-0137": {
+  "hash": "8f023a0f6ad78e4e6a62a4bcfe31304845df3ed8",
+  "columns": [
+   "Product[Price]",
+   "[m0]"
+  ],
+  "rows": [
+   [
+    1000.0,
+    4000.0
+   ],
+   [
+    800.0,
+    1600.0
+   ],
+   [
+    50.0,
+    350.0
+   ],
+   [
+    20.0,
+    180.0
+   ]
+  ]
+ },
+ "fuzz2-0138": {
+  "hash": "03dca2093bb931499568dc27bfbc968d399bc248",
+  "columns": [
+   "[m0]",
+   "[m1]",
+   "[m2]"
+  ],
+  "rows": [
+   [
+    null,
+    5,
+    2260.0
+   ]
+  ]
+ },
+ "fuzz2-0139": {
+  "hash": "4488f2395c5c7016c5280b92eb18ddaebc6f3c30",
+  "columns": [
+   "Product[Color]",
+   "[m0]",
+   "[m1]",
+   "[m2]"
+  ],
+  "rows": [
+   [
+    "Blue",
+    1,
+    null,
+    8000
+   ],
+   [
+    "Red",
+    null,
+    null,
+    8000
+   ],
+   [
+    "Black",
+    null,
+    null,
+    8000
+   ]
+  ]
+ },
+ "fuzz2-0140": {
+  "hash": "2dc5e7050d56ab59bd546e37591dd98baec7c2e6",
+  "columns": [
+   "[m0]"
+  ],
+  "rows": []
+ },
+ "fuzz2-0141": {
+  "hash": "2c8ac432d2aac4e5ca8de8c255beadc18ac544e0",
+  "columns": [
+   "[m0]",
+   "[m1]",
+   "[m2]"
+  ],
+  "rows": [
+   [
+    6130.0,
+    502.5,
+    4120.0
+   ]
+  ]
+ },
+ "fuzz2-0142": {
+  "hash": "686a964711609ad78ff41dc93d76ebf9126ebd7f",
+  "columns": [
+   "Product[Price]",
+   "Product[Name]",
+   "Date[Quarter]",
+   "[m0]",
+   "[m1]"
+  ],
+  "rows": []
+ },
+ "fuzz2-0143": {
+  "hash": "ff84193d048f698a37b9d04bbac7f3df9f4a8871",
+  "columns": [
+   "[m0]"
+  ],
+  "rows": [
+   [
+    5
+   ]
+  ]
+ },
+ "fuzz2-0144": {
+  "hash": "f58072938f79e653915ac5c17111cd9463dd4798",
+  "columns": [
+   "Product[Name]",
+   "Customer[Customer]",
+   "[m0]"
+  ],
+  "rows": [
+   [
+    "Road Bike",
+    "Alice",
+    0
+   ],
+   [
+    "Mountain Bike",
+    "Alice",
+    0
+   ],
+   [
+    "Jersey",
+    "Alice",
+    0
+   ],
+   [
+    "Cap",
+    "Alice",
+    0
+   ],
+   [
+    "Helmet",
+    "Alice",
+    0
+   ],
+   [
+    "Road Bike",
+    "Bob",
+    0
+   ],
+   [
+    "Mountain Bike",
+    "Bob",
+    0
+   ],
+   [
+    "Jersey",
+    "Bob",
+    50.0
+   ],
+   [
+    "Cap",
+    "Bob",
+    0
+   ],
+   [
+    "Helmet",
+    "Bob",
+    0
+   ],
+   [
+    "Road Bike",
+    "Chloe",
+    0
+   ],
+   [
+    "Mountain Bike",
+    "Chloe",
+    0
+   ],
+   [
+    "Jersey",
+    "Chloe",
+    0
+   ],
+   [
+    "Cap",
+    "Chloe",
+    60.0
+   ],
+   [
+    "Helmet",
+    "Chloe",
+    0
+   ],
+   [
+    "Road Bike",
+    "Dan",
+    0
+   ],
+   [
+    "Mountain Bike",
+    "Dan",
+    0
+   ],
+   [
+    "Jersey",
+    "Dan",
+    0
+   ],
+   [
+    "Cap",
+    "Dan",
+    0
+   ],
+   [
+    "Helmet",
+    "Dan",
+    0
+   ],
+   [
+    "Road Bike",
+    "Erin",
+    0
+   ],
+   [
+    "Mountain Bike",
+    "Erin",
+    0
+   ],
+   [
+    "Jersey",
+    "Erin",
+    0
+   ],
+   [
+    "Cap",
+    "Erin",
+    0
+   ],
+   [
+    "Helmet",
+    "Erin",
+    0
+   ]
+  ]
+ },
+ "fuzz2-0145": {
+  "hash": "9c786154ea6dbdc3b96d658c5416ff112d4b6832",
+  "columns": [
+   "Product[PriceBand]",
+   "[m0]",
+   "[m1]"
+  ],
+  "rows": [
+   [
+    "High",
+    5602.0,
+    1
+   ],
+   [
+    "Low",
+    532.0,
+    1
+   ]
+  ]
+ },
+ "fuzz2-0146": {
+  "hash": "ff71ba3f88c8532d92638f344307314135a6294d",
+  "columns": [
+   "Date[Month]",
+   "Product[Price]",
+   "[m0]",
+   "[m1]"
+  ],
+  "rows": [
+   [
+    1,
+    1000.0,
+    null,
+    3000.0
+   ],
+   [
+    2,
+    50.0,
+    null,
+    300.0
+   ],
+   [
+    6,
+    1000.0,
+    null,
+    1000.0
+   ],
+   [
+    12,
+    50.0,
+    null,
+    50.0
+   ]
+  ]
+ },
+ "fuzz2-0147": {
+  "hash": "04d046aa53fcffdce9f87cbd40fb0b59c2bd8018",
+  "columns": [
+   "Product[Color]",
+   "Product[PriceBand]",
+   "[m0]",
+   "[m1]"
+  ],
+  "rows": [
+   [
+    "Red",
+    "High",
+    4000.0,
+    2.25
+   ],
+   [
+    "Black",
+    "High",
+    1600.0,
+    3.0
+   ],
+   [
+    "Red",
+    "Low",
+    350.0,
+    1.2857142857142856
+   ]
+  ]
+ },
+ "fuzz2-0148": {
+  "hash": "b566032c0b4aa435e3a608ae36d10323a5e33b3c",
+  "columns": [
+   "Date[Year]",
+   "Product[PriceBand]",
+   "Product[Name]",
+   "[m0]",
+   "[m1]",
+   "[m2]"
+  ],
+  "rows": [
+   [
+    2023,
+    "Low",
+    "Jersey",
+    1.0,
+    0.000125,
+    148.0
+   ],
+   [
+    2024,
+    "High",
+    "Mountain Bike",
+    1.0,
+    0.000125,
+    -1.0
+   ],
+   [
+    2024,
+    "Low",
+    "Cap",
+    2.0,
+    0.000125,
+    -1.0
+   ],
+   [
+    2023,
+    "High",
+    "Road Bike",
+    null,
+    0.000125,
+    null
+   ],
+   [
+    2024,
+    "High",
+    "Road Bike",
+    null,
+    0.000125,
+    null
+   ],
+   [
+    2023,
+    "High",
+    "Mountain Bike",
+    null,
+    0.000125,
+    null
+   ],
+   [
+    2024,
+    "Low",
+    "Jersey",
+    null,
+    0.000125,
+    null
+   ],
+   [
+    2023,
+    "Low",
+    "Cap",
+    null,
+    0.000125,
+    null
+   ],
+   [
+    2023,
+    "Low",
+    "Helmet",
+    null,
+    0.000125,
+    null
+   ],
+   [
+    2024,
+    "Low",
+    "Helmet",
+    null,
+    0.000125,
+    null
+   ]
+  ]
+ },
+ "fuzz2-0149": {
+  "hash": "cd6f238740a632f25aeb42c0729fb74eaf09d232",
+  "columns": [
+   "[m0]",
+   "[m1]"
+  ],
+  "rows": [
+   [
+    1,
+    2
+   ]
+  ]
+ },
+ "fuzz2-0150": {
+  "hash": "ac7618178dba7628ea56a7af13a7d277462eb3a8",
+  "columns": [
+   "Product[Price]",
+   "[m0]",
+   "[m1]"
+  ],
+  "rows": [
+   [
+    20.0,
+    0.2,
+    2
+   ],
+   [
+    50.0,
+    0.5,
+    1
+   ],
+   [
+    800.0,
+    1.0,
+    1
+   ],
+   [
+    1000.0,
+    0.5,
+    null
+   ]
+  ]
+ }
+}

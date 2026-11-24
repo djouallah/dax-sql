@@ -11,7 +11,8 @@
 // - ROUND's places a constant; log10 is log10; a sum in no order (SUM takes no ORDER BY).
 import { PostgresDialect } from './postgres.js';
 
-const int = v => `CAST(round(CAST(${v} AS NUMERIC)) AS INTEGER)`;
+// A whole number (64 bits: Polars computes a CASE's branches no row takes too).
+const int = v => `CAST(round(CAST(${v} AS NUMERIC)) AS BIGINT)`;
 const UNITS = { day: 'DAY', week: 'WEEK', month: 'MONTH', quarter: 'QUARTER', year: 'YEAR', hour: 'HOUR', minute: 'MINUTE', second: 'SECOND' };
 const unit = u => UNITS[String(u).replace(/'/g, '').toLowerCase()] ?? String(u).replace(/'/g, '').toUpperCase();
 const part = (f, x) => `CAST(EXTRACT(${f} FROM ${x}) AS BIGINT)`;
@@ -43,6 +44,13 @@ export class PolarsDialect extends PostgresDialect {
         const n = nodes[1];
         if (n?.k === 'lit' && Number.isInteger(n.v)) return `CAST(round(CAST(${x} AS NUMERIC), ${n.v}) AS DOUBLE PRECISION)`;
         return `CAST(round(CAST(${x} AS NUMERIC) * power(10, ${y})) / power(10, ${y}) AS DOUBLE PRECISION)`;
+      }
+      // A date less a date is a duration (its BIGINT microseconds): days as the days since 1970.
+      case 'datediff': {
+        const u = unit(z), days = v => `CAST(CAST(${v} AS DATE) AS BIGINT)`, dow = v => part('DOW', v);
+        if (u === 'DAY') return `(${days(y)} - ${days(x)})`;
+        if (u === 'WEEK') return `CAST(((${days(y)} - ${dow(y)}) - (${days(x)} - ${dow(x)})) / 7 AS BIGINT)`;
+        return super.fn(name, a, nodes);
       }
       case 'date': return `(${first(`${int(x)} * 12 + ${int(y)} - 1`)} + (${int(z)} - 1) * INTERVAL '1 day')`;
       case 'eomonth': return `(${first(`${monthOf(x)} + ${int(y)} + 1`)} - INTERVAL '1 day')`;

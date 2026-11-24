@@ -221,7 +221,7 @@ export class PlanSql extends Emitter {
       case 'replace': return `replace(${x}, ${y}, ${z})`;
       // T-SQL: the n-th of STRING_SPLIT's parts by their ordinal (none past the last, as a blank).
       case 'split_part': return ts ? `(SELECT value FROM STRING_SPLIT(${x}, ${y}, 1) WHERE ordinal = ${z})` : pg ? `split_part(${x}, ${y}, CAST(${z} AS INTEGER))` : `split_part(${x}, ${y}, ${z})`;
-      case 'date_diff_microsecond': return ts ? `DATEDIFF_BIG(microsecond, ${x}, ${y})` : pg ? `CAST(EXTRACT(EPOCH FROM (${y} - ${x})) * 1000000 AS BIGINT)` : `date_diff('microsecond', ${x}, ${y})`;
+      case 'date_diff_microsecond': return ts ? `DATEDIFF_BIG(microsecond, ${x}, ${y})` : d.name === 'polars' ? `CAST(round((EXTRACT(EPOCH FROM ${y}) - EXTRACT(EPOCH FROM ${x})) * 1000000) AS BIGINT)` : pg ? `CAST(EXTRACT(EPOCH FROM (${y} - ${x})) * 1000000 AS BIGINT)` : `date_diff('microsecond', ${x}, ${y})`;
       case 'add_microseconds': return ts ? `DATEADD(microsecond, ${y}, ${x})` : pg ? `(${x} + ${y} * INTERVAL '1 microsecond')` : `(${x} + to_microseconds(${y}))`;
     }
     const m = /^(extract|date_trunc|date_diff)_(\w+)$/.exec(name);

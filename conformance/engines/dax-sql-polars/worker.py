@@ -7,7 +7,6 @@ import datetime
 import decimal
 import json
 import math
-import re
 import sys
 
 import polars as pl
@@ -24,15 +23,13 @@ def load(model_dir, name):
         if source.get("type") != "entity":
             continue
         path = f"{model_dir}/data/{source['entityName']}.csv"
-        with open(path, encoding="utf-8") as f:
-            text = f.read()
-        timestamps = re.search(r"\d{4}-\d\d-\d\d[ T]\d", text) is not None
         schema = {}
         for c in t["columns"]:
             if c.get("type") not in (None, "data"):
                 continue
             dt = c["dataType"]
-            schema[c.get("sourceColumn", c["name"])] = (pl.Datetime if timestamps else pl.Date) if dt == "dateTime" else TYPES.get(dt, pl.String)
+            # Every date a date and time (a fact's times beside a calendar's dates: one type to join on).
+            schema[c.get("sourceColumn", c["name"])] = pl.Datetime if dt == "dateTime" else TYPES.get(dt, pl.String)
         ctx.register(f"{name}__{source['entityName']}", pl.read_csv(path, schema_overrides=schema, infer_schema_length=10000))
     return ctx
 

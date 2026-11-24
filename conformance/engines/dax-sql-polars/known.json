@@ -1,10 +1,5 @@
 [
-  {"id":"contoso/format/format-custom-number-patterns","reason":"Polars: FORMAT is not written for Polars yet (PostgreSQL's writes it with to_char and a subquery binding the value, which Polars has neither of)"},
-  {"id":"contoso/format/format-dates-and-times","reason":"Polars: FORMAT is not written for Polars yet (PostgreSQL's writes it with to_char and a subquery binding the value, which Polars has neither of)"},
-  {"id":"contoso/format/format-implicit-text-conversion","reason":"Polars: FORMAT is not written for Polars yet (PostgreSQL's writes it with to_char and a subquery binding the value, which Polars has neither of)"},
-  {"id":"contoso/format/format-measure-never-blank","reason":"Polars: FORMAT is not written for Polars yet (PostgreSQL's writes it with to_char and a subquery binding the value, which Polars has neither of)"},
-  {"id":"contoso/format/format-named-number-formats","reason":"Polars: FORMAT is not written for Polars yet (PostgreSQL's writes it with to_char and a subquery binding the value, which Polars has neither of)"},
-  {"id":"contoso/format/format-over-columns","reason":"Polars: FORMAT is not written for Polars yet (PostgreSQL's writes it with to_char and a subquery binding the value, which Polars has neither of)"},
-  {"id":"contoso/format/format-time-variant-combinevalues","reason":"Polars: FORMAT is not written for Polars yet (PostgreSQL's writes it with to_char and a subquery binding the value, which Polars has neither of)"},
-  {"id":"contoso/scalar/scalar-functions-mixed","reason":"Polars: FORMAT is not written for Polars yet (PostgreSQL's writes it with to_char and a subquery binding the value, which Polars has neither of)"}
+  {"id":"contoso/format/format-custom-number-patterns","reason":"Polars: FORMAT with many number patterns in one query is past Polars' SQL parser (nested only so deep, and no value bound once: each pattern's digits written out at each use, megabytes of SQL)"},
+  {"id":"contoso/format/format-named-number-formats","reason":"Polars: FORMAT with many number patterns in one query is past Polars' SQL parser (nested only so deep, and no value bound once: each pattern's digits written out at each use, megabytes of SQL)"},
+  {"id":"contoso/format/format-time-variant-combinevalues","reason":"Polars: FORMAT with many number patterns in one query is past Polars' SQL parser (nested only so deep, and no value bound once: each pattern's digits written out at each use, megabytes of SQL)"}
 ]

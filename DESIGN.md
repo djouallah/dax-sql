@@ -257,7 +257,7 @@ puts below the relation whose scalars read it. A double is never cast to text (e
 one their own way), only a whole number.
 
 No query plan holds an apply or an EXISTS correlated to a row, as the plan before the passes
-does (`{ optimize: false }`, the reference CI checks the passes against).
+does (`plan(query, { optimize: false })`, which `explain` draws; it has no SQL).
 `conformance/engines/dax-sql/operators.mjs` checks every query of the suite against all that,
 in CI, and counts the operators the plans use.
 
@@ -292,9 +292,9 @@ dialect's SQL from what it read. DuckDB is given the plan correlated, before dec
 unnests its applies and EXISTS itself (correlated fusion, the standard scalars, exact sums,
 sharing, inlining, renames and pruning); every other engine the plan unnested. Of a calculation
 group's two forms, the smaller plan after the passes is kept. A column is named by its order in
-the query (`_c1`, `_c2`, …), so a query compiles to the same SQL each time. `emit.js` is the
-check: `{ viaPlan: false }` (and `optimize: false`); `agree.mjs` holds the two to the same rows,
-and Speed (`perf.yml`) holds the plan's SQL to `emit.js`'s on each push.
+the query (`_c1`, `_c2`, …), so a query compiles to the same SQL each time. There is no other
+way to SQL: no fallback, no option to another writer. (`emit.js` is left as the scalar writer
+`plan-sql.js` builds on.) Speed (`perf.yml`) holds each push's SQL to the commit before's.
 
 **The correlated plan, unnested** (`unnest.js`, `planSql(query, { unnest: true })`): DuckDB's plan
 (fused, its scalars standard) with no apply and no correlated EXISTS, for an engine that does not
@@ -319,9 +319,8 @@ EDATE, a part of a text, FORMAT) is a named lambda, its body its definition in s
 and its name which function it is, so a dialect with one of that name writes its own (T-SQL's
 FORMAT). Hints carry what the reader needs and no consumer does: each relation's columns named
 (`output_names`), a scan's model table, a distinct or a series written in another relation's form
-(`alias`). CI checks both ways: every suite query's SQL is the same written from the Substrait as
-from the plan itself (`roundtrip.mjs`, 7410 texts), and every plan parses as a `Plan` message of
-Substrait main's protos with each function one its extension file declares (`substrait_check.py`).
+(`alias`). CI checks that every plan parses as a `Plan` message of Substrait main's protos with
+each function one its extension file declares (`substrait_check.py`).
 
 ### The intermediate form
 
@@ -468,10 +467,6 @@ What says the SQL is right is the answers, not the SQL's text:
   its rows compared with Power BI's. A query that differs is on the engine's known list with
   its reason, a departure by design or a Power BI quirk not copied; one off the list fails the
   run, and so does one on it that matches.
-- **The rewrites change no answer.** Every query is compiled twice, with the emitter's rewrites
-  (fusion, shared scans, grouping before joins, mappings) and with `optimize: false` (each
-  aggregate its own subquery, as the filter context says it), and both run on one DuckDB: the
-  rows must be the same, the known queries' too (`agree.mjs`).
 - **SQL over the datasets is held to Apache Ossie** (`ossie-query.yml`): its query compliance
   cases, its wide table cases, and a grid of about 2,500 queries each answered by Ossie's view
   expander and by dax-sql on one DuckDB.
@@ -586,7 +581,8 @@ const { sql, columns } = dax.compile(`
 - `explain(query)`: the query plan ([The query plan](#the-query-plan)) drawn as a tree, one
   per `EVALUATE`; `plan(query)` is the plan itself (`src/plan.js` says its nodes), and
   `planSql(query)` its SQL, `{ sql, columns }` as `compile` gives. Each takes a SQL `SELECT`
-  over the model too, and `{ optimize: false }` for the plan before the optimizer's passes.
+  over the model too; `plan` and `explain` take `{ optimize: false }` for the plan before the
+  optimizer's passes (which has no SQL).
 - `model`: the model as read; `dialect`: the dialect it writes.
 
 The package also exports `DaxError`, `Model`, the dialects (`Dialect`, `DuckDBDialect`,
@@ -1254,12 +1250,11 @@ npm test
 
 In CI:
 
-- `conformance.yml`: the suite against Power BI's goldens (`conformance/`), and
-  `conformance/engines/dax-sql/agree.mjs`: every query of the suite compiled with the emitter's
-  rewrites and with `optimize: false`, run on one DuckDB: the rows must be the same, on the
-  known queries too. A release waits for it. Its `plan` job runs the suite through the query
-  plan's SQL, as it is (`DAXSQL_PLAN=raw`) and optimized (`DAXSQL_PLAN=1`), against the same
-  known list; `postgres.yml`'s `plan` job runs it optimized on PostgreSQL, and reports.
+- `conformance.yml`: the suite against Power BI's goldens (`conformance/`). A release waits for
+  it. Its `plan` job runs the suite through the plan's other forms (correlated, unnested,
+  optimized: `DAXSQL_PLAN`), each written from Substrait, against the same known list; its
+  `substrait` job parses every plan with Substrait main's protos. `postgres.yml`'s `plan` job
+  runs the optimized and unnested plans on PostgreSQL.
 - `perf.yml` (`conformance/engines/dax-sql/bench.mjs`): every query timed by the commit and by
   the one before, on one runner, the fastest of three rounds each: more than 10% slower in all,
   or a query 1.5 times as slow and 50 ms more, fails.
@@ -1271,7 +1266,7 @@ In CI:
   scalar operators over `AGG`, stars, fan-outs, chasm traps, snowflakes), each answered by the
   expander's SQL and by dax-sql's on one DuckDB. Values come from the data, with a fixed seed.
   A different answer fails the run; one that is only the blank row this package does not have
-  is counted apart. All three run again with `DAXSQL_OPTIMIZE=0`. A release waits for it.
+  is counted apart. A release waits for it.
 - `ossie.yml` (Ossie's main, every morning too): what `formats/ossie.js` writes for every model
   here passes Ossie's own validator (`validation/validate.py`), and Ossie's portability ladder
   (`compliance/portability`) comes back from dax-sql PORTABLE, every element, as its grader

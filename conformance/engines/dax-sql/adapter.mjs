@@ -4,16 +4,13 @@
 //
 //   node engines/dax-sql/adapter.mjs <dax-sql checkout> <request.json>
 //
-// The checkout and the models are read by db.mjs. DAXSQL_OPTIMIZE=0: the SQL with none of the
-// emitter's rewrites (CI checks that the answers are the same: agree.mjs). DAXSQL_PLAN=1: the
-// SQL of the query plan, optimized (planSql); DAXSQL_PLAN=raw: the plan as it is;
-// DAXSQL_PLAN=correlated: the plan before decorrelation, its scalars standard (DuckDB unnests it);
+// The checkout and the models are read by db.mjs. Every SQL is written from the plan as
+// Substrait. DAXSQL_PLAN=1: the plan optimized (planSql); DAXSQL_PLAN=correlated: the plan before decorrelation, its scalars standard (DuckDB unnests it);
 // DAXSQL_PLAN=unnest: that plan unnested (passes/unnest.js: no apply, for an engine that does not unnest).
 import { readFileSync, writeFileSync } from 'node:fs';
 import { engine, value } from './db.mjs';
 
 const e = await engine(process.argv[2]);
-const OPTIMIZE = process.env.DAXSQL_OPTIMIZE === '0' ? { optimize: false } : {};
 const PLAN = process.env.DAXSQL_PLAN;
 
 // With DAXSQL_TIMES, each query's time to answer (ms, as the T-SQL adapter measures it), to that file.
@@ -27,9 +24,9 @@ for (const q of request.queries) {
     if (!dbs.has(key)) dbs.set(key, { ...(await e.database(q.model, q.data)), compilers: new Map() });
     const db = dbs.get(key);
     const roles = JSON.stringify(q.roles ?? null);
-    if (!db.compilers.has(roles)) db.compilers.set(roles, e.createCompiler(db.model, { columnNames: 'dax', ...OPTIMIZE, ...(q.roles ? { roles: q.roles } : {}) }));
+    if (!db.compilers.has(roles)) db.compilers.set(roles, e.createCompiler(db.model, { columnNames: 'dax', ...(q.roles ? { roles: q.roles } : {}) }));
     const c = db.compilers.get(roles);
-    const { sql, columns } = PLAN ? c.planSql(q.dax, PLAN === 'correlated' ? { correlated: true } : PLAN === 'unnest' ? { unnest: true } : { optimize: PLAN !== 'raw' }) : c.compile(q.dax);
+    const { sql, columns } = PLAN ? c.planSql(q.dax, PLAN === 'correlated' ? { correlated: true } : PLAN === 'unnest' ? { unnest: true } : {}) : c.compile(q.dax);
     const t0 = performance.now();
     const reader = await db.con.runAndReadAll(sql);
     times.push({ id: q.id, ms: Math.round(performance.now() - t0), bytes: sql.length });

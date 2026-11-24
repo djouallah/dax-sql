@@ -8,8 +8,6 @@ Nothing here blocks a release. DAX on DuckDB has nothing left; T-SQL is the last
   past 30 s answer through it (`known-compile.json`), and the suite adds up to half the time.
   Left: `segmentation-bands-matrix-two-totals` near 30 s (26 s alone; the compiled SQL 10 s),
   a measure's grouping read 8 times, which Fabric computes at each read.
-- `agree.mjs` holds the rewrites to the plain SQL on DuckDB only: T-SQL's own (`bind`,
-  `fuseRows`) are checked by the goldens in `tsql.yml`, not on the queries of its known list.
 
 # Wave 3: PostgreSQL
 
@@ -23,6 +21,10 @@ Nothing here blocks a release. DAX on DuckDB has nothing left; T-SQL is the last
   its rows tie at (flaky).
 
 # The query plan
+
+- What emit.js read off a level's groups the plan scans again: a total over what is selected
+  (`DIVIDE([m], CALCULATE([m], ALLSELECTED(t)))` next to the groups), and a subtotal level beside a
+  measure with a filter of its own (two scans of the fact where emit.js wrote one).
 
 `DAX → query plan → optimizer (every engine) → Substrait → engine passes (only what one needs) → SQL`.
 

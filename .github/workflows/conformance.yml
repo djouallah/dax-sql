@@ -2,11 +2,9 @@ name: Conformance
 
 # Runs the conformance suite (conformance/) against this repo through its adapter and prints the
 # scoreboard. The engine is a black box: the runner gives the adapter the models, their data and
-# the queries, and compares the rows it answers with Power BI's (conformance/golden/). And every
-# query compiled with the emitter's rewrites and without, run on one DuckDB, must give the same
-# rows (engines/dax-sql/agree.mjs): the rewrites change no answer, the known ones included.
-# And the suite again through the query plan, against the same known list: as it is
-# (DAXSQL_PLAN=raw), and optimized (DAXSQL_PLAN=1: the optimizer's passes, src/passes/).
+# the queries, and compares the rows it answers with Power BI's (conformance/golden/). Every
+# query's SQL is written from its plan as Substrait: correlated (compile, DuckDB's), unnested,
+# and optimized (DAXSQL_PLAN=1: the optimizer's passes, src/passes/).
 
 on:
   push:
@@ -60,21 +58,6 @@ jobs:
             ${{ runner.temp }}/dax-sql.json
             ${{ runner.temp }}/duckdb-times.json
 
-  agree:
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    steps:
-      # Named, so that called from another workflow it still checks out this repository.
-      - uses: actions/checkout@v4
-        with:
-          repository: djouallah/dax-sql
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "24"
-          cache: npm
-      - run: npm ci --no-audit --no-fund
-      - name: With the rewrites and without
-        run: node conformance/engines/dax-sql/agree.mjs .
 
   # Every query's plan as Substrait, read against the specification on main (substrait-io/
   # substrait, cloned at its latest commit): each a Plan message of its protos, each function one
@@ -115,18 +98,6 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - name: The query plan's operators (optimized, only the plan's simple operators)
         run: node conformance/engines/dax-sql/operators.mjs .
-      # Every dialect's SQL is written from the plan as Substrait, read back: the same text as
-      # from the plan itself, for every query (nothing the Substrait does not carry).
-      - name: The SQL through Substrait, the same as through the plan
-        if: always()
-        run: node conformance/tools/roundtrip.mjs --show 10
-      - name: The suite through the query plan as it is
-        if: always()
-        env:
-          DAXSQL_PLAN: raw
-        run: |
-          node conformance/runner/run.mjs --adapter "node conformance/engines/dax-sql/adapter.mjs ." \
-            --known conformance/engines/dax-sql/known.json --report "$RUNNER_TEMP/plan-raw.json"
       # The plan before decorrelation, its scalars standard: its applies LATERAL and scalar
       # subqueries, which DuckDB unnests itself (the plan Substrait exports, correlated).
       - name: The suite through the correlated query plan
@@ -157,7 +128,6 @@ jobs:
         with:
           name: plan-report
           path: |
-            ${{ runner.temp }}/plan-raw.json
             ${{ runner.temp }}/plan-correlated.json
             ${{ runner.temp }}/plan-unnest.json
             ${{ runner.temp }}/plan.json

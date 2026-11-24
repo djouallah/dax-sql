@@ -26,7 +26,7 @@ test('before the optimizer: the measure one grouping by the level\'s key, joined
   assert.match(tree, /∃1 σ {2}Date\.Year IN \{2024\} ∧ \(Date\.Date = outer\.Sales\.OrderDate\)/);
 });
 
-test('the query plan\'s SQL answers as the compiled SQL does, as it is and optimized', async () => {
+test('the query plan\'s SQL answers as the compiled SQL does: correlated, unnested and optimized', async () => {
   for (const q of [Q,
     'EVALUATE ROW("s", [Sales Amount])',
     'EVALUATE ADDCOLUMNS(VALUES(Product[Name]), "r", RANKX(ALL(Product[Name]), [Sales Amount]))',
@@ -34,7 +34,7 @@ test('the query plan\'s SQL answers as the compiled SQL does, as it is and optim
     // Two measures over the same tables by two relationships: not one grouping.
     'EVALUATE SUMMARIZECOLUMNS(\'Date\'[Year], "o", [Sales Amount], "s", CALCULATE([Sales Amount], USERELATIONSHIP(Sales[ShipDate], \'Date\'[Date])))']) {
     const want = sorted(await h.run(q));
-    for (const optimize of [false, true]) assert.deepEqual(sorted(await h.sql(h.dax.planSql(q, { optimize }).sql)), want, `${q} (optimize: ${optimize})`);
+    for (const o of [{ correlated: true }, { unnest: true }, {}]) assert.deepEqual(sorted(await h.sql(h.dax.planSql(q, o).sql)), want, `${q} (${JSON.stringify(o)})`);
   }
 });
 

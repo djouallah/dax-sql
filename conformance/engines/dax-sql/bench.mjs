@@ -3,8 +3,7 @@
 // slower fails. .github/workflows/perf.yml runs it on each push against the commit before.
 //   node engines/dax-sql/bench.mjs <base checkout> <head checkout> [--rounds 3] [--grep regex]
 //     [--base-option name=value]...
-// --base-option: an option of the base's compilers (createCompiler's), the head's as they are:
-// `bench.mjs . . --base-option viaPlan=false` holds DuckDB's plan to the compiler's SQL.
+// --base-option: an option of the base's compilers (createCompiler's), the head's as they are.
 // Each round times every query by both, the order alternating; a query's time is its fastest
 // round, the least noise. The head fails when the whole suite is more than 10% slower, or a
 // query takes more than 1.5 times as long and 50 ms more (with no change, a query moves up to

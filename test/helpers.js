@@ -8,8 +8,7 @@ export async function harness(bim, setup, options = {}) {
   const db = await DuckDBInstance.create(':memory:');
   const con = await db.connect();
   if (setup) await con.run(setup);
-  // DAXSQL_OPTIMIZE=0: the SQL with no rewrite (CI runs the tests both ways).
-  const dax = createCompiler(tmslToModel(bim), { ...(process.env.DAXSQL_OPTIMIZE === '0' ? { optimize: false } : {}), ...options });
+  const dax = createCompiler(tmslToModel(bim), options);
   async function sql(text) {
     const r = await con.runAndReadAll(text);
     return r.getRowObjectsJS().map(plain);

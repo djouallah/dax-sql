@@ -28,7 +28,6 @@
 //                  for checking that the rewrites change no answer, as CI does)
 import { Model } from './model.js';
 import { Compiler } from './compiler.js';
-import { Emitter } from './emit.js';
 import { parseExpression } from './parser.js';
 import { DuckDBDialect } from './dialects/duckdb.js';
 import { TSqlDialect } from './dialects/tsql.js';
@@ -185,9 +184,7 @@ export function createCompiler(input, options = {}) {
   // Every dialect's SQL is the query plan's (lower.js), written from it as Substrait (substrait.js)
   // read back (substrait-read.js): nothing reaches the SQL that the Substrait does not carry.
   // DuckDB is given the plan correlated (it unnests it itself), every other engine the plan
-  // unnested (passes/unnest.js). { viaPlan: false } or { optimize: false }: the emitter's SQL
-  // (emit.js: a check, not a mode to run).
-  const viaPlan = options.viaPlan !== false && options.optimize !== false;
+  // unnested (passes/unnest.js). There is no other way to SQL.
   const pipeline = dialect.name === 'duckdb' ? correlated : unnested;
   // The engine's pass, after the Substrait is read: a function the plan defines that the dialect
   // writes as its own (DuckDB's FORMAT) its arguments alone, and what only its definition read
@@ -216,15 +213,6 @@ export function createCompiler(input, options = {}) {
     // Its size (the smaller of a calculation group's two forms is kept): the plan's, after the passes.
     return { sql, ctes: ps.parts.ctes, body: ps.parts.body, aliases: ps.n, ordered: p.ordered, columns: p.columns, size: planSize(passed) };
   });
-  const emit = opts => statements => statements.map(s => {
-    const em = new Emitter(model, dialect, { ...opts, calcColumn, calcTable, security });
-    const sql = em.query(s);
-    // Fabric cannot plan a mapping (time intelligence by the group's keys, joined once) beside
-    // a subquery of each group under a filter that reads the group: such a query is written
-    // with subqueries alone, as before mappings.
-    if (!dialect.mapAlone || !(em.mixed || em.mixedMaps())) return sql;
-    return new Emitter(model, dialect, { ...opts, calcColumn, calcTable, security, noMapping: true }).query(s);
-  });
   // `dax`: the query's text, or its tree (keyed by `key`, the text it was built from).
   // `extra`: options of this compilation only (aliasStart).
   function compileAll(dax, key = dax, extra = null) {
@@ -233,7 +221,7 @@ export function createCompiler(input, options = {}) {
     if (extra) key = `${key}\u0000${JSON.stringify(extra)}`;
     let out = cache.get(key);
     if (out) return out;
-    const make = viaPlan ? planned(opts) : emit(opts);
+    const make = planned(opts);
     out = base.query(dax, make);
     if (base.splitOne && dialect.splitOneGroup === 'smaller') {
       // The smaller: the plan's size (as plans keeps), else the SQL's.
@@ -324,27 +312,21 @@ export function createCompiler(input, options = {}) {
     // correlated: the plan before decorrelation, its scalars standard (its applies LATERAL or
     // scalar subqueries, its EXISTS EXISTS: for an engine that unnests them, as DuckDB does).
     // Its SQL is written from the plan as Substrait (substrait.js), read back (substrait-read.js):
-    // nothing reaches the SQL that the Substrait does not carry. { ir: true }: from the plan
-    // itself (the round-trip check compares the two); the plan as lowered (optimize: false) too.
+    // nothing reaches the SQL that the Substrait does not carry (the plan as lowered, which
+    // holds DAX's own functions, has no SQL).
     planSql(text, o = {}) {
+      if (o.optimize === false) throw new DaxError('planSql: the plan as lowered (DAX functions in it) has no Substrait, and so no SQL', { code: 'UNSUPPORTED' });
       const p = onePlan(text);
-      let plan = pick(p.plan, o);
-      if (o.optimize !== false) plan = engine(o.ir ? plan : readSubstrait(JSON.parse(JSON.stringify(toSubstrait(plan).plan)), model, { columns: p.columns, castOutput: options.castOutput }));
+      const plan = engine(readSubstrait(JSON.parse(JSON.stringify(toSubstrait(pick(p.plan, o)).plan)), model, { columns: p.columns, castOutput: options.castOutput }));
       return { sql: new PlanSql(model, dialect, options).query({ ...p, plan }), columns: p.columns };
     },
     // The query plan as a Substrait plan (substrait.js): { plan (its JSON form), dax (dax-sql's
     // functions it uses), columns }. o: optimize, inline, tableName, tableSchema.
     substrait(text, o = {}) {
       const p = onePlan(text);
-      // correlated: the plan before decorrelation, its scalars standard (an apply of one row scalar
-      // subqueries, EXISTS a set predicate); a plan with a table for each row (a lateral join,
-      // which Substrait has none of) as the optimizer unnests it.
-      if (o.unnest) return { ...toSubstrait(unnested(p.plan), o), columns: p.columns };
-      if (o.correlated) {
-        try { return { ...toSubstrait(correlated(p.plan), o), columns: p.columns }; } catch (err) { if (err.code !== 'UNSUPPORTED') throw err; }
-      }
-      const plan = o.optimize === false ? p.plan : optimize(p.plan);
-      return { ...toSubstrait(plan, o), columns: p.columns };
+      // unnest, correlated, or optimized: the plan planSql writes its SQL from.
+      if (o.optimize === false) throw new DaxError('substrait: the plan as lowered (DAX functions in it) has no Substrait', { code: 'UNSUPPORTED' });
+      return { ...toSubstrait(pick(p.plan, o), o), columns: p.columns };
     },
     // One EVALUATE, or a SELECT over the model -> { sql, columns: [{ name, dax, type, lineage }] }.
     compile(dax) {

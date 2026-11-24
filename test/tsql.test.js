@@ -61,10 +61,10 @@ test('the default is DuckDB', () => {
 
 // What Fabric computes again at each copy (a CTE at each name, a subquery written twice) is
 // written once.
-// dialect null: DuckDB's SQL by the emitter (emit.js, the check the plan's SQL is held to).
+// dialect null: DuckDB's.
 const compileAs = (model, dax, dialect = 'tsql', o = {}) => {
   const bim = JSON.parse(readFileSync(`${modelDir(model)}/model.bim`, 'utf8'));
-  return createCompiler(tmslToModel(bim), dialect ? { dialect, ...o } : { viaPlan: false }).compile(dax).sql;
+  return createCompiler(tmslToModel(bim), { dialect: dialect ?? 'duckdb', ...o }).compile(dax).sql;
 };
 const query = id => loadQueries({}).find(q => q.id === id);
 const reads = (sql, table) => sql.split(`FROM "${table}"`).length - 1;
@@ -95,10 +95,8 @@ test("a measure in a column and in another's DIVIDE is one subquery of the row",
   const q = query('paper-q4-catalog-yoy-ar');
   // The quantity's group, and last year's quantity once (it was in three places).
   assert.equal(reads(compileAs(q.model, q.dax), 'catalog_sales'), 2);
-  // On DuckDB too: last year's quantity is a GROUP BY over a mapping of (quarter, date).
-  const duck = compileAs(q.model, q.dax, null);
-  assert.equal(reads(duck, 'catalog_sales'), 2);
-  assert.match(duck, /JOIN m\d+ ON m\d+\.v = /);
+  // On DuckDB too.
+  assert.equal(reads(compileAs(q.model, q.dax, null), 'catalog_sales'), 2);
 });
 
 test('T-SQL = takes " " for "": an empty search text is told by its length, and EXACT by lengths of one type', () => {
@@ -122,17 +120,6 @@ test('T-SQL: FORMAT with a pattern rounds as a DECIMAL and reads a date through 
   assert.match(sql, /FORMAT\(CAST\(.* AS FLOAT\), 'E14'\)/);
   assert.match(sql, /'dd\/MM\/yyyy HH:mm'/);
   assert.match(sql, /'#,0', 'en-US'\)/);
-});
-
-test('T-SQL: a mapping is not written beside a subquery under a filter that reads the group (Fabric cannot plan both)', () => {
-  const q = query('context-calc-group-in-iterator');
-  const mapping = /\bm\d+ AS (?:MATERIALIZED )?\(SELECT DISTINCT/;
-  // DuckDB maps [Sales]' PY; on T-SQL the iterator's PY stays a subquery of each month, so [Sales]' does too.
-  assert.match(compileAs(q.model, q.dax, null), mapping);
-  assert.doesNotMatch(compileAs(q.model, q.dax, 'tsql', { viaPlan: false }), mapping);
-  // Every aggregate mapped: the mappings stay.
-  const p = query('paper-q4-catalog-yoy-ar');
-  assert.match(compileAs(p.model, p.dax, 'tsql', { viaPlan: false }), /JOIN m\d+ ON m\d+\.v = /);
 });
 
 test('SUMMARIZECOLUMNS by one calculation group: split by item only when that is the smaller SQL', () => {

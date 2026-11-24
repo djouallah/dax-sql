@@ -1,5 +1,5 @@
 // A dax-sql checkout, and the suite's models on DuckDB, for the adapter (adapter.mjs) and the
-// checks that run every query two ways (agree.mjs, bench.mjs).
+// check that runs every query by two checkouts (bench.mjs).
 //   const e = await engine('<dax-sql checkout>');
 //   const db = await e.database(modelPath, dataDir);   // { bim, model, con }
 //   const { sql, columns } = e.createCompiler(db.model, options).compile(dax);

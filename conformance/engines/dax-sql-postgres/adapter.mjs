@@ -76,7 +76,7 @@ async function answer(client, db, q) {
       db.compilers.set(roles, e.createCompiler(db.model, { dialect: 'postgres', columnNames: 'dax', tableSource: db.tableSource, ...(q.roles ? { roles: q.roles } : {}) }));
     }
     const c = db.compilers.get(roles);
-    const { sql, columns } = process.env.DAXSQL_PLAN ? c.planSql(q.dax, process.env.DAXSQL_PLAN === 'unnest' ? { unnest: true } : { optimize: process.env.DAXSQL_PLAN !== 'raw' }) : c.compile(q.dax);
+    const { sql, columns } = process.env.DAXSQL_PLAN ? c.planSql(q.dax, process.env.DAXSQL_PLAN === 'unnest' ? { unnest: true } : {}) : c.compile(q.dax);
     if (process.env.PG_SHOW) console.error(`${q.id}\n${sql}\n`);
     const t0 = performance.now();
     const r = await client.query({ text: sql, rowMode: 'array' }).catch(err => { err.sql = sql; throw err; });

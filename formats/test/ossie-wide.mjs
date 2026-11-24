@@ -13,8 +13,6 @@ import { join } from 'node:path';
 import { DuckDBInstance } from '@duckdb/node-api';
 import { parse } from 'yaml';
 import { createCompiler } from '../../src/index.js';
-// DAXSQL_OPTIMIZE=0: the SQL with none of the emitter's rewrites (CI runs this both ways).
-const OPTIMIZE = process.env.DAXSQL_OPTIMIZE === '0' ? { optimize: false } : {};
 import { ossieToModel } from '../ossie.js';
 import { table, ordered, compare, rows } from './ossie-compare.mjs';
 
@@ -35,7 +33,7 @@ async function fixture(name) {
   const con = await db.connect();
   await con.run(text(sql));
   const doc = parse(text(model));
-  const f = { con, name: doc.name, dax: createCompiler(ossieToModel(doc), OPTIMIZE) };
+  const f = { con, name: doc.name, dax: createCompiler(ossieToModel(doc)) };
   fixtures.set(name, f);
   return f;
 }

@@ -32,8 +32,6 @@ import { fileURLToPath } from 'node:url';
 import { DuckDBInstance } from '@duckdb/node-api';
 import { parse, stringify } from 'yaml';
 import { createCompiler } from '../../src/index.js';
-// DAXSQL_OPTIMIZE=0: the SQL with none of the emitter's rewrites (CI runs this both ways).
-const OPTIMIZE = process.env.DAXSQL_OPTIMIZE === '0' ? { optimize: false } : {};
 import { ossieToModel, tmslToOssie } from '../ossie.js';
 import { sqlName, sourceColumnOf } from '../ossie-sql.js';
 import { ordered, compare, rows, norm } from './ossie-compare.mjs';
@@ -344,7 +342,7 @@ for (const [i, m] of models().entries()) {
   }
   let dax;
   try {
-    dax = createCompiler(ossieToModel(doc), OPTIMIZE);
+    dax = createCompiler(ossieToModel(doc));
   } catch (e) {
     results.push({ model: m.label, id: `${m.label}: the model`, template: 'model', sql: '', outcome: 'gap', detail: e.message.split('\n')[0] });
     continue;

@@ -17,7 +17,8 @@ const UNITS = { day: 'DAY', week: 'WEEK', month: 'MONTH', quarter: 'QUARTER', ye
 const unit = u => UNITS[String(u).replace(/'/g, '').toLowerCase()] ?? String(u).replace(/'/g, '').toUpperCase();
 const part = (f, x) => `CAST(EXTRACT(${f} FROM ${x}) AS BIGINT)`;
 // The first day of month number m (year * 12 + month - 1).
-const first = m => `CAST(CONCAT(LPAD(CAST(CAST(floor((${m}) / 12) AS BIGINT) AS VARCHAR), 4, '0'), '-', LPAD(CAST(CAST((${m}) % 12 + 1 AS BIGINT) AS VARCHAR), 2, '0'), '-01') AS DATE)`;
+// (|| keeps a blank blank: CONCAT reads it as '', which is no date.)
+const first = m => `CAST(LPAD(CAST(CAST(floor((${m}) / 12) AS BIGINT) AS VARCHAR), 4, '0') || '-' || LPAD(CAST(CAST((${m}) % 12 + 1 AS BIGINT) AS VARCHAR), 2, '0') || '-01' AS DATE)`;
 const monthOf = x => `(${part('YEAR', x)} * 12 + ${part('MONTH', x)} - 1)`;
 // A date k months on: its day in that month, or the month's last.
 const addMonths = (x, k) => {
@@ -30,6 +31,9 @@ export class PolarsDialect extends PostgresDialect {
   session = [];
   materialized = '';
   subqueryInCase = true;
+  // Each relation a SELECT reads a CTE of its own: Polars' parser takes subqueries nested only
+  // so deep (a calculation group's plan is past it).
+  flatSql = true;
 
   isNotDistinct(a, b) { return `(${a} IS NOT DISTINCT FROM ${b})`; }
   keysTogether = null;

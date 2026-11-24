@@ -26,7 +26,15 @@ export class PlanSql extends Emitter {
 
   query({ plan: root }) {
     this.defs = new Map();
-    for (const d of root.defs) this.defs.set(d, { name: this.alias('v'), sql: this.rel(d.rel) });
+    // The WITH's relations in order, each after those it reads: the definitions and (a dialect
+    // whose parser nests subqueries only so deep: Polars) each relation a SELECT reads.
+    this.ctes = [];
+    for (const d of root.defs) {
+      const e = { name: this.alias('v') };
+      this.defs.set(d, e);
+      e.sql = this.rel(d.rel);
+      this.ctes.push(e);
+    }
     const a = this.alias('q');
     const items = root.items.map(i => {
       let s = this.scalar(i.expr, EMPTY);
@@ -38,14 +46,20 @@ export class PlanSql extends Emitter {
     if (root.order.length) sql += ` ORDER BY ${root.order.map(o => this.orderBy(this.scalar(o.expr, EMPTY), o.desc)).join(', ')}`;
     if (root.limit) sql += this.d.limit(root.limit.n, root.limit.offset, root.order.length > 0);
     // The definitions, each evaluated once.
-    if (this.defs.size) sql = `WITH ${[...this.defs.values()].map(d => `${d.name} AS ${this.d.materialized}(${d.sql})`).join(',\n')}\n${sql}`;
+    if (this.ctes.length) sql = `WITH ${this.ctes.map(d => `${d.name} AS ${this.d.materialized}(${d.sql})`).join(',\n')}\n${sql}`;
     return this.d.finish(sql);
   }
 
   // A relation: a SELECT of its columns.
   rel(r) {
     const cn = c => this.cn(c);
-    const from = (x, p = 's') => { const a = this.alias(p); return `(${this.rel(x)}) AS ${a}`; };
+    const from = (x, p = 's') => {
+      const a = this.alias(p);
+      if (!this.d.flatSql) return `(${this.rel(x)}) AS ${a}`;
+      const e = { name: this.alias('w'), sql: this.rel(x) };
+      this.ctes.push(e);
+      return `${e.name} AS ${a}`;
+    };
     // What a SELECT reads x from: a join's FROM, a filter's WHERE, in the SELECT itself (not a
     // SELECT * around them).
     const body = x => {

@@ -1,0 +1,4 @@
+// note: which wrappers of a fixed decimal keep it a fixed decimal when divided (4 places) or make it a double: ROUND to 0 and 2 places, MAX of a fixed decimal column, a VAR, an IF of two fixed decimals, a fixed decimal over a RANKX
+EVALUATE ROW("r2", DIVIDE(ROUND([Sales Amount], 2), 7), "r0", ROUND([Sales Amount], 0) / 7, "mx", DIVIDE(MAX(Sales[Amount]) * 2, 7),
+    "v", VAR v = [Sales Amount] RETURN DIVIDE(v, 7), "i", DIVIDE(IF(1 = 1, MAX(Sales[Amount]), SUM(Sales[Amount])), 7),
+    "rk", DIVIDE([Sales Amount], 7 * RANKX(ALL(Product[Color]), [Sales Amount])))

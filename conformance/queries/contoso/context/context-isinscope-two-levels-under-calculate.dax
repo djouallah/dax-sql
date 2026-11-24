@@ -1,0 +1,6 @@
+// note: ISINSCOPE of two grouped columns of one table (City, Customer) when CALCULATE replaces the filter of one of them, and with TREATAS of one value
+EVALUATE SUMMARIZECOLUMNS(Customer[City], Customer[Customer],
+    "cityAfterCustomer", CALCULATE(ISINSCOPE(Customer[City]), Customer[Customer] <> "Alice"),
+    "customerAfterCity", CALCULATE(ISINSCOPE(Customer[Customer]), Customer[City] <> "Paris"),
+    "treatasOne", CALCULATE(ISINSCOPE(Customer[Customer]), TREATAS({ "Bob" }, Customer[Customer])),
+    "sumIfInScope", CALCULATE(IF(ISINSCOPE(Customer[Customer]), 1, 2), Customer[Customer] <> "Alice"))

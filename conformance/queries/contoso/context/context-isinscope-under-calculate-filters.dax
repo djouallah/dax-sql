@@ -1,0 +1,9 @@
+// note: ISINSCOPE of a grouped column under CALCULATE: its filter replaced (by several values, by one), kept (KEEPFILTERS), removed (ALL of it, of its table), a filter on another column of its table
+EVALUATE SUMMARIZECOLUMNS(Customer[Customer],
+    "plain", ISINSCOPE(Customer[Customer]),
+    "replaced", CALCULATE(ISINSCOPE(Customer[Customer]), Customer[Customer] <> "Alice"),
+    "replacedOne", CALCULATE(ISINSCOPE(Customer[Customer]), Customer[Customer] = "Bob"),
+    "kept", CALCULATE(ISINSCOPE(Customer[Customer]), KEEPFILTERS(Customer[Customer] <> "Alice")),
+    "all", CALCULATE(ISINSCOPE(Customer[Customer]), ALL(Customer[Customer])),
+    "allTable", CALCULATE(ISINSCOPE(Customer[Customer]), ALL(Customer)),
+    "otherColumn", CALCULATE(ISINSCOPE(Customer[Customer]), Customer[City] = "Paris"))

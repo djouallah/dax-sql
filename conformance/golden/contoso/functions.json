@@ -1,0 +1,564 @@
+{
+ "functions-bitwise": {
+  "hash": "9ef324d8e7360fa60c5a3337e354a2842ab5706e",
+  "columns": [
+   "[and]",
+   "[or]",
+   "[xor]",
+   "[lshift]",
+   "[rshift]",
+   "[neg]"
+  ],
+  "rows": [
+   [
+    8,
+    14,
+    6,
+    48,
+    3,
+    255
+   ]
+  ]
+ },
+ "functions-bonds": {
+  "hash": "5ebeff3f2ba6770deea0fdaa1975afd884908fa7",
+  "columns": [
+   "[price]",
+   "[yield]",
+   "[duration]",
+   "[accrintm]",
+   "[coupdays]",
+   "[coupdaybs]",
+   "[coupdaysnc]",
+   "[coupncd]",
+   "[couppcd]",
+   "[coupnum]"
+  ],
+  "rows": [
+   [
+    94.63436162132213,
+    0.06500000688073143,
+    10.919145281591932,
+    20.54794520547945,
+    181.0,
+    71,
+    110,
+    "2011-05-15",
+    "2010-11-15",
+    4
+   ]
+  ]
+ },
+ "functions-combinatorics": {
+  "hash": "4950109a94694ae98ac18437482e27ccf50d1631",
+  "error": "Query (2, 79) An argument of function 'COMBIN' has the wrong data type or the result is too large or too small."
+ },
+ "functions-define-function": {
+  "hash": "b055bd7c2aa45871cd7b6fe112b826c549d065c6",
+  "columns": [
+   "Category[Category]",
+   "[Sales]",
+   "[With Tax]"
+  ],
+  "rows": [
+   [
+    "Bikes",
+    5600.0,
+    6160.0
+   ],
+   [
+    "Clothing",
+    530.0,
+    583.0
+   ]
+  ]
+ },
+ "functions-depreciation": {
+  "hash": "eeb48550b83c878a832d75de4cc869a418a22e7f",
+  "columns": [
+   "[sln]",
+   "[syd]",
+   "[db]",
+   "[ddb]",
+   "[vdb]"
+  ],
+  "rows": [
+   [
+    2250.0,
+    4090.909090909091,
+    186083.33333333334,
+    480.0,
+    480.0
+   ]
+  ]
+ },
+ "functions-evaluateandlog": {
+  "hash": "d4e5313a580e2231bf3f8f01eaa4b6ad4d27cfa0",
+  "columns": [
+   "Category[Category]",
+   "[Sales]"
+  ],
+  "rows": [
+   [
+    "Bikes",
+    5600.0
+   ],
+   [
+    "Clothing",
+    530.0
+   ]
+  ]
+ },
+ "functions-financial-loan": {
+  "hash": "4cf2daa7988029a5b1cd492f05420b2b1b114705",
+  "columns": [
+   "[pmt]",
+   "[ipmt]",
+   "[ppmt]",
+   "[pv]",
+   "[fv]",
+   "[nper]",
+   "[rate]",
+   "[cumipmt]",
+   "[cumprinc]",
+   "[ispmt]",
+   "[effect]",
+   "[nominal]",
+   "[rri]",
+   "[pduration]"
+  ],
+  "rows": [
+   [
+    -1037.0320893591522,
+    -66.66666666666667,
+    -75.62318600836633,
+    -59777.14585118782,
+    2581.4033740601185,
+    59.67386567429457,
+    0.007701472488201368,
+    -11135.232130750841,
+    -934.1071234208979,
+    -64814.81481481482,
+    0.05354266737075841,
+    0.052500319868356016,
+    0.0009933073762913303,
+    3.859866162622655
+   ]
+  ]
+ },
+ "functions-firstnonblankvalue-by-year": {
+  "hash": "d5742fdabd2b6f46461451bab3c60cf5de472563",
+  "columns": [
+   "Date[Year]",
+   "[First Day Sales]",
+   "[Last Day Sales]"
+  ],
+  "rows": [
+   [
+    2023,
+    1000.0,
+    50.0
+   ],
+   [
+    2024,
+    2000.0,
+    20.0
+   ]
+  ]
+ },
+ "functions-geomean-by-category": {
+  "hash": "b2e4d7112ee0b0d4c9cd0f213c953be46ff58f23",
+  "columns": [
+   "Category[Category]",
+   "[Geomean Price]",
+   "[Geomean Qty]"
+  ],
+  "rows": [
+   [
+    "Accessories",
+    59.999999999999986,
+    null
+   ],
+   [
+    "Bikes",
+    894.4271909999161,
+    1.148698354997035
+   ],
+   [
+    "Clothing",
+    31.62277660168379,
+    2.220906154852325
+   ]
+  ]
+ },
+ "functions-isonorafter": {
+  "hash": "5fc288c074a84aa8aff7fd8e047cd5cdf6006625",
+  "columns": [
+   "[Name]",
+   "[Price]"
+  ],
+  "rows": [
+   [
+    "Cap",
+    20.0
+   ]
+  ]
+ },
+ "functions-linestx": {
+  "hash": "61f5a2e42d45552172347d5bbe9c55dcbeda2c9f",
+  "columns": [
+   "[Slope]",
+   "[Intercept]",
+   "[R2]"
+  ],
+  "rows": [
+   [
+    -145.49999999999997,
+    848.2727272727273,
+    0.1077251784450417
+   ]
+  ]
+ },
+ "functions-networkdays-yearfrac": {
+  "hash": "33db48a25fb288642c30f4188933e6702aa41167",
+  "columns": [
+   "[Order]",
+   "[Ship]",
+   "[Workdays]",
+   "[Fri-Sat Weekend]",
+   "[Year Frac]",
+   "[Year Frac Actual]"
+  ],
+  "rows": [
+   [
+    "2023-01-15",
+    "2023-01-20",
+    5,
+    5,
+    0.013888888888888888,
+    0.0136986301369863
+   ],
+   [
+    "2023-02-10",
+    "2023-02-12",
+    1,
+    1,
+    0.005555555555555556,
+    0.005479452054794521
+   ],
+   [
+    "2023-02-20",
+    "2023-03-02",
+    9,
+    9,
+    0.03333333333333333,
+    0.0273972602739726
+   ],
+   [
+    "2023-06-05",
+    "2023-06-07",
+    3,
+    3,
+    0.005555555555555556,
+    0.005479452054794521
+   ],
+   [
+    "2023-12-30",
+    "2024-01-03",
+    3,
+    4,
+    0.008333333333333333,
+    0.010958904109589041
+   ]
+  ]
+ },
+ "functions-normal-distribution": {
+  "hash": "2e3c939228e1edbfe3b12755c9364c7688f1689c",
+  "columns": [
+   "[norm]",
+   "[normpdf]",
+   "[norminv]",
+   "[snorm]",
+   "[snorminv]",
+   "[expon]",
+   "[poisson]",
+   "[poissonpmf]"
+  ],
+  "rows": [
+   [
+    0.9087887802741321,
+    0.10934004978399575,
+    42.00000200956616,
+    0.9087887256040951,
+    1.3333346730441071,
+    0.8646647167633873,
+    0.12465201948308113,
+    0.08422433748856833
+   ]
+  ]
+ },
+ "functions-rank-eq": {
+  "hash": "590ef6bae45417cef1d3509eea85dfb5efd64eaf",
+  "columns": [
+   "Product[Name]",
+   "[Price]",
+   "[Rank Desc]",
+   "[Rank Asc]"
+  ],
+  "rows": [
+   [
+    "Cap",
+    20.0,
+    5,
+    1
+   ],
+   [
+    "Helmet",
+    60.0,
+    3,
+    3
+   ],
+   [
+    "Jersey",
+    50.0,
+    4,
+    2
+   ],
+   [
+    "Mountain Bike",
+    800.0,
+    2,
+    4
+   ],
+   [
+    "Road Bike",
+    1000.0,
+    1,
+    5
+   ]
+  ]
+ },
+ "functions-rollup-summarize": {
+  "hash": "e2882798bacd66eb4975893c6c59202fb285439d",
+  "columns": [
+   "Product[Color]",
+   "[Sales]",
+   "[Is Total]"
+  ],
+  "rows": [
+   [
+    "Black",
+    1600.0,
+    false
+   ],
+   [
+    "Blue",
+    180.0,
+    false
+   ],
+   [
+    "Red",
+    4350.0,
+    false
+   ],
+   [
+    null,
+    6130.0,
+    true
+   ]
+  ]
+ },
+ "functions-securities": {
+  "hash": "c6dbae26a0c56320e32fa6e866c1f5e3ccc4affc",
+  "columns": [
+   "[disc]",
+   "[intrate]",
+   "[received]",
+   "[pricedisc]",
+   "[yielddisc]",
+   "[tbillprice]",
+   "[tbillyield]",
+   "[tbilleq]",
+   "[dollarde]",
+   "[dollarfr]"
+  ],
+  "rows": [
+   [
+    0.0006863841691213484,
+    0.05768,
+    1014584.6544071021,
+    99.79583333333333,
+    0.05282257198685834,
+    98.45,
+    0.09141696292534264,
+    0.09415149356594302,
+    1.125,
+    1.02
+   ]
+  ]
+ },
+ "functions-t-chisq-beta": {
+  "hash": "b61cad94b145dec61235aba2f7fc053ec931c0e3",
+  "columns": [
+   "[t]",
+   "[t2]",
+   "[trt]",
+   "[tinv]",
+   "[tinv2]",
+   "[chi]",
+   "[chirt]",
+   "[chiinv]",
+   "[chiinvrt]",
+   "[beta]",
+   "[betainv]",
+   "[cnorm]",
+   "[ct]"
+  ],
+  "rows": [
+   [
+    0.9607818798761502,
+    0.07843624024769971,
+    0.039218120123849856,
+    0.8164965809277259,
+    0.606533075825759,
+    0.5204998778130465,
+    0.05000058909139811,
+    3.2830202867595295,
+    18.306973456961057,
+    0.6854705810546873,
+    1.9999999999631426,
+    0.6929519121748386,
+    0.2841968554957298
+   ]
+  ]
+ },
+ "functions-timevalue": {
+  "hash": "d7ca9d1fb73d561326e3096380e61e6535008be7",
+  "columns": [
+   "[t]",
+   "[pm]",
+   "[withdate]"
+  ],
+  "rows": [
+   [
+    "1899-12-30 14:30:15",
+    "1899-12-30 14:30:00",
+    "1899-12-30 08:15:00"
+   ]
+  ]
+ },
+ "functions-tocsv-tojson": {
+  "hash": "8deadb1a42c37b2f757a416f53ef79ca09025410",
+  "columns": [
+   "[csv]",
+   "[json]"
+  ],
+  "rows": [
+   [
+    "[Key],[Name]\n3,Jersey\n1,Road Bike\n2,Mountain Bike",
+    "{\n\t\"header\": [\"[Key]\", \"[Name]\"],\n\t\"rowCount\": 3,\n\t\"data\": [\n\t\t[3, \"Jersey\"],\n\t\t[1, \"Road Bike\"],\n\t\t[2, \"Mountain Bike\"]\n\t]\n}"
+   ]
+  ]
+ },
+ "functions-trigonometry": {
+  "hash": "7f248ef4fe57c80e7babffc06059d2bb19115d2b",
+  "columns": [
+   "[sin]",
+   "[cos]",
+   "[tan]",
+   "[asin]",
+   "[acos]",
+   "[atan]",
+   "[cot]",
+   "[acot]",
+   "[sinh]",
+   "[cosh]",
+   "[tanh]",
+   "[asinh]",
+   "[acosh]",
+   "[atanh]",
+   "[coth]",
+   "[acoth]",
+   "[deg]",
+   "[rad]",
+   "[sqrtpi]"
+  ],
+  "rows": [
+   [
+    0.479425538604203,
+    0.8775825618903728,
+    0.5463024898437905,
+    0.5235987755982989,
+    1.0471975511965976,
+    0.4636476090008061,
+    1.830487721712452,
+    1.1071487177940904,
+    0.5210953054937474,
+    1.1276259652063807,
+    0.4621171572600098,
+    0.48121182505960347,
+    0.9624236501192069,
+    0.5493061443340549,
+    2.163953413738653,
+    0.8047189562170501,
+    180.0,
+    3.141592653589793,
+    2.5066282746310002
+   ]
+  ]
+ },
+ "functions-trigonometry-by-product": {
+  "hash": "d81d93843e0bf8a07510698fd6a699940acdbac6",
+  "columns": [
+   "[Product]",
+   "[Sin]",
+   "[Atan]",
+   "[Degrees]"
+  ],
+  "rows": [
+   [
+    "Cap",
+    0.19866933079506122,
+    1.5208379310729538,
+    11.459155902616466
+   ],
+   [
+    "Helmet",
+    0.5646424733950354,
+    1.554131203080956,
+    34.37746770784939
+   ],
+   [
+    "Jersey",
+    0.479425538604203,
+    1.550798992821746,
+    28.64788975654116
+   ],
+   [
+    "Mountain Bike",
+    0.9893582466233818,
+    1.5695463274459376,
+    458.3662361046586
+   ],
+   [
+    "Road Bike",
+    -0.5440211108893698,
+    1.5697963271282298,
+    572.9577951308232
+   ]
+  ]
+ },
+ "functions-xnpv-xirr": {
+  "hash": "0299c42b6a54654f624706f5a95250f62bcce64b",
+  "columns": [
+   "[xnpv]",
+   "[xirr]"
+  ],
+  "rows": [
+   [
+    2089.50163605296,
+    0.3748586006462573
+   ]
+  ]
+ }
+}

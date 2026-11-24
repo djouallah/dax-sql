@@ -146,6 +146,21 @@
    ]
   ]
  },
+ "format-locale-fr-de": {
+  "hash": "e5e0ac7daad7c1caea195ebd4f0dd8bb6cc5f829",
+  "columns": [
+   "[fr]",
+   "[de]",
+   "[frdate]"
+  ],
+  "rows": [
+   [
+    "1 234 567,89",
+    "1.234.567,89",
+    "mardi 5 mars 2024"
+   ]
+  ]
+ },
  "format-measure-never-blank": {
   "hash": "988812b833630f70e981dd0d82f62bc308fae53b",
   "columns": [
@@ -225,6 +240,35 @@
     "Mountain Bike",
     "($800.00)",
     "002"
+   ]
+  ]
+ },
+ "format-pattern-from-a-column": {
+  "hash": "4c1c38ca0ee4ad037f612d5b84a9dfb080099ef8",
+  "columns": [
+   "[Product]",
+   "[Price]"
+  ],
+  "rows": [
+   [
+    "Cap",
+    "20.00"
+   ],
+   [
+    "Helmet",
+    "60.00"
+   ],
+   [
+    "Jersey",
+    "50.00"
+   ],
+   [
+    "Mountain Bike",
+    "800"
+   ],
+   [
+    "Road Bike",
+    "1,000"
    ]
   ]
  },

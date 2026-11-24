@@ -75,6 +75,28 @@ jobs:
             const rows = t.map(x => `| ${x.id} | ${(x.ms / 1000).toFixed(1)} |`).join("\n");
             require("fs").appendFileSync(process.env.GITHUB_STEP_SUMMARY, `### The slowest on Fabric\n\n| query | s |\n|---|---|\n${rows}\n`);
           ' "$RUNNER_TEMP/tsql-times.json"
+      # The correlated plan unnested (src/passes/unnest.js): no apply, no correlated subquery, so
+      # nothing for Fabric to run once for each row. The same known lists as the plan on DuckDB.
+      - name: The suite on Fabric through the unnested query plan
+        if: always()
+        env:
+          DAXSQL_PLAN: unnest
+          TSQL_TIMES: ${{ runner.temp }}/tsql-unnest-times.json
+        run: |
+          node conformance/runner/run.mjs --adapter "node conformance/engines/dax-sql-tsql/adapter.mjs ." \
+            --known conformance/engines/dax-sql-tsql/known.json,conformance/engines/dax-sql/known-plan.json --report "$RUNNER_TEMP/tsql-unnest.json"
+      - name: The slowest through the unnested plan, beside the compiled SQL's
+        if: always()
+        run: |
+          test -f "$RUNNER_TEMP/tsql-unnest-times.json" || exit 0
+          node -e '
+            const u = require(process.argv[1]);
+            let c = [];
+            try { c = require(process.argv[2]); } catch {}
+            const s = id => { const x = c.find(y => y.id === id); return x ? (x.ms / 1000).toFixed(1) : "–"; };
+            const rows = u.slice(0, 20).map(x => `| ${x.id} | ${(x.ms / 1000).toFixed(1)} | ${s(x.id)} |`).join("\n");
+            require("fs").appendFileSync(process.env.GITHUB_STEP_SUMMARY, `### The slowest on Fabric, unnested plan\n\n| query | unnested s | compiled s |\n|---|---|---|\n${rows}\n`);
+          ' "$RUNNER_TEMP/tsql-unnest-times.json" "$RUNNER_TEMP/tsql-times.json"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -82,3 +104,5 @@ jobs:
           path: |
             ${{ runner.temp }}/tsql.json
             ${{ runner.temp }}/tsql-times.json
+            ${{ runner.temp }}/tsql-unnest.json
+            ${{ runner.temp }}/tsql-unnest-times.json

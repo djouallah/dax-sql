@@ -120,7 +120,10 @@ async function answer(ses, q) {
     if (!db.compilers.has(roles)) {
       db.compilers.set(roles, createCompiler(db.model, { dialect: 'tsql', columnNames: 'dax', tableSource: db.tableSource, ...(q.roles ? { roles: q.roles } : {}) }));
     }
-    const { sql, columns } = db.compilers.get(roles).compile(q.dax);
+    // DAXSQL_PLAN=unnest: the SQL of the correlated plan unnested (src/passes/unnest.js), which
+    // has no subquery of each row for Fabric to run as a loop.
+    const c = db.compilers.get(roles);
+    const { sql, columns } = process.env.DAXSQL_PLAN === 'unnest' ? c.planSql(q.dax, { unnest: true }) : c.compile(q.dax);
     if (process.env.TSQL_SHOW) console.error(`${q.id}\n${sql}\n`);
     const t0 = performance.now();
     const r = await ses.run(sql);

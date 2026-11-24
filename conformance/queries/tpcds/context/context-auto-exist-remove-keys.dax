@@ -1,0 +1,18 @@
+// note: auto-exist, which grouped columns tie a filter on another column of their table to the group: grouped by color and price under filters on class and color, the classes left when the price, the color, or both are removed; grouped by price alone under the same filters, with the price removed; and grouped by color and price under a filter on the class only
+EVALUATE
+UNION(
+    SUMMARIZECOLUMNS('item'[i_color], 'item'[i_current_price], TREATAS({ "pants", "fiction" }, 'item'[i_class]), TREATAS({ "olive" }, 'item'[i_color]),
+        "how", "color and price grouped",
+        "noPrice", CALCULATE(CONCATENATEX(VALUES('item'[i_class]), 'item'[i_class], ",", 'item'[i_class], ASC), REMOVEFILTERS('item'[i_current_price])),
+        "noColor", CALCULATE(CONCATENATEX(VALUES('item'[i_class]), 'item'[i_class], ",", 'item'[i_class], ASC), REMOVEFILTERS('item'[i_color])),
+        "noBoth", CALCULATE(CONCATENATEX(VALUES('item'[i_class]), 'item'[i_class], ",", 'item'[i_class], ASC), REMOVEFILTERS('item'[i_current_price], 'item'[i_color]))),
+    SELECTCOLUMNS(
+        SUMMARIZECOLUMNS('item'[i_current_price], TREATAS({ "pants", "fiction" }, 'item'[i_class]), TREATAS({ "olive" }, 'item'[i_color]),
+            "noPrice", CALCULATE(CONCATENATEX(VALUES('item'[i_class]), 'item'[i_class], ",", 'item'[i_class], ASC), REMOVEFILTERS('item'[i_current_price]))),
+        "color", "-", "price", 'item'[i_current_price], "how", "price grouped", "noPrice", [noPrice], "noColor", "-", "noBoth", "-"),
+    SUMMARIZECOLUMNS('item'[i_color], 'item'[i_current_price], TREATAS({ "pants", "fiction" }, 'item'[i_class]),
+        "how", "class filter only",
+        "noPrice", CALCULATE(CONCATENATEX(VALUES('item'[i_class]), 'item'[i_class], ",", 'item'[i_class], ASC), REMOVEFILTERS('item'[i_current_price])),
+        "noColor", CALCULATE(CONCATENATEX(VALUES('item'[i_class]), 'item'[i_class], ",", 'item'[i_class], ASC), REMOVEFILTERS('item'[i_color])),
+        "noBoth", CALCULATE(CONCATENATEX(VALUES('item'[i_class]), 'item'[i_class], ",", 'item'[i_class], ASC), REMOVEFILTERS('item'[i_current_price], 'item'[i_color])))
+)

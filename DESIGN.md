@@ -1204,7 +1204,9 @@ Where it differs from PostgreSQL's:
 - No `MATERIALIZED`.
 - A value is written where it is read, not bound in a subquery's row: that row reads the outer
   row by its columns' names alone, which Polars does not find (pola-rs/polars#31067).
-- A difference of dates in days is the days since 1970 (a date less a date is a duration).
+- A date is a `TIMESTAMP` at midnight, as a DAX date is a date and time: a Polars `DATE` takes no
+  time of day. A difference of dates in days is the days since 1970 (a date less a date is a
+  duration).
 - An interval is of a fixed length: a constant number of months is `INTERVAL 'k months'`, any
   other number made of the date's parts.
 - A blank-safe key is `IS NOT DISTINCT FROM` (no `ARRAY = ARRAY`, no `ROW()::record`).

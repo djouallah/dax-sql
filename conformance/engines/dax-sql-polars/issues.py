@@ -132,3 +132,10 @@ for name, q in [
     ("g6 a LEFT JOIN's column (no scalar subquery) in date_trunc", "WITH j AS (SELECT * FROM u AS a LEFT JOIN (SELECT ts AS ts2 FROM u) AS b ON ts2 = a.ts) SELECT date_trunc('year', ts2) AS y FROM j"),
 ]:
     run(name, lambda q=q: sorted(small.execute(q, eager=True).rows(), key=str))
+# The outer column read inside the IN's derived table (fuzz2-0101 has it there), not above it.
+for name, q in [
+    ("h1 date_trunc of an unqualified outer column in an IN's derived table", "SELECT ts FROM (SELECT ts, ts AS m FROM u) AS o WHERE ts IN (SELECT ts1 FROM (SELECT ts AS ts1 FROM u WHERE ts >= date_trunc('year', m)) AS s)"),
+    ("h2 h1 qualified, o.m", "SELECT ts FROM (SELECT ts, ts AS m FROM u) AS o WHERE ts IN (SELECT ts1 FROM (SELECT ts AS ts1 FROM u WHERE ts >= date_trunc('year', o.m)) AS s)"),
+    ("h3 h1 without date_trunc", "SELECT ts FROM (SELECT ts, ts AS m FROM u) AS o WHERE ts IN (SELECT ts1 FROM (SELECT ts AS ts1 FROM u WHERE ts <= m) AS s)"),
+]:
+    run(name, lambda q=q: sorted(small.execute(q, eager=True).rows(), key=str))

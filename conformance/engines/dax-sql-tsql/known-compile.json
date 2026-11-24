@@ -1,0 +1,4 @@
+[
+  {"id":"patterns/segmentation/segmentation-calc-group-name-ordinal-filter","reason":"slow: past Fabric’s 30 s, a subquery of each group the mapping does not reach yet (TODO.md); the query plan unnested answers it"},
+  {"id":"patterns/segmentation/segmentation-summarize-sply-quarter-band","reason":"slow: past Fabric’s 30 s, a subquery of each group the mapping does not reach yet (TODO.md); the query plan unnested answers it"}
+]

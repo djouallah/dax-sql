@@ -65,7 +65,7 @@ jobs:
           TSQL_TIMES: ${{ runner.temp }}/tsql-times.json
         run: |
           node conformance/runner/run.mjs --adapter "node conformance/engines/dax-sql-tsql/adapter.mjs ." \
-            --known conformance/engines/dax-sql-tsql/known.json --report "$RUNNER_TEMP/tsql.json"
+            --known conformance/engines/dax-sql-tsql/known.json,conformance/engines/dax-sql-tsql/known-compile.json --report "$RUNNER_TEMP/tsql.json"
       - name: The slowest queries
         if: always()
         run: |

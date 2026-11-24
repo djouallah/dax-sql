@@ -56,8 +56,6 @@
   {"id":"edges/relationships/relationships-ship-date-userelationship-by-month","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"},
   {"id":"edges/relationships/relationships-snowflake-region-country-rollup","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"},
   {"id":"edges/relationships/relationships-unknown-store-keys-blank-row","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"},
-  {"id":"patterns/segmentation/segmentation-calc-group-name-ordinal-filter","reason":"slow: past Fabric’s 30 s, a subquery of each group the mapping does not reach yet (TODO.md)"},
-  {"id":"patterns/segmentation/segmentation-summarize-sply-quarter-band","reason":"slow: past Fabric’s 30 s, a subquery of each group the mapping does not reach yet (TODO.md)"},
   {"id":"contoso/paths/paths-path-functions","reason":"by design: PATH is not supported (a parent-child path needs recursion, which a relational plan has not): the path is a column computed in the source, as Power BI requires in DirectQuery"},
   {"id":"contoso/paths/paths-path-ignores-filters","reason":"by design: PATH is not supported (a parent-child path needs recursion, which a relational plan has not): the path is a column computed in the source, as Power BI requires in DirectQuery"},
   {"id":"contoso/paths/paths-pathcontains-team-size","reason":"by design: PATH is not supported (a parent-child path needs recursion, which a relational plan has not): the path is a column computed in the source, as Power BI requires in DirectQuery"},

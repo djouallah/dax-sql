@@ -142,6 +142,11 @@ export class PlanSql extends Emitter {
       }
       case 'series': {
         const g = this.alias('g');
+        // An engine with no LATERAL (Polars): each bound a scalar subquery over the one row of src.
+        if (r.src && this.d.seriesBoundsAsSubqueries) {
+          const row = from(r.src), b = x => `(SELECT ${this.scalar(x, EMPTY)} FROM ${row})`;
+          return `SELECT ${g}.v AS ${cn(r.cols[0])} FROM ${this.d.series(b(r.start), b(r.end), b(r.step), r.t)} AS ${g}`;
+        }
         const rows = this.d.series(this.scalar(r.start, EMPTY), this.scalar(r.end, EMPTY), this.scalar(r.step, EMPTY), r.t);
         if (!r.src) return `SELECT ${g}.v AS ${cn(r.cols[0])} FROM ${rows} AS ${g}`;
         // Bounds read off the one row of src: the series for that row.

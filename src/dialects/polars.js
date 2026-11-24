@@ -34,6 +34,16 @@ const constInt = n => (n?.k === 'lit' && Number.isInteger(n.v) ? n.v
 // A constant number of months: an INTERVAL (of months it is, of the month's last day at most).
 const months = (x, k) => (k === 0 ? x : `(${x} ${k > 0 ? '+' : '-'} INTERVAL '${Math.abs(k)} months')`);
 
+const MONTHS = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
+// Text as a TIMESTAMP: M/D/YYYY, "Month D, YYYY" (or Mon), else ISO; a blank where none reads.
+function parseDate(x) {
+  const pad = v => `LPAD(${v}, 2, '0')`;
+  const slash = `CASE WHEN ${x} LIKE '%/%/%' THEN split_part(split_part(${x}, '/', 3), ' ', 1) || '-' || ${pad(`split_part(${x}, '/', 1)`)} || '-' || ${pad(`split_part(${x}, '/', 2)`)} END`;
+  const word = `lower(split_part(trim(${x}), ' ', 1))`;
+  const month = `CASE ${MONTHS.map((m, i) => `WHEN ${word} IN ('${m}', '${m.slice(0, 3)}') THEN '${String(i + 1).padStart(2, '0')}'`).join(' ')} END`;
+  const named = `split_part(trim(${x}), ' ', 3) || '-' || ${month} || '-' || ${pad(`rtrim(split_part(trim(${x}), ' ', 2), ',')`)}`;
+  return `COALESCE(TRY_CAST(${slash} AS TIMESTAMP), TRY_CAST(${named} AS TIMESTAMP), TRY_CAST(${x} AS TIMESTAMP))`;
+}
 // A blank as a key, by type: a value no data holds.
 const SENTINELS = {
   int: 'CAST(-9223372036854775807 AS BIGINT)', double: 'CAST(-1.7976931348623157e308 AS DOUBLE PRECISION)',
@@ -75,6 +85,15 @@ export class PolarsDialect extends PostgresDialect {
   }
   bind(vals, body) { return body(...vals); }
   sumOfGroups(v) { return `SUM(${v})`; }
+  // generate_series as a table (its scalar form is a list); dates as days since 1970 (its step
+  // no interval).
+  series(start, end, step, t) {
+    if (t === 'datetime') return `(SELECT CAST(CAST(i AS DATE) AS TIMESTAMP) AS v FROM generate_series(CAST(CAST(${start} AS DATE) AS BIGINT), CAST(CAST(${end} AS DATE) AS BIGINT), ${int(step)}) AS r(i))`;
+    if (t === 'int') return `(SELECT * FROM generate_series(CAST(${start} AS BIGINT), CAST(${end} AS BIGINT), CAST(${step} AS BIGINT)) AS r(v))`;
+    return super.series(start, end, step, t);
+  }
+  // A series whose bounds are a row's: read off that row by scalar subqueries (no LATERAL).
+  seriesBoundsAsSubqueries = true;
 
   fn(name, a, nodes = []) {
     // PostgreSQL's functions of a date that give a DATE: a TIMESTAMP.
@@ -82,6 +101,20 @@ export class PolarsDialect extends PostgresDialect {
     const [x, y, z] = a;
     switch (name) {
       case 'log10': return `log10(${x})`;
+      // Text as a date and time, in en-US forms too: Polars' CAST reads ISO text only, and 3/5/2024
+      // day first. M/D/YYYY and "Month D, YYYY" written as ISO first (no STRPTIME, which fails
+      // on a value of another form even in a branch no row takes).
+      case 'cast': if (/^'(datetime|date)'$/.test(y)) return `CAST(${parseDate(x)} AS TIMESTAMP)`; break;
+      // SUBSTITUTE's k-th occurrence (k a constant: Polars slices no array): the text before it is
+      // the first k pieces split on the old text, and k - 1 of it between them.
+      case 'substitute': {
+        const k = constInt(nodes[3]);
+        if (a[3] === undefined || k == null || k < 1) break;
+        const pieces = Array.from({ length: k }, (_, i) => `LENGTH(split_part(${x}, ${y}, ${i + 1}))`);
+        const before = `(${pieces.join(' + ')} + ${k - 1} * LENGTH(${y}))`;
+        return `CASE WHEN ${y} = '' OR array_length(string_to_array(${x}, ${y})) <= ${k} THEN ${x}
+          ELSE LEFT(${x}, ${before}) || ${z} || substr(${x}, ${before} + LENGTH(${y}) + 1) END`;
+      }
       case 'containsstring': return `(${this.strpos(`lower(COALESCE(${x}, ''))`, `lower(COALESCE(${y}, ''))`)} > 0)`;
       case 'containsstringexact': return `(${this.strpos(`COALESCE(${x}, '')`, `COALESCE(${y}, '')`)} > 0)`;
       case 'search': case 'find': {

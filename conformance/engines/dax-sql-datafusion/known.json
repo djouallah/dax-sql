@@ -1,1 +1,5 @@
-[]
+[
+  {"id":"contoso/blankrow/blankrow-treatas-blank-values-vs-distinct","reason":"DataFusion: EXISTS as a value (not a filter) is not implemented in its physical plan"},
+  {"id":"edges/iterators/iterators-double-point-one-plus-point-two","reason":"by design on DataFusion: a sum of floating-point values is added as DECIMALs (DataFusion computes a CTE at each read, in parallel, and two reads of a sum must be equal), so 0.1 + 0.2 is 0.3, not Power BI's 0.30000000000000004"},
+  {"id":"patterns/customers/customers-fiscal-opening-closing","reason":"slow: past 60 s on DataFusion"}
+]

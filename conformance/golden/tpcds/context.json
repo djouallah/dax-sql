@@ -1,6 +1,71 @@
 {
  "context-auto-exist-remove-grouped-column": {
-  "hash": "327917807813293ad565096899cbf52730a1893b",
-  "error": "Query (4, 22) The syntax for '<ccon>item</ccon>' is incorrect. (<ccon>// note: auto-exist when a measure removes a column grouped by (no filter argument of its own) on the table of a filter argument: grouped by color and price under a filter on class, what is left of the class filter with the price removed (ALL, REMOVEFILTERS, RANKX's row of each price), with the filter plain, under KEEPFILTERS, and with a filter on the color too"
+  "hash": "1d73cf980a2641f6b7f31aa31ea11c10f6ef80eb",
+  "columns": [
+   "item[i_color]",
+   "item[i_current_price]",
+   "[how]",
+   "[allPrice]",
+   "[removePrice]",
+   "[perPrice]"
+  ],
+  "rows": [
+   [
+    "olive",
+    51.38,
+    "plain",
+    "pants",
+    "pants",
+    ";;;;;;;;;;;pants;;;;"
+   ],
+   [
+    "olive",
+    40.25,
+    "plain",
+    "fiction",
+    "fiction",
+    ";;;;;;;;fiction;;;;;;;"
+   ],
+   [
+    "olive",
+    51.38,
+    "keepfilters",
+    "pants",
+    "pants",
+    ";;;;;;;;;;;pants;;;;"
+   ],
+   [
+    "olive",
+    40.25,
+    "keepfilters",
+    "fiction",
+    "fiction",
+    ";;;;;;;;fiction;;;;;;;"
+   ],
+   [
+    "olive",
+    36.64,
+    "no class filter",
+    "dresses,fiction,pants",
+    "dresses,fiction,pants",
+    ";;;;dresses;;;;fiction;;;pants;;;;"
+   ],
+   [
+    "olive",
+    40.25,
+    "no class filter",
+    "dresses,fiction,pants",
+    "dresses,fiction,pants",
+    ";;;;dresses;;;;fiction;;;pants;;;;"
+   ],
+   [
+    "olive",
+    51.38,
+    "no class filter",
+    "dresses,fiction,pants",
+    "dresses,fiction,pants",
+    ";;;;dresses;;;;fiction;;;pants;;;;"
+   ]
+  ]
  }
 }

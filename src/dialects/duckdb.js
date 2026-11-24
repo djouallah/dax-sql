@@ -13,6 +13,8 @@ const EN_US_DATES = ['%m/%d/%Y', '%m/%d/%Y %I:%M:%S %p', '%m/%d/%Y %I:%M %p', '%
 
 export class DuckDBDialect extends Dialect {
   name = 'duckdb';
+  // The plan's defined functions DuckDB has its own of (FORMAT's, UNICODE: unicode()).
+  nativeFns = new Set(['format_number', 'format_date', 'unicode']);
   materialized = 'MATERIALIZED ';
   supportsQualify = true;
   aggBelowJoins = true;

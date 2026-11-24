@@ -366,10 +366,12 @@ function fn(x) {
     case 'trim_ends': return call('trim', [T(0)], 'string');
     // DAX's TRIM: the spaces at the ends gone, and each run of them inside one space.
     case 'trim': return call('regexp_replace', [call('trim', [T(0)], 'string'), lit(' {2,}', 'string'), lit(' ', 'string')], 'string');
-    case 'exact': return cond('eq', [coalesce(T(0), lit('', 'string')), coalesce(T(1), lit('', 'string'))]);
+    // EXACT: named, as T-SQL's (its = takes no trailing spaces, by its collation) is its own.
+    case 'exact': return P.defined('exact', [T(0), T(1)], cond('eq', [coalesce(T(0), lit('', 'string')), coalesce(T(1), lit('', 'string'))]));
     case 'containsstringexact': return call('contains', [coalesce(T(0), lit('', 'string')), coalesce(T(1), lit('', 'string'))], 'bool', true);
     case 'containsstring': return call('contains', [call('lower', [coalesce(T(0), lit('', 'string'))], 'string'), call('lower', [coalesce(T(1), lit('', 'string'))], 'string')], 'bool', true);
-    case 'unicode': return DEF.codePoint(T(0));
+    // UNICODE: named, as an engine's own function of a character's code (any character) is.
+    case 'unicode': return P.defined('unicode', [T(0)], DEF.codePoint(T(0)));
     // FIND(text, within, start, notfound), and SEARCH without regard to case.
     case 'find': case 'search': {
       const low = v => (x.name === 'search' ? call('lower', [v], 'string') : v);
@@ -377,7 +379,9 @@ function fn(x) {
       const pos = call('strpos', [low(within), low(coalesce(T(0), lit('', 'string')))], 'int');
       return caseOf([[cond('eq', [pos, int(0)]), a[3]]], pop('add', [pos, pop('sub', [s, int(1)], 'int')], 'int'), 'int');
     }
-    case 'substitute': return a.length === 3 ? call('replace', [T(0), T(1), T(2)], 'string') : DEF.replaceNth(T(0), T(1), T(2), a[3]);
+    // (An instance number below 1: DAX's error.)
+    case 'substitute': return a.length === 3 ? call('replace', [T(0), T(1), T(2)], 'string')
+      : caseOf([[cond('lt', [a[3], int(1)]), error('DAX: SUBSTITUTE: the instance number must be 1 or more', 'string')]], DEF.replaceNth(T(0), T(1), T(2), a[3]), 'string');
     // A path's items ("|" between them): "" holds none, a blank path's length is blank, a
     // position past either end is blank.
     case 'pathlength': return caseOf([[cond('eq', [T(0), lit('', 'string')]), int(0)]], pop('add', [pop('sub', [call('length', [T(0)], 'int'), call('length', [call('replace', [T(0), lit('|', 'string'), lit('', 'string')], 'string')], 'int')], 'int'), int(1)], 'int'), 'int');
@@ -419,7 +423,8 @@ function fn(x) {
     case 'format_date': return P.defined('format_date', a, DEF.formatDate(a[0], JSON.parse(x.a[1].v)));
     case 'combinevalues': return DEF.combineValues(T(0), a.slice(1).map(asText));
     case 'year': case 'month': case 'day': case 'hour': case 'minute': case 'second': case 'quarter':
-      return isDate(p.t) ? call(`extract_${x.name}`, [p], 'int') : keep();
+      // Of a number: its date's (a serial number); of anything else, the value as a date and time.
+      return call(`extract_${x.name}`, [isDate(p.t) ? p : isNum(p.t) ? fromSerial(p) : cast(p, 'datetime')], 'int');
     case 'cast': {
       const to = q?.v;
       // Text as a date: an ISO literal (YYYY-MM-DD) a cast; else parse_datetime (DAX's en-US

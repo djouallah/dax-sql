@@ -46,8 +46,11 @@ export class PlanSql extends Emitter {
     let sql = `SELECT ${items.join(', ') || '1 AS one'} FROM (${this.rel(root.src)}) AS ${a}`;
     if (root.order.length) sql += ` ORDER BY ${root.order.map(o => this.orderBy(this.scalar(o.expr, EMPTY), o.desc)).join(', ')}`;
     if (root.limit) sql += this.d.limit(root.limit.n, root.limit.offset, root.order.length > 0);
-    // The definitions, each evaluated once.
-    if (this.ctes.length) sql = `WITH ${this.ctes.map(d => `${d.name} AS ${this.d.materialized}(${d.sql})`).join(',\n')}\n${sql}`;
+    // The definitions, each evaluated once. The same as its CTEs and the SELECT that reads them
+    // (parts), for an engine that cannot nest a WITH (compileStatement lifts them).
+    const ctes = this.ctes.map(d => `${d.name} AS ${this.d.materialized}(${d.sql})`);
+    this.parts = { ctes: ctes.map(c => this.d.finish(c)), body: this.d.finish(sql) };
+    if (ctes.length) sql = `WITH ${ctes.join(',\n')}\n${sql}`;
     return this.d.finish(sql);
   }
 
@@ -194,7 +197,9 @@ export class PlanSql extends Emitter {
     if (x.k === 'pop' && x.op === 'defined') {
       if (!this.d.nativeFns?.has(x.name)) return this.scalar(x.a[x.argc], scope, pred);
       const args = x.a.slice(0, x.argc);
-      return this.d.fn(x.name, args.map(v => this.scalar(v, scope)), args);
+      const s = this.d.fn(x.name, args.map(v => this.scalar(v, scope)), args);
+      // A condition (T-SQL's EXACT), where a condition is no value: a value where one is asked for.
+      return x.t === 'bool' && !this.d.boolValues && !pred ? this.d.value(s) : s;
     }
     if (x.k === 'pop') {
       // The conditions of AND, OR and NOT as conditions; the others' arguments as values.
@@ -240,7 +245,8 @@ export class PlanSql extends Emitter {
       // DAX's runtime error: the dialect's (of the value's type), or a blank where an engine
       // computes a CASE's branches no row takes (Polars, DataFusion: it would always fail).
       case 'error': return d.computesEveryBranch ? `CAST(NULL AS ${d.type(t)})` : d.err ? d.err(x, t) : d.fn('error', a, nodes);
-      case 'strpos': return ts ? `CHARINDEX(${y}, ${x})` : pg ? `strpos(${x}, ${y})` : `instr(${x}, ${y})`;
+      // (T-SQL: CHARINDEX finds no empty text, which is at 1.)
+      case 'strpos': return ts ? `CASE WHEN DATALENGTH(${y}) = 0 THEN 1 ELSE CHARINDEX(${y}, ${x}) END` : pg ? `strpos(${x}, ${y})` : `instr(${x}, ${y})`;
       case 'substring_from': return ts ? `SUBSTRING(${x}, ${y}, LEN(${x}))` : d.name === 'postgres' ? `substr(${x}, CAST(${y} AS INTEGER))` : `substring(${x}, ${y})`;
       case 'regexp_replace': return `regexp_replace(${x}, ${y}, ${z}, 'g')`;
       case 'extract_dow': return ts ? `(DATEPART(weekday, ${x}) - 1)` : pg ? `CAST(EXTRACT(DOW FROM ${x}) AS BIGINT)` : `dayofweek(${x})`;

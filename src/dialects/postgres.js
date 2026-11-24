@@ -20,6 +20,8 @@ const plain = v => /^\w+\.(?:"(?:[^"]|"")*"|\w+)$/.test(v) || /^-?\d+(?:\.\d+)?(
 
 export class PostgresDialect extends Dialect {
   name = 'postgres';
+  // The plan's defined functions PostgreSQL has its own of (UNICODE: ascii(), of any character).
+  nativeFns = new Set(['unicode']);
   // Postgres estimates the rows of a deep query (a definition read through several groupings and
   // filters) at one or so, and loops over thousands where a hash or merge join is at hand
   // (SAMEPERIODLASTYEAR over a rollup: past 30 s, 2 s with no loop). A loop is still taken where

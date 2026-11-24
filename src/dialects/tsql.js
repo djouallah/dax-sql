@@ -27,7 +27,7 @@ export class TSqlDialect extends Dialect {
   // The plan's functions defined as standard ones that T-SQL writes with its own: FORMAT (the
   // definition, many values each read several times, is past Fabric's expression limit, which
   // merges the projections that read each once).
-  nativeFns = new Set(['format_number', 'format_date']);
+  nativeFns = new Set(['format_number', 'format_date', 'unicode', 'exact']);
   aggOverSubquery = false;
   subqueryInCase = false;
   correlatedSemiJoin = false;

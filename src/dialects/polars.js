@@ -47,6 +47,8 @@ const DATES = new Set(['start_of', 'end_of', 'today', 'utctoday']);
 
 export class PolarsDialect extends PostgresDialect {
   name = 'polars';
+  // Polars has no function of a character's code: UNICODE as the plan defines it.
+  nativeFns = new Set();
   session = [];
   materialized = '';
   subqueryInCase = true;

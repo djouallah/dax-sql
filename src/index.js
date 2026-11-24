@@ -197,7 +197,7 @@ export function createCompiler(input, options = {}) {
     const ps = new PlanSql(model, dialect, o);
     const sql = ps.query({ ...p, plan });
     // Its size (the smaller of a calculation group's two forms is kept): the plan's, after the passes.
-    return { sql, ctes: [], body: sql, aliases: ps.n, ordered: p.ordered, columns: p.columns, size: planSize(passed) };
+    return { sql, ctes: ps.parts.ctes, body: ps.parts.body, aliases: ps.n, ordered: p.ordered, columns: p.columns, size: planSize(passed) };
   });
   const emit = opts => statements => statements.map(s => {
     const em = new Emitter(model, dialect, { ...opts, calcColumn, calcTable, security });

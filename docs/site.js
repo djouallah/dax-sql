@@ -299,19 +299,51 @@ function pgUpdate() {
       daxEl.innerHTML = `<h4>The DAX this SQL stands for</h4>${daxBlock(dax)}`;
     } catch { daxEl.innerHTML = ''; }
   } else daxEl.innerHTML = '';
+  pg.dax = isSql ? null : text;
+  if (isSql) { try { pg.dax = compiler().sqlToDax(text).dax; } catch { /* the SQL's own error shows */ } }
+  pg.substrait = undefined;
   if (pg.compiled.error) {
     $('#pg-err').innerHTML = errBlock(pg.compiled.error);
     $('#pg-sql').innerHTML = ''; $('#pg-meta').textContent = ''; $('#pg-cols').innerHTML = '';
     pg.compiled = null;
   } else {
     $('#pg-err').innerHTML = '';
-    const s = stats(pg.compiled.sql);
-    $('#pg-meta').textContent = `${plural(s.lines, 'line')} · ${plural(s.chars, 'character')}`;
-    $('#pg-sql').innerHTML = sqlBlock(pg.compiled.sql);
+    pgOutput();
     $('#pg-cols').innerHTML = pg.compiled.columns.map(c => `<span class="colchip"><b>${esc(c.name)}</b> ${esc(c.type)}</span>`).join('');
   }
   pgRows();
 }
+// The right pane: the SQL DuckDB runs, or the query plan as a Substrait plan (its JSON form,
+// unnested by the compiler: the one DataFusion runs in CI), made when it is first asked for.
+function pgSubstrait() {
+  if (pg.substrait === undefined) {
+    try { pg.substrait = { json: JSON.stringify(compiler().substrait(pg.dax, { unnest: true }).plan, null, 2) }; }
+    catch (e) { pg.substrait = { error: { code: e.code ?? 'ERROR', message: e.message } }; }
+  }
+  return pg.substrait;
+}
+const JSON_TOKEN = /(&quot;(?:[^&]|&(?!quot;))*?&quot;)(\s*:)?|\b(-?\d+(?:\.\d+)?)\b/g;
+const jsonBlock = json => codeBlock(esc(json).replace(JSON_TOKEN, (m, str, colon, num) =>
+  num !== undefined ? `<span class="num">${num}</span>` : colon ? `<span class="id">${str}</span>${colon}` : `<span class="str">${str}</span>`), 'sql');
+function pgOutput() {
+  if (!pg.compiled) return;
+  const sub = pg.out === 'substrait';
+  $('#pg-copy').textContent = sub ? 'Copy plan' : 'Copy SQL';
+  const text = sub ? pgSubstrait().json : pg.compiled.sql;
+  if (!text) { $('#pg-meta').textContent = ''; $('#pg-sql').innerHTML = errBlock(pgSubstrait().error); return; }
+  const lines = sub ? text.split('\n').length : stats(text).lines;
+  $('#pg-meta').textContent = `${plural(lines, 'line')} · ${plural(text.length, 'character')}`;
+  $('#pg-sql').innerHTML = sub ? jsonBlock(text) : sqlBlock(text);
+}
+function pgOut(k) {
+  pg.out = k === 'sql' ? 'sql' : 'substrait';
+  for (const b of $$('#pg-out button')) b.setAttribute('aria-selected', String(b.dataset.k === pg.out));
+  try { localStorage.setItem('pgOut', pg.out); } catch { /* none */ }
+  pgOutput();
+}
+$('#pg-out').addEventListener('click', e => { const b = e.target.closest('button'); if (b) pgOut(b.dataset.k); });
+try { pg.out = localStorage.getItem('pgOut') ?? 'substrait'; } catch { pg.out = 'substrait'; }
+pgOut(pg.out);
 let pgTimer;
 pgIn.addEventListener('input', () => { clearTimeout(pgTimer); pgTimer = setTimeout(pgUpdate, 250); });
 pgIn.addEventListener('keydown', e => {
@@ -321,7 +353,9 @@ pgIn.addEventListener('keydown', e => {
 pgEx.addEventListener('change', () => { pgIn.value = ex.playground[Number(pgEx.value)][1]; pgUpdate(); });
 $('#pg-copy').onclick = async () => {
   if (!pg.compiled) return;
-  try { await navigator.clipboard.writeText(pg.compiled.sql); $('#pg-copy').textContent = 'Copied'; setTimeout(() => { $('#pg-copy').textContent = 'Copy SQL'; }, 1200); } catch { /* no clipboard */ }
+  const text = pg.out === 'substrait' ? pgSubstrait().json : pg.compiled.sql;
+  if (!text) return;
+  try { await navigator.clipboard.writeText(text); $('#pg-copy').textContent = 'Copied'; setTimeout(pgOutput, 1200); } catch { /* no clipboard */ }
 };
 function insert(text) {
   const { selectionStart: a, selectionEnd: b, value } = pgIn;

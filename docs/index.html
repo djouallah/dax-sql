@@ -375,7 +375,7 @@ kbd { font: 11px var(--mono); border: 1px solid var(--line-2); border-bottom-wid
       <div class="qans"><h4>The answer</h4><div id="pg-rows"></div><div id="pg-cols"></div></div>
     </div>
     <div class="qright">
-      <div class="sqlhead"><h4>The SQL dax-sql emitted</h4><span class="meta" id="pg-meta"></span><button class="btn" type="button" id="pg-copy">Copy SQL</button></div>
+      <div class="sqlhead"><div class="subtabs" id="pg-out" role="tablist"><button type="button" role="tab" data-k="substrait">Substrait</button><button type="button" role="tab" data-k="sql">SQL</button></div><span class="meta" id="pg-meta"></span><button class="btn" type="button" id="pg-copy">Copy SQL</button></div>
       <div id="pg-sql"></div>
     </div>
   </div>

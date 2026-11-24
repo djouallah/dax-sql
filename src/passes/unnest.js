@@ -116,12 +116,10 @@ class Unnest {
       const R = this.U(a.right);
       return a.outer ? P.join('left', L, R, P.TRUE) : P.join('cross', L, R);
     }
-    // D's rows: those of the base of a chain of measures (each one row for each row of the
-    // chain), when it has F: the same values, fewer rows to read.
-    let base = a.left;
-    while (base.k === 'apply' && oneRow(base.right)) base = base.left;
-    const Bu = base !== a.left && !free(base).size ? this.U(base) : null;
-    const ctx = { F, L, src: Bu && F.every(f => Bu.cols.includes(f)) ? Bu : L };
+    // D's rows: the relation inside L that has L's values of F (below the measures of each row,
+    // left-joined to it), not L: the same values, fewer rows, and no read of the levels below.
+    const dom = domain(L, F);
+    const ctx = { F, L, src: dom.rel, at: dom.map };
     const top = this.oneRowTop(a.right, ctx);
     if (top) return top;
     const s = this.push(a.right, ctx);
@@ -191,18 +189,19 @@ class Unnest {
     return { rel: on.length ? P.join('inner', d.rel, s.rel, P.and(on)) : P.join('cross', d.rel, s.rel), dc, op };
   }
 
-  // δ(π_cols L): L (or the chain's base) a definition, made at the first D, each D a read of it
-  // under columns of its own (a column is one relation's: L is read at the top too).
+  // δ(π_cols L): L (or the relation inside it with L's values of F) a definition, made at the
+  // first D, each D a read of it under columns of its own (a column is one relation's: L is read
+  // at the top too).
   D(ctx, cols) {
     if (!ctx.def) {
-      // The chain's base is in L's tree: the definition a copy of it.
+      // A relation inside L's tree: the definition a copy of it.
       const c = ctx.src === ctx.L ? { rel: ctx.L, map: new Map() } : clone(ctx.src);
       ctx.def = P.definition(c.rel, 0);
       ctx.map = c.map;
       this.defs.push(ctx.def);
     }
     const sh = P.shared(ctx.def);
-    const at = f => sh.cols[ctx.def.rel.cols.indexOf(ctx.map.get(f) ?? f)];
+    const at = f => { const c = ctx.at.get(f); return sh.cols[ctx.def.rel.cols.indexOf(ctx.map.get(c) ?? c)]; };
     const p = P.project(sh, cols.map(f => ({ name: f.name, expr: P.ref(at(f)), lineage: f.lineage, t: f.t })));
     const rel = P.distinct(p);
     return { rel, at: new Map(cols.map((f, i) => [f, rel.cols[i]])) };
@@ -361,7 +360,28 @@ function bind(c, F, dc) {
   return null;
 }
 
-const oneRow = r => (r.k === 'aggregate' && !r.keys.length) || (r.k === 'project' && oneRow(r.src));
+// The relation inside L with L's distinct values of F, or more: down a projection that passes
+// them on, a distinct, a window, a grouping by them, the side of a join that has them (a left
+// join's left keeps each of its rows; an inner join's side has its values and maybe more), a
+// definition's rows. More values than L's are no harm: each row R' has for a value L has not is
+// dropped by the join to L. { rel, map: F -> its column there }.
+function domain(L, F) {
+  let r = L, map = new Map(F.map(f => [f, f]));
+  for (;;) {
+    const cols = [...map.values()];
+    const through = (src, m) => (cols.every(c => src.cols.includes(m.get(c) ?? c)) ? { src, m } : null);
+    let next = null;
+    if (r.k === 'project' || r.k === 'aggregate') {
+      const by = new Map((r.k === 'project' ? r.items : r.keys).map(i => [i.col, i.expr]));
+      if (cols.every(c => by.get(c)?.k === 'ref')) next = through(r.src, new Map(cols.map(c => [c, by.get(c).col])));
+    } else if (r.k === 'distinct' || r.k === 'window') next = through(r.src, new Map());
+    else if (r.k === 'join') next = through(r.left, new Map()) ?? (r.kind === 'left' ? null : through(r.right, new Map()));
+    else if (r.k === 'shared') next = through(r.def.rel, new Map(r.cols.map((c, i) => [c, r.picks[i]])));
+    if (!next) return { rel: r, map };
+    map = new Map([...map].map(([f, c]) => [f, next.m.get(c) ?? c]));
+    r = next.src;
+  }
+}
 
 // --- scalars -------------------------------------------------------------------------------
 

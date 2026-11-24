@@ -3,13 +3,9 @@ name: Polars main
 # Polars built from its main branch, and the released 2.1.0, measured on what dax-sql needs:
 # conformance/engines/dax-sql-polars/repros.py (each SQL shape Polars 2.1 lacked, against DuckDB)
 # and probe.mjs (the suite's SQL, postgres dialect, against DuckDB's answers). Both go to the job
-# summary. Nothing is gated: it is a measure, run by hand or when these files change.
+# summary. Nothing is gated: it is a measure, run by hand only (it builds Polars from source).
 
 on:
-  push:
-    paths:
-      - "conformance/engines/dax-sql-polars/**"
-      - ".github/workflows/polars-main.yml"
   workflow_dispatch:
     inputs:
       ref:
@@ -39,8 +35,6 @@ jobs:
           path: polars
       - name: The commit built
         run: echo "Polars \`$(git -C polars rev-parse HEAD)\` ($(git -C polars log -1 --format=%cs))" >> "$GITHUB_STEP_SUMMARY"
-      - name: Free disk space
-        run: sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"

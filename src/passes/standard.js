@@ -31,29 +31,38 @@ function R(r) {
 // the value between them as the rank is; a rank outside 1..n an error, no values blank.
 const ROWS = new Set(['dcount', 'dcount0', 'dcountnb', 'hasone']);
 const PCT = new Set(['pct_inc', 'pct_exc', 'pctx_inc', 'pctx_exc']);
-function percentile(r, a) {
+function percentile(r, as) {
   const { rel: src, map } = clone(r.src);
   const re = x => subst(x, map);
-  const x = re(a.arg), k = coalesce(re(a.extra.k), lit(0, 'int'));
-  const rows = a.fn.startsWith('pct_') ? P.select(src, cond('notnull', [x])) : src;
-  const base = P.project(rows, [...r.keys.map(c => ({ name: c.col.name, expr: re(c.expr) })), { name: 'x', expr: x }, { name: 'k', expr: k }]);
-  const keys = base.cols.slice(0, r.keys.length), [vx, vk] = base.cols.slice(r.keys.length).map(c => P.ref(c));
+  const a0 = as[0], x = re(a0.arg);
+  const rows = a0.fn.startsWith('pct_') ? P.select(src, cond('notnull', [x])) : src;
+  const base = P.project(rows, [...r.keys.map(c => ({ name: c.col.name, expr: re(c.expr) })), { name: 'x', expr: x },
+    ...as.map((a, j) => ({ name: `k${j}`, expr: coalesce(re(a.extra.k), lit(0, 'int')) }))]);
+  const keys = base.cols.slice(0, r.keys.length), [vx, ...vks] = base.cols.slice(r.keys.length).map(c => P.ref(c));
   const w = P.window(base, keys.map(c => P.ref(c)), [{ name: 'i', fn: 'row_number', order: [{ expr: vx, mode: 'plain' }] }, { name: 'n', fn: 'count', order: [] }]);
   const [i, n] = w.fns.map(f => P.ref(f.col));
-  const rank = a.fn.endsWith('_inc') ? pop('add', [pop('mul', [vk, pop('sub', [n, lit(1, 'int')], 'int')], 'double'), lit(1, 'int')], 'double') : pop('mul', [vk, pop('add', [n, lit(1, 'int')], 'int')], 'double');
-  const at = d => caseOf([[cond('eq', [i, pop('add', [call('floor', [rank], 'double'), lit(d, 'int')], 'double')]), vx]], lit(null, x.t), x.t);
   const outKeys = keys.map(c => ({ col: P.newCol(c.name, c.t), expr: P.ref(c) }));
-  const [rr, lo, hi, nn] = ['rank', 'lo', 'hi', 'n'].map(nm => P.newCol(nm, nm === 'n' ? 'int' : 'double'));
-  const g = P.aggregate(w, outKeys, [{ col: rr, fn: 'max', arg: rank, extra: {} }, { col: lo, fn: 'max', arg: at(0), extra: {} }, { col: hi, fn: 'max', arg: at(1), extra: {} }, { col: nn, fn: 'max', arg: n, extra: {} }]);
-  const R = P.ref(rr), low = coalesce(P.ref(lo), lit(0, 'int'));
-  // A rank outside 1..n: blank (DAX's error, by design: a plan raises none).
-  const value = caseOf([
-    [cond('isnull', [P.ref(nn)]), lit(null, a.col.t)],
-    [cond('or', [cond('lt', [R, lit(1, 'int')]), cond('gt', [R, P.ref(nn)])]), lit(null, a.col.t)],
-    [cond('eq', [R, call('floor', [R], 'double')]), P.ref(lo)],
-  ], pop('add', [low, pop('mul', [pop('sub', [R, call('floor', [R], 'double')], 'double'), pop('sub', [P.ref(hi), low], 'double')], 'double')], 'double'), a.col.t);
-  return { rel: g, keys: outKeys, value };
+  const nn = P.newCol('n', 'int');
+  const aggs = [{ col: nn, fn: 'max', arg: n, extra: {} }], values = [];
+  as.forEach((a, j) => {
+    const vk = vks[j];
+    const rank = a.fn.endsWith('_inc') ? pop('add', [pop('mul', [vk, pop('sub', [n, lit(1, 'int')], 'int')], 'double'), lit(1, 'int')], 'double') : pop('mul', [vk, pop('add', [n, lit(1, 'int')], 'int')], 'double');
+    const at = d => caseOf([[cond('eq', [i, pop('add', [call('floor', [rank], 'double'), lit(d, 'int')], 'double')]), vx]], lit(null, x.t), x.t);
+    const [rr, lo, hi] = ['rank', 'lo', 'hi'].map(nm => P.newCol(nm, 'double'));
+    aggs.push({ col: rr, fn: 'max', arg: rank, extra: {} }, { col: lo, fn: 'max', arg: at(0), extra: {} }, { col: hi, fn: 'max', arg: at(1), extra: {} });
+    const R = P.ref(rr), low = coalesce(P.ref(lo), lit(0, 'int'));
+    // A rank outside 1..n: blank (DAX's error, by design: a plan raises none).
+    values.push(caseOf([
+      [cond('isnull', [P.ref(nn)]), lit(null, a.col.t)],
+      [cond('or', [cond('lt', [R, lit(1, 'int')]), cond('gt', [R, P.ref(nn)])]), lit(null, a.col.t)],
+      [cond('eq', [R, call('floor', [R], 'double')]), P.ref(lo)],
+    ], pop('add', [low, pop('mul', [pop('sub', [R, call('floor', [R], 'double')], 'double'), pop('sub', [P.ref(hi), low], 'double')], 'double')], 'double'), a.col.t));
+  });
+  return { rel: P.aggregate(w, outKeys, aggs), keys: outKeys, values };
 }
+// Percentiles of the same values (their argument the same, blanks kept or not alike): one window,
+// one grouping, whatever their k.
+const sameValues = a => `${a.fn.startsWith('pct_')}|${JSON.stringify(a.arg, (k, v) => (k === 'col' && v && typeof v === 'object' && 'id' in v ? v.id : k === 'lineage' || k === 'table' ? undefined : v))}`;
 
 function aggregates(r) {
   const tuples = r.aggs.filter(a => (ROWS.has(a.fn) && a.arg?.k === 'fn' && a.arg.name === 'row') || PCT.has(a.fn));
@@ -61,13 +70,19 @@ function aggregates(r) {
   const rest = plainAggregates({ ...r, aggs: r.aggs.filter(a => !tuples.includes(a)), cols: [...r.keys.map(k => k.col), ...r.aggs.filter(a => !tuples.includes(a)).map(a => a.col)] });
   let rel = !r.keys.length && rest.k === 'aggregate' && !rest.aggs.length ? P.oneRow() : rest;
   const vals = new Map();
+  const pcts = new Map();
+  for (const a of tuples.filter(a => PCT.has(a.fn))) {
+    const k = sameValues(a);
+    if (!pcts.has(k)) pcts.set(k, []);
+    pcts.get(k).push(a);
+  }
+  for (const as of pcts.values()) {
+    const p = percentile(r, as);
+    rel = p.keys.length ? P.join('left', rel, p.rel, P.and(r.keys.map((k, i) => P.key(P.ref(k.col), P.ref(p.keys[i].col))))) : P.join('cross', rel, p.rel);
+    as.forEach((a, j) => vals.set(a.col, p.values[j]));
+  }
   for (const a of tuples) {
-    if (PCT.has(a.fn)) {
-      const p = percentile(r, a);
-      rel = p.keys.length ? P.join('left', rel, p.rel, P.and(r.keys.map((k, i) => P.key(P.ref(k.col), P.ref(p.keys[i].col))))) : P.join('cross', rel, p.rel);
-      vals.set(a.col, p.value);
-      continue;
-    }
+    if (PCT.has(a.fn)) continue;
     const { rel: src, map } = clone(r.src);
     const re = x => subst(x, map);
     const items = [...r.keys.map(k => ({ name: k.col.name, expr: re(k.expr) })), ...a.arg.a.map((v, i) => ({ name: `c${i}`, expr: re(v) }))];

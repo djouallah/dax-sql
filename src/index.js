@@ -70,10 +70,10 @@ function planSize(root) {
   for (const d of root.defs ?? []) R(d.rel);
   return n;
 }
-const correlated = plan => prune(renames(inline(share(exact(fuseApplies(standard(plan)))))));
+const correlated = plan => prune(renames(inline(share(exact(standard(fuseApplies(plan)))))));
 // The correlated plan unnested (passes/unnest.js), for an engine that does not unnest: no apply,
 // no correlated EXISTS; the σ over × it leaves joins, the measures over the same rows one grouping.
-const unnested = plan => prune(renames(inline(share(outer(fuse(joins(unnest(exact(fuseApplies(standard(plan)))))))))));
+const unnested = plan => prune(renames(inline(share(outer(fuse(joins(unnest(exact(standard(fuseApplies(plan)))))))))));
 import { explain as drawPlan } from './explain.js';
 import { optimize } from './passes/index.js';
 

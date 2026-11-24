@@ -42,14 +42,18 @@ export function fuseApplies(root) {
   return { ...root, src: F(root.src) };
 }
 
-const oneRow = r => r.k === 'aggregate' && !r.keys.length && r.src.k === 'select';
+const oneRow = r => r.k === 'aggregate' && !r.keys.length;
+// A grouping's rows and its filter's terms (none when it is over no filter).
+const rowsOf = g => (g.src.k === 'select' ? { rel: g.src.src, terms: conjuncts(g.src.pred) } : { rel: g.src, terms: [] });
 
 // g's grouping with h's aggregates joined to it, or null: the same rows, h's filter g's and more.
 function merge(g, h) {
-  const a = canon(g.src.src), b = canon(h.src.src);
+  const G = rowsOf(g), H = rowsOf(h);
+  // deep: two copies whose EXISTS reads the row it tests are the same rows.
+  const a = canon(G.rel, true), b = canon(H.rel, true);
   if (a.key !== b.key) return null;
   const map = new Map(b.cols.map((c, i) => [c, a.cols[i]]));
-  const gs = conjuncts(g.src.pred).map(c => text(c, a.ids)), hs = conjuncts(h.src.pred);
+  const gs = G.terms.map(c => text(c, a.ids)), hs = H.terms;
   const rest = [...gs];
   const more = [];
   for (const c of hs) {

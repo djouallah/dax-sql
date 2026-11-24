@@ -51,6 +51,12 @@ jobs:
           gh release view polars-main -R "${{ github.repository }}" --json body -q .body >> "$GITHUB_STEP_SUMMARY"
           pip install -q --no-deps wheels/*.whl
           python -c "import polars as pl; print(pl.__version__, getattr(pl, '__build_commit__', ''))"
+      # The SQL shapes dax-sql's Polars dialect works around, on this Polars, against DuckDB.
+      - name: The SQL shapes, on Polars main
+        if: always()
+        run: |
+          pip install -q duckdb
+          python conformance/engines/dax-sql-polars/repros.py | tee -a "$GITHUB_STEP_SUMMARY"
       - name: The suite on Polars, through the unnested query plan
         env:
           PY: python

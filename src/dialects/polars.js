@@ -1,8 +1,8 @@
-// Polars SQL (pl.SQLContext, tested on its main branch): PostgreSQL's SQL, as Polars reads it, over the
-// query plan unnested (planSql { unnest: true }): Polars main unnests correlated scalar, IN and
-// EXISTS subqueries and LATERAL over a table, but reads no outer row in a subquery with no FROM
-// of its own (LATERAL or derived) and takes EXISTS in some positions only: the correlated plan
-// matches 856 queries to the unnested plan's 1227, and is no faster (polars.yml measures both).
+// Polars SQL (pl.SQLContext, Polars 2.2): PostgreSQL's SQL, as Polars reads it, over the
+// query plan unnested (planSql { unnest: true }): Polars unnests correlated scalar, IN and
+// EXISTS subqueries and LATERAL over a table, but reads no outer row in a derived table of a
+// correlated subquery or a LATERAL (pola-rs/polars#31059, #31067), which the correlated plan
+// writes (polars.yml measures both plans).
 // What it writes differently from PostgreSQL's:
 // - WITH has no MATERIALIZED (a CTE is a lazy frame, computed once where it is read).
 // - A blank-safe key is IS NOT DISTINCT FROM (no ARRAY = ARRAY, no ROW()::record): a join on it

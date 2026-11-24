@@ -6,7 +6,7 @@
 //   PY=<python with polars> node engines/dax-sql-polars/adapter.mjs <dax-sql checkout> <request.json>
 //
 // POLARS_PLAN=correlated: the plan correlated instead (planSql { correlated: true }), for Polars
-// to unnest its correlated subqueries itself, as Polars main does: a measure of it.
+// to unnest its correlated subqueries itself, as Polars does: a measure of it.
 // POLARS_TIMEOUT_MS: a query's time (30 s); past it the worker is stopped and another started.
 // DAXSQL_TIMES: each query's time (ms), to that file.
 import { spawn } from 'node:child_process';

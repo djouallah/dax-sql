@@ -1,11 +1,10 @@
 name: Polars
 
-# Runs the conformance suite on Polars built from its main branch (the wheels of the release
-# polars-main, which polars-main.yml builds by hand): each query compiled with the `polars`
+# Runs the conformance suite on Polars 2.2.0 (pip): each query compiled with the `polars`
 # dialect through the query plan unnested (planSql { unnest: true }), run on Polars' SQLContext
 # over the suite's CSVs (conformance/engines/dax-sql-polars/adapter.mjs), held to Power BI's
 # answers and the known lists: DuckDB's (what holds for every engine) and Polars' own. Then the
-# plan correlated (POLARS_PLAN=correlated: Polars main unnests correlated subqueries itself), a
+# plan correlated (POLARS_PLAN=correlated: Polars unnests correlated subqueries itself), a
 # measure beside it that does not fail the job: its matches, errors (those of SQL with a LATERAL
 # apart: Polars has none) and time.
 
@@ -46,16 +45,12 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Polars main (the release polars-main's wheels)
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Polars 2.2.0
         run: |
-          gh release download polars-main -R "${{ github.repository }}" -p '*.whl' -D wheels
-          gh release view polars-main -R "${{ github.repository }}" --json body -q .body >> "$GITHUB_STEP_SUMMARY"
-          pip install -q --no-deps wheels/*.whl
-          python -c "import polars as pl; print(pl.__version__, getattr(pl, '__build_commit__', ''))"
+          pip install -q "polars==2.2.0"
+          python -c "import polars as pl; print(pl.__version__)"
       # The SQL shapes dax-sql's Polars dialect works around, on this Polars, against DuckDB.
-      - name: The SQL shapes, on Polars main
+      - name: The SQL shapes, on Polars
         if: always()
         run: |
           pip install -q duckdb
@@ -95,7 +90,7 @@ jobs:
               let tm = [];
               try { tm = JSON.parse(fs.readFileSync(`${dir}/${tim}`, "utf8")); } catch {}
               const lateral = new Set(tm.filter(x => x.lateral).map(x => x.id));
-              out.push(`### Polars main, ${label} plan`, "", "| match | fail | error | unsupported | known |", "|---|---|---|---|---|", `| ${t.match} | ${t.fail} | ${t.error} | ${t.unsupported} | ${t.known} |`, "");
+              out.push(`### Polars, ${label} plan`, "", "| match | fail | error | unsupported | known |", "|---|---|---|---|---|", `| ${t.match} | ${t.fail} | ${t.error} | ${t.unsupported} | ${t.known} |`, "");
               const errs = r.queries.filter(q => q.outcome === "error" && !q.known);
               if (lateral.size) out.push(`**SQL with a LATERAL:** ${lateral.size} queries; ${errs.filter(q => lateral.has(q.id)).length} of the errors.`, "");
               const groups = new Map();

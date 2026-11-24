@@ -1194,12 +1194,11 @@ the compiled SQL's job alone).
 
 ### Polars
 
-`dialect: 'polars'` writes PostgreSQL's SQL as Polars' SQLContext reads it (tested on its main branch), over
-the query plan unnested (`planSql(query, { unnest: true })`): Polars main unnests correlated
+`dialect: 'polars'` writes PostgreSQL's SQL as Polars' SQLContext reads it (Polars 2.2), over
+the query plan unnested (`planSql(query, { unnest: true })`): Polars unnests correlated
 scalar, `IN` and `EXISTS` subqueries and `LATERAL` over a table, but reads no outer row in a
-subquery with no `FROM` of its own (`LATERAL` or derived) and takes `EXISTS` in some positions
-only. `polars.yml` runs the correlated plan beside, as a measure: 856 queries match to the
-unnested plan's 1227, in the same time.
+derived table of a correlated subquery or a `LATERAL` (pola-rs/polars#31059, #31067). `polars.yml`
+runs the correlated plan beside, as a measure.
 Where it differs from PostgreSQL's:
 
 - Each relation a SELECT reads is a CTE of its own (`flatSql`): Polars' parser nests subqueries
@@ -1218,9 +1217,7 @@ Where it differs from PostgreSQL's:
 `conformance/engines/dax-sql-polars/adapter.mjs` runs the suite on Polars over the CSVs
 (`worker.py`, one process for each model), against DuckDB's known lists (shared: a query it answers that
 DuckDB does not is no error) and its own (one query ordered by a float its rows tie at, flaky). `polars.yml` runs it on each push that changes the
-compiler or the suite, on Polars built from its main branch: `polars-main.yml` builds it daily
-when main has moved (and by hand), publishes its wheels as the release `polars-main`, and runs
-`polars.yml` on them.
+compiler or the suite, on Polars 2.2.0 from pip.
 
 ### Tests
 

@@ -1,5 +1,5 @@
 # The Polars issue drafts' reproducible examples, each exactly as drafted, run on the Polars of
-# this job (main): what each prints, for the report's log output. polars.yml runs it.
+# this job: what each prints, for the report's log output. polars.yml runs it.
 import datetime
 import time
 

@@ -1,10 +1,9 @@
-name: Substrait
+name: DataFusion
 
-# The suite's query plans as Substrait (src/substrait.js), run by DataFusion's Substrait consumer
-# (conformance/engines/dax-sql-substrait): an engine that never sees dax-sql's SQL, answering from
-# the plan alone, held to Power BI's answers. A measure for now, not a gate: the counts, the most
-# common errors and the dax-sql functions the plans use go to the job summary; the plans and the
-# report to an artifact.
+# The suite on Apache DataFusion (conformance/engines/dax-sql-datafusion): each query's SQL in the
+# `datafusion` dialect, written from the query plan unnested as Substrait, read back; run over the
+# suite's data (Parquet written by DuckDB), held to Power BI's answers. A measure for now, not a
+# gate: the counts, the most common errors and the slowest queries go to the job summary.
 
 on:
   push:
@@ -15,15 +14,15 @@ on:
       - "conformance/golden/**"
       - "conformance/runner/**"
       - "conformance/engines/dax-sql/db.mjs"
-      - "conformance/engines/dax-sql-substrait/**"
-      - ".github/workflows/substrait.yml"
+      - "conformance/engines/dax-sql-datafusion/**"
+      - ".github/workflows/datafusion.yml"
   workflow_dispatch:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 concurrency:
-  group: substrait-${{ github.ref }}
+  group: datafusion-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -33,13 +32,6 @@ jobs:
   datafusion:
     runs-on: ubuntu-latest
     timeout-minutes: 40
-    # unnested: the optimized plan; correlated: the plan before decorrelation (scalar subqueries,
-    # EXISTS, outer references), which DataFusion unnests itself; unnest: the correlated plan
-    # unnested (src/passes/unnest.js).
-    strategy:
-      fail-fast: false
-      matrix:
-        mode: [unnested, correlated, unnest]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -50,51 +42,45 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install -q -r conformance/engines/dax-sql-substrait/requirements.txt
-      - name: The suite's plans as Substrait, on DataFusion
+      - run: pip install -q -r conformance/engines/dax-sql-datafusion/requirements.txt
+      - name: The suite on DataFusion
         env:
-          SUBSTRAIT_PYTHON: python
-          SUBSTRAIT_CORRELATED: ${{ matrix.mode == 'correlated' && '1' || '' }}
-          SUBSTRAIT_UNNEST: ${{ matrix.mode == 'unnest' && '1' || '' }}
-          SUBSTRAIT_OUT: ${{ runner.temp }}/plans
+          DATAFUSION_PYTHON: python
+          DAXSQL_TIMES: ${{ runner.temp }}/times.json
           NODE_OPTIONS: --max-old-space-size=6144
         run: |
-          node conformance/runner/run.mjs --adapter "node conformance/engines/dax-sql-substrait/adapter.mjs ." \
-            --known conformance/engines/dax-sql/known.json,conformance/engines/dax-sql/known-plan.json \
-            --report "$RUNNER_TEMP/substrait.json" > "$RUNNER_TEMP/run.txt" 2>&1 || true
+          node conformance/runner/run.mjs --adapter "node conformance/engines/dax-sql-datafusion/adapter.mjs ." \
+            --known conformance/engines/dax-sql-datafusion/known.json --known-shared conformance/engines/dax-sql/known.json,conformance/engines/dax-sql/known-plan.json \
+            --report "$RUNNER_TEMP/datafusion.json" > "$RUNNER_TEMP/run.txt" 2>&1 || true
           tail -40 "$RUNNER_TEMP/run.txt"
-          grep -E ": (timeout|crash|its plan took)" "$RUNNER_TEMP/run.txt" || true
+          grep -E ": (timeout|crash)" "$RUNNER_TEMP/run.txt" || true
       - name: Summary
         if: always()
-        env:
-          MODE: ${{ matrix.mode }}
         run: |
-          test -f "$RUNNER_TEMP/substrait.json" || exit 0
+          test -f "$RUNNER_TEMP/datafusion.json" || exit 0
           node -e '
             const fs = require("fs");
             const r = JSON.parse(fs.readFileSync(process.argv[1]));
             const t = r.total, out = [];
-            out.push(`### Substrait on DataFusion: ${process.env.MODE}`, "", "| match | fail | error | unsupported |", "|---|---|---|---|", `| ${t.match} | ${t.fail} | ${t.error} | ${t.unsupported} |`, "");
+            out.push("### DataFusion", "", "| match | fail | error | unsupported |", "|---|---|---|---|", `| ${t.match} | ${t.fail} | ${t.error} | ${t.unsupported} |`, "");
             const groups = {};
             for (const q of r.queries.filter(q => q.outcome !== "match" && !q.known)) {
-              const k = `${q.outcome}: ${String(q.detail ?? "").split("\n")[0].replace(/\d+/g, "N").replace(/got .*/, "got …").slice(0, 140)}`;
+              const k = `${q.outcome}: ${String(q.detail ?? "").split("\n")[0].replace(/\d+/g, "N").replace(/got .*/, "got …").slice(0, 160)}`;
               groups[k] = (groups[k] ?? 0) + 1;
             }
             out.push("| queries | why |", "|---|---|", ...Object.entries(groups).sort((a, b) => b[1] - a[1]).slice(0, 40).map(([k, n]) => `| ${n} | ${k.replace(/\|/g, "\\|")} |`), "");
-            const daxFile = process.argv[2] + "/dax.json";
-            if (fs.existsSync(daxFile)) {
-              const uses = {};
-              for (const fns of Object.values(JSON.parse(fs.readFileSync(daxFile)))) for (const f of fns) uses[f] = (uses[f] ?? 0) + 1;
-              out.push("dax-sql functions the plans use (queries): " + (Object.entries(uses).map(([f, n]) => `${f} ${n}`).join(", ") || "none"));
+            if (fs.existsSync(process.argv[2])) {
+              const times = JSON.parse(fs.readFileSync(process.argv[2]));
+              out.push(`Total ${(times.reduce((s, x) => s + x.ms, 0) / 1000).toFixed(1)} s over ${times.length} queries; slowest:`, "", ...times.slice(0, 10).map(x => `- ${x.id}: ${x.ms} ms`));
             }
             fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, out.join("\n") + "\n");
-          ' "$RUNNER_TEMP/substrait.json" "$RUNNER_TEMP/plans"
+          ' "$RUNNER_TEMP/datafusion.json" "$RUNNER_TEMP/times.json"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: substrait-${{ matrix.mode }}
+          name: datafusion-report
           path: |
-            ${{ runner.temp }}/substrait.json
+            ${{ runner.temp }}/datafusion.json
             ${{ runner.temp }}/run.txt
-            ${{ runner.temp }}/plans
+            ${{ runner.temp }}/times.json
           if-no-files-found: ignore

@@ -249,7 +249,7 @@ export class PlanSql extends Emitter {
 
   // A standard function, as the dialect writes it.
   call(name, a, nodes, t) {
-    const d = this.d, [x, y, z] = a, pg = d.name === 'postgres' || d.name === 'polars', ts = d.name === 'tsql';
+    const d = this.d, [x, y, z] = a, df = d.name === 'datafusion', pg = d.name === 'postgres' || d.name === 'polars' || df, ts = d.name === 'tsql';
     // The last day of a month (EOMONTH, the end of a period: the month's start, q months on, a day
     // back) as DuckDB's last_day, which it pushes below a join as a condition on the column
     // (the month ends of SAMEPERIODLASTYEAR: 1.2 million rows tested after a join, 39 thousand so).
@@ -270,8 +270,8 @@ export class PlanSql extends Emitter {
       case 'replace': return `replace(${x}, ${y}, ${z})`;
       // T-SQL: the n-th of STRING_SPLIT's parts by their ordinal (none past the last, as a blank).
       case 'split_part': return ts ? `(SELECT value FROM STRING_SPLIT(${x}, ${y}, 1) WHERE ordinal = ${z})` : pg ? `split_part(${x}, ${y}, CAST(${z} AS INTEGER))` : `split_part(${x}, ${y}, ${z})`;
-      case 'date_diff_microsecond': return ts ? `DATEDIFF_BIG(microsecond, ${x}, ${y})` : d.name === 'polars' ? `CAST(round((EXTRACT(EPOCH FROM ${y}) - EXTRACT(EPOCH FROM ${x})) * 1000000) AS BIGINT)` : pg ? `CAST(EXTRACT(EPOCH FROM (${y} - ${x})) * 1000000 AS BIGINT)` : `date_diff('microsecond', ${x}, ${y})`;
-      case 'add_microseconds': return ts ? `DATEADD(microsecond, ${y}, ${x})` : d.name === 'polars' ? `(CAST(${x} AS TIMESTAMP) + CAST(${y} AS BIGINT) * INTERVAL '1 microsecond')` : pg ? `(${x} + ${y} * INTERVAL '1 microsecond')` : `(${x} + to_microseconds(${y}))`;
+      case 'date_diff_microsecond': return ts ? `DATEDIFF_BIG(microsecond, ${x}, ${y})` : d.name === 'polars' || df ? `CAST(round((EXTRACT(EPOCH FROM ${y}) - EXTRACT(EPOCH FROM ${x})) * 1000000) AS BIGINT)` : pg ? `CAST(EXTRACT(EPOCH FROM (${y} - ${x})) * 1000000 AS BIGINT)` : `date_diff('microsecond', ${x}, ${y})`;
+      case 'add_microseconds': return ts ? `DATEADD(microsecond, ${y}, ${x})` : df ? `(CAST(${x} AS TIMESTAMP) + CAST(CONCAT(CAST(CAST(${y} AS BIGINT) AS VARCHAR), ' microseconds') AS INTERVAL))` : d.name === 'polars' ? `(CAST(${x} AS TIMESTAMP) + CAST(${y} AS BIGINT) * INTERVAL '1 microsecond')` : pg ? `(${x} + ${y} * INTERVAL '1 microsecond')` : `(${x} + to_microseconds(${y}))`;
     }
     const m = /^(extract|date_trunc|date_diff)_(\w+)$/.exec(name);
     if (m?.[1] === 'extract') return d.fn(m[2], [x], nodes);
@@ -286,7 +286,7 @@ export class PlanSql extends Emitter {
       case 'contains': return d.fn('containsstringexact', a, nodes);
       case 'mod': return `(${x} % ${y})`;
       // Whole-number division.
-      case 'idiv': return d.name === 'duckdb' ? `(${x} // ${y})` : pg ? `div(${x}, ${y})` : `(${x} / ${y})`;
+      case 'idiv': return d.name === 'duckdb' ? `(${x} // ${y})` : df ? `(CAST(${x} AS BIGINT) / CAST(${y} AS BIGINT))` : pg ? `div(${x}, ${y})` : `(${x} / ${y})`;
       case 'trunc': return ts ? `ROUND(${x}, 0, 1)` : `trunc(${x})`;
       // A fixed decimal (CURRENCY) on T-SQL: rounded as a DECIMAL, not as the FLOAT's binary value
       // (1.0001 / 2.0, 0.50005, is 0.5001), as the compiled SQL rounds one.

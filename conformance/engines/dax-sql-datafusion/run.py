@@ -1,5 +1,5 @@
-# Runs Substrait plans on DataFusion: jobs.json { models: { name: { table: parquet } },
-# queries: [{ id, model, plan }] } -> one JSON line per query: { id, rows } or { id, error }.
+# Runs SQL on DataFusion: jobs.json { models: { name: { table: parquet } },
+# queries: [{ id, model, sql }] } -> one JSON line per query: { id, rows, ms } or { id, error }.
 # Values as the suite's answers hold them: a date as YYYY-MM-DD, a date and time to the second
 # (at midnight, the date alone), a decimal as a number.
 import datetime
@@ -11,7 +11,6 @@ import threading
 import time
 
 from datafusion import SessionContext
-from datafusion import substrait as ss
 
 
 def value(v):
@@ -32,48 +31,9 @@ RENAME = {'sign': 'signum', 'std_dev': 'stddev', 'variance': 'var_samp', 'extrac
 UNIT = {'DAY_OF_YEAR': 'doy', 'MONDAY_DAY_OF_WEEK': 'isodow'}
 
 
-def for_datafusion(plan):
-    names = {}
-    for e in plan.get('extensions', []):
-        f = e.get('extensionFunction')
-        if f:
-            names[f.get('functionAnchor', 0)] = f['name']
-            f['name'] = RENAME.get(f['name'], f['name'])
-
-    def text(v):
-        return {'value': {'literal': {'string': v}}}
-
-    def walk(x):
-        if isinstance(x, dict):
-            f = x.get('scalarFunction')
-            if f is not None:
-                name = names.get(f.get('functionReference', 0))
-                args = f.get('arguments', [])
-                if name == 'extract':
-                    enums = [a['enum'] for a in args if 'enum' in a]
-                    value = [a for a in args if 'value' in a]
-                    component = enums[0]
-                    unit = 'dow' if component == 'SUNDAY_DAY_OF_WEEK' else UNIT.get(component, component.lower())
-                    f['arguments'] = [text(unit)] + value
-                    if component == 'SUNDAY_DAY_OF_WEEK' and enums[1:] == ['ONE']:
-                        raise ValueError('extract SUNDAY_DAY_OF_WEEK indexed from one')
-                elif name == 'round_calendar':
-                    x_, _rounding, unit, _origin, multiple = args
-                    n = int(multiple['value']['literal']['i64'])
-                    f['arguments'] = [text('quarter' if unit['enum'] == 'MONTH' and n == 3 else unit['enum'].lower()), x_]
-            for v in x.values():
-                walk(v)
-        elif isinstance(x, list):
-            for v in x:
-                walk(v)
-
-    walk(plan)
-    return plan
-
-
-# A query has SUBSTRAIT_TIMEOUT seconds (60): one past it is answered as timed out and the
+# A query has DATAFUSION_TIMEOUT seconds (60): one past it is answered as timed out and the
 # process ends (DataFusion's run cannot be stopped), exit code 3; the adapter runs the rest again.
-TIMEOUT = float(os.environ.get('SUBSTRAIT_TIMEOUT') or 60)
+TIMEOUT = float(os.environ.get('DATAFUSION_TIMEOUT') or 60)
 current = {'id': None, 'since': 0.0}
 
 
@@ -97,16 +57,16 @@ def main():
             if m not in contexts:
                 ctx = SessionContext()
                 for name, path in jobs['models'][m].items():
-                    # Quoted: DataFusion lowercases a name that is not (the plan reads 'Product').
-                    ctx.register_parquet('"' + name.replace('"', '""') + '"', path)
+                    # Its name as it is (the SQL quotes it: DataFusion lowercases a name that is not).
+                    ctx.register_parquet(name, path)
                 contexts[m] = ctx
             ctx = contexts[m]
-            plan = ss.Plan.from_json(json.dumps(for_datafusion(json.load(open(q['plan'], encoding='utf-8')))))
-            df = ctx.create_dataframe_from_logical_plan(ss.Consumer.from_substrait_plan(ctx, plan))
-            table = df.to_arrow_table()
+            t0 = time.monotonic()
+            table = ctx.sql(q['sql']).to_arrow_table()
+            ms = round((time.monotonic() - t0) * 1000)
             cols = [table.column(i).to_pylist() for i in range(table.num_columns)]
             rows = [[value(c[r]) for c in cols] for r in range(table.num_rows)]
-            print(json.dumps({'id': q['id'], 'rows': rows}), flush=True)
+            print(json.dumps({'id': q['id'], 'rows': rows, 'ms': ms}), flush=True)
         # One query's failure is its answer, a panic of DataFusion's too (pyo3's PanicException
         # is a BaseException).
         except (KeyboardInterrupt, SystemExit):

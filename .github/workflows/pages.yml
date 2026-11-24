@@ -9,7 +9,7 @@ on:
     paths: ['docs/**', 'src/**', 'formats/tmsl.js', 'test/fixtures/contoso.js', 'conformance/tools/site-results.mjs', '.github/workflows/pages.yml']
   # The "Ossie compiler" tab: the engines' latest results, deployed again when one has new ones.
   workflow_run:
-    workflows: [Conformance, T-SQL, PostgreSQL, Polars, Substrait]
+    workflows: [Conformance, T-SQL, PostgreSQL, Polars, DataFusion]
     types: [completed]
     branches: [main]
   workflow_dispatch:
@@ -50,7 +50,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           A="$RUNNER_TEMP/reports"; mkdir -p "$A"
-          for pair in conformance.yml:plan-report tsql.yml:tsql-report postgres.yml:postgres-plan-report-unnest polars.yml:polars-report substrait.yml:substrait-unnest; do
+          for pair in conformance.yml:plan-report tsql.yml:tsql-report postgres.yml:postgres-plan-report-unnest polars.yml:polars-report datafusion.yml:datafusion-report; do
             wf=${pair%%:*}; art=${pair#*:}
             for id in $(gh run list -R "$GITHUB_REPOSITORY" --workflow "$wf" --branch main --status completed --limit 10 --json databaseId -q '.[].databaseId'); do
               gh run download "$id" -R "$GITHUB_REPOSITORY" -n "$art" -D "$A/$art" >/dev/null 2>&1 && break

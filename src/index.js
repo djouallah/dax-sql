@@ -34,6 +34,7 @@ import { DuckDBDialect } from './dialects/duckdb.js';
 import { TSqlDialect } from './dialects/tsql.js';
 import { PostgresDialect } from './dialects/postgres.js';
 import { PolarsDialect } from './dialects/polars.js';
+import { DataFusionDialect } from './dialects/datafusion.js';
 import { Dialect } from './dialects/base.js';
 import { newRow } from './ir.js';
 import { DaxError, semantic, unsupported } from './errors.js';
@@ -84,6 +85,7 @@ export { DuckDBDialect } from './dialects/duckdb.js';
 export { TSqlDialect } from './dialects/tsql.js';
 export { PostgresDialect } from './dialects/postgres.js';
 export { PolarsDialect } from './dialects/polars.js';
+export { DataFusionDialect } from './dialects/datafusion.js';
 export { parseQuery, parseExpression } from './parser.js';
 export { parseSql, modelRelations } from './sql.js';
 
@@ -92,7 +94,7 @@ import { makeViews } from './views.js';
 export const createViews = options => makeViews(createCompiler, options);
 export { Model } from './model.js';
 
-const DIALECTS = { duckdb: () => new DuckDBDialect(), tsql: () => new TSqlDialect(), postgres: () => new PostgresDialect(), polars: () => new PolarsDialect() };
+const DIALECTS = { duckdb: () => new DuckDBDialect(), tsql: () => new TSqlDialect(), postgres: () => new PostgresDialect(), polars: () => new PolarsDialect(), datafusion: () => new DataFusionDialect() };
 
 export function createCompiler(input, options = {}) {
   const model = input instanceof Model ? input : new Model(input);

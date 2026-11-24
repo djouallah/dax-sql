@@ -119,3 +119,16 @@ for name, q in [
     ("f6 no CTE: a derived table with the scalar subquery column", "SELECT ts FROM (SELECT ts, (SELECT MAX(ts) FROM u) AS m FROM u) AS c WHERE ts >= date_trunc('year', m)"),
 ]:
     run(name, lambda q=q: sorted(small.execute(q, eager=True).rows(), key=str))
+# fuzz2-0101 cut down: its CTEs up to the one that fails, and the shape there (a scalar subquery's
+# column added to a LEFT JOIN's rows, read in DATE_TRUNC inside an IN).
+cut = whole[: whole.index(",\nw34 AS")] + "\nSELECT * FROM v1"
+run("g1 fuzz2-0101's CTEs up to v1", lambda: small.execute(cut, eager=True).rows())
+J = "WITH j AS (SELECT * FROM u AS a LEFT JOIN (SELECT ts AS ts2 FROM u) AS b ON ts2 = a.ts), c AS (SELECT *, (SELECT MAX(ts) FROM u) AS m FROM j) "
+for name, q in [
+    ("g2 a scalar subquery's column added to a LEFT JOIN, IN reading it in date_trunc", J + "SELECT ts FROM c WHERE ts IN (SELECT ts1 FROM (SELECT ts AS ts1 FROM u) AS s WHERE ts1 >= date_trunc('year', m))"),
+    ("g3 g2 without the IN", J + "SELECT ts FROM c WHERE ts >= date_trunc('year', m)"),
+    ("g4 g2 with a join of no LEFT", "WITH j AS (SELECT * FROM u AS a JOIN (SELECT ts AS ts2 FROM u) AS b ON ts2 = a.ts), c AS (SELECT *, (SELECT MAX(ts) FROM u) AS m FROM j) SELECT ts FROM c WHERE ts >= date_trunc('year', m)"),
+    ("g5 g3 selecting date_trunc instead", J + "SELECT date_trunc('year', m) AS y FROM c"),
+    ("g6 a LEFT JOIN's column (no scalar subquery) in date_trunc", "WITH j AS (SELECT * FROM u AS a LEFT JOIN (SELECT ts AS ts2 FROM u) AS b ON ts2 = a.ts) SELECT date_trunc('year', ts2) AS y FROM j"),
+]:
+    run(name, lambda q=q: sorted(small.execute(q, eager=True).rows(), key=str))

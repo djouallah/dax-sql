@@ -314,7 +314,7 @@ function pgUpdate() {
   pgRows();
 }
 // The right pane: the SQL DuckDB runs, or the query plan as a Substrait plan (its JSON form,
-// unnested by the compiler: the one DataFusion runs in CI), made when it is first asked for.
+// unnested by the compiler: the one the other engines' SQL is written from), made when asked for.
 function pgSubstrait() {
   if (pg.substrait === undefined) {
     try { pg.substrait = { json: JSON.stringify(compiler().substrait(pg.dax, { unnest: true }).plan, null, 2) }; }

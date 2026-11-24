@@ -19,9 +19,9 @@ Nothing here blocks a release. DAX on DuckDB has nothing left; T-SQL is the last
 
 # Wave 4: Polars
 
-- 1199 of 1286 match on Polars 2.1.0 (`polars.yml`); the rest on its known list. Left: FORMAT,
-  SUBSTITUTE's instance, en-US text as a date, CALENDARAUTO's series; LASTNONBLANK of a date,
-  whose range join of dates by dates is past 30 s on Polars.
+- Polars built from its main branch (`polars-main.yml`, daily when main has moved), the suite in
+  `polars.yml`. Left on its known list: three queries of many FORMAT number patterns past Polars'
+  SQL parser (no value bound once), and one ordered by a float its rows tie at (flaky).
 
 # The query plan
 

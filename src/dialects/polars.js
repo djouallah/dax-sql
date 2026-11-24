@@ -1,4 +1,4 @@
-// Polars SQL (pl.SQLContext, tested on 2.1): PostgreSQL's SQL, as Polars reads it, over the
+// Polars SQL (pl.SQLContext, tested on its main branch): PostgreSQL's SQL, as Polars reads it, over the
 // query plan unnested (planSql { unnest: true }): Polars runs no correlated subquery and no
 // LATERAL, so the plan with neither is the one it takes. What it writes differently from
 // PostgreSQL's:

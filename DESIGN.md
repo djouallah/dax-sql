@@ -1178,7 +1178,7 @@ the compiled SQL's job alone).
 
 ### Polars
 
-`dialect: 'polars'` writes PostgreSQL's SQL as Polars' SQLContext reads it (tested on 2.1), over
+`dialect: 'polars'` writes PostgreSQL's SQL as Polars' SQLContext reads it (tested on its main branch), over
 the query plan unnested (`planSql(query, { unnest: true })`): Polars runs no correlated subquery
 and no LATERAL. Where it differs from PostgreSQL's:
 
@@ -1201,8 +1201,9 @@ and no LATERAL. Where it differs from PostgreSQL's:
 (`worker.py`, one process for each model), against DuckDB's known lists and its own (FORMAT,
 SUBSTITUTE's instance, en-US text as a date, CALENDARAUTO not written for Polars yet; four
 LASTNONBLANK-of-a-date queries past 30 s). `polars.yml` runs it on each push that changes the
-compiler or the suite, on Polars 2.1.0 from pip. `polars-main.yml` (Polars built from its main
-branch, the probe and the SQL shapes) is run by hand.
+compiler or the suite, on Polars built from its main branch: `polars-main.yml` builds it daily
+when main has moved (and by hand), publishes its wheels as the release `polars-main`, and runs
+`polars.yml` on them.
 
 ### Tests
 

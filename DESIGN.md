@@ -1196,8 +1196,10 @@ the compiled SQL's job alone).
 
 `dialect: 'polars'` writes PostgreSQL's SQL as Polars' SQLContext reads it (tested on its main branch), over
 the query plan unnested (`planSql(query, { unnest: true })`): Polars main unnests correlated
-scalar, `IN` and `EXISTS` subqueries, but has no `LATERAL` and reads no outer row through a derived
-table, which the correlated plan needs; `polars.yml` runs the correlated plan beside, as a measure.
+scalar, `IN` and `EXISTS` subqueries and `LATERAL` over a table, but reads no outer row in a
+subquery with no `FROM` of its own (`LATERAL` or derived) and takes `EXISTS` in some positions
+only. `polars.yml` runs the correlated plan beside, as a measure: 856 queries match to the
+unnested plan's 1227, in the same time.
 Where it differs from PostgreSQL's:
 
 - Each relation a SELECT reads is a CTE of its own (`flatSql`): Polars' parser nests subqueries
@@ -1208,7 +1210,7 @@ Where it differs from PostgreSQL's:
   a duration).
 - An interval is of a fixed length: a constant number of months is `INTERVAL 'k months'`, any
   other number made of the date's parts.
-- A blank-safe key is `=` of `COALESCE` with a value no data holds.
+- A blank-safe key is `IS NOT DISTINCT FROM` (no `ARRAY = ARRAY`, no `ROW()::record`).
 - `strpos` reads its needle as a pattern: a text's position is the length before its first
   occurrence. `ROUND`'s places are a constant. Whole numbers are 64 bits: Polars computes a
   `CASE`'s branches no row takes.

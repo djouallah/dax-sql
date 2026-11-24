@@ -13,8 +13,8 @@ import polars as pl
 REPROS = [
     # --- answers or errors where there should be none ---
     ("strpos's needle is text, not a pattern", "SELECT strpos('abc', '|b|') AS x", "a text's position by split_part"),
-    ("IS NOT DISTINCT FROM between two CASTs in a join", "SELECT COUNT(*) AS n FROM t AS l JOIN (SELECT a AS b FROM t) AS r ON CAST(l.a AS BIGINT) IS NOT DISTINCT FROM CAST(r.b AS BIGINT)", "keys as = of COALESCE with a value no data holds"),
-    ("IS NOT DISTINCT FROM beside an expression key", "SELECT COUNT(*) AS n FROM t AS l JOIN (SELECT a AS b FROM t) AS r ON l.a IS NOT DISTINCT FROM r.b AND CAST(l.a AS BIGINT) = CAST(r.b AS BIGINT)", "keys as = of COALESCE with a value no data holds"),
+    ("IS NOT DISTINCT FROM between two CASTs in a join", "SELECT COUNT(*) AS n FROM t AS l JOIN (SELECT a AS b FROM t) AS r ON CAST(l.a AS BIGINT) IS NOT DISTINCT FROM CAST(r.b AS BIGINT)", "none needed (fixed: pola-rs/polars#31049)"),
+    ("IS NOT DISTINCT FROM beside an expression key", "SELECT COUNT(*) AS n FROM t AS l JOIN (SELECT a AS b FROM t) AS r ON l.a IS NOT DISTINCT FROM r.b AND CAST(l.a AS BIGINT) = CAST(r.b AS BIGINT)", "none needed (fixed: pola-rs/polars#31049)"),
     ("a constant's comparison in a join's ON", "SELECT COUNT(*) AS n FROM t AS l JOIN (SELECT a AS b FROM t) AS r ON l.a = r.b AND r.b = 2", "none needed (fixed: pola-rs/polars#31040)"),
     ("two comparisons of one column with constants in a join's ON", "SELECT COUNT(*) AS n FROM t AS l JOIN (SELECT a AS b FROM t) AS r ON l.a = r.b AND r.b = 2 AND r.b = 3", "none needed (fixed: pola-rs/polars#31040)"),
     ("a left join's ON with a condition on its right alone", "SELECT COUNT(*) AS n FROM t AS l LEFT JOIN (SELECT a AS b FROM t) AS r ON l.a = r.b AND r.b = 2", "none needed"),
@@ -102,8 +102,8 @@ def main():
             workaround = f"not needed on this Polars (was: {workaround})"
         print(f"| {cell(name)} | {cell(got)} | {cell(want)} | {'yes' if same else '**no**'} | {cell(workaround)} |")
     print(f"\n{ok} of {len(REPROS)} answer as DuckDB does.\n")
-    # A join on IS NOT DISTINCT FROM against one on =, the same keys (dax-sql writes the first as
-    # the second, of COALESCE).
+    # A join on IS NOT DISTINCT FROM against one on =, the same keys (dax-sql writes the first;
+    # as fast since pola-rs/polars#31049).
     n = 200_000
     big = pl.SQLContext(x=pl.DataFrame({"k": [i % 3000 for i in range(n)]}), y=pl.DataFrame({"k2": list(range(3000))}))
     times = {}

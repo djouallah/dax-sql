@@ -17,8 +17,9 @@ Nothing here blocks a release. DAX on DuckDB has nothing left; T-SQL is the last
 # Wave 4: Polars
 
 - Polars built from its main branch (`polars-main.yml`, daily when main has moved), the suite in
-  `polars.yml`: 1215 of 1286 match, the rest on DuckDB's known lists but one, ordered by a float
-  its rows tie at (flaky).
+  `polars.yml`: 1227 of 1310 match, the rest on DuckDB's known lists but one, ordered by a float
+  its rows tie at (flaky). The correlated plan beside it: 856 match (Polars reads no outer row in
+  a subquery with no FROM of its own, takes EXISTS in some positions only), in the same time.
 
 # The query plan
 

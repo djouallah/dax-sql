@@ -33,7 +33,9 @@ for on in ["x.k = y.k", "x.k IS NOT DISTINCT FROM y.k"]:
 
 # Drafts not filed yet: what the correlated plan and DAX's runtime errors need.
 t = pl.DataFrame({"a": [1, 2, 3]})
-run("08 LATERAL", lambda: pl.SQLContext(t=t).execute(
+run("08 LATERAL with no FROM of its own", lambda: pl.SQLContext(t=t).execute(
+    "SELECT o.a, x.v FROM t AS o, LATERAL (SELECT o.a + 1 AS v) AS x", eager=True).rows())
+run("08b LATERAL over a table (answers)", lambda: pl.SQLContext(t=t).execute(
     "SELECT o.a, x.v FROM t AS o, LATERAL (SELECT i.a AS v FROM t AS i WHERE i.a > o.a) AS x", eager=True).rows())
 run("09 outer row read in a derived table of a subquery", lambda: pl.SQLContext(t=t).execute(
     "SELECT (SELECT b.v FROM (SELECT o.a * 10 AS v) AS b) AS r FROM t AS o", eager=True).rows())

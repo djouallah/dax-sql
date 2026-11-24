@@ -1,11 +1,12 @@
 // Polars SQL (pl.SQLContext, tested on its main branch): PostgreSQL's SQL, as Polars reads it, over the
 // query plan unnested (planSql { unnest: true }): Polars main unnests correlated scalar, IN and
-// EXISTS subqueries, but has no LATERAL and reads no outer row through a derived table, which the
-// correlated plan needs (polars.yml measures it beside). What it writes differently from
-// PostgreSQL's:
+// EXISTS subqueries and LATERAL over a table, but reads no outer row in a subquery with no FROM
+// of its own (LATERAL or derived) and takes EXISTS in some positions only: the correlated plan
+// matches 856 queries to the unnested plan's 1227, and is no faster (polars.yml measures both).
+// What it writes differently from PostgreSQL's:
 // - WITH has no MATERIALIZED (a CTE is a lazy frame, computed once where it is read).
-// - A blank-safe key is = of COALESCE with a value no data holds (no ARRAY = ARRAY, no
-//   ROW()::record; IS NOT DISTINCT FROM joins tens of times slower).
+// - A blank-safe key is IS NOT DISTINCT FROM (no ARRAY = ARRAY, no ROW()::record): a join on it
+//   as fast as one on = since pola-rs/polars#31049.
 // - A value is written where it is read, not bound in a subquery's row (which would read the
 //   outer row: a correlated subquery).
 // - An interval is of a fixed length only (n * INTERVAL '1 day', no months): a date moved by
@@ -38,12 +39,6 @@ const constInt = n => (n?.k === 'lit' && Number.isInteger(n.v) ? n.v
 // A constant number of months: an INTERVAL (of months it is, of the month's last day at most).
 const months = (x, k) => (k === 0 ? x : `(${x} ${k > 0 ? '+' : '-'} INTERVAL '${Math.abs(k)} months')`);
 
-// A blank as a key, by type: a value no data holds.
-const SENTINELS = {
-  int: 'CAST(-9223372036854775807 AS BIGINT)', double: 'CAST(-1.7976931348623157e308 AS DOUBLE PRECISION)',
-  decimal: 'CAST(-99999999999999.9999 AS DECIMAL(19,4))', string: "'\u0001'",
-  date: "TIMESTAMP '0001-01-01 00:00:00'", datetime: "TIMESTAMP '0001-01-01 00:00:00'",
-};
 const DATES = new Set(['start_of', 'end_of', 'today', 'utctoday']);
 
 export class PolarsDialect extends PostgresDialect {
@@ -59,14 +54,8 @@ export class PolarsDialect extends PostgresDialect {
   // A CASE's branches no row takes are computed too: DAX's runtime errors are blanks.
   computesEveryBranch = true;
 
-  // A blank-safe key: = of each side with a blank as a value of its type no data holds (Polars
-  // joins on IS NOT DISTINCT FROM tens of times slower than on =: repros.py; past 30 s for a
-  // LASTNONBLANK).
-  isNotDistinct(a, b, t) {
-    const none = SENTINELS[t];
-    if (!none) return `(${a} IS NOT DISTINCT FROM ${b})`;
-    return `(COALESCE(${a}, ${none}) = COALESCE(${b}, ${none}))`;
-  }
+  // A blank-safe key (pola-rs/polars#31049 joins on it as fast as on =).
+  isNotDistinct(a, b) { return `(${a} IS NOT DISTINCT FROM ${b})`; }
 
   // A date: a TIMESTAMP (a cast to one at midnight), a constant one too.
   type(t) { return t === 'date' ? 'TIMESTAMP' : super.type(t); }

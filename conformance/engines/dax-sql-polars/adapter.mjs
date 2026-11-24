@@ -1,6 +1,6 @@
 // dax-sql's adapter for Polars: as engines/dax-sql/adapter.mjs, but each query is compiled with
-// the `polars` dialect through the query plan unnested (planSql { unnest: true }: Polars SQL has
-// no LATERAL, and reads no outer row through a derived table) and run on Polars' SQLContext over
+// the `polars` dialect through the query plan unnested (planSql { unnest: true }: Polars SQL reads
+// no outer row in a subquery with no FROM of its own, LATERAL or derived) and run on Polars' SQLContext over
 // the model's CSVs (worker.py, one process for each model).
 //
 //   PY=<python with polars> node engines/dax-sql-polars/adapter.mjs <dax-sql checkout> <request.json>

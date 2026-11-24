@@ -50,7 +50,11 @@ export const sub = (l, r) => pop('sub', [l, r], 'int', false);
 export const coalesce = (x, v) => pop('coalesce', [x, v], x.t ?? v.t, true);
 export const TRUE = pop('true', []), FALSE = pop('false', []);
 // Whether a plan operator is a condition (the others are values).
-export const isCondOp = op => !['add', 'sub', 'mul', 'div', 'neg', 'coalesce', 'nullif', 'cast', 'concat', 'call'].includes(op);
+export const isCondOp = op => !['add', 'sub', 'mul', 'div', 'neg', 'coalesce', 'nullif', 'cast', 'concat', 'call', 'defined'].includes(op);
+// A function defined as standard ones: { op: 'defined', name, argc, a: [...its arguments, its
+// body] }. Its body (standard functions of the arguments) is what it means; an engine with a
+// function of that name may write it instead (T-SQL's FORMAT).
+export const defined = (name, args, body) => ({ k: 'pop', op: 'defined', name, argc: args.length, a: [...args, body], t: body.t, nn: !!body.nn });
 
 // Conditions, as SQL has them.
 export const and = xs => xs.length === 1 ? xs[0] : xs.reduce((l, r) => pop('and', [l, r]));

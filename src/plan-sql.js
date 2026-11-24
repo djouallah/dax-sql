@@ -214,6 +214,12 @@ export class PlanSql extends Emitter {
   // --- the plan's own scalars ----------------------------------------------------------------
 
   scalar(x, scope = EMPTY, pred = false) {
+    // A function defined as standard ones: the dialect's own of that name, else its body.
+    if (x.k === 'pop' && x.op === 'defined') {
+      if (!this.d.nativeFns?.has(x.name)) return this.scalar(x.a[x.argc], scope, pred);
+      const args = x.a.slice(0, x.argc);
+      return this.d.fn(x.name, args.map(v => this.scalar(v, scope)), args);
+    }
     if (x.k === 'pop') {
       // The conditions of AND, OR and NOT as conditions; the others' arguments as values.
       const logic = x.op === 'and' || x.op === 'or' || x.op === 'not';

@@ -404,8 +404,9 @@ function fn(x) {
     // FORMAT: a number or a date by a pattern (parsed: its sections, digits, separators, the
     // names of days and months), as text; COMBINEVALUES: values joined by a separator.
     // FORMAT: the pattern (parsed, as JSON) written out as standard functions (text.js).
-    case 'format_number': return DEF.formatNumber(a[0], JSON.parse(x.a[1].v), x.a[0].t);
-    case 'format_date': return DEF.formatDate(a[0], JSON.parse(x.a[1].v));
+    // (Its name and arguments kept beside: an engine with a FORMAT of its own may write that.)
+    case 'format_number': return P.defined('format_number', a, DEF.formatNumber(a[0], JSON.parse(x.a[1].v), x.a[0].t));
+    case 'format_date': return P.defined('format_date', a, DEF.formatDate(a[0], JSON.parse(x.a[1].v)));
     case 'combinevalues': return DEF.combineValues(T(0), a.slice(1).map(asText));
     case 'year': case 'month': case 'day': case 'hour': case 'minute': case 'second': case 'quarter':
       return isDate(p.t) ? call(`extract_${x.name}`, [p], 'int') : keep();

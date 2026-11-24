@@ -118,6 +118,8 @@ export function toSubstrait(plan, options = {}) {
     throw new Error(`substrait: scalar ${x.k}`);
   };
   const pop = (x, S) => {
+    // A function defined as standard ones: its body.
+    if (x.op === 'defined') return S(x.a[x.argc]);
     const [a, b] = x.a;
     // A blank argument typed as the other's, or as the result.
     const peer = i => (x.a[1 - i] && x.a[1 - i].t !== 'blank' ? x.a[1 - i].t : x.t !== 'bool' ? x.t : undefined);

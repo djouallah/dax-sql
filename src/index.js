@@ -55,6 +55,7 @@ import { fuse } from './passes/fuse.js';
 import { joins } from './passes/joins.js';
 import { outer } from './passes/outer.js';
 import { kids, scalarsOf } from './passes/decorrelate.js';
+import { pipe, checked } from './check.js';
 // The correlated plan: the plan before decorrelation, its scalars standard, its measures fused,
 // a subtree held more than once one definition.
 // A plan's size: its operators and its scalars' nodes, its definitions' once each.
@@ -71,10 +72,12 @@ function planSize(root) {
   for (const d of root.defs ?? []) R(d.rel);
   return n;
 }
-const correlated = plan => prune(renames(inline(share(exact(standard(fuseApplies(plan)))))));
+const correlated = pipe([['fuseApplies', fuseApplies], ['standard', standard], ['exact', exact], ['share', share], ['inline', inline], ['renames', renames], ['prune', prune]]);
 // The correlated plan unnested (passes/unnest.js), for an engine that does not unnest: no apply,
 // no correlated EXISTS; the σ over × it leaves joins, the measures over the same rows one grouping.
-const unnested = plan => prune(renames(inline(share(outer(fuse(joins(unnest(exact(standard(fuseApplies(plan)))))))))));
+const unnested = pipe([['fuseApplies', fuseApplies], ['standard', standard], ['exact', exact], ['unnest', unnest], ['joins', joins], ['fuse', fuse], ['outer', outer], ['share', share], ['inline', inline], ['renames', renames], ['prune', prune]]);
+// The plan read back from Substrait, checked as any pass's (DAXSQL_CHECK).
+const readBack = checked('the Substrait read back', x => x, { final: true });
 import { explain as drawPlan } from './explain.js';
 import { optimize } from './passes/index.js';
 
@@ -207,7 +210,7 @@ export function createCompiler(input, options = {}) {
     const o = { ...opts, calcColumn, calcTable, security };
     const p = new Lowerer(model, o).query(s);
     const passed = pipeline(p.plan);
-    const plan = engine(readSubstrait(JSON.parse(JSON.stringify(toSubstrait(passed).plan)), model, { columns: p.columns, castOutput: options.castOutput }));
+    const plan = readBack(engine(readSubstrait(JSON.parse(JSON.stringify(toSubstrait(passed).plan)), model, { columns: p.columns, castOutput: options.castOutput })));
     const ps = new PlanSql(model, dialect, o);
     const sql = ps.query({ ...p, plan });
     // Its size (the smaller of a calculation group's two forms is kept): the plan's, after the passes.
@@ -317,7 +320,7 @@ export function createCompiler(input, options = {}) {
     planSql(text, o = {}) {
       if (o.optimize === false) throw new DaxError('planSql: the plan as lowered (DAX functions in it) has no Substrait, and so no SQL', { code: 'UNSUPPORTED' });
       const p = onePlan(text);
-      const plan = engine(readSubstrait(JSON.parse(JSON.stringify(toSubstrait(pick(p.plan, o)).plan)), model, { columns: p.columns, castOutput: options.castOutput }));
+      const plan = readBack(engine(readSubstrait(JSON.parse(JSON.stringify(toSubstrait(pick(p.plan, o)).plan)), model, { columns: p.columns, castOutput: options.castOutput })));
       return { sql: new PlanSql(model, dialect, options).query({ ...p, plan }), columns: p.columns };
     },
     // The query plan as a Substrait plan (substrait.js): { plan (its JSON form), dax (dax-sql's

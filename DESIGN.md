@@ -1255,6 +1255,8 @@ npm test
   (NULLs, joins, `IN` and `LIKE`, `CAST`, `%`, `WITH TIES`).
 - `views.test.js`: semantic views' statements, run on DuckDB.
 - `explain.test.js`: the query plan as drawn, and its SQL answering as the compiled SQL does.
+- `plan.test.js`: every plan well formed (`src/check.js`) as lowered and after each pipeline,
+  and the same after its Substrait round trip; the check finds a plan broken each way it looks.
 - `tsql.test.js`: every conformance query is T-SQL with nothing Fabric lacks, or refused by
   name; the shapes Fabric needs.
 - `formats/test/formats.test.js`: TMSL to Ossie and back answers every measure as the TMSL
@@ -1267,8 +1269,12 @@ In CI:
 
 - `conformance.yml`: the suite against Power BI's goldens (`conformance/`). A release waits for
   it. Its `plan` job runs the suite through the plan's other forms (correlated, unnested,
-  optimized: `DAXSQL_PLAN`), each written from Substrait, against the same known list; its
-  `substrait` job parses every plan with Substrait main's protos. `postgres.yml`'s `plan` job
+  optimized: `DAXSQL_PLAN`), each written from Substrait, against the same known list, with
+  `DAXSQL_CHECK` set: each pass's plan checked (`src/check.js`: its columns its operator's, every
+  column read one its inputs have, no DAX operator left after `standard`); its `substrait` job
+  parses every plan with Substrait main's protos, and reads each back and writes it again, the
+  same plan (`conformance/tools/substrait-roundtrip.mjs`). Its `coverage` job and `test.yml`
+  report what of `src/` the suite and the unit tests reach (c8). `postgres.yml`'s `plan` job
   runs the optimized and unnested plans on PostgreSQL.
 - `perf.yml` (`conformance/engines/dax-sql/bench.mjs`): every query timed by the commit and by
   the one before, on one runner, the fastest of three rounds each: more than 10% slower in all,

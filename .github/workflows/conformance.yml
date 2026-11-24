@@ -21,6 +21,9 @@ jobs:
   dax-sql:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    # Every pass's plan checked (src/check.js): a pass that breaks a plan fails its query there.
+    env:
+      DAXSQL_CHECK: "1"
     steps:
       # Named, so that called from another workflow it still checks out this repository.
       - uses: actions/checkout@v4
@@ -61,7 +64,7 @@ jobs:
 
   # Every query's plan as Substrait, read against the specification on main (substrait-io/
   # substrait, cloned at its latest commit): each a Plan message of its protos, each function one
-  # of its extension files'.
+  # of its extension files'; and each read back and written again, the same plan (the round trip).
   substrait:
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -86,6 +89,8 @@ jobs:
   plan:
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    env:
+      DAXSQL_CHECK: "1"
     steps:
       # Named, so that called from another workflow it still checks out this repository.
       - uses: actions/checkout@v4

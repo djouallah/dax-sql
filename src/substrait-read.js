@@ -237,7 +237,8 @@ export function readSubstrait(plan, model, options = {}) {
       const args = (e.lambdaInvocation.arguments.fields ?? []).map(x => ex(x, cs));
       if (name === 'typed') return { ...args[0], t };
       if (name === 'true' || name === 'false') return { k: 'pop', op: name, a: [], t: 'bool', nn: true };
-      if (ARITH.has(name)) return { k: 'pop', op: name, a: args, t, nn: false };
+      // Arithmetic of mixed types: whether it can be NULL is its body's (substrait.js writes x.nn there).
+      if (ARITH.has(name)) return { k: 'pop', op: name, a: args, t, nn: !!(l.lambda.body.scalarFunction && kindOf(l.lambda.body.scalarFunction.outputType).nn) };
       if (CALL.test(name)) return { k: 'pop', op: 'call', name, a: args, t, nn: false };
       // A function defined as standard ones: its arguments, and its body over them.
       params.push(args);

@@ -10,7 +10,8 @@ import { share } from './share.js';
 import { inline } from './inline.js';
 import { renames } from './renames.js';
 import { prune } from './prune.js';
+import { pipe } from '../check.js';
 
 export const PASSES = [decorrelate, fuse, joins, standard, outer, exact, share, inline, renames, prune];
 
-export const optimize = plan => PASSES.reduce((p, pass) => pass(p), plan);
+export const optimize = pipe(PASSES.map(pass => [pass.name, pass]));

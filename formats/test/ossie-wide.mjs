@@ -1,13 +1,14 @@
 // Apache Ossie's wide table compliance cases (compliance/wide_table in an Ossie checkout) that
-// return rows, each by its Layer 2 query (`query.ossie.sql`, the Relational Query Interface query
-// its Section 5 lowering gives), answered by dax-sql: .github/workflows/ossie-query.yml.
+// return rows, each by its Layer 2 query (the Relational Query Interface query its Section 5
+// lowering gives), answered by dax-sql: .github/workflows/ossie-query.yml.
 //   node formats/test/ossie-wide.mjs <ossie checkout>
-// `expected.txt` names the fixture (`# fixture: <name>`: its SQL loaded into DuckDB, its model
-// read with formats/ossie.js) and holds the rows, as an ost table. The e* cases, which raise a
-// Layer 3 error for a JSON query, have no Layer 2 query: dax-sql takes no Layer 3 JSON, and they
-// are counted as skipped. Rows are compared as ossie-compare.mjs does. A case that does not
-// match fails the run, unless on PENDING; one on PENDING that matches must leave it.
-import { readFileSync, readdirSync, existsSync, appendFileSync } from 'node:fs';
+// Each case is an .ost script: connect("<data>") (<data>/<data>.sql loaded into DuckDB),
+// modelFile(name, "<path>") (read with formats/ossie.js), then executeLower(...) with the Layer 2
+// query between {_| and |_} and the rows after it, as an ost table. The e* cases, which raise a
+// Layer 3 error for a JSON query (`> error:`), have no Layer 2 query: dax-sql takes no Layer 3
+// JSON, and they are counted as skipped. Rows are compared as ossie-compare.mjs does. A case that
+// does not match fails the run, unless on PENDING; one on PENDING that matches must leave it.
+import { readFileSync, readdirSync, appendFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { DuckDBInstance } from '@duckdb/node-api';
 import { parse } from 'yaml';
@@ -22,19 +23,14 @@ const PENDING = new Set([]);
 const ossie = process.argv[2];
 if (!ossie) throw new Error('usage: ossie-wide.mjs <ossie checkout>');
 const dir = join(ossie, 'compliance', 'wide_table');
-const FIXTURES = {
-  retail: ['retail/retail.sql', 'retail/retail_model.ossie.yaml'],
-  stores: ['stores/stores.sql', 'stores/stores_model.ossie.yaml'],
-  stores_ambiguous: ['stores/stores.sql', 'stores/stores_ambiguous_model.ossie.yaml'],
-};
 const text = p => readFileSync(join(dir, p), 'utf8').replace(/\r\n/g, '\n');
 
-// One DuckDB and compiler per fixture.
+// One DuckDB and compiler per fixture: a case's data and model, `<data>|<model path>`.
 const fixtures = new Map();
 async function fixture(name) {
   if (fixtures.has(name)) return fixtures.get(name);
-  const [sql, model] = FIXTURES[name] ?? [];
-  if (!sql) throw new Error(`unknown fixture ${name}`);
+  const [data, model] = name.split('|');
+  const sql = `${data}/${data}.sql`;
   const db = await DuckDBInstance.create(':memory:');
   const con = await db.connect();
   await con.run(text(sql));
@@ -55,23 +51,28 @@ function compileCase(f, q) {
   }
 }
 
-const cases = readdirSync(join(dir, 'cases')).filter(d => existsSync(join(dir, 'cases', d, 'expected.txt'))).sort();
+const cases = readdirSync(dir).filter(f => f.endsWith('.ost')).sort();
 if (!cases.length) { console.log(`::error::no wide table cases in ${dir}`); process.exit(1); }
 const results = [];
-for (const name of cases) {
-  const at = `cases/${name}`;
+for (const file of cases) {
+  const name = file.slice(0, -4);
   const id = name.split('_')[0].toUpperCase();
-  if (!existsSync(join(dir, at, 'query.ossie.sql'))) { results.push({ id, name, outcome: 'skipped', detail: 'no Layer 2 query' }); continue; }
-  const expectedText = text(`${at}/expected.txt`);
-  const fx = expectedText.match(/^# fixture: (\S+)/m)?.[1];
-  const query = text(`${at}/query.ossie.sql`).trim();
+  const src = text(file).split('\n').filter(l => !l.startsWith('#')).join('\n');
+  const start = src.indexOf('{_|'), end = src.indexOf('|_}');
+  if (/^> error:/m.test(src) || start < 0 || end < 0) { results.push({ id, name, outcome: 'skipped', detail: 'no Layer 2 query' }); continue; }
+  const data = src.match(/connect\("([^"]+)"\)/)?.[1], model = src.match(/modelFile\("[^"]+",\s*"([^"]+)"\)/)?.[1];
+  const fx = data && model ? `${data}|${model}` : null;
+  const query = src.slice(start + 3, end).trim();
+  const lines = src.slice(end).split('\n').slice(1);
+  const stop = lines.findIndex(l => !l.startsWith('+') && !l.startsWith('|'));
+  const expected = table(lines.slice(0, stop < 0 ? undefined : stop));
   let outcome, detail = '', sql = null;
   try {
-    if (!fx) throw new Error('expected.txt names no fixture');
+    if (!fx) throw new Error('the case names no data or model');
     const f = await fixture(fx);
     sql = compileCase(f, query);
     const got = await rows(f.con, sql);
-    const diff = compare(got, table(expectedText.split('\n')), ordered(query), { round: true });
+    const diff = compare(got, expected, ordered(query), { round: true });
     outcome = diff ? 'fail' : 'match';
     detail = diff ?? '';
   } catch (e) {

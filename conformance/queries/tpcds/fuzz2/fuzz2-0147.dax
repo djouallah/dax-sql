@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 147)
+EVALUATE SUMMARIZECOLUMNS('item'[i_category], "m0", IF(ISINSCOPE('item'[i_current_price]), [Catalog Net Profit], IF(HASONEVALUE('customer_demographics'[cd_education_status]), DISTINCTCOUNT('ship_mode'[sm_type]))), "m1", [Store Distinct Customers])

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 112)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('ship_mode'[sm_type], 'date_dim'[d_moy], "m0", COUNTROWS(FILTER(VALUES('promotion'[p_promo_name]), [Catalog Revenue] > 10))), 'item'[i_brand] IN { "edupack #2", "scholarpack #6" })

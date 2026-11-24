@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 63)
+EVALUATE ROW("m0", TOTALYTD(COUNTROWS(FILTER(VALUES('Date'[Quarter]), AVERAGE('Sales'[Amount]) > 100)), 'Date'[Date]), "m1", IF([Sales by Ship Date] > 1000, RANKX(ALL('Date'[Month]), [Line Value Column]), SUMX(VALUES('Date'[Month]), MIN('Returns'[ReturnQty]))), "m2", IF(ISBLANK([Return Rate]), 0, ROUND([All Sales], 2)))

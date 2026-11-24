@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 43)
+EVALUATE SUMMARIZECOLUMNS('item'[i_class], 'item'[i_color], "m0", IF(ISBLANK(CALCULATE(MIN('catalog_sales'[cs_quantity]), KEEPFILTERS('ship_mode'[sm_type] IN { "REGULAR" }))), 0, COUNTROWS(FILTER(VALUES('date_dim'[d_qoy]), COUNTROWS(FILTER(VALUES('promotion'[p_promo_name]), [Store Distinct Customers] > 1)) > 1))), "m1", RANKX(ALL('customer_demographics'[cd_education_status]), RANKX(ALL('promotion'[p_promo_name]), TOTALYTD([Store Net Profit], 'date_dim'[d_date]))))

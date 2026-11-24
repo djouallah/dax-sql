@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 106)
+EVALUATE SUMMARIZECOLUMNS('Category'[Category], FILTER(ALL('Date'[Month]), 'Date'[Month] <> 2), FILTER(VALUES('Product'[Name]), 'Product'[Name] IN { "Jersey" }), "m0", IF(ISBLANK(([Line Value] - COALESCE(DISTINCTCOUNT('Customer'[Customer]), 0))), 0, [Red Sales]), "m1", [Red Sales Kept])

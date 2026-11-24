@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 101)
+EVALUATE SUMMARIZECOLUMNS('item'[i_brand], 'date_dim'[d_year], "m0", DIVIDE(COUNTROWS('catalog_sales'), ([Catalog Sales YoY] + DIVIDE([Store Profit % by Item Category], COUNTROWS('store')))), "m1", ABS(IF(HASONEVALUE('date_dim'[d_qoy]), CALCULATE([Store Revenue], DATESBETWEEN('date_dim'[d_date], DATE(2026, 7, 18), DATE(2025, 1, 22))))), "m2", ROUND(COALESCE(CALCULATE([Store Profit % by Item Category], REMOVEFILTERS('date_dim'), 'store'[s_state] = "TX"), 0), 1))

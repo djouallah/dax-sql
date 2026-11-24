@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 130)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('promotion'[p_promo_name], 'customer_demographics'[cd_marital_status], "m0", MIN('store_sales'[ss_quantity])), TREATAS({ "NEXT DAY", "zz-none", "REGULAR" }, 'ship_mode'[sm_type]))

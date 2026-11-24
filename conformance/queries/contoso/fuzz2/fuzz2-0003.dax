@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 3)
+EVALUATE ADDCOLUMNS(VALUES('Product'[Price]), "m0", CALCULATE(DISTINCTCOUNT('Customer'[City]), KEEPFILTERS('Product'[Color] IN { "Red", "Blue" }), USERELATIONSHIP('Sales'[ShipDate], 'Date'[Date])))

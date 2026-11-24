@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 19)
+EVALUATE ADDCOLUMNS(VALUES('Date'[Quarter]), "m0", ABS(ROUND([Avg Price], 0)))

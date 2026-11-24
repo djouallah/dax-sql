@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 100)
+EVALUATE SUMMARIZECOLUMNS('Product'[Name], 'Date'[Year], "m0", SUM('Returns'[ReturnQty]), "m1", AVERAGEX(VALUES('Date'[Quarter]), RANKX(ALL('Product'[Name]), RANKX(ALL('Date'[Year]), [All Sales]), , DESC, Dense)))

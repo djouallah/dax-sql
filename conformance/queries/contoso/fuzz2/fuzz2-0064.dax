@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 64)
+EVALUATE SUMMARIZECOLUMNS('Date'[Month], 'Product'[Color], 'Product'[Name], "m0", ABS(ROUND(RANKX(ALL('Category'[Category]), MIN('Returns'[ReturnQty])), 0)), "m1", MINX(VALUES('Date'[Year]), TOTALYTD(ROUND(COUNTROWS('Sales'), 0), 'Date'[Date])))

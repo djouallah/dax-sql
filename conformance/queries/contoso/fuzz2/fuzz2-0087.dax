@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 87)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('Product'[Color], 'Product'[Price], "m0", DIVIDE(DISTINCTCOUNT('Product'[PriceBand]), CALCULATE(COUNTROWS('Product'), ALL('Product'[Price])))), KEEPFILTERS('Product'[Color] = "Black"))

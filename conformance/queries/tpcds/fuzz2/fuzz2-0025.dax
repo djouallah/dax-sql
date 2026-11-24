@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 25)
+EVALUATE SUMMARIZECOLUMNS('customer_demographics'[cd_education_status], 'item'[i_category], "m0", ROUND([Store Revenue YTD], 1), "m1", MIN('catalog_sales'[cs_net_profit]), "m2", IF(ISBLANK(IF(HASONEVALUE('ship_mode'[sm_type]), [Store Revenue Same Period LY])), 0, (SUM('store_sales'[ss_quantity]) * [Store Distinct Customers])))

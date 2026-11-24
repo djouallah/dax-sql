@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 80)
+EVALUATE SUMMARIZECOLUMNS('item'[i_category], 'store'[s_city], "m0", MAX(MAX('catalog_sales'[cs_quantity]), [Store Revenue YTD]), "m1", VAR v = [Store Net Profit] RETURN v * 2 + SUM('catalog_sales'[cs_ext_sales_price]))

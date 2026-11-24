@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 47)
+EVALUATE ROW("m0", RANKX(ALL('Product'[Name]), SUM('Sales'[Amount]), , DESC, Dense), "m1", IF(ISBLANK(MIN('Returns'[ReturnQty])), 0, COUNTROWS('Sales')), "m2", IF(ISINSCOPE('Product'[Price]), [Sales YTD], [Returned]))

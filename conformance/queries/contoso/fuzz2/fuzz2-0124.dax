@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 124)
+EVALUATE SUMMARIZECOLUMNS('Customer'[Customer], 'Date'[Year], 'Product'[PriceBand], "m0", CALCULATE(AVERAGE('Sales'[Amount]), KEEPFILTERS('Date'[Month] = 2), ALL('Date'[Year])))

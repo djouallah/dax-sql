@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 24)
+EVALUATE SUMMARIZECOLUMNS('Date'[Year], 'Product'[PriceBand], FILTER(ALL('Customer'[Customer]), 'Customer'[Customer] <> "Bob"), "m0", CALCULATE([Returned], DATESBETWEEN('Date'[Date], DATE(2024, 3, 30), DATE(2024, 7, 5))))

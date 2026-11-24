@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 36)
+EVALUATE SUMMARIZECOLUMNS('item'[i_category], FILTER(ALL('item'[i_color]), 'item'[i_color] <> "blue"), KEEPFILTERS(TREATAS({ "Oak Grove", "Fairview" }, 'store'[s_city])), "m0", MIN('catalog_sales'[cs_quantity]), "m1", CALCULATE(DIVIDE(COUNTROWS('item'), CALCULATE(MAX([Catalog Sales Quantity], MIN('store_sales'[ss_ext_sales_price])), ALL('ship_mode'[sm_type]))), FILTER(ALL('item'[i_class]), 'item'[i_class] <> "classical")), "m2", [Catalog Net Profit])

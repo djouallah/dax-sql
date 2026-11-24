@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 123)
+EVALUATE SUMMARIZECOLUMNS('item'[i_category], 'date_dim'[d_qoy], 'store'[s_state], "m0", IF(CALCULATE(DISTINCTCOUNT('item'[i_current_price]), DATESBETWEEN('date_dim'[d_date], DATE(2026, 9, 20), DATE(2025, 6, 22))) > 1, TOTALYTD(MINX(VALUES('item'[i_current_price]), [Catalog Sales Same Period LY]), 'date_dim'[d_date]), DIVIDE(MIN('store_sales'[ss_net_profit]), IF(ISBLANK([Store Revenue Same Period LY]), 0, SUM('catalog_sales'[cs_ext_sales_price])))))

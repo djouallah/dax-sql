@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 40)
+EVALUATE TOPN(2, SUMMARIZECOLUMNS('Date'[Year], "m0", TOTALYTD(COUNTROWS('Returns'), 'Date'[Date])), [m0], ASC)

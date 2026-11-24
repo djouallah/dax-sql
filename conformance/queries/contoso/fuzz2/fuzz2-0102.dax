@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 102)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('Product'[PriceBand], 'Date'[Quarter], "m0", IF(MAX('Returns'[ReturnQty]) > 1, [Red Sales Kept], MAX('Sales'[Amount]))), TREATAS({ "Jersey" }, 'Product'[Name]))

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 70)
+EVALUATE SUMMARIZECOLUMNS('Product'[Color], 'Product'[Price], FILTER(VALUES('Product'[Name]), 'Product'[Name] IN { "zz-none", "Road Bike" }), "m0", [Best Customer Sales], "m1", [Share of Category])

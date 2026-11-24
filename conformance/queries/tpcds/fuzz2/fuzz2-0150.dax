@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 150)
+EVALUATE ADDCOLUMNS(VALUES('ship_mode'[sm_type]), "m0", CALCULATE(IF(HASONEVALUE('item'[i_category]), [Store Revenue]), KEEPFILTERS('item'[i_current_price] = 36.64)))

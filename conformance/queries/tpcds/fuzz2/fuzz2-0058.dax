@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 58)
+EVALUATE ADDCOLUMNS(VALUES('customer_demographics'[cd_education_status]), "m0", [Store Revenue YTD], "m1", MIN('store_sales'[ss_ext_sales_price]))

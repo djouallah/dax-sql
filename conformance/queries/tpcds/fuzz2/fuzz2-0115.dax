@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 115)
+EVALUATE ADDCOLUMNS(VALUES('date_dim'[d_qoy]), "m0", DIVIDE(IF(SUM('catalog_sales'[cs_quantity]) > 1000, SUM('store_sales'[ss_net_profit]), [Catalog Sales YoY]), CALCULATE(CALCULATE([Catalog Sales YoY], KEEPFILTERS('customer_address'[ca_state] = "CO"), 'ship_mode'[sm_type] >= "NEXT DAY"), ALL('store'[s_city]))), "m1", TOTALYTD(AVERAGEX(VALUES('store'[s_store_name]), [Store Revenue]), 'date_dim'[d_date]))

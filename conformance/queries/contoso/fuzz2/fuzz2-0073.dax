@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 73)
+EVALUATE SUMMARIZECOLUMNS("m0", IF(ISBLANK(COUNTROWS(FILTER(VALUES('Category'[Category]), CALCULATE(AVERAGE('Sales'[Amount]), KEEPFILTERS('Product'[PriceBand] = "zz-none"), FILTER(ALL('Product'[Price]), 'Product'[Price] <> 20)) > 0))), 0, COUNTROWS('Product')), "m1", [Products Sold], "m2", IF(HASONEVALUE('Date'[Year]), [Big Orders]))

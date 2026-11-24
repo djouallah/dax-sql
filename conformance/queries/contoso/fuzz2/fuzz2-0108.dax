@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 108)
+EVALUATE ADDCOLUMNS(VALUES('Customer'[Customer]), "m0", [Return Rate], "m1", [Best Customer Sales])

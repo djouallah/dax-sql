@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 65)
+EVALUATE ROW("m0", COALESCE(IF(ISINSCOPE('Customer'[City]), AVERAGE('Returns'[ReturnQty]), MAX('Sales'[Amount])), 0), "m1", (RANKX(ALL('Product'[Color]), AVERAGE('Sales'[Amount])) - MAXX(VALUES('Date'[Month]), [Sales Amount])), "m2", DIVIDE(DIVIDE(DISTINCTCOUNT('Product'[PriceBand]), CALCULATE([Red Sales], ALL('Product'[Name]))), CALCULATE(DIVIDE([Line Value Column], AVERAGE('Sales'[Amount])), ALL('Date'[Quarter]))))

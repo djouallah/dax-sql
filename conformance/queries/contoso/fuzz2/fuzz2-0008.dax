@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 8)
+EVALUATE SUMMARIZECOLUMNS('Customer'[City], FILTER(ALL('Product'[Color]), 'Product'[Color] <> "Red"), "m0", RANKX(ALL('Product'[PriceBand]), [All Sales], , DESC, Dense), "m1", DIVIDE(COUNTROWS('Returns'), [Quantity]))

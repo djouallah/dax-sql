@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 130)
+EVALUATE SUMMARIZECOLUMNS('Product'[Name], 'Date'[Year], "m0", IF([Line Value Column] > 1000, MAX('Returns'[ReturnQty]), [Line Value]), "m1", CALCULATE(AVERAGE('Sales'[Qty]), FILTER(VALUES('Category'[Category]), [All Sales] > 0)))

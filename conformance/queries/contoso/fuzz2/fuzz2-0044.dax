@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 44)
+EVALUATE SUMMARIZECOLUMNS('Product'[Color], "m0", IF(ISBLANK(CALCULATE(MIN('Sales'[Amount]), KEEPFILTERS('Date'[Quarter] IN { 3, 4 }))), 0, COUNTROWS(FILTER(VALUES('Date'[Year]), COUNTROWS(FILTER(VALUES('Date'[Quarter]), [Quantity] > 1)) > 1))), "m1", RANKX(ALL('Customer'[City]), RANKX(ALL('Date'[Month]), TOTALYTD([Sales Amount], 'Date'[Date]))))

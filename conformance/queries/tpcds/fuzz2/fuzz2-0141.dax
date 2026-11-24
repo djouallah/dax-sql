@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 141)
+EVALUATE SUMMARIZECOLUMNS('item'[i_class], 'item'[i_current_price], FILTER(ALL('item'[i_color]), 'item'[i_color] <> "navy"), "m0", IF(ISINSCOPE('item'[i_color]), SUM('catalog_sales'[cs_quantity]), [Store Net Profit]), "m1", DIVIDE(DISTINCTCOUNT('store'[s_city]), CALCULATE(AVERAGE('store_sales'[ss_quantity]), ALL('item'[i_brand]))))

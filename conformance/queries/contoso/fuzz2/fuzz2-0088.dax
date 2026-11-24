@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 88)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('Date'[Year], 'Customer'[City], "m0", IF(ISINSCOPE('Date'[Year]), [Line Value Column], DISTINCTCOUNT('Product'[Price])), "m1", MAX(AVERAGE('Sales'[Amount]), [Target Total])), 'Customer'[City] IN { "London", "Paris" })

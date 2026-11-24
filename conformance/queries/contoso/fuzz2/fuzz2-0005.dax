@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 5)
+EVALUATE ADDCOLUMNS(VALUES('Date'[Month]), "m0", IF(VAR v = ([Quantity] * SUM('Sales'[Amount])) RETURN v * 2 + CALCULATE(MAX('Sales'[Qty]), FILTER(VALUES('Date'[Month]), ABS([Big Orders]) > 10), REMOVEFILTERS('Customer')) > 0, IF(COUNTROWS('Sales') > 1000, DIVIDE(SUM('Sales'[Amount]), [Red Sales Kept]), RANKX(ALL('Date'[Month]), AVERAGE('Returns'[ReturnQty]))), IF(HASONEVALUE('Date'[Quarter]), DISTINCTCOUNT('Customer'[City]))))

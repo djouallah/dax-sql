@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 36)
+EVALUATE TOPN(1, SUMMARIZECOLUMNS('Customer'[City], "m0", VAR v = IF(ISINSCOPE('Product'[PriceBand]), MAX('Sales'[Qty]), [Line Value Column]) RETURN v * 2 + [Sales by Ship Date]), [m0], ASC)

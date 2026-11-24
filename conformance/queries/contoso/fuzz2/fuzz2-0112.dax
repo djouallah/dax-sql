@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 112)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('Product'[Name], 'Date'[Year], "m0", DIVIDE(COUNTROWS('Returns'), CALCULATE([Sales Amount], ALL('Date'[Quarter]))), "m1", DISTINCTCOUNT('Customer'[City])), ALLEXCEPT('Product', 'Product'[Price]))

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 61)
+EVALUATE TOPN(1, SUMMARIZECOLUMNS('Date'[Month], "m0", COALESCE((ROUND(SUM('Sales'[Amount]), 2) - RANKX(ALL('Customer'[City]), [Best Customer Sales], , DESC, Dense)), 0)), [m0], ASC)

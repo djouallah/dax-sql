@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 142)
+EVALUATE SUMMARIZECOLUMNS('date_dim'[d_qoy], 'item'[i_color], 'item'[i_brand], FILTER(ALL('item'[i_brand]), 'item'[i_brand] <> "zz-none"), "m0", AVERAGE('catalog_sales'[cs_ext_sales_price]), "m1", DIVIDE([Store Revenue], TOTALYTD([Archive Source Rows], 'date_dim'[d_date])), "m2", CALCULATE(((SUM('catalog_sales'[cs_net_profit]) * [Store Revenue YoY]) - DIVIDE([Store Profit % by Item Category], [Archive Files])), ALLEXCEPT('date_dim', 'date_dim'[d_qoy]), ALL('store'[s_store_name])))

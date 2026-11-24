@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 119)
+EVALUATE SUMMARIZECOLUMNS('date_dim'[d_moy], 'store'[s_state], 'date_dim'[d_qoy], "m0", SUM('store_sales'[ss_ext_sales_price]))

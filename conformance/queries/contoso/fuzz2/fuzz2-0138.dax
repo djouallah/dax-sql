@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 138)
+EVALUATE ROW("m0", CALCULATE(MINX(VALUES('Product'[PriceBand]), DIVIDE([Sales by Ship Date], AVERAGE('Returns'[ReturnQty]))), KEEPFILTERS('Date'[Month] = 10), KEEPFILTERS('Date'[Quarter] = 1)), "m1", COUNTROWS('Customer'), "m2", [Best Customer Sales])

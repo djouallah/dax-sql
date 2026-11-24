@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 15)
+EVALUATE TOPN(4, SUMMARIZECOLUMNS('Product'[Name], "m0", IF(ISINSCOPE('Product'[PriceBand]), COUNTROWS(FILTER(VALUES('Date'[Month]), IF([Products Sold] > 1000, COUNTROWS('Product'), [Line Value]) > 100)), AVERAGEX(VALUES('Product'[PriceBand]), TOTALYTD([Sales Amount], 'Date'[Date])))), [m0], DESC)

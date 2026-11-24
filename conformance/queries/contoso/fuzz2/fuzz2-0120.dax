@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 120)
+EVALUATE SUMMARIZECOLUMNS('Customer'[City], "m0", COALESCE([Sales by Ship Date], 0), "m1", [Returned], "m2", ABS(MAX('Returns'[ReturnQty])))

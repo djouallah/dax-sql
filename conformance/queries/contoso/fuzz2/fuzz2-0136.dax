@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 136)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('Date'[Quarter], 'Customer'[Customer], "m0", MIN('Sales'[Qty])), TREATAS({ 1, -1, 3 }, 'Date'[Quarter]))

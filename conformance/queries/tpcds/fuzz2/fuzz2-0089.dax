@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 89)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('date_dim'[d_qoy], "m0", ([Catalog Sales YoY] + [Catalog Sales YoY]), "m1", TOTALYTD(SUM('catalog_sales'[cs_ext_sales_price]), 'date_dim'[d_date])), TREATAS({ "zz-none", "Midway" }, 'store'[s_city]))

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 123)
+EVALUATE SUMMARIZECOLUMNS("m0", CALCULATE(SUM('Returns'[ReturnQty]), DATESBETWEEN('Date'[Date], DATE(2024, 9, 6), DATE(2023, 12, 11))), "m1", MAX([Products Sold], MAX('Sales'[Amount])))

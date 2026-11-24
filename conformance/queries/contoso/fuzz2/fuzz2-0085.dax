@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 85)
+EVALUATE ROW("m0", [Best Customer Sales], "m1", VAR v = SUM('Returns'[ReturnQty]) RETURN v * 2 + COUNTROWS('Returns'))

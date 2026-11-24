@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 115)
+EVALUATE SUMMARIZECOLUMNS('Date'[Month], FILTER(VALUES('Product'[PriceBand]), 'Product'[PriceBand] IN { "zz-none" }), "m0", [Product Count], "m1", VAR v = [Product Count] RETURN v * 2 + VAR v = COUNTROWS(FILTER(VALUES('Product'[Color]), [Sales YTD] > 10)) RETURN v * 2 + [Sales PY], "m2", MAXX(VALUES('Customer'[Customer]), ROUND(DIVIDE(MIN('Returns'[ReturnQty]), MAX('Sales'[Amount])), 0)))

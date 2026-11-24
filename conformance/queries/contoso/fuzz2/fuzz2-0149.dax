@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 149)
+EVALUATE SUMMARIZECOLUMNS(FILTER(ALL('Product'[Color]), 'Product'[Color] <> "Black"), FILTER(VALUES('Customer'[City]), 'Customer'[City] IN { "zz-none", "Rome" }), "m0", RANKX(ALL('Customer'[Customer]), SUM('Sales'[Qty]), , DESC, Dense), "m1", MINX(VALUES('Category'[Category]), MAX('Returns'[ReturnQty])))

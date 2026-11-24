@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 86)
+EVALUATE SUMMARIZECOLUMNS(FILTER(VALUES('Date'[Month]), 'Date'[Month] IN { 5, 4 }), "m0", [Red Sales Kept])

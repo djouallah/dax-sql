@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 27)
+EVALUATE SUMMARIZECOLUMNS('Customer'[City], 'Product'[Name], "m0", ROUND([Share of Category], 1), "m1", MIN('Returns'[ReturnQty]), "m2", IF(ISBLANK(IF(HASONEVALUE('Date'[Quarter]), [All Sales])), 0, (SUM('Sales'[Qty]) * [Quantity])))

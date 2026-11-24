@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 35)
+EVALUATE ADDCOLUMNS(VALUES('Date'[Year]), "m0", MINX(VALUES('Date'[Quarter]), IF(ISBLANK(MAX('Sales'[Amount])), 0, [Orders])))

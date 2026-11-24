@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 46)
+EVALUATE ROW("m0", RANKX(ALL('item'[i_brand]), SUM('store_sales'[ss_net_profit]), , DESC, Dense), "m1", IF(ISBLANK(MIN('catalog_sales'[cs_ext_sales_price])), 0, COUNTROWS('store_sales')), "m2", IF(ISINSCOPE('store'[s_store_name]), [Catalog Revenue], [Archive Files]))

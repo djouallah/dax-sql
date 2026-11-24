@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 137)
+EVALUATE TOPN(4, SUMMARIZECOLUMNS('Product'[Price], "m0", MAX([Return Rate], [Line Value])), [m0], ASC)

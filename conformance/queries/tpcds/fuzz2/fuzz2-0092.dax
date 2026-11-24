@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 92)
+EVALUATE ADDCOLUMNS(VALUES('store'[s_city]), "m0", DIVIDE(ABS(AVERAGE('catalog_sales'[cs_quantity])), [Store Revenue YTD]), "m1", IF(DIVIDE([Store Net Profit], DISTINCTCOUNT('ship_mode'[sm_type])) > 0, AVERAGE('catalog_sales'[cs_net_profit]), COALESCE(MAX('store_sales'[ss_ext_sales_price]), 0)))

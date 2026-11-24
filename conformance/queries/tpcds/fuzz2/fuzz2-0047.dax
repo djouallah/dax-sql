@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 47)
+EVALUATE ADDCOLUMNS(VALUES('date_dim'[d_qoy]), "m0", VAR v = CALCULATE(COUNTROWS(FILTER(VALUES('item'[i_brand]), MAX('catalog_sales'[cs_quantity]) > 1)), DATESBETWEEN('date_dim'[d_date], DATE(2026, 3, 5), DATE(2025, 11, 18))) RETURN v * 2 + VAR v = RANKX(ALL('customer_demographics'[cd_education_status]), COUNTROWS('item'), , DESC, Dense) RETURN v * 2 + TOTALYTD(COUNTROWS('catalog_sales'), 'date_dim'[d_date]))

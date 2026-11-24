@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 22)
+EVALUATE ADDCOLUMNS(VALUES('Date'[Year]), "m0", CALCULATE(SUM('Sales'[Amount]), DATESBETWEEN('Date'[Date], DATE(2024, 7, 10), DATE(2023, 5, 2))), "m1", [Big Orders])

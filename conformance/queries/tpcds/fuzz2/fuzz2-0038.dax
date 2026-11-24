@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 38)
+EVALUATE ROW("m0", MIN('catalog_sales'[cs_net_profit]))

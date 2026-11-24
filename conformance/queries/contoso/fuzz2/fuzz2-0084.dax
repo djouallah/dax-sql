@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 84)
+EVALUATE SUMMARIZECOLUMNS('Product'[Name], 'Date'[Year], FILTER(ALL('Product'[PriceBand]), 'Product'[PriceBand] <> "zz-none"), FILTER(VALUES('Category'[Category]), 'Category'[Category] IN { "Accessories", "Bikes" }), "m0", CALCULATE([Share of Category], DATESBETWEEN('Date'[Date], DATE(2023, 6, 28), DATE(2023, 1, 29))), "m1", [Best Customer Sales], "m2", CALCULATE([Sales PY], ALL('Product'[Price]), TREATAS({ "Rome", "Berlin" }, 'Customer'[City])))

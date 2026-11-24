@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 40)
+EVALUATE SUMMARIZECOLUMNS('store'[s_state], 'item'[i_class], 'date_dim'[d_moy], "m0", COUNTROWS('store_sales'), "m1", MINX(VALUES('customer_demographics'[cd_education_status]), SUM('catalog_sales'[cs_quantity])), "m2", SUM('catalog_sales'[cs_ext_sales_price]))

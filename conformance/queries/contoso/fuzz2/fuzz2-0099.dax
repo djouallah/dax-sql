@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 99)
+EVALUATE SUMMARIZECOLUMNS('Date'[Month], 'Category'[Category], KEEPFILTERS(TREATAS({ "Blue" }, 'Product'[Color])), "m0", MINX(VALUES('Customer'[City]), ([Sales by Ship Date] + IF([Quantity] > 1000, [Orders], [Best Customer Sales]))), "m1", MINX(VALUES('Category'[Category]), IF(HASONEVALUE('Product'[Price]), RANKX(ALL('Product'[Price]), [Returned]))))

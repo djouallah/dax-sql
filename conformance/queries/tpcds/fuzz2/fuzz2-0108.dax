@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 108)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('item'[i_category], 'date_dim'[d_qoy], "m0", DIVIDE(COUNTROWS('catalog_sales'), CALCULATE([Store Net Profit], ALL('promotion'[p_promo_name]))), "m1", DISTINCTCOUNT('customer_demographics'[cd_education_status])), ALLEXCEPT('store', 'store'[s_store_name]))

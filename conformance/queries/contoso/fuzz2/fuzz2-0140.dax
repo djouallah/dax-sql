@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 140)
+EVALUATE SUMMARIZECOLUMNS("m0", IF(HASONEVALUE('Date'[Month]), MAX([Sales by Ship Date], DISTINCTCOUNT('Customer'[City]))))

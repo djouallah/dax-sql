@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 122)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('Date'[Quarter], "m0", CALCULATE(VAR v = [Products Sold] RETURN v * 2 + AVERAGE('Sales'[Amount]), 'Product'[PriceBand] >= "zz-none")), KEEPFILTERS('Date'[Year] = 2024))

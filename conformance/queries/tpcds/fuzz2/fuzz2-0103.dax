@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 103)
+EVALUATE SUMMARIZECOLUMNS('promotion'[p_promo_name], 'store'[s_state], 'store'[s_store_name], "m0", IF(ISBLANK([Catalog Sales Quantity]), 0, DISTINCTCOUNT('customer_address'[ca_state])), "m1", CALCULATE(ROUND(VAR v = [Store Revenue Same Period LY] RETURN v * 2 + [Store Net Profit], 2), 'date_dim'[d_year] = -1), "m2", [Store Revenue Same Period LY])

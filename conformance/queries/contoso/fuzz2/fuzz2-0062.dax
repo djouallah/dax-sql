@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 62)
+EVALUATE ROW("m0", ABS(CALCULATE([Orders], REMOVEFILTERS('Product'))), "m1", COUNTROWS('Customer'))

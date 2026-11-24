@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 43)
+EVALUATE ADDCOLUMNS(VALUES('Product'[Color]), "m0", RANKX(ALL('Customer'[City]), AVERAGE('Sales'[Qty])), "m1", (SUM('Sales'[Qty]) + DISTINCTCOUNT('Product'[Name])))

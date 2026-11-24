@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 20)
+EVALUATE ADDCOLUMNS(VALUES('date_dim'[d_year]), "m0", CALCULATE(SUM('catalog_sales'[cs_quantity]), DATESBETWEEN('date_dim'[d_date], DATE(2026, 4, 13), DATE(2024, 6, 30))), "m1", [Catalog Sales Quantity])

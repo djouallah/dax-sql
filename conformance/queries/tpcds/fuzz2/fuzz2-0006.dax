@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 6)
+EVALUATE TOPN(4, SUMMARIZECOLUMNS('item'[i_color], "m0", DIVIDE(IF(HASONEVALUE('store'[s_city]), [Catalog Sales YoY]), IF(ISINSCOPE('date_dim'[d_qoy]), DISTINCTCOUNT('date_dim'[d_moy]), MIN('store_sales'[ss_net_profit])))), [m0], DESC)

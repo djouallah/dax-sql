@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 76)
+EVALUATE SUMMARIZECOLUMNS('Customer'[City], 'Product'[Price], 'Product'[Color], "m0", DIVIDE(IF(HASONEVALUE('Customer'[City]), COUNTROWS('Sales')), CALCULATE(ABS(AVERAGE('Sales'[Qty])), ALL('Product'[Name]))), "m1", DIVIDE(IF(ISBLANK(COUNTROWS('Returns')), 0, SUM('Returns'[ReturnQty])), ABS(COUNTROWS('Product'))), "m2", ROUND(CALCULATE([Best Customer Sales], DATESBETWEEN('Date'[Date], DATE(1999, 1, 1), DATE(2024, 10, 30))), 1))

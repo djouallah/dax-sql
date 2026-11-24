@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 54)
+EVALUATE TOPN(4, SUMMARIZECOLUMNS('store'[s_state], "m0", DIVIDE(CALCULATE(CALCULATE(MIN('catalog_sales'[cs_quantity]), DATESBETWEEN('date_dim'[d_date], DATE(2026, 10, 22), DATE(2025, 10, 9))), TREATAS({ "classical" }, 'item'[i_class])), CALCULATE(AVERAGEX(VALUES('promotion'[p_promo_name]), COALESCE(COUNTROWS('catalog_sales'), 0)), ALL('item'[i_class])))), [m0], DESC)

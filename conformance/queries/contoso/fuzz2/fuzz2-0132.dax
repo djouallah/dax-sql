@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 132)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('Product'[Price], 'Date'[Quarter], "m0", (MINX(VALUES('Customer'[City]), [Quantity]) - ABS(([Target Total] * MIN('Sales'[Qty])))), "m1", VAR v = AVERAGEX(VALUES('Product'[PriceBand]), IF([Return Rate] > 1000, [Sales by Ship Date], COUNTROWS('Customer'))) RETURN v * 2 + CALCULATE(([Share of Category] * [Sales YTD]), USERELATIONSHIP('Sales'[ShipDate], 'Date'[Date]))), 'Date'[Month] <> 2)

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 67)
+EVALUATE SUMMARIZECOLUMNS(KEEPFILTERS(TREATAS({ "Chloe", "Dan" }, 'Customer'[Customer])), "m0", SUM('Sales'[Qty]))

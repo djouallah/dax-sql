@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 143)
+EVALUATE SUMMARIZECOLUMNS(KEEPFILTERS(TREATAS({ 2 }, 'Date'[Quarter])), TREATAS({ 60 }, 'Product'[Price]), "m0", SUMX(VALUES('Date'[Quarter]), DISTINCTCOUNT('Customer'[Customer])))

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 59)
+EVALUATE ADDCOLUMNS(VALUES('Customer'[City]), "m0", [Share of Category], "m1", MIN('Sales'[Qty]))

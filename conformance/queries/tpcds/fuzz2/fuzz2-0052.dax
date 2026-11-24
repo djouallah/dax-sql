@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 52)
+EVALUATE SUMMARIZECOLUMNS("m0", RANKX(ALL('store'[s_state]), VAR v = MIN('catalog_sales'[cs_ext_sales_price]) RETURN v * 2 + MIN('catalog_sales'[cs_ext_sales_price]), , DESC, Dense))

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 33)
+EVALUATE ADDCOLUMNS(VALUES('date_dim'[d_qoy]), "m0", MINX(VALUES('ship_mode'[sm_type]), IF(ISBLANK(MAX('catalog_sales'[cs_quantity])), 0, [Store Profit % by Item Category])))

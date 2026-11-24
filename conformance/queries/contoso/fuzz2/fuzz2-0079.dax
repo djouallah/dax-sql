@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 79)
+EVALUATE SUMMARIZECOLUMNS('Product'[PriceBand], 'Category'[Category], 'Date'[Year], "m0", ([Product Count] + DISTINCTCOUNT('Date'[Month])))

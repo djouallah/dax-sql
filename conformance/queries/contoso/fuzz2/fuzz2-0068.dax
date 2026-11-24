@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 68)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('Product'[Price], "m0", CALCULATE(TOTALYTD(CALCULATE([Products Sold], KEEPFILTERS('Product'[Name] IN { "Cap", "Mountain Bike" })), 'Date'[Date]), TREATAS({ 3, 4, 1 }, 'Date'[Quarter])), "m1", [Avg Price]), DATEADD('Date'[Date], -1, QUARTER))

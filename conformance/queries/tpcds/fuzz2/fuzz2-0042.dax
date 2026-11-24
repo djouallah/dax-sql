@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 42)
+EVALUATE ADDCOLUMNS(VALUES('item'[i_category]), "m0", RANKX(ALL('customer_demographics'[cd_marital_status]), AVERAGE('store_sales'[ss_ext_sales_price])), "m1", (SUM('store_sales'[ss_ext_sales_price]) + DISTINCTCOUNT('item'[i_category])))

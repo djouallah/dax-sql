@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 26)
+EVALUATE SUMMARIZECOLUMNS("m0", VAR v = MIN('Sales'[Qty]) RETURN v * 2 + SUM('Sales'[Qty]))

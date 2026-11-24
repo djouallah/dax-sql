@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 138)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('item'[i_brand], 'customer_demographics'[cd_marital_status], "m0", IF(ISBLANK(IF(ISINSCOPE('date_dim'[d_qoy]), [Catalog Sales Same Period LY], [Catalog Sales Quantity])), 0, COALESCE([Catalog Net Profit], 0))), 'promotion'[p_promo_name] >= "anti")

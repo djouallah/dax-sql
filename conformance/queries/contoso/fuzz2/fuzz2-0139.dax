@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 139)
+EVALUATE SUMMARIZECOLUMNS('Product'[Color], KEEPFILTERS(TREATAS({ 6, 9 }, 'Date'[Month])), "m0", COUNTROWS(FILTER(VALUES('Date'[Year]), [Sales by Ship Date] > 0)), "m1", CALCULATE([Sales YTD], DATESBETWEEN('Date'[Date], DATE(1999, 1, 1), DATE(1999, 1, 1))), "m2", TOTALYTD([Target Total], 'Date'[Date]))

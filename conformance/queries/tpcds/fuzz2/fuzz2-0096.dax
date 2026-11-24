@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 96)
+EVALUATE SUMMARIZECOLUMNS('item'[i_category], 'date_dim'[d_qoy], "m0", SUM('catalog_sales'[cs_ext_sales_price]), "m1", AVERAGEX(VALUES('ship_mode'[sm_type]), RANKX(ALL('item'[i_brand]), RANKX(ALL('date_dim'[d_qoy]), [Store Revenue Same Period LY]), , DESC, Dense)))

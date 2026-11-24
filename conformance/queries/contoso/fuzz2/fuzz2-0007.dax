@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 7)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('Product'[Color], 'Date'[Quarter], "m0", CALCULATE(DISTINCTCOUNT('Date'[Year]), DATESBETWEEN('Date'[Date], DATE(2024, 2, 10), DATE(2024, 1, 12))), "m1", MAX('Sales'[Qty])), 'Product'[PriceBand] = "zz-none")

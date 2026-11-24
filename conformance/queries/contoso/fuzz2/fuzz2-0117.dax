@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 117)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('Product'[Color], "m0", ROUND(TOTALYTD([Sales YTD], 'Date'[Date]), 2)), TREATAS({ "Mountain Bike" }, 'Product'[Name]))

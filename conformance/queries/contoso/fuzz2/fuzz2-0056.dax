@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 56)
+EVALUATE SUMMARIZECOLUMNS("m0", CALCULATE(DIVIDE(DISTINCTCOUNT('Category'[Category]), [Line Value Column]), DATESBETWEEN('Date'[Date], DATE(2023, 4, 15), DATE(2024, 7, 1))))

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 116)
+EVALUATE SUMMARIZECOLUMNS('promotion'[p_promo_name], 'ship_mode'[sm_type], "m0", CALCULATE(CALCULATE(ROUND([Catalog Revenue], 0), ALLEXCEPT('date_dim', 'date_dim'[d_qoy])), 'item'[i_category] <> "Shoes", PREVIOUSMONTH('date_dim'[d_date])), "m1", CALCULATE(MAX('store_sales'[ss_quantity]), 'item'[i_color] >= "coral", KEEPFILTERS('date_dim'[d_year] = 2026)), "m2", [Store Distinct Customers])

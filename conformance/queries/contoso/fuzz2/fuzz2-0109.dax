@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 109)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('Date'[Month], 'Date'[Quarter], "m0", MAXX(VALUES('Customer'[City]), VAR v = CALCULATE(AVERAGE('Returns'[ReturnQty]), 'Product'[Color] = "Black") RETURN v * 2 + [Target Total]), "m1", RANKX(ALL('Customer'[Customer]), COALESCE(VAR v = [Line Value] RETURN v * 2 + [Sales Amount], 0))), ALL('Product'[Color]))

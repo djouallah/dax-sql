@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 102)
+EVALUATE SUMMARIZECOLUMNS('store'[s_city], FILTER(ALL('date_dim'[d_moy]), 'date_dim'[d_moy] <> 2), FILTER(VALUES('item'[i_brand]), 'item'[i_brand] IN { "importcorp #1", "exportcorp #7" }), "m0", IF(ISBLANK(([Catalog Sales YoY] - COALESCE(DISTINCTCOUNT('customer_address'[ca_state]), 0))), 0, [Store Revenue YoY]), "m1", [Store Revenue YoY])

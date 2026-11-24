@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 76)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('item'[i_color], 'item'[i_brand], "m0", DISTINCTCOUNT('date_dim'[d_moy])), REMOVEFILTERS('date_dim'))

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 128)
+EVALUATE SUMMARIZECOLUMNS('customer_demographics'[cd_education_status], 'date_dim'[d_moy], 'date_dim'[d_year], "m0", CALCULATE(DIVIDE(VAR v = SUM('store_sales'[ss_ext_sales_price]) RETURN v * 2 + [Store Profit % by Item Category], [Store Distinct Customers]), ALL('customer_address'[ca_state]), 'ship_mode'[sm_type] >= "OVERNIGHT"))

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 84)
+EVALUATE SUMMARIZECOLUMNS('item'[i_brand], 'store'[s_city], "m0", ABS([Store Revenue Same Period LY]), "m1", DIVIDE((COUNTROWS(FILTER(VALUES('date_dim'[d_moy]), [Store Revenue YTD] > 100)) - [Catalog Sales YoY]), CALCULATE(IF(HASONEVALUE('customer_demographics'[cd_marital_status]), IF(ISINSCOPE('date_dim'[d_year]), [Catalog Net Profit], DISTINCTCOUNT('store'[s_store_name]))), ALL('store'[s_store_name]))))

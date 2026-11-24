@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 107)
+EVALUATE SUMMARIZECOLUMNS('Date'[Quarter], 'Category'[Category], 'Product'[Price], "m0", IF(ISBLANK([Big Orders]), 0, DISTINCTCOUNT('Customer'[Customer])), "m1", CALCULATE(ROUND(VAR v = [All Sales] RETURN v * 2 + [Sales Amount], 2), 'Date'[Year] = -1), "m2", [All Sales])

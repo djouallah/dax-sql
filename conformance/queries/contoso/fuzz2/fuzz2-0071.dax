@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 71)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('Customer'[Customer], 'Customer'[City], "m0", CALCULATE(COUNTROWS(FILTER(VALUES('Date'[Quarter]), IF(ISBLANK(SUM('Sales'[Qty])), 0, [Product Count]) > 1)), FILTER(VALUES('Date'[Year]), ABS([Returned]) > 0))), 'Customer'[City] <> "Rome")

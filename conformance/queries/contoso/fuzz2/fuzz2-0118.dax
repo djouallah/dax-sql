@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 118)
+EVALUATE SUMMARIZECOLUMNS('Date'[Quarter], 'Product'[PriceBand], TREATAS({ -1, 2024, 2023 }, 'Date'[Year]), "m0", [Red Sales Kept])

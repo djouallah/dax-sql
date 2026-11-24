@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 104)
+EVALUATE ADDCOLUMNS(VALUES('Date'[Month]), "m0", DIVIDE(DIVIDE(AVERAGE('Sales'[Qty]), [Quantity]), COALESCE([Products Sold], 0)), "m1", IF(ISINSCOPE('Product'[Color]), DIVIDE([Big Orders], [Sales by Ship Date]), TOTALYTD([Line Value], 'Date'[Date])))

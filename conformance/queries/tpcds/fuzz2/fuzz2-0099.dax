@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 99)
+EVALUATE SUMMARIZECOLUMNS('customer_demographics'[cd_education_status], 'date_dim'[d_year], "m0", DIVIDE([Archive Source Rows], [Store Profit % by Item Category]), "m1", DIVIDE(MAX('store_sales'[ss_ext_sales_price]), [Catalog Sales Quantity]), "m2", MAX([Store Distinct Customers], AVERAGE('catalog_sales'[cs_quantity])))

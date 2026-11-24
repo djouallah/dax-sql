@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 103)
+EVALUATE SUMMARIZECOLUMNS('Customer'[City], 'Date'[Year], "m0", DIVIDE([Target Total], [Orders]), "m1", DIVIDE(MAX('Sales'[Qty]), [Sales PY]), "m2", MAX([Quantity], AVERAGE('Sales'[Amount])))

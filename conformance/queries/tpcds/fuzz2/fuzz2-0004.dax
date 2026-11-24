@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 4)
+EVALUATE TOPN(4, SUMMARIZECOLUMNS('customer_demographics'[cd_education_status], "m0", RANKX(ALL('item'[i_brand]), (IF([Store Revenue YoY] > 0, [Catalog Sales Same Period LY], MIN('catalog_sales'[cs_ext_sales_price])) - ROUND([Catalog Revenue], 2)))), [m0], ASC)

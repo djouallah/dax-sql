@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 10)
+EVALUATE ADDCOLUMNS(VALUES('Product'[PriceBand]), "m0", MAXX(VALUES('Date'[Quarter]), [Sales by Ship Date]))

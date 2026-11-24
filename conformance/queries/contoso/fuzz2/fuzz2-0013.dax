@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 13)
+EVALUATE SUMMARIZECOLUMNS("m0", COALESCE(IF(HASONEVALUE('Date'[Quarter]), [Sales YTD]), 0), "m1", DIVIDE(MINX(VALUES('Customer'[City]), SUM('Sales'[Qty])), CALCULATE(COUNTROWS(FILTER(VALUES('Product'[Color]), [Red Sales Kept] > 100)), ALL('Product'[Name]))))

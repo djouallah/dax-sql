@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 60)
+EVALUATE TOPN(1, SUMMARIZECOLUMNS('date_dim'[d_moy], "m0", COALESCE((ROUND(SUM('store_sales'[ss_net_profit]), 2) - RANKX(ALL('customer_demographics'[cd_education_status]), [Catalog Sales Same Period LY], , DESC, Dense)), 0)), [m0], ASC)

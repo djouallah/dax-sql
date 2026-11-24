@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 78)
+EVALUATE ADDCOLUMNS(VALUES('customer_demographics'[cd_marital_status]), "m0", IF([Catalog Sales YoY] > 100, [Catalog Revenue], AVERAGE('catalog_sales'[cs_quantity])), "m1", CALCULATE(MIN('catalog_sales'[cs_quantity]), FILTER(ALL('item'[i_class]), 'item'[i_class] <> "dresses")))

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 81)
+EVALUATE SUMMARIZECOLUMNS('store'[s_city], "m0", CALCULATE(MAX('store_sales'[ss_quantity]), DATESYTD('date_dim'[d_date]), KEEPFILTERS('store'[s_store_name] = "pri")), "m1", DISTINCTCOUNT('item'[i_class]))

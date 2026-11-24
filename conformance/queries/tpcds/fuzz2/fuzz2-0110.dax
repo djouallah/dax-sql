@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 110)
+EVALUATE SUMMARIZECOLUMNS('item'[i_color], 'ship_mode'[sm_type], TREATAS({ "M" }, 'customer_demographics'[cd_marital_status]), "m0", ABS(CALCULATE(DIVIDE(AVERAGE('catalog_sales'[cs_net_profit]), CALCULATE(SUM('store_sales'[ss_ext_sales_price]), ALL('item'[i_color]))), KEEPFILTERS('store'[s_state] IN { "GA" }))))

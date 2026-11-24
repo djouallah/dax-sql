@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 97)
+EVALUATE SUMMARIZECOLUMNS('Customer'[Customer], "m0", MIN('Sales'[Qty]))

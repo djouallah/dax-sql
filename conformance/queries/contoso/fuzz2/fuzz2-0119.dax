@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 119)
+EVALUATE SUMMARIZECOLUMNS('Date'[Quarter], 'Product'[Price], "m0", COUNTROWS(FILTER(VALUES('Product'[Price]), COUNTROWS('Product') > 100)), "m1", SUM('Sales'[Amount]), "m2", CALCULATE([Product Count], FILTER(ALL('Date'[Year]), 'Date'[Year] <> 2024), ALLEXCEPT('Customer', 'Customer'[Customer])))

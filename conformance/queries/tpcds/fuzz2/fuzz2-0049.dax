@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 49)
+EVALUATE ROW("m0", [Store Profit % by Item Category])

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 134)
+EVALUATE SUMMARIZECOLUMNS("m0", IF(HASONEVALUE('date_dim'[d_moy]), MAX([Store Revenue YTD], DISTINCTCOUNT('customer_demographics'[cd_education_status]))))

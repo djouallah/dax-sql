@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 72)
+EVALUATE ADDCOLUMNS(VALUES('Category'[Category]), "m0", MAX(IF(CALCULATE([Line Value Column], 'Date'[Month] > 11, TREATAS({ 4, 2 }, 'Date'[Quarter])) > 0, TOTALYTD(COUNTROWS('Customer'), 'Date'[Date]), VAR v = [Sales YTD] RETURN v * 2 + [Product Count]), [Line Value Column]))

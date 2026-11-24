@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 53)
+EVALUATE TOPN(1, SUMMARIZECOLUMNS('item'[i_current_price], "m0", MAX(ABS(MIN('store_sales'[ss_net_profit])), IF(HASONEVALUE('store'[s_store_name]), COUNTROWS('item')))), [m0], DESC)

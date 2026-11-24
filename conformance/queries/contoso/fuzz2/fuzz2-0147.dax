@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 147)
+EVALUATE SUMMARIZECOLUMNS('Product'[Color], 'Product'[PriceBand], FILTER(ALL('Product'[Color]), 'Product'[Color] <> "Blue"), "m0", IF(ISINSCOPE('Product'[Color]), SUM('Sales'[Amount]), [Sales Amount]), "m1", DIVIDE(DISTINCTCOUNT('Category'[Category]), CALCULATE(AVERAGE('Sales'[Qty]), ALL('Product'[Name]))))

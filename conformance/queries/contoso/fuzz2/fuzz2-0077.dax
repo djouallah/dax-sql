@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 77)
+EVALUATE SUMMARIZECOLUMNS(FILTER(VALUES('Date'[Month]), 'Date'[Month] IN { -1 }), "m0", CALCULATE(MIN('Sales'[Amount]), DATESBETWEEN('Date'[Date], DATE(2024, 2, 15), DATE(1999, 1, 1))), "m1", MAX([Avg Price], MIN('Sales'[Qty])))

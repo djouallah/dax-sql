@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 88)
+EVALUATE SUMMARIZECOLUMNS('item'[i_class], "m0", [Catalog Sales Same Period LY])

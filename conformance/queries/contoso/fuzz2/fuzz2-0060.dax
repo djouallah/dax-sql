@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 60)
+EVALUATE ROW("m0", DISTINCTCOUNT('Product'[PriceBand]), "m1", TOTALYTD(MAX(MINX(VALUES('Date'[Month]), SUM('Sales'[Amount])), CALCULATE([Target Total], DATESBETWEEN('Date'[Date], DATE(2023, 11, 29), DATE(2024, 3, 29)))), 'Date'[Date]), "m2", IF(HASONEVALUE('Product'[Name]), [Red Sales Kept]))

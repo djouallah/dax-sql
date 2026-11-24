@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 105)
+EVALUATE SUMMARIZECOLUMNS('Product'[Name], 'Date'[Year], "m0", DIVIDE(COUNTROWS('Returns'), ([Products Sold] + DIVIDE([Orders], COUNTROWS('Customer')))), "m1", ABS(IF(HASONEVALUE('Date'[Month]), CALCULATE([Product Count], DATESBETWEEN('Date'[Date], DATE(2024, 9, 11), DATE(2023, 9, 16))))), "m2", ROUND(COALESCE(CALCULATE([Customers], REMOVEFILTERS('Category'), 'Category'[Category] = "Clothing"), 0), 1))

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 30)
+EVALUATE TOPN(4, SUMMARIZECOLUMNS('Customer'[Customer], "m0", [Quantity]), [m0], DESC)

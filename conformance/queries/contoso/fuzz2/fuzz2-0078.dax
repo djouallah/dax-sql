@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 78)
+EVALUATE SUMMARIZECOLUMNS('Date'[Month], 'Customer'[Customer], "m0", ROUND([Line Value Column], 0), "m1", IF(ISBLANK([Sales YTD]), 0, [Big Orders]))

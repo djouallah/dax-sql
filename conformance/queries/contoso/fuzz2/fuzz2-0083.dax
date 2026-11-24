@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 83)
+EVALUATE ROW("m0", IF(ISINSCOPE('Category'[Category]), AVERAGEX(VALUES('Date'[Quarter]), [Sales PY]), ROUND(CALCULATE([Line Value Column], 'Category'[Category] = "Bikes", 'Customer'[City] = "Rome"), 2)), "m1", MINX(VALUES('Customer'[City]), IF(ISBLANK(SUM('Returns'[ReturnQty])), 0, VAR v = [Sales by Ship Date] RETURN v * 2 + MAX('Sales'[Amount]))))

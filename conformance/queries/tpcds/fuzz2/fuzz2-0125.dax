@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 125)
+EVALUATE SUMMARIZECOLUMNS("m0", IF(HASONEVALUE('date_dim'[d_moy]), AVERAGE('catalog_sales'[cs_quantity])))

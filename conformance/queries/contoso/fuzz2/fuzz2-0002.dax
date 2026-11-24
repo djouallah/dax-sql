@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 2)
+EVALUATE SUMMARIZECOLUMNS('Date'[Month], "m0", ROUND([Orders], 2), "m1", COUNTROWS('Customer'), "m2", CALCULATE(SUM('Returns'[ReturnQty]), 'Product'[Color] <> "Red"))

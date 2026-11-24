@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 57)
+EVALUATE TOPN(4, SUMMARIZECOLUMNS('Date'[Quarter], "m0", SUM('Sales'[Qty])), [m0], ASC)

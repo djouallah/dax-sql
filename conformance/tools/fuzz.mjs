@@ -1,15 +1,15 @@
 // Random DAX queries over a model, for Power BI to answer (oracle.yml) and dax-sql to be held to:
 // queries/<model>/fuzz/fuzz-NNNN.dax. Seeded, so the same seed writes the same queries; none is
 // picked by hand, and none is changed after dax-sql has run it.
-//   node conformance/tools/fuzz.mjs <model> <count> <seed>
+//   node conformance/tools/fuzz.mjs <model> <count> <seed> [family]   (family: fuzz)
 // What it draws from: the model's measures, its columns (each with values its data holds, and
 // one it does not), the functions DESIGN.md says dax-sql takes, nested a few levels deep.
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { ROOT, modelDir, readBim } from './suite.mjs';
 
-const [model, countArg, seedArg] = process.argv.slice(2);
-const COUNT = Number(countArg ?? 100), SEED = Number(seedArg ?? 1);
+const [model, countArg, seedArg, familyArg] = process.argv.slice(2);
+const COUNT = Number(countArg ?? 100), SEED = Number(seedArg ?? 1), FAMILY = familyArg ?? 'fuzz';
 
 // Per model: the columns to group and filter by, the date column, the fact columns to aggregate,
 // the tables to remove filters from, an inactive relationship.
@@ -190,11 +190,11 @@ function query() {
   }
 }
 
-const dir = join(ROOT, 'queries', model, 'fuzz');
+const dir = join(ROOT, 'queries', model, FAMILY);
 rmSync(dir, { recursive: true, force: true });
 mkdirSync(dir, { recursive: true });
 for (let i = 1; i <= COUNT; i++) {
-  const id = `fuzz-${String(i).padStart(4, '0')}`;
-  writeFileSync(join(dir, `${id}.dax`), `// note: a random query (conformance/tools/fuzz.mjs ${model} ${COUNT} ${SEED}, number ${i})\n${query()}\n`);
+  const id = `${FAMILY}-${String(i).padStart(4, '0')}`;
+  writeFileSync(join(dir, `${id}.dax`), `// note: a random query (conformance/tools/fuzz.mjs ${model} ${COUNT} ${SEED} ${FAMILY}, number ${i})\n${query()}\n`);
 }
 console.log(`${COUNT} queries in ${dir}`);

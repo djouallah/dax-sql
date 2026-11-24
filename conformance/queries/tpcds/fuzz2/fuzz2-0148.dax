@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 148)
+EVALUATE SUMMARIZECOLUMNS('item'[i_class], 'date_dim'[d_year], 'item'[i_category], "m0", IF(HASONEVALUE('customer_demographics'[cd_marital_status]), CALCULATE(MAX('catalog_sales'[cs_net_profit]), DATESBETWEEN('date_dim'[d_date], DATE(2025, 3, 8), DATE(2025, 11, 22)))), "m1", ABS(IF(ISINSCOPE('ship_mode'[sm_type]), MIN('store_sales'[ss_net_profit]), COUNTROWS('store'))))

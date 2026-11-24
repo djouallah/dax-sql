@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 141)
+EVALUATE ROW("m0", SUM('Sales'[Amount]), "m1", DIVIDE([Sales PY], [Returned]), "m2", IF(ISINSCOPE('Product'[Name]), [Quantity], [Sales YTD]))

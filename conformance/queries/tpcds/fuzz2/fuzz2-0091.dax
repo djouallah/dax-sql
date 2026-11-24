@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 91)
+EVALUATE ROW("m0", [Catalog Sales YoY])

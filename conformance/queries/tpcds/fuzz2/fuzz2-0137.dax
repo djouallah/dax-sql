@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 137)
+EVALUATE SUMMARIZECOLUMNS(KEEPFILTERS(TREATAS({ "NEXT DAY", "OVERNIGHT" }, 'ship_mode'[sm_type])), TREATAS({ "ought" }, 'store'[s_store_name]), "m0", SUMX(VALUES('promotion'[p_promo_name]), DISTINCTCOUNT('customer_address'[ca_state])))

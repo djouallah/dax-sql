@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 14)
+EVALUATE ADDCOLUMNS(VALUES('Product'[PriceBand]), "m0", CALCULATE(TOTALYTD(CALCULATE([Red Sales Kept], DATESBETWEEN('Date'[Date], DATE(2023, 2, 11), DATE(2024, 6, 8))), 'Date'[Date]), REMOVEFILTERS('Category')))

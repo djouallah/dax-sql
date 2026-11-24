@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 118)
+EVALUATE SUMMARIZECOLUMNS('customer_demographics'[cd_marital_status], 'date_dim'[d_year], 'item'[i_color], "m0", CALCULATE(AVERAGE('catalog_sales'[cs_quantity]), KEEPFILTERS('date_dim'[d_moy] = 2), ALL('date_dim'[d_year])))

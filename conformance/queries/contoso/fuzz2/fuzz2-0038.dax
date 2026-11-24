@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 38)
+EVALUATE SUMMARIZECOLUMNS('Product'[Name], FILTER(ALL('Product'[PriceBand]), 'Product'[PriceBand] <> "zz-none"), TREATAS({ 5, 9 }, 'Date'[Month]), "m0", RANKX(ALL('Product'[PriceBand]), IF(HASONEVALUE('Category'[Category]), [All Sales])), "m1", VAR v = AVERAGE('Sales'[Amount]) RETURN v * 2 + DIVIDE(ROUND([Quantity], 1), COALESCE(MAX('Returns'[ReturnQty]), 0)), "m2", [Orders])

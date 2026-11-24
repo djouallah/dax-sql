@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 111)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('store'[s_store_name], "m0", MIN('catalog_sales'[cs_quantity]), "m1", VAR v = [Catalog Revenue] RETURN v * 2 + COUNTROWS('catalog_sales')), REMOVEFILTERS('date_dim'))

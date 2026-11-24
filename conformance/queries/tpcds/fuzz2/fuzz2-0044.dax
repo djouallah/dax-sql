@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 44)
+EVALUATE ROW("m0", DIVIDE([Store Revenue], [Store Net Profit]), "m1", COUNTROWS(FILTER(VALUES('store'[s_store_name]), [Store Net Profit] > 0)))

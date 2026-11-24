@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 90)
+EVALUATE ROW("m0", CALCULATE(MAX('Sales'[Qty]), FILTER(ALL('Customer'[Customer]), 'Customer'[Customer] <> "Chloe"), ALLEXCEPT('Customer', 'Customer'[Customer])), "m1", [Best Customer Sales])

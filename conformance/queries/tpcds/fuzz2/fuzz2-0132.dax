@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 132)
+EVALUATE ROW("m0", CALCULATE(MINX(VALUES('item'[i_color]), DIVIDE([Catalog Revenue], AVERAGE('catalog_sales'[cs_net_profit]))), KEEPFILTERS('date_dim'[d_moy] = 10), KEEPFILTERS('ship_mode'[sm_type] = "EXPRESS")), "m1", COUNTROWS('store'), "m2", [Catalog Sales Same Period LY])

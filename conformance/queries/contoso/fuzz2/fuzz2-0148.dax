@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 148)
+EVALUATE SUMMARIZECOLUMNS('Date'[Year], 'Product'[PriceBand], 'Product'[Name], FILTER(ALL('Product'[Name]), 'Product'[Name] <> "zz-none"), "m0", AVERAGE('Returns'[ReturnQty]), "m1", DIVIDE([Product Count], TOTALYTD([Target Total], 'Date'[Date])), "m2", CALCULATE(((SUM('Returns'[ReturnQty]) * [Red Sales]) - DIVIDE([Customers], [Returned])), ALLEXCEPT('Date', 'Date'[Year]), ALL('Product'[Price])))

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 23)
+EVALUATE SUMMARIZECOLUMNS("m0", CALCULATE(CALCULATE(CALCULATE(MAX('catalog_sales'[cs_ext_sales_price]), REMOVEFILTERS('item')), KEEPFILTERS('item'[i_brand] IN { "amalgcorp #9" })), FILTER(VALUES('date_dim'[d_qoy]), ABS([Archive Files]) > 1000)))

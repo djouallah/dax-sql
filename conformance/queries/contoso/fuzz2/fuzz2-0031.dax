@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 31)
+EVALUATE SUMMARIZECOLUMNS('Category'[Category], 'Date'[Year], TREATAS({ 3 }, 'Date'[Quarter]), KEEPFILTERS(TREATAS({ 1 }, 'Date'[Quarter])), "m0", COUNTROWS(FILTER(VALUES('Date'[Month]), CALCULATE([Red Sales Kept], USERELATIONSHIP('Sales'[ShipDate], 'Date'[Date])) > 1000)), "m1", CALCULATE(IF(HASONEVALUE('Category'[Category]), AVERAGE('Sales'[Qty])), USERELATIONSHIP('Sales'[ShipDate], 'Date'[Date]), FILTER(VALUES('Customer'[Customer]), SUM('Returns'[ReturnQty]) > 0)))

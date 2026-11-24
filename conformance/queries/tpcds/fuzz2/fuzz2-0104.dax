@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 104)
+EVALUATE ADDCOLUMNS(VALUES('customer_address'[ca_state]), "m0", [Archive Files], "m1", [Catalog Sales Same Period LY])

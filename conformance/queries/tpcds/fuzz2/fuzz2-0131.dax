@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 131)
+EVALUATE TOPN(4, SUMMARIZECOLUMNS('store'[s_store_name], "m0", MAX([Archive Files], [Catalog Net Profit])), [m0], ASC)

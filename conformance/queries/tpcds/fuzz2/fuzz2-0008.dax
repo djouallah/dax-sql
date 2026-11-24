@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 8)
+EVALUATE SUMMARIZECOLUMNS(TREATAS({ "Fairview", "Midway" }, 'store'[s_city]), KEEPFILTERS(TREATAS({ "blue", "almond" }, 'item'[i_color])), "m0", CALCULATE(TOTALYTD([Archive Files], 'date_dim'[d_date]), KEEPFILTERS('store'[s_state] = "TN"), REMOVEFILTERS('store_sales')))

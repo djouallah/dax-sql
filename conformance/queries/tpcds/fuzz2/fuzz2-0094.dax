@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 94)
+EVALUATE ROW("m0", IF(ISBLANK([Archive Source Rows]), 0, CALCULATE(DISTINCTCOUNT('customer_address'[ca_state]), ALL('date_dim'[d_qoy]), 'customer_address'[ca_state] >= "CA")))

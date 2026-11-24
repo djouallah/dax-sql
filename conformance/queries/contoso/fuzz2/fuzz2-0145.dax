@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 145)
+EVALUATE ADDCOLUMNS(VALUES('Product'[PriceBand]), "m0", (AVERAGE('Sales'[Qty]) + [Line Value Column]), "m1", MIN('Returns'[ReturnQty]))

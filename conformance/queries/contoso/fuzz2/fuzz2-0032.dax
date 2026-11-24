@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 32)
+EVALUATE SUMMARIZECOLUMNS('Customer'[Customer], 'Date'[Quarter], 'Category'[Category], "m0", DIVIDE(DISTINCTCOUNT('Product'[Name]), CALCULATE(CALCULATE([Sales PY], 'Customer'[Customer] <> "Erin", ALL('Date'[Year])), ALL('Product'[PriceBand]))), "m1", [Sales Amount])

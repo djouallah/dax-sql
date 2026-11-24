@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 45)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('date_dim'[d_moy], 'item'[i_category], "m0", ROUND(VAR v = SUM('catalog_sales'[cs_quantity]) RETURN v * 2 + [Store Revenue Same Period LY], 1)), 'customer_demographics'[cd_marital_status] <> "S")

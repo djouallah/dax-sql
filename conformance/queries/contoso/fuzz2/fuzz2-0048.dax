@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 48)
+EVALUATE ADDCOLUMNS(VALUES('Date'[Year]), "m0", VAR v = CALCULATE(COUNTROWS(FILTER(VALUES('Product'[Name]), MAX('Sales'[Amount]) > 1)), DATESBETWEEN('Date'[Date], DATE(2024, 6, 13), DATE(2024, 4, 3))) RETURN v * 2 + VAR v = RANKX(ALL('Customer'[City]), COUNTROWS('Product'), , DESC, Dense) RETURN v * 2 + TOTALYTD(COUNTROWS('Returns'), 'Date'[Date]))

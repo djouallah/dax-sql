@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 53)
+EVALUATE SUMMARIZECOLUMNS("m0", RANKX(ALL('Product'[Price]), VAR v = MIN('Returns'[ReturnQty]) RETURN v * 2 + MIN('Returns'[ReturnQty]), , DESC, Dense))

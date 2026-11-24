@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 63)
+EVALUATE SUMMARIZECOLUMNS('promotion'[p_promo_name], 'item'[i_category], 'item'[i_brand], "m0", ABS(ROUND(RANKX(ALL('store'[s_city]), MIN('catalog_sales'[cs_net_profit])), 0)), "m1", MINX(VALUES('date_dim'[d_year]), TOTALYTD(ROUND(COUNTROWS('store_sales'), 0), 'date_dim'[d_date])))

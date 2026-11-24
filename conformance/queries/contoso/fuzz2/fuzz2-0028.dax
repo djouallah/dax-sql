@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 28)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('Product'[Name], 'Date'[Year], "m0", DIVIDE(MAX('Returns'[ReturnQty]), SUM('Returns'[ReturnQty])), "m1", CALCULATE(AVERAGE('Sales'[Qty]), DATESBETWEEN('Date'[Date], DATE(2023, 2, 24), DATE(2024, 8, 30)))), 'Customer'[City] <> "Rome")

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 13)
+EVALUATE TOPN(4, SUMMARIZECOLUMNS('item'[i_category], "m0", IF(ISINSCOPE('item'[i_color]), COUNTROWS(FILTER(VALUES('date_dim'[d_moy]), IF([Catalog Sales YoY] > 1000, COUNTROWS('item'), [Catalog Net Profit]) > 100)), AVERAGEX(VALUES('item'[i_current_price]), TOTALYTD([Store Net Profit], 'date_dim'[d_date])))), [m0], DESC)

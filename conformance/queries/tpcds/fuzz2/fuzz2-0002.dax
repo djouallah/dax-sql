@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 2)
+EVALUATE SUMMARIZECOLUMNS('date_dim'[d_moy], "m0", ROUND([Store Distinct Customers], 2), "m1", COUNTROWS('store'), "m2", CALCULATE(SUM('catalog_sales'[cs_net_profit]), 'item'[i_color] <> "plum"))

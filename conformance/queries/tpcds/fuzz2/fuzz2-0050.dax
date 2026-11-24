@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 50)
+EVALUATE TOPN(1, SUMMARIZECOLUMNS('store'[s_state], "m0", DIVIDE([Catalog Sales Same Period LY], SUM('store_sales'[ss_quantity]))), [m0], ASC)

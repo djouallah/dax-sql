@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 20)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('Product'[Color], "m0", ABS(MINX(VALUES('Customer'[Customer]), [Products Sold]))), 'Date'[Quarter] = 2)

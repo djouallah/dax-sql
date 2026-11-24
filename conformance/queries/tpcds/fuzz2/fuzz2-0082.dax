@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 82)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('promotion'[p_promo_name], 'item'[i_color], "m0", IF(ISBLANK(COALESCE([Catalog Sales Quantity], 0)), 0, VAR v = ABS([Store Profit % by Item Category]) RETURN v * 2 + AVERAGEX(VALUES('item'[i_class]), [Store Revenue YoY]))), KEEPFILTERS('date_dim'[d_year] = 2025))

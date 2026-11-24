@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 75)
+EVALUATE SUMMARIZECOLUMNS('Date'[Year], FILTER(VALUES('Category'[Category]), 'Category'[Category] IN { "Bikes" }), "m0", ROUND(IF([Sales by Ship Date] > 1000, [Sales by Ship Date], [Products Sold]), 0), "m1", MAXX(VALUES('Product'[Price]), [Line Value]))

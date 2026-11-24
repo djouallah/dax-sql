@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 113)
+EVALUATE SUMMARIZECOLUMNS("m0", (COALESCE([Catalog Net Profit], 0) + VAR v = [Store Revenue Same Period LY] RETURN v * 2 + AVERAGE('store_sales'[ss_quantity])))

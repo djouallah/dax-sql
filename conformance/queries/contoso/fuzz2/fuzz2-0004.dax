@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 4)
+EVALUATE TOPN(4, SUMMARIZECOLUMNS('Customer'[City], "m0", RANKX(ALL('Product'[Name]), (IF([Red Sales Kept] > 0, [Best Customer Sales], MIN('Returns'[ReturnQty])) - ROUND([Sales by Ship Date], 2)))), [m0], ASC)

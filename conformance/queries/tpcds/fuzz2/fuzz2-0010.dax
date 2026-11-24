@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 10)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('store'[s_city], 'item'[i_color], "m0", RANKX(ALL('promotion'[p_promo_name]), [Store Revenue Same Period LY], , DESC, Dense), "m1", DIVIDE([Store Revenue Same Period LY], CALCULATE(COUNTROWS('item'), ALL('store'[s_state])))), FILTER(ALL('item'[i_class]), 'item'[i_class] <> "accessories"))

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 55)
+EVALUATE SUMMARIZECOLUMNS("m0", CALCULATE(DIVIDE(DISTINCTCOUNT('store'[s_city]), [Catalog Net Profit]), DATESBETWEEN('date_dim'[d_date], DATE(2024, 6, 5), DATE(2026, 3, 31))))

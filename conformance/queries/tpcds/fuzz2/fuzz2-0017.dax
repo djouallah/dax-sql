@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 17)
+EVALUATE ADDCOLUMNS(VALUES('ship_mode'[sm_type]), "m0", ABS(ROUND([Store Revenue], 0)))

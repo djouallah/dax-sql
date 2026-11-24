@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 48)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('item'[i_brand], "m0", ABS(DIVIDE(MIN('catalog_sales'[cs_quantity]), CALCULATE([Store Profit % by Item Category], ALL('item'[i_current_price]))))), FILTER(ALL('customer_address'[ca_state]), 'customer_address'[ca_state] <> "AR"))

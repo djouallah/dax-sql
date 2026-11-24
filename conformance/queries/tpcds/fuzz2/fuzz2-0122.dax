@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 122)
+EVALUATE SUMMARIZECOLUMNS("m0", ([Catalog Sales YoY] - [Catalog Net Profit]), "m1", DIVIDE([Store Distinct Customers], [Catalog Sales Same Period LY]))

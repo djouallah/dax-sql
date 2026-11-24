@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 133)
+EVALUATE SUMMARIZECOLUMNS('item'[i_category], 'item'[i_color], KEEPFILTERS(TREATAS({ 6, 9 }, 'date_dim'[d_moy])), "m0", COUNTROWS(FILTER(VALUES('date_dim'[d_qoy]), [Catalog Revenue] > 0)), "m1", CALCULATE([Catalog Revenue], DATESBETWEEN('date_dim'[d_date], DATE(1999, 1, 1), DATE(1999, 1, 1))), "m2", TOTALYTD([Archive Source Rows], 'date_dim'[d_date]))

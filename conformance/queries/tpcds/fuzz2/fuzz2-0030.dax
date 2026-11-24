@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 30)
+EVALUATE SUMMARIZECOLUMNS('customer_address'[ca_state], 'ship_mode'[sm_type], 'store'[s_city], "m0", DIVIDE(DISTINCTCOUNT('item'[i_category]), CALCULATE(CALCULATE([Catalog Sales Quantity], 'customer_demographics'[cd_marital_status] <> "S", ALL('date_dim'[d_qoy])), ALL('item'[i_color]))), "m1", [Store Net Profit])

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 97)
+EVALUATE TOPN(3, SUMMARIZECOLUMNS('item'[i_class], "m0", [Catalog Revenue]), [m0], ASC)

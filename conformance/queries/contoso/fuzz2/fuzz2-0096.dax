@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 96)
+EVALUATE ADDCOLUMNS(VALUES('Category'[Category]), "m0", DIVIDE(ABS(AVERAGE('Sales'[Amount])), [Share of Category]), "m1", IF(DIVIDE([Product Count], DISTINCTCOUNT('Date'[Quarter])) > 0, AVERAGE('Returns'[ReturnQty]), COALESCE(MAX('Sales'[Qty]), 0)))

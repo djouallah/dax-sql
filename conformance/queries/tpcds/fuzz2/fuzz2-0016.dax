@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 16)
+EVALUATE TOPN(3, SUMMARIZECOLUMNS('customer_demographics'[cd_marital_status], "m0", TOTALYTD(IF(HASONEVALUE('store'[s_state]), DIVIDE([Archive Files], [Store Revenue Same Period LY])), 'date_dim'[d_date])), [m0], DESC)

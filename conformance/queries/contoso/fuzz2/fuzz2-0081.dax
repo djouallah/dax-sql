@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 81)
+EVALUATE SUMMARIZECOLUMNS('Product'[Name], 'Date'[Year], "m0", CALCULATE(TOTALYTD(MIN('Sales'[Amount]), 'Date'[Date]), KEEPFILTERS('Category'[Category] IN { "zz-none", "Clothing" })))

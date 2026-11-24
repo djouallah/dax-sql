@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 113)
+EVALUATE SUMMARIZECOLUMNS('Product'[PriceBand], 'Date'[Month], 'Product'[Price], KEEPFILTERS(TREATAS({ "Red", "Blue" }, 'Product'[Color])), FILTER(ALL('Product'[PriceBand]), 'Product'[PriceBand] <> "zz-none"), "m0", IF(SUM('Sales'[Amount]) > 1000, [Avg Price], [Line Value]), "m1", CALCULATE([Red Sales], DATESBETWEEN('Date'[Date], DATE(2023, 5, 7), DATE(2023, 4, 12))), "m2", [Customers])

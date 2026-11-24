@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 34)
+EVALUATE TOPN(1, SUMMARIZECOLUMNS('customer_demographics'[cd_education_status], "m0", VAR v = IF(ISINSCOPE('item'[i_current_price]), MAX('store_sales'[ss_quantity]), [Catalog Net Profit]) RETURN v * 2 + [Store Revenue YTD]), [m0], ASC)

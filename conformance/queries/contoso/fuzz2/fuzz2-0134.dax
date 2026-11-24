@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 134)
+EVALUATE SUMMARIZECOLUMNS('Customer'[City], 'Date'[Month], "m0", CALCULATE(DIVIDE(VAR v = SUM('Sales'[Qty]) RETURN v * 2 + [Customers], [Quantity]), ALL('Customer'[Customer]), 'Date'[Quarter] > 2))

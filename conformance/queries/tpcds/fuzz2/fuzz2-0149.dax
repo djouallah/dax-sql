@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 149)
+EVALUATE ROW("m0", CALCULATE([Catalog Sales Quantity], ALLEXCEPT('item', 'item'[i_category])), "m1", COUNTROWS(FILTER(VALUES('item'[i_class]), AVERAGE('store_sales'[ss_quantity]) > 1)), "m2", MIN('catalog_sales'[cs_quantity]))

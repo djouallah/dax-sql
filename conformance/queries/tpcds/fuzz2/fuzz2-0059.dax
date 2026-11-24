@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 59)
+EVALUATE ROW("m0", DISTINCTCOUNT('item'[i_current_price]), "m1", TOTALYTD(MAX(MINX(VALUES('date_dim'[d_moy]), SUM('catalog_sales'[cs_quantity])), CALCULATE([Archive Source Rows], DATESBETWEEN('date_dim'[d_date], DATE(2025, 5, 14), DATE(2025, 11, 11)))), 'date_dim'[d_date]), "m2", IF(HASONEVALUE('item'[i_brand]), [Store Revenue YoY]))

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 71)
+EVALUATE ADDCOLUMNS(VALUES('store'[s_state]), "m0", MAX(IF(CALCULATE([Catalog Net Profit], 'date_dim'[d_moy] > 11, TREATAS({ "TWO DAY", "NEXT DAY" }, 'ship_mode'[sm_type])) > 0, TOTALYTD(COUNTROWS('store'), 'date_dim'[d_date]), VAR v = [Catalog Revenue] RETURN v * 2 + [Store Net Profit]), [Catalog Net Profit]))

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 80)
+EVALUATE SUMMARIZECOLUMNS('Product'[Color], KEEPFILTERS(TREATAS({ "Clothing" }, 'Category'[Category])), FILTER(VALUES('Category'[Category]), 'Category'[Category] IN { "Accessories" }), "m0", RANKX(ALL('Product'[Name]), VAR v = [Share of Category] RETURN v * 2 + MAX('Sales'[Qty])))

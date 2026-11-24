@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 77)
+EVALUATE ADDCOLUMNS(VALUES('item'[i_brand]), "m0", COUNTROWS(FILTER(VALUES('customer_demographics'[cd_marital_status]), IF(ISINSCOPE('store'[s_state]), [Archive Source Rows], [Store Revenue YTD]) > 1)))

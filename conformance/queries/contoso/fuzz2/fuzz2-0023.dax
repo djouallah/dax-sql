@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 23)
+EVALUATE SUMMARIZECOLUMNS('Customer'[City], FILTER(VALUES('Product'[Price]), 'Product'[Price] IN { 800, 60 }), FILTER(ALL('Date'[Month]), 'Date'[Month] <> 5), "m0", COUNTROWS(FILTER(VALUES('Date'[Month]), IF(ISINSCOPE('Product'[Price]), [Customers], VAR v = [Returned] RETURN v * 2 + MAX('Returns'[ReturnQty])) > 1)), "m1", COALESCE(DIVIDE([Red Sales], SUM('Sales'[Qty])), 0), "m2", SUM('Sales'[Qty]))

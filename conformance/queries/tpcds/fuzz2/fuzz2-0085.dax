@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 85)
+EVALUATE TOPN(2, SUMMARIZECOLUMNS('ship_mode'[sm_type], "m0", COUNTROWS(FILTER(VALUES('customer_demographics'[cd_education_status]), CALCULATE(DISTINCTCOUNT('customer_demographics'[cd_education_status]), DATESBETWEEN('date_dim'[d_date], DATE(2025, 12, 13), DATE(2026, 2, 18))) > 0))), [m0], ASC)

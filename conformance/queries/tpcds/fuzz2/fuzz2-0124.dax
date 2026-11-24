@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 124)
+EVALUATE SUMMARIZECOLUMNS('item'[i_category], 'date_dim'[d_year], "m0", IF([Catalog Net Profit] > 1000, MAX('catalog_sales'[cs_ext_sales_price]), [Catalog Sales YoY]), "m1", CALCULATE(AVERAGE('store_sales'[ss_ext_sales_price]), FILTER(VALUES('store'[s_city]), [Store Revenue Same Period LY] > 0)))

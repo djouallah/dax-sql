@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 89)
+EVALUATE ADDCOLUMNS(VALUES('Date'[Month]), "m0", DISTINCTCOUNT('Date'[Quarter]), "m1", TOTALYTD(COUNTROWS('Customer'), 'Date'[Date]))

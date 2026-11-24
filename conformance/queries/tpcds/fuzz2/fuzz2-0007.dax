@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 7)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('item'[i_class], 'promotion'[p_promo_name], "m0", CALCULATE(DISTINCTCOUNT('date_dim'[d_year]), DATESBETWEEN('date_dim'[d_date], DATE(2025, 8, 30), DATE(2025, 7, 18))), "m1", MAX('store_sales'[ss_ext_sales_price])), 'item'[i_current_price] = 37.82)

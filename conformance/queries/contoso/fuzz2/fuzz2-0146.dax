@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 146)
+EVALUATE SUMMARIZECOLUMNS('Date'[Month], 'Product'[Price], "m0", ROUND(CALCULATE([Red Sales Kept], PREVIOUSMONTH('Date'[Date]), KEEPFILTERS('Customer'[Customer] = "Bob")), 2), "m1", [Red Sales])

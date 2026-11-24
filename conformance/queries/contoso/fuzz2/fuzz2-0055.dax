@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 55)
+EVALUATE TOPN(4, SUMMARIZECOLUMNS('Product'[Price], "m0", DIVIDE(CALCULATE(CALCULATE(MIN('Sales'[Amount]), DATESBETWEEN('Date'[Date], DATE(2024, 11, 15), DATE(2024, 3, 7))), TREATAS({ "Black" }, 'Product'[Color])), CALCULATE(AVERAGEX(VALUES('Date'[Quarter]), COALESCE(COUNTROWS('Returns'), 0)), ALL('Product'[Color])))), [m0], DESC)

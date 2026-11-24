@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 105)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('date_dim'[d_moy], 'ship_mode'[sm_type], "m0", MAXX(VALUES('customer_demographics'[cd_education_status]), VAR v = CALCULATE(AVERAGE('catalog_sales'[cs_ext_sales_price]), 'item'[i_color] = "blue") RETURN v * 2 + [Archive Source Rows]), "m1", RANKX(ALL('customer_address'[ca_state]), COALESCE(VAR v = [Catalog Net Profit] RETURN v * 2 + [Store Net Profit], 0))), ALL('item'[i_class]))

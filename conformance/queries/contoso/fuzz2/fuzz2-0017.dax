@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 17)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('Date'[Year], 'Customer'[Customer], "m0", ROUND(IF(ISINSCOPE('Product'[PriceBand]), COUNTROWS('Sales'), AVERAGE('Sales'[Amount])), 0)), FILTER(ALL('Date'[Quarter]), 'Date'[Quarter] <> 2))

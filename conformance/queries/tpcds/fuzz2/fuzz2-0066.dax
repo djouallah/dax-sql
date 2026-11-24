@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 66)
+EVALUATE SUMMARIZECOLUMNS(KEEPFILTERS(TREATAS({ "CO", "GA" }, 'customer_address'[ca_state])), "m0", SUM('store_sales'[ss_ext_sales_price]))

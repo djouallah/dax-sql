@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 144)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('Product'[Name], 'Customer'[Customer], "m0", IF(ISBLANK(IF(ISINSCOPE('Date'[Year]), [Best Customer Sales], [Sales PY])), 0, COALESCE([Line Value Column], 0))), 'Date'[Quarter] > 1)

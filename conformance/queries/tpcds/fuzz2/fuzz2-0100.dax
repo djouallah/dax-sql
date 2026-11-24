@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 100)
+EVALUATE ADDCOLUMNS(VALUES('promotion'[p_promo_name]), "m0", DIVIDE(DIVIDE(AVERAGE('store_sales'[ss_quantity]), [Store Distinct Customers]), COALESCE([Catalog Sales YoY], 0)), "m1", IF(ISINSCOPE('item'[i_category]), DIVIDE([Catalog Sales Same Period LY], [Catalog Revenue]), TOTALYTD([Catalog Net Profit], 'date_dim'[d_date])))

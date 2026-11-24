@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 143)
+EVALUATE SUMMARIZECOLUMNS(FILTER(ALL('item'[i_class]), 'item'[i_class] <> "accessories"), FILTER(VALUES('customer_demographics'[cd_education_status]), 'customer_demographics'[cd_education_status] IN { "zz-none", "Unknown" }), "m0", RANKX(ALL('customer_address'[ca_state]), SUM('store_sales'[ss_ext_sales_price]), , DESC, Dense), "m1", MINX(VALUES('store'[s_state]), MAX('catalog_sales'[cs_net_profit])))

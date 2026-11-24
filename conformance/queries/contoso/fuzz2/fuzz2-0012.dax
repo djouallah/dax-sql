@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 12)
+EVALUATE ADDCOLUMNS(VALUES('Category'[Category]), "m0", SUM('Returns'[ReturnQty]), "m1", IF(HASONEVALUE('Product'[Color]), COALESCE(MAX('Sales'[Qty]), 0)))

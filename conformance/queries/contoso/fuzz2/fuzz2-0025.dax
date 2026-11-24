@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 25)
+EVALUATE SUMMARIZECOLUMNS("m0", CALCULATE(CALCULATE(CALCULATE(MAX('Returns'[ReturnQty]), REMOVEFILTERS('Product')), KEEPFILTERS('Product'[Name] IN { "Cap" })), FILTER(VALUES('Date'[Year]), ABS([Returned]) > 1000)))

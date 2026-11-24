@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 140)
+EVALUATE SUMMARIZECOLUMNS('date_dim'[d_moy], 'store'[s_store_name], "m0", ROUND(CALCULATE([Store Revenue YoY], PREVIOUSMONTH('date_dim'[d_date]), KEEPFILTERS('customer_address'[ca_state] = "CA")), 2), "m1", [Store Revenue Same Period LY])

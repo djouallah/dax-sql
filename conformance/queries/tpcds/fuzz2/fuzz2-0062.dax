@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 62)
+EVALUATE ROW("m0", TOTALYTD(COUNTROWS(FILTER(VALUES('promotion'[p_promo_name]), AVERAGE('store_sales'[ss_net_profit]) > 100)), 'date_dim'[d_date]), "m1", IF([Store Revenue YTD] > 1000, RANKX(ALL('promotion'[p_promo_name]), [Catalog Net Profit]), SUMX(VALUES('date_dim'[d_qoy]), MIN('catalog_sales'[cs_ext_sales_price]))), "m2", IF(ISBLANK([Archive Files]), 0, ROUND([Store Revenue Same Period LY], 2)))

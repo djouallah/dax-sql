@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 22)
+EVALUATE SUMMARIZECOLUMNS('date_dim'[d_year], 'item'[i_color], FILTER(ALL('customer_address'[ca_state]), 'customer_address'[ca_state] <> "CA"), "m0", CALCULATE([Archive Source Rows], DATESBETWEEN('date_dim'[d_date], DATE(2025, 11, 12), DATE(2026, 4, 6))))

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 69)
+EVALUATE SUMMARIZECOLUMNS('item'[i_color], 'store'[s_store_name], FILTER(VALUES('item'[i_brand]), 'item'[i_brand] IN { "zz-none", "scholarpack #8" }), "m0", [Catalog Sales Same Period LY], "m1", [Store Revenue YTD])

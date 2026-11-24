@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 3)
+EVALUATE ADDCOLUMNS(VALUES('store'[s_store_name]), "m0", CALCULATE(DISTINCTCOUNT('customer_demographics'[cd_education_status]), KEEPFILTERS('item'[i_color] IN { "olive", "snow", "khaki" }), USERELATIONSHIP('catalog_sales'[cs_ship_addr_sk], 'customer_address'[ca_address_sk])))

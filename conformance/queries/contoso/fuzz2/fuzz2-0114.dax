@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 114)
+EVALUATE ADDCOLUMNS(VALUES('Product'[Name]), "m0", COUNTROWS(FILTER(VALUES('Product'[PriceBand]), MIN('Sales'[Amount]) > 1)))

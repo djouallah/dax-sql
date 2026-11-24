@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 70)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('customer_demographics'[cd_marital_status], 'customer_demographics'[cd_education_status], "m0", CALCULATE(COUNTROWS(FILTER(VALUES('promotion'[p_promo_name]), IF(ISBLANK(SUM('store_sales'[ss_ext_sales_price])), 0, [Store Revenue]) > 1)), FILTER(VALUES('date_dim'[d_year]), ABS([Archive Source Rows]) > 0))), 'customer_demographics'[cd_marital_status] <> "S")

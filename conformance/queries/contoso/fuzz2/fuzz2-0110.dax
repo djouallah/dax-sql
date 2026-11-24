@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 110)
+EVALUATE SUMMARIZECOLUMNS('Date'[Year], 'Customer'[City], TREATAS({ 4 }, 'Date'[Quarter]), TREATAS({ -1 }, 'Date'[Year]), "m0", CALCULATE(DIVIDE([Sales by Ship Date], CALCULATE(COUNTROWS('Customer'), ALL('Category'[Category]))), ALLEXCEPT('Product', 'Product'[Name])), "m1", DIVIDE(IF(ISBLANK([Quantity]), 0, COUNTROWS('Sales')), CALCULATE(MAX('Returns'[ReturnQty]), ALL('Customer'[Customer]), SAMEPERIODLASTYEAR('Date'[Date]))), "m2", MAXX(VALUES('Product'[Name]), [Sales YTD]))

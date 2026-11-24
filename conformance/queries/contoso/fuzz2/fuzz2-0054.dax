@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 54)
+EVALUATE TOPN(1, SUMMARIZECOLUMNS('Product'[Price], "m0", MAX(ABS(MIN('Sales'[Amount])), IF(HASONEVALUE('Product'[Price]), COUNTROWS('Product')))), [m0], DESC)

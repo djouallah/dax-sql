@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 49)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('Product'[Name], "m0", ABS(DIVIDE(MIN('Sales'[Amount]), CALCULATE([Customers], ALL('Product'[PriceBand]))))), FILTER(ALL('Customer'[Customer]), 'Customer'[Customer] <> "Alice"))

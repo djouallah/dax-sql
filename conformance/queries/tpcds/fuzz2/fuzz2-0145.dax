@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 31337 fuzz2, number 145)
+EVALUATE SUMMARIZECOLUMNS('store'[s_store_name], 'customer_demographics'[cd_marital_status], 'date_dim'[d_moy], "m0", RANKX(ALL('item'[i_class]), CALCULATE(IF(MIN('store_sales'[ss_quantity]) > 1000, DISTINCTCOUNT('item'[i_brand]), COUNTROWS('catalog_sales')), 'store'[s_store_name] = "anti", FILTER(VALUES('item'[i_category]), CALCULATE([Catalog Sales Same Period LY], KEEPFILTERS('customer_address'[ca_state] IN { "CA" }), REMOVEFILTERS('store_sales')) > 100))))

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 31337 fuzz2, number 129)
+EVALUATE SUMMARIZECOLUMNS('Product'[Color], 'Date'[Year], 'Category'[Category], "m0", IF(CALCULATE(DISTINCTCOUNT('Product'[PriceBand]), DATESBETWEEN('Date'[Date], DATE(2024, 10, 24), DATE(2023, 12, 25))) > 1, TOTALYTD(MINX(VALUES('Product'[PriceBand]), [Best Customer Sales]), 'Date'[Date]), DIVIDE(MIN('Sales'[Amount]), IF(ISBLANK([All Sales]), 0, SUM('Returns'[ReturnQty])))))

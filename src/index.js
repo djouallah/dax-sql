@@ -189,11 +189,28 @@ export function createCompiler(input, options = {}) {
   // (emit.js: a check, not a mode to run).
   const viaPlan = options.viaPlan !== false && options.optimize !== false;
   const pipeline = dialect.name === 'duckdb' ? correlated : unnested;
+  // The engine's pass, after the Substrait is read: a function the plan defines that the dialect
+  // writes as its own (DuckDB's FORMAT) its arguments alone, and what only its definition read
+  // pruned. (In place: the plan is the one just read.)
+  const engine = plan => {
+    const own = dialect.nativeFns;
+    if (!own?.size) return plan;
+    const seen = new Set();
+    let found = false;
+    const walk = x => {
+      if (!x || typeof x !== 'object' || seen.has(x)) return;
+      seen.add(x);
+      if (x.k === 'pop' && x.op === 'defined' && own.has(x.name)) { x.a[x.argc] = { k: 'lit', v: null, t: x.t, nn: false }; found = true; }
+      for (const [k, v] of Object.entries(x)) if (k !== 'lineage' && k !== 'table' && k !== 'base') walk(v);
+    };
+    walk(plan);
+    return found ? prune(plan) : plan;
+  };
   const planned = opts => statements => statements.map(s => {
     const o = { ...opts, calcColumn, calcTable, security };
     const p = new Lowerer(model, o).query(s);
     const passed = pipeline(p.plan);
-    const plan = readSubstrait(JSON.parse(JSON.stringify(toSubstrait(passed).plan)), model, { columns: p.columns, castOutput: options.castOutput });
+    const plan = engine(readSubstrait(JSON.parse(JSON.stringify(toSubstrait(passed).plan)), model, { columns: p.columns, castOutput: options.castOutput }));
     const ps = new PlanSql(model, dialect, o);
     const sql = ps.query({ ...p, plan });
     // Its size (the smaller of a calculation group's two forms is kept): the plan's, after the passes.
@@ -312,7 +329,7 @@ export function createCompiler(input, options = {}) {
     planSql(text, o = {}) {
       const p = onePlan(text);
       let plan = pick(p.plan, o);
-      if (!o.ir && o.optimize !== false) plan = readSubstrait(JSON.parse(JSON.stringify(toSubstrait(plan).plan)), model, { columns: p.columns, castOutput: options.castOutput });
+      if (o.optimize !== false) plan = engine(o.ir ? plan : readSubstrait(JSON.parse(JSON.stringify(toSubstrait(plan).plan)), model, { columns: p.columns, castOutput: options.castOutput }));
       return { sql: new PlanSql(model, dialect, options).query({ ...p, plan }), columns: p.columns };
     },
     // The query plan as a Substrait plan (substrait.js): { plan (its JSON form), dax (dax-sql's

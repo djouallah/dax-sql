@@ -322,9 +322,13 @@ function fn(x) {
   switch (x.name) {
     case 'isblank': return cond('isnull', [p]);
     // A fixed decimal: four places; past its range (922337203685477.5808, as 922337203685477 and
-    // 0.5808: each a double exactly) DAX's error.
-    case 'currency': return caseOf([[cond('ge', [pop('sub', [call('abs', [p], p.t), lit(922337203685477, 'int')], p.t), lit(0.5808, 'double')]), error(FIXED, 'decimal')]],
-      call('round', [p, lit(4, 'int')], 'decimal'), 'decimal');
+    // 0.5808: each a double exactly) DAX's error. The value bound once (named twice, an engine
+    // would compute it in a row of its own, outside the branch a DIVIDE takes it in).
+    case 'currency': {
+      const v = bind(p, 'cy');
+      return caseOf([[cond('ge', [pop('sub', [call('abs', [v], v.t), lit(922337203685477, 'int')], v.t), lit(0.5808, 'double')]), error(FIXED, 'decimal')]],
+        call('round', [v, lit(4, 'int')], 'decimal'), 'decimal');
+    }
     // Values of different kinds together (a number or a text): as text, as DAX writes them.
     case 'coalesce': return x.t === 'variant' ? coalesce(...a.map(asText)) : coalesce(...a);
     case 'divide': return a.length === 2 ? pop('div', [p, pop('nullif', [q, lit(0, 'int')], q.t)], x.t)
@@ -333,7 +337,8 @@ function fn(x) {
     // away from zero, in whole numbers (|n| div |d|, and one more when twice the remainder is at
     // least |d|). Over 0 (or, for DIVIDE, a blank): as / and DIVIDE do with any number.
     case 'cydiv': case 'cydivide': {
-      const n = cast(call('round', [pop('mul', [p, lit(10000, 'int')], 'double'), lit(0, 'int')], 'double'), 'int'), d = cast(q, 'int');
+      // (The ten-thousandths bound once: the quotient names them six times.)
+      const n = bind(cast(call('round', [pop('mul', [p, lit(10000, 'int')], 'double'), lit(0, 'int')], 'double'), 'int'), 'cyn'), d = cast(q, 'int');
       const an = call('abs', [n], 'int'), ad = call('abs', [d], 'int');
       const up = caseOf([[cond('ge', [pop('mul', [lit(2, 'int'), call('mod', [an, ad], 'int')], 'int'), ad]), lit(1, 'int')]], lit(0, 'int'), 'int');
       const signed = pop('mul', [pop('mul', [call('sign', [n], 'int'), call('sign', [d], 'int')], 'int'), pop('add', [call('idiv', [an, ad], 'int'), up], 'int')], 'int');

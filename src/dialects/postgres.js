@@ -77,7 +77,8 @@ export class PostgresDialect extends Dialect {
   // An error that has the type of the branch it is in: a cast that fails, its text the message.
   // A constant is computed when the query is planned, in a branch never taken too: the message
   // is read under random(), which is not.
-  err(msg, t = 'double') { return `CAST(CAST(CASE WHEN random() < 2 THEN ${msg} END AS INTEGER) AS ${this.type(t)})`; }
+  // (Through text: no integer casts to a date.)
+  err(msg, t = 'double') { return `CAST(CAST(CAST(CASE WHEN random() < 2 THEN ${msg} END AS INTEGER) AS TEXT) AS ${this.type(t)})`; }
 
   // A division by zero is infinity (or NaN), as on DuckDB, not an error.
   div(a, b) {

@@ -77,6 +77,27 @@
    ]
   ]
  },
+ "decimal-round-max-var-divided": {
+  "hash": "7385f345d99ab70d5e70ec3aecff9755112f9384",
+  "columns": [
+   "[r2]",
+   "[r0]",
+   "[mx]",
+   "[v]",
+   "[i]",
+   "[rk]"
+  ],
+  "rows": [
+   [
+    875.7143,
+    875.7143,
+    571.4286,
+    875.7143,
+    285.7143,
+    875.7143
+   ]
+  ]
+ },
  "decimal-tie-whole-vs-double-divisor": {
   "hash": "4910c299319a555eda4be9ce950b3a1729f42067",
   "columns": [

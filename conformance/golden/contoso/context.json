@@ -81,6 +81,124 @@
    ]
   ]
  },
+ "context-isinscope-two-levels-under-calculate": {
+  "hash": "0e2de0c484d0cc0746e1baf26fc82fc167563613",
+  "columns": [
+   "Customer[City]",
+   "Customer[Customer]",
+   "[cityAfterCustomer]",
+   "[customerAfterCity]",
+   "[treatasOne]",
+   "[sumIfInScope]"
+  ],
+  "rows": [
+   [
+    "Paris",
+    "Alice",
+    true,
+    true,
+    false,
+    2
+   ],
+   [
+    "Paris",
+    "Chloe",
+    true,
+    true,
+    false,
+    2
+   ],
+   [
+    "London",
+    "Bob",
+    true,
+    true,
+    false,
+    2
+   ],
+   [
+    "Berlin",
+    "Dan",
+    true,
+    true,
+    false,
+    2
+   ],
+   [
+    "Rome",
+    "Erin",
+    true,
+    true,
+    false,
+    2
+   ]
+  ]
+ },
+ "context-isinscope-under-calculate-filters": {
+  "hash": "1b313c26569639ce144bda6a3ed6581a80de9a5b",
+  "columns": [
+   "Customer[Customer]",
+   "[plain]",
+   "[replaced]",
+   "[replacedOne]",
+   "[kept]",
+   "[all]",
+   "[allTable]",
+   "[otherColumn]"
+  ],
+  "rows": [
+   [
+    "Alice",
+    true,
+    false,
+    false,
+    true,
+    false,
+    false,
+    true
+   ],
+   [
+    "Bob",
+    true,
+    false,
+    false,
+    true,
+    false,
+    false,
+    true
+   ],
+   [
+    "Chloe",
+    true,
+    false,
+    false,
+    true,
+    false,
+    false,
+    true
+   ],
+   [
+    "Dan",
+    true,
+    false,
+    false,
+    true,
+    false,
+    false,
+    true
+   ],
+   [
+    "Erin",
+    true,
+    false,
+    false,
+    true,
+    false,
+    false,
+    true
+   ]
+  ]
+ },
  "context-related-sumx-vs-calculated-column": {
   "hash": "5cf9fa8526162c7b1ec92899db8607368ae044d2",
   "columns": [

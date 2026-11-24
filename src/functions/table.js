@@ -548,8 +548,9 @@ function summarizeColumns(c, args, env) {
     const fixed = new Map(pick.flatMap(p => p.keys.map(k => [k, itemValue(p.g, p.it, k)])));
     const active = keyCols.filter(k => on.has(k) && !fixed.has(k));
     // Each level's own keys join its filters' combinations (a subtotal's, without the keys it drops).
-    let ctx = given && active.length ? autoExist(c, given, env.ctx, active) : ctx0;
-    for (const k of active) ctx = ctx.add({ kind: 'bind', cols: [k], val: ir.col(keyRow, keyCols.indexOf(k)) });
+    const binds = active.map(k => ({ kind: 'bind', cols: [k], val: ir.col(keyRow, keyCols.indexOf(k)) }));
+    let ctx = given && active.length ? autoExist(c, given, env.ctx, active, binds) : ctx0;
+    for (const f of binds) ctx = ctx.add(f);
     for (const [k, v] of fixed) ctx = ctx.add({ kind: 'bind', cols: [k], val: ir.lit(v, k.type) });
     const shadows = shadow.cols.size ? [...env.shadows, shadow] : env.shadows;
     const inner = { ...env, ctx, rows: [], grouped: new Set([...active, ...fixed.keys()]), shadows };
@@ -582,8 +583,13 @@ function levelType(ts) {
 // is the values among 1 and 2 that b has in a row where a is "x". The columns it groups by
 // on that table (keys) are part of the combinations, and each group binds its own values: so
 // removing one filter leaves the others to the values they have with that group's key, not
-// with any group's.
-function autoExist(c, ctx, outer, keys) {
+// with any group's. That tie holds while one of the table's keys is still filtered: grouped by
+// color and price under filters on class and color, removing the price leaves the classes of
+// the group's color and price, removing both the classes under the filters alone (Power BI,
+// context-auto-exist-remove-keys). So a group gets the combinations twice: under the filters,
+// and with its key values (`binds`), that one marked with its keys (Ctx.remove drops it once
+// no key of it is left).
+function autoExist(c, ctx, outer, keys, binds = []) {
   const byTable = new Map();
   for (const f of ctx.filters) {
     if (outer.filters.includes(f) || (f.kind === 'rel' && f.base) || f.nonvisual) continue;
@@ -595,8 +601,10 @@ function autoExist(c, ctx, outer, keys) {
   for (const [t, fs] of byTable) {
     if (fs.length < 2) continue;
     const cols = [...new Set([...fs.flatMap(f => f.cols), ...keys.filter(k => k.table === t)])];
-    const src = ir.values(t, new Ctx(fs, ctx.mods), cols, (tb, x) => c.scan(tb, x));
-    ctx = new Ctx(ctx.filters.filter(f => !fs.includes(f)), ctx.mods).add({ kind: 'rel', cols, src, idx: cols.map((_, i) => i), base: null });
+    const own = binds.filter(f => f.cols[0].table === t);
+    const combos = extra => ir.values(t, new Ctx([...fs, ...extra], ctx.mods), cols, (tb, x) => c.scan(tb, x));
+    ctx = new Ctx(ctx.filters.filter(f => !fs.includes(f)), ctx.mods).add({ kind: 'rel', cols, src: combos([]), idx: cols.map((_, i) => i), base: null });
+    if (own.length) ctx = ctx.add({ kind: 'rel', cols, src: combos(own), idx: cols.map((_, i) => i), base: null, keys: own.map(f => f.cols[0]) });
   }
   return ctx;
 }

@@ -28,6 +28,8 @@ export class Ctx {
   remove(drop) {
     const out = [];
     for (const f of this.filters) {
+      // A group's auto-exist tie (functions/table.js autoExist) goes with the last of its keys.
+      if (f.keys && f.keys.every(drop)) continue;
       const gone = f.cols.filter(drop);
       if (!gone.length) { out.push(f); continue; }
       if (gone.length === f.cols.length) continue;
@@ -57,7 +59,7 @@ export function narrow(f, keep) {
     const row = rowOf(f.src, 'table');
     const idx = keep.map(c => f.idx[f.cols.indexOf(c)]);
     const src = distinct(project(f.src, row, idx.map(i => itemOf(row, i))));
-    return { kind: 'rel', cols: keep, src, idx: keep.map((_, i) => i), base: null, group: f.group };
+    return { kind: 'rel', cols: keep, src, idx: keep.map((_, i) => i), base: null, group: f.group, ...(f.keys ? { keys: f.keys.filter(k => keep.includes(k)) } : {}) };
   }
   // A predicate on two columns of a table, narrowed to one: the values of that one in the
   // rows of the whole table where the predicate holds.

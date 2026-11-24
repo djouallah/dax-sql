@@ -1199,8 +1199,10 @@ the compiled SQL's job alone).
 ### Polars
 
 `dialect: 'polars'` writes PostgreSQL's SQL as Polars' SQLContext reads it (tested on its main branch), over
-the query plan unnested (`planSql(query, { unnest: true })`): Polars runs no correlated subquery
-and no LATERAL. Where it differs from PostgreSQL's:
+the query plan unnested (`planSql(query, { unnest: true })`): Polars main unnests correlated
+scalar, `IN` and `EXISTS` subqueries, but has no `LATERAL` and reads no outer row through a derived
+table, which the correlated plan needs; `polars.yml` runs the correlated plan beside, as a measure.
+Where it differs from PostgreSQL's:
 
 - Each relation a SELECT reads is a CTE of its own (`flatSql`): Polars' parser nests subqueries
   only so deep. No `MATERIALIZED`.

@@ -4,7 +4,10 @@ name: Polars
 # polars-main, which polars-main.yml builds by hand): each query compiled with the `polars`
 # dialect through the query plan unnested (planSql { unnest: true }), run on Polars' SQLContext
 # over the suite's CSVs (conformance/engines/dax-sql-polars/adapter.mjs), held to Power BI's
-# answers and the known lists: DuckDB's (what holds for every engine) and Polars' own.
+# answers and the known lists: DuckDB's (what holds for every engine) and Polars' own. Then the
+# plan correlated (POLARS_PLAN=correlated: Polars main unnests correlated subqueries itself), a
+# measure beside it that does not fail the job: its matches, errors (those of SQL with a LATERAL
+# apart: Polars has none) and time.
 
 on:
   push:
@@ -68,31 +71,47 @@ jobs:
           node conformance/runner/run.mjs --adapter "node conformance/engines/dax-sql-polars/adapter.mjs ." \
             --known conformance/engines/dax-sql-polars/known.json --known-shared conformance/engines/dax-sql/known.json \
             --report "$RUNNER_TEMP/polars.json"
-      # The errors by kind (their text with names and numbers left out), the most frequent first,
-      # and the time: what to fix next.
+      - name: The suite on Polars, through the correlated query plan (a measure)
+        if: always()
+        env:
+          PY: python
+          POLARS_PLAN: correlated
+          DAXSQL_TIMES: ${{ runner.temp }}/polars-correlated-times.json
+        run: |
+          node conformance/runner/run.mjs --adapter "node conformance/engines/dax-sql-polars/adapter.mjs ." \
+            --known conformance/engines/dax-sql-polars/known.json --known-shared conformance/engines/dax-sql/known.json \
+            --report "$RUNNER_TEMP/polars-correlated.json" || true
+      # Each plan's errors by kind (their text with names and numbers left out), the most frequent
+      # first, and the time: what to fix next.
       - name: Summary
         if: always()
         run: |
-          test -f "$RUNNER_TEMP/polars.json" || exit 0
           node -e '
-            const r = require(process.argv[1]), t = r.total;
-            const out = [`### Polars main, unnested plan`, "", "| match | fail | error | unsupported | known |", "|---|---|---|---|---|", `| ${t.match} | ${t.fail} | ${t.error} | ${t.unsupported} | ${t.known} |`, ""];
-            const groups = new Map();
-            for (const q of r.queries.filter(q => q.outcome === "error" && !q.known)) {
-              const k = String(q.detail ?? "").replace(/\s+/g, " ").replace(/"[^"]*"|\x27[^\x27]*\x27|\d+/g, "…").slice(0, 140);
-              const g = groups.get(k) ?? { n: 0, ex: q.id };
-              g.n++; groups.set(k, g);
+            const fs = require("fs"), out = [];
+            for (const [label, rep, tim] of [["unnested", "polars.json", "polars-times.json"], ["correlated", "polars-correlated.json", "polars-correlated-times.json"]]) {
+              const dir = process.env.RUNNER_TEMP;
+              if (!fs.existsSync(`${dir}/${rep}`)) continue;
+              const r = JSON.parse(fs.readFileSync(`${dir}/${rep}`, "utf8")), t = r.total;
+              let tm = [];
+              try { tm = JSON.parse(fs.readFileSync(`${dir}/${tim}`, "utf8")); } catch {}
+              const lateral = new Set(tm.filter(x => x.lateral).map(x => x.id));
+              out.push(`### Polars main, ${label} plan`, "", "| match | fail | error | unsupported | known |", "|---|---|---|---|---|", `| ${t.match} | ${t.fail} | ${t.error} | ${t.unsupported} | ${t.known} |`, "");
+              const errs = r.queries.filter(q => q.outcome === "error" && !q.known);
+              if (lateral.size) out.push(`**SQL with a LATERAL:** ${lateral.size} queries; ${errs.filter(q => lateral.has(q.id)).length} of the errors.`, "");
+              const groups = new Map();
+              for (const q of errs) {
+                const k = String(q.detail ?? "").replace(/\s+/g, " ").replace(/"[^"]*"|\x27[^\x27]*\x27|\d+/g, "…").slice(0, 140);
+                const g = groups.get(k) ?? { n: 0, ex: q.id };
+                g.n++; groups.set(k, g);
+              }
+              out.push("| errors | kind | e.g. |", "|---|---|---|", ...[...groups].sort((a, b) => b[1].n - a[1].n).slice(0, 40).map(([k, g]) => `| ${g.n} | ${k.replace(/\|/g, "\|")} | ${g.ex} |`), "");
+              const fails = r.queries.filter(q => q.outcome === "fail" && !q.known).map(q => q.id);
+              out.push(`**Different answers (${fails.length}):** ${fails.slice(0, 40).join(", ")}`, "");
+              if (tm.length) out.push(`**Time:** ${tm.length} queries, ${(tm.reduce((a, x) => a + x.ms, 0) / 1000).toFixed(1)} s added up; the slowest: ${tm.slice(0, 8).map(x => `${x.id} ${(x.ms / 1000).toFixed(1)} s`).join(", ")}`, "");
             }
-            out.push("| errors | kind | e.g. |", "|---|---|---|", ...[...groups].sort((a, b) => b[1].n - a[1].n).slice(0, 40).map(([k, g]) => `| ${g.n} | ${k.replace(/\|/g, "\|")} | ${g.ex} |`), "");
-            const fails = r.queries.filter(q => q.outcome === "fail" && !q.known).map(q => q.id);
-            out.push(`**Different answers (${fails.length}):** ${fails.slice(0, 40).join(", ")}`, "");
-            try {
-              const tm = require(process.argv[2]);
-              out.push(`**Time:** ${tm.length} queries, ${(tm.reduce((a, x) => a + x.ms, 0) / 1000).toFixed(1)} s added up; the slowest: ${tm.slice(0, 8).map(x => `${x.id} ${(x.ms / 1000).toFixed(1)} s`).join(", ")}`);
-            } catch {}
-            require("fs").appendFileSync(process.env.GITHUB_STEP_SUMMARY, out.join("\n") + "\n");
+            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, out.join("\n") + "\n");
             console.log(out.join("\n"));
-          ' "$RUNNER_TEMP/polars.json" "$RUNNER_TEMP/polars-times.json"
+          '
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -100,3 +119,5 @@ jobs:
           path: |
             ${{ runner.temp }}/polars.json
             ${{ runner.temp }}/polars-times.json
+            ${{ runner.temp }}/polars-correlated.json
+            ${{ runner.temp }}/polars-correlated-times.json

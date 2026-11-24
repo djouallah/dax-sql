@@ -30,3 +30,12 @@ for on in ["x.k = y.k", "x.k IS NOT DISTINCT FROM y.k"]:
     t0 = time.perf_counter()
     ctx.execute(f"SELECT COUNT(*) FROM x JOIN y ON {on}", eager=True)
     print(f"- 07 {on}: {time.perf_counter() - t0:.3f} s")
+
+# Drafts not filed yet: what the correlated plan and DAX's runtime errors need.
+t = pl.DataFrame({"a": [1, 2, 3]})
+run("08 LATERAL", lambda: pl.SQLContext(t=t).execute(
+    "SELECT o.a, x.v FROM t AS o, LATERAL (SELECT i.a AS v FROM t AS i WHERE i.a > o.a) AS x", eager=True).rows())
+run("09 outer row read in a derived table of a subquery", lambda: pl.SQLContext(t=t).execute(
+    "SELECT (SELECT b.v FROM (SELECT o.a * 10 AS v) AS b) AS r FROM t AS o", eager=True).rows())
+run("10 failing CAST in a CASE branch no row takes", lambda: pl.SQLContext(t=t).execute(
+    "SELECT CASE WHEN a > 5 THEN CAST('x' AS INTEGER) ELSE a END AS r FROM t", eager=True).rows())

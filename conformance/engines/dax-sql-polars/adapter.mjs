@@ -1,10 +1,12 @@
 // dax-sql's adapter for Polars: as engines/dax-sql/adapter.mjs, but each query is compiled with
-// the `polars` dialect through the query plan unnested (planSql { unnest: true }: no correlated
-// subquery, no LATERAL, which Polars SQL has neither of) and run on Polars' SQLContext over the
-// model's CSVs (worker.py, one process for each model).
+// the `polars` dialect through the query plan unnested (planSql { unnest: true }: Polars SQL has
+// no LATERAL, and reads no outer row through a derived table) and run on Polars' SQLContext over
+// the model's CSVs (worker.py, one process for each model).
 //
 //   PY=<python with polars> node engines/dax-sql-polars/adapter.mjs <dax-sql checkout> <request.json>
 //
+// POLARS_PLAN=correlated: the plan correlated instead (planSql { correlated: true }), for Polars
+// to unnest its correlated subqueries itself, as Polars main does: a measure of it.
 // POLARS_TIMEOUT_MS: a query's time (30 s); past it the worker is stopped and another started.
 // DAXSQL_TIMES: each query's time (ms), to that file.
 import { spawn } from 'node:child_process';
@@ -19,6 +21,7 @@ const { createCompiler } = await import(pathToFileURL(join(root, 'src', 'index.j
 const { tmslToModel } = await import(pathToFileURL(join(root, 'formats', 'tmsl.js')));
 const PY = process.env.PY || 'python';
 const TIMEOUT_MS = Number(process.env.POLARS_TIMEOUT_MS || 30000);
+const PLAN = process.env.POLARS_PLAN === 'correlated' ? { correlated: true } : { unnest: true };
 
 function worker(dir, name) {
   const p = spawn(PY, [join(here, 'worker.py'), dir, name], { stdio: ['pipe', 'pipe', 'inherit'] });
@@ -60,7 +63,7 @@ for (const [modelPath, qs] of byModel) {
   if (!ready.ready) { qs.forEach(q => failed(q, new Error(`no Polars worker for ${name}`))); w.p.kill(); continue; }
   for (const q of qs) {
     let sql, columns;
-    try { ({ sql, columns } = compiler(q.roles).planSql(q.dax, { unnest: true })); } catch (err) { failed(q, err); continue; }
+    try { ({ sql, columns } = compiler(q.roles).planSql(q.dax, PLAN)); } catch (err) { failed(q, err); continue; }
     const t0 = performance.now();
     const got = await w.ask({ sql }, TIMEOUT_MS);
     if (got.timeout) {
@@ -70,7 +73,7 @@ for (const [modelPath, qs] of byModel) {
       await w.ask(null, 300000);
       continue;
     }
-    times.push({ id: q.id, ms: Math.round(performance.now() - t0), bytes: sql.length });
+    times.push({ id: q.id, ms: Math.round(performance.now() - t0), bytes: sql.length, ...(/\bLATERAL\b/.test(sql) ? { lateral: true } : {}) });
     if (got.error) { failed(q, new Error(got.error)); continue; }
     out({ id: q.id, columns: columns.map(c => c.name), rows: got.rows });
   }

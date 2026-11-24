@@ -6,7 +6,7 @@
 import { Emitter, orderTerm } from './emit.js';
 import * as P from './plan.js';
 import { isCondOp } from './plan.js';
-import { refsOf } from './passes/decorrelate.js';
+import { free, refsOf } from './passes/decorrelate.js';
 
 const EMPTY = new Map();
 const MANY = 'A table of multiple values was supplied where a single value was expected.';
@@ -59,7 +59,9 @@ export class PlanSql extends Emitter {
     const cn = c => this.cn(c);
     const from = (x, p = 's') => {
       const a = this.alias(p);
-      if (!this.d.flatSql) return `(${this.rel(x)}) AS ${a}`;
+      // A relation that reads an outer row (in a correlated subquery) stays where it is: a CTE
+      // sees no outer row.
+      if (!this.d.flatSql || free(x).size) return `(${this.rel(x)}) AS ${a}`;
       const e = { name: this.alias('w'), sql: this.rel(x) };
       this.ctes.push(e);
       return `${e.name} AS ${a}`;

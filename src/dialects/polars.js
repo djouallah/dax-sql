@@ -1,6 +1,7 @@
 // Polars SQL (pl.SQLContext, tested on its main branch): PostgreSQL's SQL, as Polars reads it, over the
-// query plan unnested (planSql { unnest: true }): Polars runs no correlated subquery and no
-// LATERAL, so the plan with neither is the one it takes. What it writes differently from
+// query plan unnested (planSql { unnest: true }): Polars main unnests correlated scalar, IN and
+// EXISTS subqueries, but has no LATERAL and reads no outer row through a derived table, which the
+// correlated plan needs (polars.yml measures it beside). What it writes differently from
 // PostgreSQL's:
 // - WITH has no MATERIALIZED (a CTE is a lazy frame, computed once where it is read).
 // - A blank-safe key is = of COALESCE with a value no data holds (no ARRAY = ARRAY, no

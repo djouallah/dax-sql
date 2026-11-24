@@ -53,6 +53,8 @@ REPROS = [
     ("list slicing", "SELECT [10, 20, 30][2:3] AS s", "SUBSTITUTE's instance by lengths"),
     ("LATERAL", "SELECT o.a, x.v FROM t AS o, LATERAL (SELECT o.a + 1 AS v LIMIT 1) AS x", "the query plan unnested"),
     ("a correlated scalar subquery", "SELECT a, (SELECT COUNT(*) FROM t AS i WHERE i.a <= o.a) AS n FROM t AS o", "the query plan unnested"),
+    ("a correlated EXISTS", "SELECT a FROM t AS o WHERE EXISTS (SELECT 1 FROM t AS i WHERE i.a = o.a + 1)", "the query plan unnested"),
+    ("a correlated scalar subquery over a grouping", "SELECT a, (SELECT SUM(s) FROM (SELECT a AS k, SUM(a) AS s FROM t GROUP BY a) AS g WHERE g.k < o.a) AS n FROM t AS o", "the query plan unnested"),
 ]
 
 
@@ -94,6 +96,10 @@ def main():
             got = f"{type(e).__name__}: " + (str(e).splitlines()[0] if str(e) else "")
         same = got == want
         ok += same
+        # A shape Polars now answers: its workaround is no longer for Polars (it may stay as the
+        # plan's generic form, which every engine is given).
+        if same and not workaround.startswith("none"):
+            workaround = f"not needed on this Polars (was: {workaround})"
         print(f"| {cell(name)} | {cell(got)} | {cell(want)} | {'yes' if same else '**no**'} | {cell(workaround)} |")
     print(f"\n{ok} of {len(REPROS)} answer as DuckDB does.\n")
     # A join on IS NOT DISTINCT FROM against one on =, the same keys (dax-sql writes the first as

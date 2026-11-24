@@ -77,7 +77,8 @@ export function definitions(bind) {
 
   // --- dates ---
   function generalDate(v0) {
-    const v = bind(v0, 'dt');
+    // As a date and time (T-SQL takes no hour of a DATE).
+    const v = bind(cast(v0, 'datetime'), 'dt');
     const [y, mo, d, h, mi, se] = ['year', 'month', 'day', 'hour', 'minute', 'second'].map(n => bind(part(n, v), n));
     const date = cat(str(mo), S('/'), str(d), S('/'), str(y));
     const h12 = caseOf([[eq(h, I(0)), I(12)], [gt(h, I(12)), sub(h, I(12))]], h, 'int');

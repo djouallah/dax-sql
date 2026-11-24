@@ -72,7 +72,7 @@ jobs:
           PG_PLANS: ${{ runner.temp }}/pg-plans.md
         run: |
           node conformance/runner/run.mjs --adapter "node conformance/engines/dax-sql-postgres/adapter.mjs ." \
-            --known conformance/engines/dax-sql-postgres/known.json --report "$RUNNER_TEMP/postgres.json"
+            --known conformance/engines/dax-sql-postgres/known.json,conformance/engines/dax-sql-postgres/known-compile.json --report "$RUNNER_TEMP/postgres.json"
       - name: The slowest queries
         if: always()
         run: |
@@ -92,12 +92,11 @@ jobs:
             ${{ runner.temp }}/pg-plans.md
 
   # The suite through the optimized query plan (DAXSQL_PLAN=1) and the correlated plan unnested
-  # (DAXSQL_PLAN=unnest: src/passes/unnest.js), against the same known list: each reports (the
-  # slowest, and the queries on the list as slow) until it answers them all.
+  # (DAXSQL_PLAN=unnest: src/passes/unnest.js), against the known list (not known-compile.json:
+  # the compiled SQL's slow queries, which the plans answer): each reports the slowest.
   plan:
     runs-on: ubuntu-latest
     timeout-minutes: 45
-    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
@@ -148,11 +147,12 @@ jobs:
         run: |
           test -f "$RUNNER_TEMP/pg-times.json" || exit 0
           node -e '
-            const all = require(process.argv[1]), slow = require(process.argv[2]).filter(k => /^slow/.test(k.reason)).map(k => k.id);
+            const path = require("path");
+            const all = require(process.argv[1]), slow = [...require(path.resolve(process.argv[2])), ...require(path.resolve(process.argv[3]))].filter(k => /^slow/.test(k.reason)).map(k => k.id);
             const row = x => `| ${x.id} | ${(x.ms / 1000).toFixed(2)} |`;
             const known = slow.map(id => all.find(x => x.id === id) ?? { id, ms: NaN });
             require("fs").appendFileSync(process.env.GITHUB_STEP_SUMMARY, `### Through the query plan (${process.env.PLAN}): the slowest\n\n| query | s |\n|---|---|\n${all.slice(0, 15).map(row).join("\n")}\n\n### Known as slow\n\n| query | s |\n|---|---|\n${known.map(row).join("\n")}\n`);
-          ' "$RUNNER_TEMP/pg-times.json" conformance/engines/dax-sql-postgres/known.json
+          ' "$RUNNER_TEMP/pg-times.json" conformance/engines/dax-sql-postgres/known.json conformance/engines/dax-sql-postgres/known-compile.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:

@@ -9,6 +9,8 @@
 // - An interval is of a fixed length only (n * INTERVAL '1 day', no months): a date moved by
 //   months is made of its parts (the month's first day, the day, the month's last at most).
 // - ROUND's places a constant; log10 is log10; a sum in no order (SUM takes no ORDER BY).
+// - A date is a TIMESTAMP at midnight, as the data's dates are (worker.py reads each date column
+//   as a date and time): one type, so two dates are compared, joined and unioned as they are.
 import { PostgresDialect } from './postgres.js';
 
 // A whole number (64 bits: Polars computes a CASE's branches no row takes too).
@@ -18,13 +20,15 @@ const unit = u => UNITS[String(u).replace(/'/g, '').toLowerCase()] ?? String(u).
 const part = (f, x) => `CAST(EXTRACT(${f} FROM ${x}) AS BIGINT)`;
 // The first day of month number m (year * 12 + month - 1).
 // (|| keeps a blank blank: CONCAT reads it as '', which is no date.)
-const first = m => `CAST(LPAD(CAST(CAST(floor((${m}) / 12) AS BIGINT) AS VARCHAR), 4, '0') || '-' || LPAD(CAST(CAST((${m}) % 12 + 1 AS BIGINT) AS VARCHAR), 2, '0') || '-01' AS DATE)`;
+const first = m => `CAST(CAST(LPAD(CAST(CAST(floor((${m}) / 12) AS BIGINT) AS VARCHAR), 4, '0') || '-' || LPAD(CAST(CAST((${m}) % 12 + 1 AS BIGINT) AS VARCHAR), 2, '0') || '-01' AS DATE) AS TIMESTAMP)`;
 const monthOf = x => `(${part('YEAR', x)} * 12 + ${part('MONTH', x)} - 1)`;
 // A date k months on: its day in that month, or the month's last.
 const addMonths = (x, k) => {
   const m = `(${monthOf(x)} + ${k})`;
   return `LEAST(${first(m)} + (${part('DAY', x)} - 1) * INTERVAL '1 day', ${first(`${m} + 1`)} - INTERVAL '1 day')`;
 };
+
+const DATES = new Set(['start_of', 'end_of', 'today', 'utctoday']);
 
 export class PolarsDialect extends PostgresDialect {
   name = 'polars';
@@ -34,13 +38,22 @@ export class PolarsDialect extends PostgresDialect {
   // Each relation a SELECT reads a CTE of its own: Polars' parser takes subqueries nested only
   // so deep (a calculation group's plan is past it).
   flatSql = true;
+  joinKeysOnly = true;
 
   isNotDistinct(a, b) { return `(${a} IS NOT DISTINCT FROM ${b})`; }
+
+  // A date: a TIMESTAMP (a cast to one at midnight), a constant one too.
+  type(t) { return t === 'date' ? 'TIMESTAMP' : super.type(t); }
+  cast(sql, t) { return t === 'date' ? `CAST(CAST(${sql} AS DATE) AS TIMESTAMP)` : super.cast(sql, t); }
+  datetime(v) { return /d:d/.test(v) ? `TIMESTAMP ${this.str(v)}` : `TIMESTAMP ${this.str(`${v} 00:00:00`)}`; }
+  blankOf(t) { return t === 'datetime' || t === 'date' ? "TIMESTAMP '1899-12-30 00:00:00'" : super.blankOf(t); }
   keysTogether = null;
   bind(vals, body) { return body(...vals); }
   sumOfGroups(v) { return `SUM(${v})`; }
 
   fn(name, a, nodes = []) {
+    // PostgreSQL's functions of a date that give a DATE: a TIMESTAMP.
+    if (DATES.has(name)) return `CAST(${super.fn(name, a, nodes)} AS TIMESTAMP)`;
     const [x, y, z] = a;
     switch (name) {
       case 'log10': return `log10(${x})`;

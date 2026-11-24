@@ -28,6 +28,12 @@ const addMonths = (x, k) => {
   return `LEAST(${first(m)} + (${part('DAY', x)} - 1) * INTERVAL '1 day', ${first(`${m} + 1`)} - INTERVAL '1 day')`;
 };
 
+// A whole number the plan gives as a constant (a literal, or one negated): its value, else null.
+const constInt = n => (n?.k === 'lit' && Number.isInteger(n.v) ? n.v
+  : n?.k === 'pop' && n.op === 'neg' && n.a[0]?.k === 'lit' && Number.isInteger(n.a[0].v) ? -n.a[0].v : null);
+// A constant number of months: an INTERVAL (of months it is, of the month's last day at most).
+const months = (x, k) => (k === 0 ? x : `(${x} ${k > 0 ? '+' : '-'} INTERVAL '${Math.abs(k)} months')`);
+
 const DATES = new Set(['start_of', 'end_of', 'today', 'utctoday']);
 
 export class PolarsDialect extends PostgresDialect {
@@ -45,9 +51,16 @@ export class PolarsDialect extends PostgresDialect {
   // A date: a TIMESTAMP (a cast to one at midnight), a constant one too.
   type(t) { return t === 'date' ? 'TIMESTAMP' : super.type(t); }
   cast(sql, t) { return t === 'date' ? `CAST(CAST(${sql} AS DATE) AS TIMESTAMP)` : super.cast(sql, t); }
-  datetime(v) { return /d:d/.test(v) ? `TIMESTAMP ${this.str(v)}` : `TIMESTAMP ${this.str(`${v} 00:00:00`)}`; }
+  datetime(v) { return /\d:\d/.test(v) ? `TIMESTAMP ${this.str(v)}` : `TIMESTAMP ${this.str(`${v} 00:00:00`)}`; }
   blankOf(t) { return t === 'datetime' || t === 'date' ? "TIMESTAMP '1899-12-30 00:00:00'" : super.blankOf(t); }
   keysTogether = null;
+  // The position of text n in h (0: none), as text, not a pattern (Polars' strpos reads its
+  // needle as a regular expression: '|b|' is found at 1 in anything): the length of what is
+  // before its first occurrence.
+  strpos(h, n) {
+    const before = `LENGTH(split_part(${h}, ${n}, 1))`;
+    return `CASE WHEN LENGTH(${n}) = 0 THEN 1 WHEN ${before} = LENGTH(${h}) THEN 0 ELSE ${before} + 1 END`;
+  }
   bind(vals, body) { return body(...vals); }
   sumOfGroups(v) { return `SUM(${v})`; }
 
@@ -57,6 +70,13 @@ export class PolarsDialect extends PostgresDialect {
     const [x, y, z] = a;
     switch (name) {
       case 'log10': return `log10(${x})`;
+      case 'containsstring': return `(${this.strpos(`lower(COALESCE(${x}, ''))`, `lower(COALESCE(${y}, ''))`)} > 0)`;
+      case 'containsstringexact': return `(${this.strpos(`COALESCE(${x}, '')`, `COALESCE(${y}, '')`)} > 0)`;
+      case 'search': case 'find': {
+        const low = v => (name === 'search' ? `lower(${v})` : v), w = a[3], from = int(z);
+        const pos = this.strpos(low(`substr(COALESCE(${y}, ''), ${from})`), low(`COALESCE(${x}, '')`));
+        return `CASE WHEN ${pos} = 0 THEN ${w} ELSE ${pos} + ${from} - 1 END`;
+      }
       case 'round': {
         const n = nodes[1];
         if (n?.k === 'lit' && Number.isInteger(n.v)) return `CAST(round(CAST(${x} AS NUMERIC), ${n.v}) AS DOUBLE PRECISION)`;
@@ -70,12 +90,18 @@ export class PolarsDialect extends PostgresDialect {
         return super.fn(name, a, nodes);
       }
       case 'date': return `(${first(`${int(x)} * 12 + ${int(y)} - 1`)} + (${int(z)} - 1) * INTERVAL '1 day')`;
-      case 'eomonth': return `(${first(`${monthOf(x)} + ${int(y)} + 1`)} - INTERVAL '1 day')`;
+      case 'eomonth': {
+        const k = constInt(nodes[1]);
+        if (k != null) return `(CAST(date_trunc('month', ${months(x, k)}) AS TIMESTAMP) + INTERVAL '1 months' - INTERVAL '1 day')`;
+        return `(${first(`${monthOf(x)} + ${int(y)} + 1`)} - INTERVAL '1 day')`;
+      }
       case 'add_interval': {
         const u = unit(z);
         const timeOf = v => (nodes[0]?.t === 'date' ? '' : ` + (CAST(${v} AS TIMESTAMP) - CAST(CAST(${v} AS DATE) AS TIMESTAMP))`);
         if (u === 'DAY') return `(${x} + ${int(y)} * INTERVAL '1 day')`;
         if (u === 'WEEK') return `(${x} + 7 * ${int(y)} * INTERVAL '1 day')`;
+        const per = u === 'YEAR' ? 12 : u === 'QUARTER' ? 3 : 1, k = constInt(nodes[1]);
+        if ((u === 'MONTH' || u === 'QUARTER' || u === 'YEAR') && k != null) return months(x, per * k);
         if (u === 'MONTH' || u === 'QUARTER' || u === 'YEAR') return `(${addMonths(x, `${u === 'YEAR' ? 12 : u === 'QUARTER' ? 3 : 1} * ${int(y)}`)}${timeOf(x)})`;
         if (u === 'SECOND') return `(${x} + CAST(round(CAST(${y} AS NUMERIC) * 1000000) AS BIGINT) * INTERVAL '1 microsecond')`;
         return `(${x} + ${int(y)} * INTERVAL '1 ${u.toLowerCase()}')`;

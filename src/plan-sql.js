@@ -250,18 +250,18 @@ export class PlanSql extends Emitter {
       }
     }
     switch (name) {
-      case 'strpos': return ts ? `CHARINDEX(${y}, ${x})` : pg ? `strpos(${x}, ${y})` : `instr(${x}, ${y})`;
+      case 'strpos': return ts ? `CHARINDEX(${y}, ${x})` : d.strpos ? d.strpos(x, y) : pg ? `strpos(${x}, ${y})` : `instr(${x}, ${y})`;
       case 'substring_from': return ts ? `SUBSTRING(${x}, ${y}, LEN(${x}))` : `substring(${x}, ${y})`;
       case 'regexp_replace': return `regexp_replace(${x}, ${y}, ${z}, 'g')`;
       case 'code_point': return ts ? `UNICODE(${x})` : pg ? `ascii(${x})` : `unicode(${x})`;
       case 'extract_dow': return ts ? `(DATEPART(weekday, ${x}) - 1)` : pg ? `CAST(EXTRACT(DOW FROM ${x}) AS BIGINT)` : `dayofweek(${x})`;
-      case 'make_date': return ts ? `DATEFROMPARTS(${a.join(', ')})` : pg ? `make_date(${a.map(v => `CAST(${v} AS INTEGER)`).join(', ')})` : `make_date(${a.join(', ')})`;
+      case 'make_date': return d.name === 'polars' ? d.fn('date', a, nodes) : ts ? `DATEFROMPARTS(${a.join(', ')})` : pg ? `make_date(${a.map(v => `CAST(${v} AS INTEGER)`).join(', ')})` : `make_date(${a.join(', ')})`;
       case 'ceil': return ts ? `CEILING(${x})` : `ceil(${x})`;
       case 'replace': return `replace(${x}, ${y}, ${z})`;
       // T-SQL: the n-th of STRING_SPLIT's parts by their ordinal (none past the last, as a blank).
       case 'split_part': return ts ? `(SELECT value FROM STRING_SPLIT(${x}, ${y}, 1) WHERE ordinal = ${z})` : pg ? `split_part(${x}, ${y}, CAST(${z} AS INTEGER))` : `split_part(${x}, ${y}, ${z})`;
       case 'date_diff_microsecond': return ts ? `DATEDIFF_BIG(microsecond, ${x}, ${y})` : d.name === 'polars' ? `CAST(round((EXTRACT(EPOCH FROM ${y}) - EXTRACT(EPOCH FROM ${x})) * 1000000) AS BIGINT)` : pg ? `CAST(EXTRACT(EPOCH FROM (${y} - ${x})) * 1000000 AS BIGINT)` : `date_diff('microsecond', ${x}, ${y})`;
-      case 'add_microseconds': return ts ? `DATEADD(microsecond, ${y}, ${x})` : pg ? `(${x} + ${y} * INTERVAL '1 microsecond')` : `(${x} + to_microseconds(${y}))`;
+      case 'add_microseconds': return ts ? `DATEADD(microsecond, ${y}, ${x})` : d.name === 'polars' ? `(CAST(${x} AS TIMESTAMP) + CAST(${y} AS BIGINT) * INTERVAL '1 microsecond')` : pg ? `(${x} + ${y} * INTERVAL '1 microsecond')` : `(${x} + to_microseconds(${y}))`;
     }
     const m = /^(extract|date_trunc|date_diff)_(\w+)$/.exec(name);
     if (m?.[1] === 'extract') return d.fn(m[2], [x], nodes);

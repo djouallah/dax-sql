@@ -38,7 +38,8 @@ def value(v):
     # As the DuckDB adapter writes one: a date as YYYY-MM-DD, a date and time as YYYY-MM-DD
     # HH:MM:SS (midnight as the date alone), a decimal as a number.
     if isinstance(v, datetime.datetime):
-        return v.strftime("%Y-%m-%d") if v.time() == datetime.time() else v.strftime("%Y-%m-%d %H:%M:%S")
+        # isoformat: a year below 1000 in four digits (strftime's %Y has none on Linux).
+        return v.date().isoformat() if v.time() == datetime.time() else v.replace(microsecond=0).isoformat(sep=" ")
     if isinstance(v, datetime.date):
         return v.isoformat()
     if isinstance(v, decimal.Decimal):

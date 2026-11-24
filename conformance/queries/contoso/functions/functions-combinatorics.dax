@@ -1,3 +1,2 @@
-// note: COMBIN, COMBINA and PERMUT of the count of products by category
-EVALUATE SUMMARIZECOLUMNS(Category[Category], "n", [Product Count], "combin", COMBIN([Product Count], 2), "combina", COMBINA([Product Count], 2), "permut", PERMUT([Product Count], 2))
-ORDER BY Category[Category]
+// note: COMBIN, COMBINA and PERMUT of constants, a fraction cut to its whole number
+EVALUATE ROW("combin", COMBIN(8, 2), "combina", COMBINA(4, 3), "permut", PERMUT(100, 3), "combinfrac", COMBIN(8.9, 2.5), "zero", COMBIN(5, 0))

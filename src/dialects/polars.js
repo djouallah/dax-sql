@@ -12,7 +12,6 @@
 // - A date is a TIMESTAMP at midnight, as the data's dates are (worker.py reads each date column
 //   as a date and time): one type, so two dates are compared, joined and unioned as they are.
 import { PostgresDialect } from './postgres.js';
-import { formatNumber, formatDate, generalNumber, generalDate, dateSerial, serialDate } from './polars-format.js';
 
 // A whole number (64 bits: Polars computes a CASE's branches no row takes too).
 const int = v => `CAST(round(CAST(${v} AS NUMERIC)) AS BIGINT)`;
@@ -71,15 +70,6 @@ export class PolarsDialect extends PostgresDialect {
     return `(COALESCE(${a}, ${none}) = COALESCE(${b}, ${none}))`;
   }
 
-  // As DAX converts a value to text (polars-format.js: no to_char).
-  text(sql, t) {
-    if (t === 'double' || t === 'decimal') return generalNumber(sql, t);
-    if (t === 'datetime' || t === 'date') return generalDate(sql);
-    if (t === 'string') return sql;
-    if (t === 'bool') return super.text(sql, t);
-    return `CAST(${sql} AS VARCHAR)`;
-  }
-
   // A date: a TIMESTAMP (a cast to one at midnight), a constant one too.
   type(t) { return t === 'date' ? 'TIMESTAMP' : super.type(t); }
   cast(sql, t) { return t === 'date' ? `CAST(CAST(${sql} AS DATE) AS TIMESTAMP)` : super.cast(sql, t); }
@@ -111,10 +101,6 @@ export class PolarsDialect extends PostgresDialect {
     const [x, y, z] = a;
     switch (name) {
       case 'log10': return `log10(${x})`;
-      case 'format_date': return formatDate(x, JSON.parse(nodes[1].v));
-      case 'format_number': return formatNumber(x, JSON.parse(nodes[1].v), nodes[0].t);
-      case 'date_serial': return dateSerial(x);
-      case 'serial_date': return serialDate(x);
       // Text as a date and time, in en-US forms too: Polars' CAST reads ISO text only, and 3/5/2024
       // day first. M/D/YYYY and "Month D, YYYY" written as ISO first (no STRPTIME, which fails
       // on a value of another form even in a branch no row takes).

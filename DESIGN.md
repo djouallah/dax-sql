@@ -1201,9 +1201,8 @@ and no LATERAL. Where it differs from PostgreSQL's:
   `CASE`'s branches no row takes.
 
 `conformance/engines/dax-sql-polars/adapter.mjs` runs the suite on Polars over the CSVs
-(`worker.py`, one process for each model), against DuckDB's known lists and its own (FORMAT,
-SUBSTITUTE's instance, en-US text as a date, CALENDARAUTO not written for Polars yet; four
-LASTNONBLANK-of-a-date queries past 30 s). `polars.yml` runs it on each push that changes the
+(`worker.py`, one process for each model), against DuckDB's known lists (shared: a query it answers that
+DuckDB does not is no error) and its own (one query ordered by a float its rows tie at, flaky). `polars.yml` runs it on each push that changes the
 compiler or the suite, on Polars built from its main branch: `polars-main.yml` builds it daily
 when main has moved (and by hand), publishes its wheels as the release `polars-main`, and runs
 `polars.yml` on them.

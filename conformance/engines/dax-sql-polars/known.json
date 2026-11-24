@@ -1,5 +1,3 @@
 [
-  {"id":"contoso/format/format-custom-number-patterns","reason":"Polars: FORMAT with many number patterns in one query is past Polars' SQL parser (nested only so deep, and no value bound once: each pattern's digits written out at each use, megabytes of SQL)"},
-  {"id":"contoso/format/format-named-number-formats","reason":"Polars: FORMAT with many number patterns in one query is past Polars' SQL parser (nested only so deep, and no value bound once: each pattern's digits written out at each use, megabytes of SQL)"},
   {"id":"aac/dashboard/dashboard-capacityfactor-1y-all","reason":"flaky: ordered by a capacity factor a fuel's total and its one unit tie at, which Polars' sum (in chunks, in parallel) gives in other last digits from run to run: the two rows in either order"}
 ]

@@ -29,6 +29,8 @@ export class DataFusionDialect extends PostgresDialect {
   materialized = '';
   subqueryInCase = true;
   flatSql = true;
+  // A CASE's branches no row takes are computed too: DAX's runtime errors are blanks.
+  computesEveryBranch = true;
   seriesBoundsAsSubqueries = true;
   keysTogether = null;
 

@@ -237,12 +237,12 @@ The plan is made of simple operators any engine can run, and nothing else (no SQ
   length, substring, extract_year, add_days, add_months, date_trunc_month, date_diff_day, …).
 - **Aggregates:** SUM, AVG, MIN, MAX, COUNT, COUNT(*), COUNT(DISTINCT), STRING_AGG, MEDIAN.
 
-A query plan raises no error, by design: DAX's runtime errors are not relational, and an
-engine's SQL has no error function to raise one with (DuckDB's aside). A fixed decimal past
-its range is rounded all the same, several values where one is expected (a scalar subquery's
-table) give the least, a percentile's rank outside 1..n is blank. The suite's queries that
-expect those errors are on `conformance/engines/dax-sql/known-plan.json`, beside `known.json`,
-for the plan's SQL. The optimizer's last pass (`passes/standard.js`) writes DAX's operators,
+DAX's runtime errors are in the plan: a fixed decimal past its range, several values where one
+is expected (a scalar subquery's table), a percentile's rank outside 1..n are an `error` call
+in the branch of a CASE that takes them. Substrait has no error function: it is a named lambda
+whose body casts the message (a text no number reads as) to a number, which fails. Each dialect
+writes its own (DuckDB's `error()`, a failing cast on T-SQL and PostgreSQL); Polars and
+DataFusion compute a CASE's branches no row takes, so there it is a blank (their known lists). The optimizer's last pass (`passes/standard.js`) writes DAX's operators,
 functions and aggregates with those: a blank compared as 0 is a COALESCE, DIVIDE a NULLIF, a count of no rows
 a NULLIF of COUNT, DISTINCTCOUNT a COUNT(DISTINCT) and a count of the blank, a fixed decimal a
 round to four places, a date's serial number microseconds from day zero, a percentile the
@@ -282,19 +282,19 @@ pruning (`prune.js`: each relation keeps the columns something above it reads; a
 its columns, a grouping all its keys).
 `planSql(query)` writes the query plan in a dialect's SQL.
 
-**DuckDB's SQL is the plan's.** `compile` lowers each statement with the compiler's decisions
-built in (`lower.js`'s `Fusion`, emit.js's ported: a level's measures over the same rows one
-grouping by its keys; a table filter that reads the keys a mapping of (keys, value) computed
-once; the fact grouped by its join keys before the dimensions, with a semi-join of each
-dimension's condition; the same for an iterator's, a FILTER's and an ADDCOLUMNS' rows). DuckDB is
-given the plan correlated, before decorrelation, and unnests its applies and EXISTS itself. The
-passes it takes are the generic ones: correlated fusion (`fuse-applies.js`), exact sums, sharing,
-inlining, renames and pruning. Its scalars stay DAX's, written by the emitter's scalar writer,
-so DAX's runtime errors are raised. Of a calculation group's two forms, the smaller plan after
-the passes is kept. A column is named by its order in the query (`_c1`, `_c2`, …), so a query
-compiles to the same SQL each time. `emit.js` compiles a query the lowering does not take,
-`{ viaPlan: false }` (and `optimize: false`), and T-SQL and PostgreSQL. Speed (`perf.yml`) holds
-the plan's SQL to `emit.js`'s on each push, by the same rules as against the commit before.
+**Every engine's SQL is the plan's, through Substrait.** `compile` lowers each statement with the
+compiler's decisions built in (`lower.js`'s `Fusion`, emit.js's ported: a level's measures over
+the same rows one grouping by its keys; a table filter that reads the keys a mapping of (keys,
+value) computed once; the fact grouped by its join keys before the dimensions, with a semi-join
+of each dimension's condition; the same for an iterator's, a FILTER's and an ADDCOLUMNS' rows),
+writes the plan as Substrait (`substrait.js`), reads it back (`substrait-read.js`) and writes the
+dialect's SQL from what it read. DuckDB is given the plan correlated, before decorrelation, and
+unnests its applies and EXISTS itself (correlated fusion, the standard scalars, exact sums,
+sharing, inlining, renames and pruning); every other engine the plan unnested. Of a calculation
+group's two forms, the smaller plan after the passes is kept. A column is named by its order in
+the query (`_c1`, `_c2`, …), so a query compiles to the same SQL each time. `emit.js` is the
+check: `{ viaPlan: false }` (and `optimize: false`); `agree.mjs` holds the two to the same rows,
+and Speed (`perf.yml`) holds the plan's SQL to `emit.js`'s on each push.
 
 **The correlated plan, unnested** (`unnest.js`, `planSql(query, { unnest: true })`): DuckDB's plan
 (fused, its scalars standard) with no apply and no correlated EXISTS, for an engine that does not

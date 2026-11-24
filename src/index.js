@@ -182,20 +182,21 @@ export function createCompiler(input, options = {}) {
   }
 
   const cache = new Map();
-  // DuckDB's SQL is the query plan's (lower.js): correlated, as DuckDB unnests it, its measures
-  // fused, a subtree held twice one definition, its columns pruned; its scalars DAX's (the
-  // emitter's writer: DAX's runtime errors raised, which the standard plan has none of). A query
-  // the plan does not take is compiled as before. { viaPlan: false }: compiled as before.
-  const viaPlan = dialect.name === 'duckdb' && options.viaPlan !== false && options.optimize !== false;
+  // Every dialect's SQL is the query plan's (lower.js), written from it as Substrait (substrait.js)
+  // read back (substrait-read.js): nothing reaches the SQL that the Substrait does not carry.
+  // DuckDB is given the plan correlated (it unnests it itself), every other engine the plan
+  // unnested (passes/unnest.js). { viaPlan: false } or { optimize: false }: the emitter's SQL
+  // (emit.js: a check, not a mode to run).
+  const viaPlan = options.viaPlan !== false && options.optimize !== false;
+  const pipeline = dialect.name === 'duckdb' ? correlated : unnested;
   const planned = opts => statements => statements.map(s => {
     const o = { ...opts, calcColumn, calcTable, security };
-    let p;
-    try { p = new Lowerer(model, o).query(s); } catch (err) { if (err.code !== 'UNSUPPORTED') throw err; return emit(opts)([s])[0]; }
+    const p = new Lowerer(model, o).query(s);
+    const passed = pipeline(p.plan);
+    const plan = readSubstrait(JSON.parse(JSON.stringify(toSubstrait(passed).plan)), model, { columns: p.columns, castOutput: options.castOutput });
     const ps = new PlanSql(model, dialect, o);
-    const passed = prune(renames(inline(share(exact(fuseApplies(p.plan))))));
-    const sql = ps.query({ ...p, plan: passed });
-    // Its size (the smaller of a calculation group's two forms is kept): the plan's as DuckDB is
-    // given it, after the passes.
+    const sql = ps.query({ ...p, plan });
+    // Its size (the smaller of a calculation group's two forms is kept): the plan's, after the passes.
     return { sql, ctes: [], body: sql, aliases: ps.n, ordered: p.ordered, columns: p.columns, size: planSize(passed) };
   });
   const emit = opts => statements => statements.map(s => {

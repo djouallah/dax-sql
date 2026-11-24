@@ -237,6 +237,9 @@ export class PlanSql extends Emitter {
       }
     }
     switch (name) {
+      // DAX's runtime error: the dialect's (of the value's type), or a blank where an engine
+      // computes a CASE's branches no row takes (Polars, DataFusion: it would always fail).
+      case 'error': return d.computesEveryBranch ? `CAST(NULL AS ${d.type(t)})` : d.err ? d.err(x, t) : d.fn('error', a, nodes);
       case 'strpos': return ts ? `CHARINDEX(${y}, ${x})` : pg ? `strpos(${x}, ${y})` : `instr(${x}, ${y})`;
       case 'substring_from': return ts ? `SUBSTRING(${x}, ${y}, LEN(${x}))` : d.name === 'postgres' ? `substr(${x}, CAST(${y} AS INTEGER))` : `substring(${x}, ${y})`;
       case 'regexp_replace': return `regexp_replace(${x}, ${y}, ${z}, 'g')`;

@@ -53,6 +53,8 @@ export class PolarsDialect extends PostgresDialect {
   // Each relation a SELECT reads a CTE of its own: Polars' parser takes subqueries nested only
   // so deep (a calculation group's plan is past it).
   flatSql = true;
+  // A CASE's branches no row takes are computed too: DAX's runtime errors are blanks.
+  computesEveryBranch = true;
 
   // A blank-safe key: = of each side with a blank as a value of its type no data holds (Polars
   // joins on IS NOT DISTINCT FROM tens of times slower than on =: repros.py; past 30 s for a

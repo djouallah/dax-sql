@@ -18,7 +18,7 @@ const key = (f, n) => `${f}:${n}`;
 const INV_OPS = new Map(Object.entries(OPS).map(([op, [f, n]]) => [key(f, n), op]));
 const INV_FNS = new Map(Object.entries(FNS).map(([name, [f, n]]) => [key(f, n), name]));
 // The plan's functions written as lambdas, and its operators.
-const CALL = /^(extract|date_trunc|date_diff)_\w+$|^(extract_dow|add_microseconds|make_date|trunc|idiv|split_part|substring_from|add_days|add_months)$/;
+const CALL = /^(extract|date_trunc|date_diff)_\w+$|^(extract_dow|add_microseconds|make_date|trunc|idiv|split_part|substring_from|add_days|add_months|error)$/;
 const ARITH = new Set(['add', 'sub', 'mul', 'div', 'neg']);
 const lit = (v, t) => ({ k: 'lit', v, t, nn: v !== null });
 

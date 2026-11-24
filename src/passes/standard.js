@@ -63,7 +63,7 @@ function R(r) {
 // distinct rows of those columns (δ), counted by the grouping's keys, joined back to its groups.
 // A percentile: the values numbered in order by the grouping's keys (a column's blanks left out,
 // an expression's first), the two around the rank k(n - 1) + 1 (INC) or k(n + 1) (EXC), and
-// the value between them as the rank is; a rank outside 1..n an error, no values blank.
+// the value between them as the rank is; a rank outside 1..n an error (DAX's), no values blank.
 const ROWS = new Set(['dcount', 'dcount0', 'dcountnb', 'hasone']);
 const PCT = new Set(['pct_inc', 'pct_exc', 'pctx_inc', 'pctx_exc']);
 function percentile(r, as) {
@@ -86,10 +86,11 @@ function percentile(r, as) {
     const [rr, lo, hi] = ['rank', 'lo', 'hi'].map(nm => P.newCol(nm, 'double'));
     aggs.push({ col: rr, fn: 'max', arg: rank, extra: {} }, { col: lo, fn: 'max', arg: at(0), extra: {} }, { col: hi, fn: 'max', arg: at(1), extra: {} });
     const R = P.ref(rr), low = coalesce(P.ref(lo), lit(0, 'int'));
-    // A rank outside 1..n: blank (DAX's error, by design: a plan raises none).
+    // A rank outside 1..n: DAX's error.
+    const range = a.fn.endsWith('_inc') ? 'PERCENTILE.INC: k must lie in 0..1' : 'PERCENTILE.EXC: k must lie in 1/(n + 1)..n/(n + 1)';
     values.push(caseOf([
       [cond('isnull', [P.ref(nn)]), lit(null, a.col.t)],
-      [cond('or', [cond('lt', [R, lit(1, 'int')]), cond('gt', [R, P.ref(nn)])]), lit(null, a.col.t)],
+      [cond('or', [cond('lt', [R, lit(1, 'int')]), cond('gt', [R, P.ref(nn)])]), error(range, a.col.t)],
       [cond('eq', [R, call('floor', [R], 'double')]), P.ref(lo)],
     ], pop('add', [low, pop('mul', [pop('sub', [R, call('floor', [R], 'double')], 'double'), pop('sub', [P.ref(hi), low], 'double')], 'double')], 'double'), a.col.t));
   });
@@ -160,8 +161,8 @@ function plainAggregates(r) {
       case 'countblank': v = nonzero(agg('sum', blanks(x))); break;
       case 'hasone': if (x.k !== 'fn') v = coalesce(cond('eq', [pop('add', [agg('count_distinct', x), agg('max', blanks(x))], 'int'), one]), lit(false, 'bool')); break;
       case 'onlyone': v = caseOf([[cond('eq', [agg('count_star', null), one]), agg('min', x, a.col.t)]], lit(null, a.col.t), a.col.t); break;
-      // Several values where one is expected: the least (DAX's error, by design: a plan raises none).
-      case 'single': v = agg('min', x, a.col.t); break;
+      // Several values where one is expected: DAX's error.
+      case 'single': v = caseOf([[cond('gt', [agg('count_star', null), one]), error(MANY, a.col.t)]], agg('min', x, a.col.t), a.col.t); break;
       case 'concat': aggs.push({ ...a, fn: 'string_agg' }); break;
     }
     if (v) out.push({ col: a.col, expr: v });
@@ -178,6 +179,10 @@ const lit = (v, t) => ({ k: 'lit', v, t, nn: v !== null });
 const pop = (op, a, t, nn = false, extra = {}) => ({ k: 'pop', op, a, t, nn, ...extra });
 const cond = (op, a) => pop(op, a, 'bool', true);
 const call = (name, a, t, nn = false) => pop('call', a, t, nn, { name });
+// DAX's runtime error: the query fails with the message.
+const error = (msg, t) => call('error', [lit(msg, 'string')], t);
+const MANY = 'A table of multiple values was supplied where a single value was expected.';
+const FIXED = 'DAX: the result of a conversion or arithmetic operation is too large or too small for a fixed decimal number';
 const cast = (x, to) => pop('cast', [x], to, x.nn, { to });
 const coalesce = (...a) => pop('coalesce', a, a.find(x => x.t && x.t !== 'blank')?.t ?? a[0].t, a.some(x => x.nn));
 const caseOf = (w, e, t) => ({ k: 'case', w, e, t, nn: false });
@@ -316,8 +321,10 @@ function fn(x) {
   const [p, q, s] = a;
   switch (x.name) {
     case 'isblank': return cond('isnull', [p]);
-    // A fixed decimal: four places (past its range no error, by design: a plan raises none).
-    case 'currency': return call('round', [p, lit(4, 'int')], 'decimal');
+    // A fixed decimal: four places; past its range (922337203685477.5808, as 922337203685477 and
+    // 0.5808: each a double exactly) DAX's error.
+    case 'currency': return caseOf([[cond('ge', [pop('sub', [call('abs', [p], p.t), lit(922337203685477, 'int')], p.t), lit(0.5808, 'double')]), error(FIXED, 'decimal')]],
+      call('round', [p, lit(4, 'int')], 'decimal'), 'decimal');
     // Values of different kinds together (a number or a text): as text, as DAX writes them.
     case 'coalesce': return x.t === 'variant' ? coalesce(...a.map(asText)) : coalesce(...a);
     case 'divide': return a.length === 2 ? pop('div', [p, pop('nullif', [q, lit(0, 'int')], q.t)], x.t)

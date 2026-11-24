@@ -50,7 +50,7 @@ jobs:
           NODE_OPTIONS: --max-old-space-size=6144
         run: |
           node conformance/runner/run.mjs --adapter "node conformance/engines/dax-sql-datafusion/adapter.mjs ." \
-            --known conformance/engines/dax-sql-datafusion/known.json --known-shared conformance/engines/dax-sql/known.json,conformance/engines/dax-sql/known-plan.json \
+            --known conformance/engines/dax-sql-datafusion/known.json --known-shared conformance/engines/dax-sql/known.json \
             --report "$RUNNER_TEMP/datafusion.json" > "$RUNNER_TEMP/run.txt" 2>&1 || true
           tail -40 "$RUNNER_TEMP/run.txt"
           grep -E ": (timeout|crash)" "$RUNNER_TEMP/run.txt" || true

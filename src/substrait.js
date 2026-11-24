@@ -315,6 +315,8 @@ export function toSubstrait(plan, options = {}) {
     substring_from: p => call(['string', 'substring'], [p[0], p[1], call(['string', 'char_length'], [p[0]], 'int')], 'string'),
     add_days: (p, x) => call(['datetime', 'add'], [p[0], interval(p[1], DAY1)], x.t),
     add_months: (p, x) => call(['datetime', 'add'], [p[0], interval(p[1], MONTH1)], x.t),
+    // DAX's runtime error: its message (a text no number reads as) cast to a number, which fails.
+    error: (p, x) => ({ cast: { type: typeOf(x.t), input: { cast: { type: typeOf('int'), input: p[0], failureBehavior: 'FAILURE_BEHAVIOR_THROW_EXCEPTION' } }, failureBehavior: 'FAILURE_BEHAVIOR_THROW_EXCEPTION' } }),
   };
   const named = (x, S) => {
     if (FNS[x.name]) return call(FNS[x.name], x.a.map(S), x.t, x.nn);

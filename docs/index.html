@@ -135,6 +135,23 @@ td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .runbox { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding: 10px 12px; border: 1px dashed var(--line-2); border-radius: 10px; }
 
+/* the engines */
+#engines.view.on { gap: 14px; padding: 18px 0 12px; }
+.engbar { display: flex; gap: 14px; align-items: baseline; flex-wrap: wrap; }
+.engbar h2 { margin: 0; font-size: 18px; }
+.enggrid { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 16px; height: calc(100vh - 200px); min-height: 420px; }
+.engl, .engr { min-height: 0; overflow: auto; }
+.engl tbody tr { cursor: pointer; }
+.engl tbody tr[aria-selected="true"] td { background: var(--sunken); }
+.engl td small { color: var(--muted); }
+.engr { border: 1px solid var(--line); border-radius: 10px; background: var(--surface); padding: 12px 14px; }
+.engr h4 { margin: 0 0 8px; }
+.engr ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.engr li { font-size: 13px; }
+.engr li code { font-size: 12px; }
+.engr li .why { color: var(--ink-2); display: block; margin-top: 2px; }
+@media (max-width: 900px) { .enggrid { grid-template-columns: 1fr; height: auto; } .engl, .engr { overflow: visible; } }
+
 /* the walkthrough */
 .demo-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .stepper { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; flex: 1; }
@@ -256,6 +273,7 @@ kbd { font: 11px var(--mono); border: 1px solid var(--line-2); border-bottom-wid
     <span class="ind" aria-hidden="true"></span>
     <a href="#problem">The problem</a>
     <a href="#play">Playground</a>
+    <a href="#engines">Ossie compiler</a>
   </nav>
 </div></div>
 
@@ -360,6 +378,18 @@ kbd { font: 11px var(--mono); border: 1px solid var(--line-2); border-bottom-wid
       <div class="sqlhead"><h4>The SQL dax-sql emitted</h4><span class="meta" id="pg-meta"></span><button class="btn" type="button" id="pg-copy">Copy SQL</button></div>
       <div id="pg-sql"></div>
     </div>
+  </div>
+</section>
+
+<!-- ============================== 3. the engines -->
+<section id="engines" class="view">
+  <div class="engbar">
+    <h2>The compiler on each engine</h2>
+    <span class="sub" id="eng-sub">The conformance suite's queries, each answered by Power BI, compiled by dax-sql and run on each engine (the latest CI run of each). Differs: the engine's rows are other than Power BI's.</span>
+  </div>
+  <div class="enggrid">
+    <div class="engl tw"><table id="eng-table"><thead><tr><th>Engine</th><th>Query plan</th><th class="n">Match</th><th class="n" title="Rows other than Power BI's">Differs</th><th class="n">Error</th><th class="n">Unsupported</th><th class="n">Of them known</th></tr></thead><tbody></tbody></table></div>
+    <div class="engr" id="eng-detail"><p class="sub">Choose an engine to see the queries it does not answer as Power BI does.</p></div>
   </div>
 </section>
 

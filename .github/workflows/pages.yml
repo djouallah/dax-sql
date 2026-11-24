@@ -6,11 +6,17 @@ name: Pages
 on:
   push:
     branches: [main]
-    paths: ['docs/**', 'src/**', 'formats/tmsl.js', 'test/fixtures/contoso.js', '.github/workflows/pages.yml']
+    paths: ['docs/**', 'src/**', 'formats/tmsl.js', 'test/fixtures/contoso.js', 'conformance/tools/site-results.mjs', '.github/workflows/pages.yml']
+  # The "Ossie compiler" tab: the engines' latest results, deployed again when one has new ones.
+  workflow_run:
+    workflows: [Conformance, T-SQL, PostgreSQL, Polars, Substrait]
+    types: [completed]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: read
+  actions: read   # the engines' reports, the artifacts of their latest runs
   pages: write
   id-token: write
 
@@ -37,6 +43,20 @@ jobs:
           cp formats/tmsl.js _site/formats/
           cp test/fixtures/contoso.js _site/fixtures/
           touch _site/.nojekyll
+      # Each engine's latest report on main (the latest completed run that has the artifact), as
+      # results.json for the "Ossie compiler" tab.
+      - name: The engines' results
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          A="$RUNNER_TEMP/reports"; mkdir -p "$A"
+          for pair in conformance.yml:plan-report tsql.yml:tsql-report postgres.yml:postgres-plan-report-unnest polars.yml:polars-report substrait.yml:substrait-unnest; do
+            wf=${pair%%:*}; art=${pair#*:}
+            for id in $(gh run list -R "$GITHUB_REPOSITORY" --workflow "$wf" --branch main --status completed --limit 10 --json databaseId -q '.[].databaseId'); do
+              gh run download "$id" -R "$GITHUB_REPOSITORY" -n "$art" -D "$A/$art" >/dev/null 2>&1 && break
+            done
+          done
+          node conformance/tools/site-results.mjs "$A" _site/results.json
       - name: Every example compiles
         run: |
           cat > /tmp/check.mjs <<'EOF'

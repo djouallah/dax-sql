@@ -42,6 +42,45 @@ function show() {
   }
   moveInd();
   if (view.id === 'play') { loadEngine(); pgUpdate(); }
+  if (view.id === 'engines') loadEngines();
+}
+
+// ---------------------------------------------------------------- the engines (CI's results)
+let engines = null;
+async function loadEngines() {
+  if (engines) return;
+  engines = [];
+  const body = $('#eng-table tbody');
+  try {
+    const r = await fetch('results.json', { cache: 'no-cache' });
+    engines = (await r.json()).engines;
+  } catch {
+    body.innerHTML = '<tr><td colspan="7">No results yet: CI writes them when the site is deployed.</td></tr>';
+    return;
+  }
+  body.innerHTML = engines.map((e, i) => {
+    const t = e.total;
+    return `<tr data-i="${i}"><td><b>${esc(e.engine)}</b></td><td>${esc(e.path)}</td>
+      <td class="n"><b>${t.match}</b></td><td class="n">${t.fail}</td><td class="n">${t.error}</td><td class="n">${t.unsupported}</td><td class="n">${t.known}</td></tr>`;
+  }).join('');
+  for (const tr of body.querySelectorAll('tr')) tr.addEventListener('click', () => engDetail(+tr.dataset.i));
+}
+function engDetail(i) {
+  for (const tr of $$('#eng-table tbody tr')) tr.setAttribute('aria-selected', String(+tr.dataset.i === i));
+  const e = engines[i];
+  if (e.reference) {
+    $('#eng-detail').innerHTML = `<h4>Power BI</h4><p class="sub">The reference: each query's answer is Power BI's, recorded from Power BI itself. Every engine below is held to it.</p>`;
+    return;
+  }
+  const chip = o => (o === 'fail' ? '<span class="chip differs"><i>≠</i>differs</span>' : o === 'error' ? '<span class="chip refused"><i>!</i>error</span>' : '<span class="chip partial"><i>–</i>unsupported</span>');
+  const item = m => `<li>${chip(m.outcome)} <code>${esc(m.id)}</code>${m.reason ? `<span class="why">${esc(m.reason)}</span>` : ''}</li>`;
+  // Errors, then unsupported, then different rows; in each, those not on the engine's known list
+  // first (marked), then the known ones with their reasons.
+  const groups = [['error', 'Errors'], ['unsupported', 'Unsupported'], ['fail', 'Different rows']].map(([o, title]) => {
+    const ms = e.misses.filter(m => m.outcome === o).sort((a, b) => a.known - b.known);
+    return ms.length ? `<p class="sub"><b>${title} (${ms.length})</b></p><ul>${ms.map(m => item(m).replace('<code>', m.known ? '<code>' : '<b>not on its known list</b> <code>')).join('')}</ul>` : '';
+  });
+  $('#eng-detail').innerHTML = `<h4>${esc(e.engine)}, ${esc(e.path)}: the ${e.misses.length} queries it does not answer as Power BI does</h4>${groups.join('')}`;
 }
 addEventListener('hashchange', () => { show(); scrollTo({ top: 0 }); });
 addEventListener('resize', moveInd);

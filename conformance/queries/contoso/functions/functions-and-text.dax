@@ -1,0 +1,3 @@
+// note: a text where AND wants TRUE or FALSE
+// expect: error
+EVALUATE ROW("x", AND(1, "a"))

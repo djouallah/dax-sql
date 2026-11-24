@@ -252,6 +252,10 @@ defined once as standard functions (`passes/text.js`), so the plan holds standar
 a number with a fraction or a date as DAX writes it (15 significant digits as a whole number, the
 point where the exponent puts it; a date en-US), FORMAT and FIXED (the pattern, parsed, written
 out), COMBINEVALUES, SUBSTITUTE's instance number, text read as a date (en-US forms too), UNICODE.
+TODAY, NOW, UTCTODAY and UTCNOW are Substrait's execution context (its current date, its
+current timestamp read in the session's zone or in UTC, once for the plan), each named for the
+engine's own. RAND, RANDBETWEEN, GCD, LCM and UNICHAR are refused (UNSUPPORTED): Substrait has no
+function or expression of any, and every SQL is written from its plan.
 A value a definition reads more than once is bound: a column of a projection the standard pass
 puts below the relation whose scalars read it. A double is never cast to text (engines each write
 one their own way), only a whole number.

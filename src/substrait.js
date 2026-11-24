@@ -56,7 +56,7 @@ export const FNS = {
   greatest: ['comparison', 'greatest'], least: ['comparison', 'least'],
   upper: ['string', 'upper'], lower: ['string', 'lower'], replace: ['string', 'replace'], strpos: ['string', 'strpos'], substring: ['string', 'substring'],
   length: ['string', 'char_length'], left: ['string', 'left'], right: ['string', 'right'], trim: ['string', 'trim'], contains: ['string', 'contains'],
-  regexp_replace: ['string', 'regexp_replace'],
+  regexp_replace: ['string', 'regexp_replace'], rept: ['string', 'repeat'], fact: ['arithmetic', 'factorial'],
 };
 // dax-sql's own functions: none.
 export const EXTENSION = {};
@@ -292,6 +292,11 @@ export function toSubstrait(plan, options = {}) {
   const regexText = s => String(s).replace(/[\\^$.*+?()[\]{}|]/g, m => `\\${m}`);
   // A plan function's definition in standard functions, of its parameters p (as Substrait
   // expressions) and its arguments' plan nodes.
+  let context = false;
+  const local = zone => {
+    context = true;
+    return { scalarFunction: { functionReference: fn(['datetime', 'local_timestamp']), arguments: [{ value: { executionContextVariable: { currentTimestamp: { precision: 6, nullability: REQ } } } }, { value: zone }], outputType: typeOf('datetime', true) } };
+  };
   const BODY = {
     extract_dow: p => extract('SUNDAY_DAY_OF_WEEK', p[0], 'ZERO'),
     add_microseconds: (p, x) => call(['datetime', 'add'], [p[0], interval(p[1], { intervalDayToSecond: { days: 0, seconds: 0, subseconds: '1', precision: 6 } })], x.t),
@@ -316,6 +321,13 @@ export function toSubstrait(plan, options = {}) {
     add_days: (p, x) => call(['datetime', 'add'], [p[0], interval(p[1], DAY1)], x.t),
     add_months: (p, x) => call(['datetime', 'add'], [p[0], interval(p[1], MONTH1)], x.t),
     // DAX's runtime error: its message (a text no number reads as) cast to a number, which fails.
+    // The date and time the query runs at: Substrait's execution context (evaluated once for the
+    // plan, its execution_behavior says), the current timestamp read in the session's time zone or
+    // in UTC.
+    today: () => { context = true; return { cast: { type: typeOf('datetime', true), input: { executionContextVariable: { currentDate: { nullability: REQ } } }, failureBehavior: 'FAILURE_BEHAVIOR_THROW_EXCEPTION' } }; },
+    now: () => local({ executionContextVariable: { currentTimezone: { nullability: REQ } } }),
+    utcnow: () => local({ literal: { string: 'Etc/UTC' } }),
+    utctoday: () => ({ cast: { type: typeOf('datetime', true), input: { cast: { type: { date: { nullability: REQ } }, input: local({ literal: { string: 'Etc/UTC' } }), failureBehavior: 'FAILURE_BEHAVIOR_THROW_EXCEPTION' } }, failureBehavior: 'FAILURE_BEHAVIOR_THROW_EXCEPTION' } }),
     error: (p, x) => ({ cast: { type: typeOf(x.t), input: { cast: { type: typeOf('int'), input: p[0], failureBehavior: 'FAILURE_BEHAVIOR_THROW_EXCEPTION' } }, failureBehavior: 'FAILURE_BEHAVIOR_THROW_EXCEPTION' } }),
   };
   const named = (x, S) => {
@@ -513,6 +525,7 @@ export function toSubstrait(plan, options = {}) {
     relations,
     executionBehavior: { variableEvalMode: 'VARIABLE_EVALUATION_MODE_PER_PLAN' },
     ...(lambdas.length ? { namedLambdas: lambdas } : {}),
+    ...(context ? { executionBehavior: { variableEvalMode: 'VARIABLE_EVALUATION_MODE_PER_PLAN' } } : {}),
   };
   return { plan: substrait, dax: [] };
 }

@@ -1,0 +1,2 @@
+// note: EVEN and ODD away from zero, of fractions, negatives and zero (ODD(0))
+EVALUATE ROW("e1", EVEN(-3.5), "e2", EVEN(-1), "e3", EVEN(0), "e4", EVEN(0.5), "e5", EVEN(2.2), "e6", EVEN(3), "o1", ODD(-3.5), "o2", ODD(-1), "o3", ODD(0), "o4", ODD(0.5), "o5", ODD(2.2), "o6", ODD(3))

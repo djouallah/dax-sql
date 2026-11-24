@@ -1,0 +1,2 @@
+// note: FACT and REPT of a fraction (truncated or rounded), and of zero
+EVALUATE ROW("f0", FACT(0), "f5", FACT(5), "f59", FACT(5.9), "r0", REPT("ab", 0), "r27", REPT("ab", 2.7), "r3", REPT("ab", 3))

@@ -1,0 +1,3 @@
+// note: ERROR fails the query with its message
+// expect: error
+EVALUATE ROW("x", ERROR("boom"))

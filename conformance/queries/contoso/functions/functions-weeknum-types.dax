@@ -1,0 +1,8 @@
+// note: WEEKNUM of every return type (1, 2, 11-17, 21) across two year ends
+EVALUATE
+ADDCOLUMNS(
+    UNION(CALENDAR(DATE(2021, 12, 25), DATE(2022, 1, 10)), CALENDAR(DATE(2023, 12, 25), DATE(2024, 1, 10)), CALENDAR(DATE(2026, 12, 25), DATE(2027, 1, 10))),
+    "w", WEEKNUM([Date]), "w1", WEEKNUM([Date], 1), "w2", WEEKNUM([Date], 2), "w11", WEEKNUM([Date], 11), "w12", WEEKNUM([Date], 12),
+    "w13", WEEKNUM([Date], 13), "w14", WEEKNUM([Date], 14), "w15", WEEKNUM([Date], 15), "w16", WEEKNUM([Date], 16), "w17", WEEKNUM([Date], 17), "w21", WEEKNUM([Date], 21)
+)
+ORDER BY [Date]

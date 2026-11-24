@@ -1,0 +1,2 @@
+// note: TODAY, NOW, UTCTODAY and UTCNOW, as conditions that hold whenever the query runs
+EVALUATE ROW("t", TODAY() > DATE(2020, 1, 1), "n", NOW() >= TODAY(), "u", ABS(NOW() - UTCNOW()) < 1, "d", ABS(INT(UTCTODAY() - TODAY())) <= 1, "un", UTCNOW() >= UTCTODAY(), "y", YEAR(TODAY()) >= 2026)

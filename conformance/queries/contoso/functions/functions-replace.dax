@@ -1,0 +1,2 @@
+// note: REPLACE by position: at the start, inserting, past the end, deleting
+EVALUATE ROW("a", REPLACE("abcd", 1, 1, "x"), "b", REPLACE("abcd", 2, 0, "Z"), "c", REPLACE("abcd", 3, 5, ""), "d", REPLACE("abcd", 1, 3, "xyz"), "e", REPLACE("abcd", 5, 1, "q"))

@@ -7,6 +7,7 @@
 // a date, UNICODE); FORMAT is a named function of the plan's that each dialect writes
 // (format_number, format_date).
 import * as P from '../plan.js';
+import { semantic, unsupported } from '../errors.js';
 import { mapKids, mapScalars } from './decorrelate.js';
 import { clone } from './clone.js';
 import { definitions, refsIn } from './text.js';
@@ -215,7 +216,8 @@ const N = v => (v.t === 'int' && (v.k === 'lit' || v.k === 'ref') ? cast(v, 'int
 function bool(v, pred) {
   if (v.t === 'bool' || v.t === 'blank' || v.t === 'variant') return v.nn || pred ? v : coalesce(v, lit(false, 'bool'));
   if (isNum(v.t)) return cond('ne', [coalesce(v, lit(0, 'int')), lit(0, 'int')]);
-  return null;
+  // (A text or a date is no condition: DAX's error, as the compiler gave it before the plan.)
+  throw semantic(`a ${v.t} cannot be used as TRUE/FALSE`);
 }
 
 function op(x, pred) {
@@ -314,6 +316,29 @@ const fromSerial = n => call('add_microseconds', [Z0, cast(call('round', [pop('m
 const dow = v => call('extract_dow', [v], 'int');   // Sunday 0 .. Saturday 6
 const tcat = (...xs) => xs.reduce((l, r) => pop('concat', [l, r], 'string', true));
 
+// WEEKNUM(date, type): weeks of the year from the week holding January 1, starting on Sunday
+// (1, 17), Monday (2, 11), Tuesday (12) .. Saturday (16); 21: ISO 8601's week (Monday first, the
+// week of its Thursday, numbered in that Thursday's year).
+const dayOfYear = v => pop('add', [call('date_diff_day', [call('date_trunc_year', [v], 'date'), v], 'int'), int(1)], 'int');
+function weeknum(d, type) {
+  const jan1 = call('date_trunc_year', [d], 'date');
+  const by = start => pop('add', [cast(call('floor', [pop('div', [pop('add', [pop('sub', [dayOfYear(d), int(1)], 'int'),
+    call('mod', [pop('add', [pop('sub', [dow(jan1), start], 'int'), int(7)], 'int'), int(7)], 'int')], 'int'), int(7)], 'double')], 'double'), 'int'), int(1)], 'int');
+  const iso = () => {
+    const thursday = call('add_days', [d, pop('sub', [int(3), call('mod', [pop('add', [dow(d), int(6)], 'int'), int(7)], 'int')], 'int')], 'date');
+    return pop('add', [cast(call('floor', [pop('div', [pop('sub', [dayOfYear(thursday), int(1)], 'int'), int(7)], 'double')], 'double'), 'int'), int(1)], 'int');
+  };
+  const START = { 1: 0, 2: 1, 11: 1, 12: 2, 13: 3, 14: 4, 15: 5, 16: 6, 17: 0 };
+  if (type.k === 'lit') {
+    if (Number(type.v) === 21) return iso();
+    if (START[Number(type.v)] == null) throw unsupported(`WEEKNUM's return type ${type.v}`);
+    return by(int(START[Number(type.v)]));
+  }
+  const t = cast(type, 'int');
+  const start = caseOf([[cond('eq', [t, int(1)]), int(0)], [cond('eq', [t, int(2)]), int(1)], [cond('eq', [t, int(17)]), int(0)]], pop('sub', [t, int(11)], 'int'), 'int');
+  return caseOf([[cond('eq', [t, int(21)]), iso()]], by(start), 'int');
+}
+
 function fn(x) {
   const a = x.a.map(v => L(v));
   const keep = () => ({ ...x, a });
@@ -321,6 +346,23 @@ function fn(x) {
   const [p, q, s] = a;
   switch (x.name) {
     case 'isblank': return cond('isnull', [p]);
+    // DAX's ERROR: the query fails with its message.
+    case 'error': return call('error', [T(0)], x.t === 'variant' ? 'string' : x.t);
+    // The date and time the query runs at (Substrait's execution context: its current date, its
+    // current timestamp in the session's zone or in UTC), each named, as each engine has its own.
+    case 'today': case 'now': case 'utctoday': case 'utcnow': return call(x.name, [], 'datetime', true);
+    // REPT and FACT of a number's whole part (DAX truncates it).
+    case 'rept': return call('rept', [T(0), cast(call('trunc', [q], 'double'), 'int')], 'string');
+    case 'fact': return call('fact', [cast(call('trunc', [p], 'double'), 'int')], 'int');
+    // EVEN and ODD: away from zero, to the next even or odd whole number (ODD(0) is 1).
+    case 'even': return cast(pop('mul', [pop('mul', [call('sign', [p], 'double'), call('ceil', [pop('div', [call('abs', [p], 'double'), int(2)], 'double')], 'double')], 'double'), int(2)], 'double'), 'int');
+    case 'odd': {
+      const up = v => pop('sub', [pop('mul', [call('ceil', [pop('div', [pop('add', [v, int(1)], 'double'), int(2)], 'double')], 'double'), int(2)], 'double'), int(1)], 'double');
+      return cast(caseOf([[cond('lt', [p, int(0)]), pop('neg', [up(call('abs', [p], 'double'))], 'double')]], up(p), 'double'), 'int');
+    }
+    // REPLACE: num characters from start replaced by the new text.
+    case 'replace': return tcat(call('left', [T(0), pop('sub', [q, int(1)], 'int')], 'string'), T(3), call('substring_from', [T(0), pop('add', [q, s], 'int')], 'string'));
+    case 'weeknum': return weeknum(p, q);
     // A fixed decimal: four places; past its range (922337203685477.5808, as 922337203685477 and
     // 0.5808: each a double exactly) DAX's error. The value bound once (named twice, an engine
     // would compute it in a row of its own, outside the branch a DIVIDE takes it in).

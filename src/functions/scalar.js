@@ -243,6 +243,9 @@ function pathType(c, a, env) {
 }
 
 function blankFn() { return ir.BLANK; }
+// A function Substrait (every SQL is written from its plan) has nothing for, of its standard
+// functions and expressions: refused, by name.
+const noSubstrait = (name, what) => () => { throw unsupported(`${name} (Substrait has no function or expression of ${what})`); };
 function error(c, args, env) { return ir.fn('error', [s(c, args[0], env)], 'variant'); }
 function ifError(c, args, env) { return s(c, args[0], env); }   // SQL has no error values: the value
 function isType(test) { return (c, args, env) => ir.lit(test(s(c, args[0], env).t)); }
@@ -267,8 +270,8 @@ export const scalar = {
   QUOTIENT: plain('quotient', 'int', { arity: 2 }), ROUND: round('round'), ROUNDUP: round('roundup'), ROUNDDOWN: round('rounddown'),
   INT: plain('int', 'int'), TRUNC: round('trunc'), CEILING: plain('ceiling', 'double'), FLOOR: plain('floor', 'double'),
   'ISO.CEILING': plain('ceiling', 'double'), MROUND: plain('mround', 'double'), PI: () => ir.lit(Math.PI, 'double'),
-  RAND: () => ir.fn('rand', [], 'double', { nn: true }), RANDBETWEEN: plain('randbetween', 'int'),
-  GCD: plain('gcd', 'int'), LCM: plain('lcm', 'int'), FACT: plain('fact', 'int'), EVEN: plain('even', 'int'), ODD: plain('odd', 'int'),
+  RAND: noSubstrait('RAND', 'a random number'), RANDBETWEEN: noSubstrait('RANDBETWEEN', 'a random number'),
+  GCD: noSubstrait('GCD', 'a greatest common divisor'), LCM: noSubstrait('LCM', 'a least common multiple'), FACT: plain('fact', 'int'), EVEN: plain('even', 'int'), ODD: plain('odd', 'int'),
   CONVERT: convert, CURRENCY: castTo('decimal'), VALUE: plain('value', 'double'), FIXED: fixed,
   // text
   CONCATENATE: concatenate, COMBINEVALUES: combineValues, LEFT: plain('left', 'string'), RIGHT: plain('right', 'string'),
@@ -276,7 +279,7 @@ export const scalar = {
   // TRIM from SQL (`ends`): the ends only, as SQL's.
   TRIM: (c, args, env, ast) => plain(ast?.ends ? 'trim_ends' : 'trim', 'string')(c, args, env), SUBSTITUTE: substitute, REPLACE: plain('replace', 'string', { arity: 4 }),
   SEARCH: search('search'), FIND: search('find'), REPT: plain('rept', 'string'),
-  EXACT: plain('exact', 'bool', { strict: false, nn: true }), UNICHAR: plain('unichar', 'string'), UNICODE: plain('unicode', 'int'),
+  EXACT: plain('exact', 'bool', { strict: false, nn: true }), UNICHAR: noSubstrait('UNICHAR', 'the character of a code'), UNICODE: plain('unicode', 'int'),
   CONTAINSSTRING: plain('containsstring', 'bool', { strict: false, nn: true }),
   CONTAINSSTRINGEXACT: plain('containsstringexact', 'bool', { strict: false, nn: true }), FORMAT: format,
   // parent-child hierarchies

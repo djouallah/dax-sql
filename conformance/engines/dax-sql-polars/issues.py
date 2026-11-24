@@ -19,7 +19,7 @@ def run(name, f):
 df = pl.DataFrame({"d": [datetime.date(2024, 1, 1)], "ts": [datetime.datetime(2024, 1, 1)]})
 run("04 DATE = TIMESTAMP join", lambda: pl.SQLContext(t=df).execute("SELECT COUNT(*) FROM t AS a JOIN t AS b ON a.d = b.ts", eager=True).rows())
 
-run("05 generate_series 2 * INTERVAL", lambda: pl.SQLContext().execute(
+run("05 generate_series 2 * INTERVAL (#31042, fixed by #31054)", lambda: pl.SQLContext().execute(
     "SELECT * FROM generate_series(TIMESTAMP '2024-01-01', TIMESTAMP '2024-01-05', 2 * INTERVAL '1 day')", eager=True).rows())
 
 sql = "SELECT " + "CASE WHEN a > 0 THEN " * 60 + "a" + " ELSE 0 END" * 60 + " FROM t"
@@ -37,7 +37,7 @@ run("08 LATERAL with no FROM of its own", lambda: pl.SQLContext(t=t).execute(
     "SELECT o.a, x.v FROM t AS o, LATERAL (SELECT o.a + 1 AS v) AS x", eager=True).rows())
 run("08b LATERAL over a table (answers)", lambda: pl.SQLContext(t=t).execute(
     "SELECT o.a, x.v FROM t AS o, LATERAL (SELECT i.a AS v FROM t AS i WHERE i.a > o.a) AS x", eager=True).rows())
-run("09 outer row read in a derived table of a subquery", lambda: pl.SQLContext(t=t).execute(
+run("09 outer row read in a derived table of a subquery (#31058)", lambda: pl.SQLContext(t=t).execute(
     "SELECT (SELECT b.v FROM (SELECT o.a * 10 AS v) AS b) AS r FROM t AS o", eager=True).rows())
 run("10 failing CAST in a CASE branch no row takes", lambda: pl.SQLContext(t=t).execute(
     "SELECT CASE WHEN a > 5 THEN CAST('x' AS INTEGER) ELSE a END AS r FROM t", eager=True).rows())
@@ -48,13 +48,13 @@ import duckdb  # noqa: E402
 print("\n### The smallest forms, Polars and DuckDB\n")
 SMALL = [
     ("o1 outer row, subquery with no FROM", "SELECT a, (SELECT o.a + 1) AS r FROM t AS o"),
-    ("o2 outer row, derived table with no FROM", "SELECT a, (SELECT b.v FROM (SELECT o.a * 10 AS v) AS b) AS r FROM t AS o"),
+    ("o2 outer row, derived table with no FROM (#31058)", "SELECT a, (SELECT b.v FROM (SELECT o.a * 10 AS v) AS b) AS r FROM t AS o"),
     ("o3 outer row, LATERAL with no FROM", "SELECT o.a, x.v FROM t AS o, LATERAL (SELECT o.a + 1 AS v) AS x"),
     ("e1 EXISTS over a LEFT JOIN", "SELECT a FROM t AS o WHERE EXISTS (SELECT * FROM t AS l LEFT JOIN t AS r ON l.a = r.a WHERE l.a = o.a)"),
     ("e2 EXISTS OR EXISTS", "SELECT a FROM t AS o WHERE EXISTS (SELECT 1 FROM t AS i WHERE i.a = o.a) OR EXISTS (SELECT 1 FROM t AS i WHERE i.a = o.a + 1)"),
     ("e3 EXISTS two levels out", "SELECT a, (SELECT COUNT(*) FROM t AS m WHERE EXISTS (SELECT 1 FROM t AS i WHERE i.a = o.a AND i.a = m.a)) AS n FROM t AS o"),
-    ("e4 EXISTS in a derived table of a subquery", "SELECT a, (SELECT COUNT(*) FROM (SELECT * FROM t AS m WHERE EXISTS (SELECT 1 FROM t AS i WHERE i.a = m.a AND i.a = o.a)) AS s) AS n FROM t AS o"),
-    ("e5 EXISTS in a LATERAL", "SELECT o.a, x.n FROM t AS o, LATERAL (SELECT COUNT(*) AS n FROM t AS m WHERE EXISTS (SELECT 1 FROM t AS i WHERE i.a = m.a AND i.a <= o.a)) AS x"),
+    ("e4 EXISTS in a derived table of a subquery (#31059)", "SELECT a, (SELECT COUNT(*) FROM (SELECT * FROM t AS m WHERE EXISTS (SELECT 1 FROM t AS i WHERE i.a = m.a AND i.a = o.a)) AS s) AS n FROM t AS o"),
+    ("e5 EXISTS in a LATERAL (#31059)", "SELECT o.a, x.n FROM t AS o, LATERAL (SELECT COUNT(*) AS n FROM t AS m WHERE EXISTS (SELECT 1 FROM t AS i WHERE i.a = m.a AND i.a <= o.a)) AS x"),
     ("d1 date_trunc of an outer column", "SELECT ts, (SELECT COUNT(*) FROM u AS i WHERE i.ts >= date_trunc('month', o.ts)) AS n FROM u AS o"),
     ("d2 date_trunc of an outer column in a LATERAL", "SELECT o.ts, x.n FROM u AS o, LATERAL (SELECT COUNT(*) AS n FROM u AS i WHERE i.ts >= date_trunc('year', o.ts)) AS x"),
     ("c1 CAST of a column in a branch no row takes", "SELECT CASE WHEN s <> 'x' THEN CAST(s AS INTEGER) END AS r FROM v"),

@@ -33,7 +33,7 @@ REPROS = [
     # --- what Polars SQL lacks ---
     ("n * INTERVAL '1 month'", "SELECT d + n * INTERVAL '1 month' AS x FROM (SELECT d, 2 AS n FROM u) AS w", "months from a date's parts"),
     ("a negative interval", "SELECT d + INTERVAL '-1 months' AS x FROM u", "d - INTERVAL '1 months'"),
-    ("generate_series with a step of n days", "SELECT * FROM generate_series(TIMESTAMP '2024-01-01 00:00:00', TIMESTAMP '2024-01-05 00:00:00', 2 * INTERVAL '1 day') AS g(v)", "a series of days since 1970"),
+    ("generate_series with a step of n days", "SELECT * FROM generate_series(TIMESTAMP '2024-01-01 00:00:00', TIMESTAMP '2024-01-05 00:00:00', 2 * INTERVAL '1 day') AS g(v)", "none needed (fixed: pola-rs/polars#31054)"),
     ("ROUND to a computed number of places", "SELECT ROUND(1.23456, a) AS x FROM t", "by powers of ten"),
     ("MAKE_DATE", "SELECT MAKE_DATE(2024, 2, 3) AS d", "a date from its parts' text"),
     ("TO_CHAR", "SELECT TO_CHAR(DATE '2024-02-03', 'YYYY') AS s", "FORMAT as standard functions"),

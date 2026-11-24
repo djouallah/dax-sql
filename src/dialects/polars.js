@@ -65,10 +65,10 @@ export class PolarsDialect extends PostgresDialect {
   keysTogether = null;
   bind(vals, body) { return body(...vals); }
   sumOfGroups(v) { return `SUM(${v})`; }
-  // generate_series as a table (its scalar form is a list); dates as days since 1970 (its step
-  // no interval).
+  // generate_series as a table (its scalar form is a list); dates by a step of n days
+  // (pola-rs/polars#31054).
   series(start, end, step, t) {
-    if (t === 'datetime') return `(SELECT CAST(CAST(i AS DATE) AS TIMESTAMP) AS v FROM generate_series(CAST(CAST(${start} AS DATE) AS BIGINT), CAST(CAST(${end} AS DATE) AS BIGINT), ${int(step)}) AS r(i))`;
+    if (t === 'datetime') return `(SELECT v FROM generate_series(CAST(CAST(${start} AS DATE) AS TIMESTAMP), CAST(CAST(${end} AS DATE) AS TIMESTAMP), ${int(step)} * INTERVAL '1 day') AS r(v))`;
     if (t === 'int') return `(SELECT * FROM generate_series(CAST(${start} AS BIGINT), CAST(${end} AS BIGINT), CAST(${step} AS BIGINT)) AS r(v))`;
     return super.series(start, end, step, t);
   }

@@ -10,7 +10,9 @@
 // stale one); invalid (Power BI rejected the query: the query is to be fixed, unless it says
 // `expect: error`, a rule of DAX the engine must enforce too).
 // --known lists ids ([{ id, reason }]) the engine is known to get wrong (several files: a,b). The exit code is 1
-// when a query fails, errs or is unsupported without being listed, or a listed one matches.
+// when a query fails, errs or is unsupported without being listed, or a listed one matches: but
+// not one listed as slow or flaky (right on some runs), nor one of --known-shared (lists
+// another engine keeps, which this one reads as known too: a query it answers is no error).
 import { spawn } from 'node:child_process';
 import { mkdtempSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -24,9 +26,14 @@ if (!adapter) {
   console.error('usage: node runner/run.mjs --adapter "<command>" [--known known.json] [--model m] [--family f] [--grep regex] [--report report.json]');
   process.exit(2);
 }
-const knownFile = opt('known');
+const knownFile = opt('known'), sharedFile = opt('known-shared');
 // Several lists, comma-separated: the ids of all of them.
-const known = new Map((knownFile ? knownFile.split(',') : []).filter(f => existsSync(f)).flatMap(f => JSON.parse(readFileSync(f, 'utf8')).map(k => [k.id, k.reason])));
+const read = files => (files ? files.split(',') : []).filter(f => existsSync(f)).flatMap(f => JSON.parse(readFileSync(f, 'utf8')).map(k => [k.id, k.reason]));
+const shared = new Map(read(sharedFile));
+const known = new Map([...shared, ...read(knownFile)]);
+// A listed query that may match: slow ones (in time on some runs) and another engine's.
+const own = new Set(read(knownFile).map(([k]) => k));
+const mayMatch = id => /^(slow|flaky)/.test(known.get(id) ?? '') || (shared.has(id) && !own.has(id));
 const grep = opt('grep') && new RegExp(opt('grep'));
 
 const queries = loadQueries({ model: opt('model') })
@@ -125,7 +132,7 @@ for (const q of queries) {
   s[o.kind]++;
   const isKnown = known.has(q.key);
   let verdict = '';
-  if (o.kind === 'match' && isKnown) { bad++; verdict = 'matches now: remove it from the known list'; }
+  if (o.kind === 'match' && isKnown && !mayMatch(q.key)) { bad++; verdict = 'matches now: remove it from the known list'; }
   else if (['fail', 'error', 'unsupported'].includes(o.kind)) {
     if (isKnown) s.known++;
     else { bad++; verdict = 'unexpected'; }

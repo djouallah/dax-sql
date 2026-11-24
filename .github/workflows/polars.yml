@@ -49,7 +49,7 @@ jobs:
           DAXSQL_TIMES: ${{ runner.temp }}/polars-times.json
         run: |
           node conformance/runner/run.mjs --adapter "node conformance/engines/dax-sql-polars/adapter.mjs ." \
-            --known conformance/engines/dax-sql/known.json,conformance/engines/dax-sql/known-plan.json,conformance/engines/dax-sql-polars/known.json \
+            --known conformance/engines/dax-sql-polars/known.json --known-shared conformance/engines/dax-sql/known.json,conformance/engines/dax-sql/known-plan.json \
             --report "$RUNNER_TEMP/polars.json"
       # The errors by kind (their text with names and numbers left out), the most frequent first,
       # and the time: what to fix next.

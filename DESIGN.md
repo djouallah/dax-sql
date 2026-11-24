@@ -468,7 +468,7 @@ What says the SQL is right is the answers, not the SQL's text:
   its reason, a departure by design or a Power BI quirk not copied; one off the list fails the
   run, and so does one on it that matches.
 - **SQL over the datasets is held to Apache Ossie** (`ossie-query.yml`): its query compliance
-  cases, its wide table cases, and a grid of about 2,500 queries each answered by Ossie's view
+  cases, its wide table cases (Layer 3 JSON, and Layer 2), and a grid of about 2,500 queries each answered by Ossie's view
   expander and by dax-sql on one DuckDB.
 - **Each commit is held to the speed of the one before** (`bench.mjs`, `perf.yml`).
 - **Unit tests** hold the SQL's shape, the errors, the parser, the T-SQL dialect's text and the
@@ -542,6 +542,18 @@ A file is read into a model object by a reader in `formats/`, exported as `dax-s
   `tmslToOssie(bim, name, { source })` takes a table's full name from the caller (a catalog's,
   such as `lakehouse.schema.table`, as Fabric's SQL endpoint names a table): it is the dataset's `source`, and the partition
   and the expression it read are not kept.
+- `formats/ossie-wide.js` takes a query of Ossie's Wide Table Query Interface (Layer 3,
+  `core-spec/wide_table_semantics.md`): JSON of `dimensions`, `metrics` and a `filter`, each a
+  reference or `{ field | metric, alias }`. `compileWide(doc, query, options)` returns `{ sql,
+  layer2 }`: the engine's SQL, and the Layer 2 query it means, which `wideToSql(doc, query)` gives
+  alone (with the model and the measures its lowering adds). The query is checked in the order of
+  the spec's Section 8, and an error is a `DaxError` whose message starts with that code
+  (`E_NO_PATH: ...`; `wide` holds it). Then Section 5's lowering: a metric's components (a
+  dataset's metric is one; each aggregate of a model's metric is one, a measure the lowering adds
+  to the dataset it reads), one branch for each home dataset, joined along its one path (many to
+  one, `LEFT JOIN`) to the dimensions' and the filter's datasets, the filter in each branch, and
+  the branches' keys stitched with each missing component its value over no rows (`COUNT` 0). A
+  query with no metric is grouped from its anchor.
 
 ### API
 
@@ -1258,8 +1270,9 @@ In CI:
   the one before, on one runner, the fastest of three rounds each: more than 10% slower in all,
   or a query 1.5 times as slow and 50 ms more, fails.
 - `ossie-query.yml` (Python and Ossie's main): Ossie SQL held to Ossie as DAX is to Power BI.
-  Ossie's query cases (`formats/test/ossie-query.mjs`), the wide table cases' Layer 2 queries
-  (`ossie-wide.mjs`), and Ossie's view expander as an oracle (`ossie-expand.mjs`): a grid of
+  Ossie's query cases (`formats/test/ossie-query.mjs`), the wide table cases (`ossie-wide.mjs`:
+  each one's Layer 3 JSON through `formats/ossie-wide.js`, its rows or its error's code, and its
+  Layer 2 query where it gives one), and Ossie's view expander as an oracle (`ossie-expand.mjs`): a grid of
   about 2,500 queries over SCOTT, Ossie's retail and stores, and every model in
   `conformance/models` written as Ossie (totals, groups, `WHERE`, `HAVING`, `ROLLUP`, CTEs,
   scalar operators over `AGG`, stars, fan-outs, chasm traps, snowflakes), each answered by the

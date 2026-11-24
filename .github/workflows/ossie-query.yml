@@ -4,7 +4,8 @@ name: Ossie queries
 # day, as DAX is held to Power BI (conformance.yml). A release needs it green: publish.yml runs
 # it first.
 #   - compliance/query: the query cases, the SCOTT data and model (formats/test/ossie-query.mjs);
-#   - compliance/wide_table: each case's Layer 2 query (formats/test/ossie-wide.mjs);
+#   - compliance/wide_table: each case's Layer 3 query (JSON, formats/ossie-wide.js): its rows or
+#     its error's code; and its Layer 2 query, where it gives one (formats/test/ossie-wide.mjs);
 #   - Ossie's view expander (ost/src/ossie_ost/expander.py) as an oracle: a grid of queries over
 #     every model here and Ossie's, each answered by the expander's SQL and by dax-sql's, on the
 #     same DuckDB (formats/test/ossie-expand.mjs).
@@ -46,7 +47,7 @@ jobs:
       - uses: astral-sh/setup-uv@v6
       - name: The query cases
         run: node formats/test/ossie-query.mjs .ossie
-      - name: The wide table cases' Layer 2 queries
+      - name: The wide table cases (Layer 3 JSON, and Layer 2)
         run: node formats/test/ossie-wide.mjs .ossie
       - name: Against the view expander
         run: node formats/test/ossie-expand.mjs .ossie .ossie --report "$RUNNER_TEMP/expand.json"

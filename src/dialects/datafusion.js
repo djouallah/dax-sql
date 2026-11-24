@@ -46,6 +46,7 @@ export class DataFusionDialect extends PostgresDialect {
     const [x, y, z] = a;
     switch (name) {
       case 'log10': return `log10(${x})`;
+      case 'sign': return `signum(${x})`;
       case 'round': {
         const n = nodes[1];
         if (n?.k === 'lit' && Number.isInteger(n.v)) return `round(CAST(${x} AS DOUBLE), ${n.v})`;

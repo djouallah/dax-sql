@@ -57,8 +57,8 @@ def main():
             if m not in contexts:
                 ctx = SessionContext()
                 for name, path in jobs['models'][m].items():
-                    # Its name as it is (the SQL quotes it: DataFusion lowercases a name that is not).
-                    ctx.register_parquet(name, path)
+                    # Quoted: DataFusion lowercases a name that is not (the SQL reads "Sales").
+                    ctx.register_parquet('"' + name.replace('"', '""') + '"', path)
                 contexts[m] = ctx
             ctx = contexts[m]
             t0 = time.monotonic()

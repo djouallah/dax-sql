@@ -1,5 +1,7 @@
 [
-  {"id":"patterns/segmentation/segmentation-calc-group-name-ordinal-filter","reason":"slow: past Fabric’s 30 s, a subquery of each group the mapping does not reach yet (TODO.md); the query plan unnested answers it"},
-  {"id":"patterns/segmentation/segmentation-summarize-sply-quarter-band","reason":"slow: past Fabric’s 30 s, a subquery of each group the mapping does not reach yet (TODO.md); the query plan unnested answers it"},
-  {"id":"patterns/segmentation/segmentation-customer-bands-calc-group","reason":"slow: 19 s to 29 s on Fabric, past its 30 s beside the other sessions at times (a subquery of each group the mapping does not reach yet, TODO.md); the query plan unnested answers it in 3 s"}
+  {"id": "patterns/segmentation/segmentation-calc-group-name-ordinal-filter", "reason": "slow: past Fabric’s 30 s, a subquery of each group the mapping does not reach yet (TODO.md); the query plan unnested answers it"},
+  {"id": "patterns/segmentation/segmentation-summarize-sply-quarter-band", "reason": "slow: past Fabric’s 30 s, a subquery of each group the mapping does not reach yet (TODO.md); the query plan unnested answers it"},
+  {"id": "patterns/segmentation/segmentation-customer-bands-calc-group", "reason": "slow: 19 s to 29 s on Fabric, past its 30 s beside the other sessions at times (a subquery of each group the mapping does not reach yet, TODO.md); the query plan unnested answers it in 3 s"},
+  {"id": "patterns/context/context-path-subtree-sales-transition", "reason": "slow: PATH, PATHLENGTH, PATHITEM and PATHITEMREVERSE each reading PATH's 32 levels, past 30 s on Fabric in the compiled SQL (Fabric computes a CTE at each read); the unnested plan's SQL answers it"},
+  {"id": "patterns/relationships/relationships-employee-path-team-sales", "reason": "slow: PATH, PATHLENGTH, PATHITEM and PATHITEMREVERSE each reading PATH's 32 levels, past 30 s on Fabric in the compiled SQL (Fabric computes a CTE at each read); the unnested plan's SQL answers it"}
 ]

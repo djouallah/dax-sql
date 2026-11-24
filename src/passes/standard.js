@@ -403,7 +403,9 @@ function fn(x) {
     case 'mround': return pop('mul', [halfAway(pop('div', [p, q], 'double')), q], 'double');
     // FORMAT: a number or a date by a pattern (parsed: its sections, digits, separators, the
     // names of days and months), as text; COMBINEVALUES: values joined by a separator.
-    case 'format_number': case 'format_date': return call(x.name, a, 'string', true);
+    // FORMAT: the pattern (parsed, as JSON) written out as standard functions (text.js).
+    case 'format_number': return DEF.formatNumber(a[0], JSON.parse(x.a[1].v), x.a[0].t);
+    case 'format_date': return DEF.formatDate(a[0], JSON.parse(x.a[1].v));
     case 'combinevalues': return DEF.combineValues(T(0), a.slice(1).map(asText));
     case 'year': case 'month': case 'day': case 'hour': case 'minute': case 'second': case 'quarter':
       return isDate(p.t) ? call(`extract_${x.name}`, [p], 'int') : keep();

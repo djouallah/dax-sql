@@ -1,9 +1,9 @@
 // The query plan as a Substrait plan (https://substrait.io), in its JSON form: the same
 // relations and scalars, each a Substrait relation or expression. A column is its position in
 // its input's record, a function an extension function: Substrait's own (comparison, boolean,
-// arithmetic, rounding, logarithmic, string, datetime, aggregate) where one means what the plan's
-// does, else one of dax-sql's (EXTENSION below: what standard SQL has no one function for, as
-// to_text, format_number). A definition read in several places is a plan relation read by a
+// arithmetic, rounding, logarithmic, string, datetime, aggregate): the plan holds no function
+// of its own (passes/text.js defines DAX's text functions as standard ones), and one Substrait has
+// none of is an error, not an extension of dax-sql's. A definition read in several places is a plan relation read by a
 // ReferenceRel (inline: true writes it where it is read instead).
 //
 //   toSubstrait(plan, { tableName, tableSchema, inline }) -> { plan, dax: [dax-sql's functions it uses] }
@@ -41,16 +41,8 @@ const FNS = {
   length: ['string', 'char_length'], left: ['string', 'left'], right: ['string', 'right'], trim: ['string', 'trim'], contains: ['string', 'contains'],
   regexp_replace: ['string', 'regexp_replace'],
 };
-// dax-sql's functions, each with its meaning (docs/substrait/functions_dax_sql.yaml).
-export const EXTENSION = {
-  to_text: 'a number with a fraction or a date as DAX writes it: 15 significant digits; a date M/D/YYYY, with the time when not midnight',
-  format_number: 'FORMAT and FIXED of a number by a pattern (the pattern parsed, as JSON: sections, digits, separators)',
-  format_date: 'FORMAT of a date by a pattern (parsed, as JSON)',
-  combinevalues: 'COMBINEVALUES: the values as text joined by the separator',
-  replace_nth: "SUBSTITUTE's instance number: the n-th occurrence of a text replaced",
-  parse_datetime: 'text read as a date and time: ISO, or as en-US writes one (3/5/2024, March 5, 2024)',
-  code_point: "a text's first character's code point (Substrait's string functions have none)",
-};
+// dax-sql's own functions: none (passes/text.js writes DAX's as standard ones).
+export const EXTENSION = {};
 const AGGS = {
   sum: ['arithmetic', 'sum'], avg: ['arithmetic', 'avg'], min: ['arithmetic', 'min'], max: ['arithmetic', 'max'], product: ['arithmetic', 'product'],
   median: ['arithmetic', 'median'], stdev_s: ['arithmetic', 'std_dev'], stdev_p: ['arithmetic', 'std_dev'], var_s: ['arithmetic', 'variance'], var_p: ['arithmetic', 'variance'],

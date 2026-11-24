@@ -258,7 +258,6 @@ export class PlanSql extends Emitter {
       case 'strpos': return ts ? `CHARINDEX(${y}, ${x})` : d.strpos ? d.strpos(x, y) : pg ? `strpos(${x}, ${y})` : `instr(${x}, ${y})`;
       case 'substring_from': return ts ? `SUBSTRING(${x}, ${y}, LEN(${x}))` : `substring(${x}, ${y})`;
       case 'regexp_replace': return `regexp_replace(${x}, ${y}, ${z}, 'g')`;
-      case 'code_point': return ts ? `UNICODE(${x})` : pg ? `ascii(${x})` : `unicode(${x})`;
       case 'extract_dow': return ts ? `(DATEPART(weekday, ${x}) - 1)` : pg ? `CAST(EXTRACT(DOW FROM ${x}) AS BIGINT)` : `dayofweek(${x})`;
       case 'make_date': return d.name === 'polars' ? d.fn('date', a, nodes) : ts ? `DATEFROMPARTS(${a.join(', ')})` : pg ? `make_date(${a.map(v => `CAST(${v} AS INTEGER)`).join(', ')})` : `make_date(${a.join(', ')})`;
       case 'ceil': return ts ? `CEILING(${x})` : `ceil(${x})`;
@@ -287,10 +286,6 @@ export class PlanSql extends Emitter {
       // (1.0001 / 2.0, 0.50005, is 0.5001), as the compiled SQL rounds one.
       case 'round': if (ts && t === 'decimal') return `CAST(ROUND(CAST(${x} AS DECIMAL(38,12)), ${y}) AS DECIMAL(19,4))`; break;
       case 'floor': return `floor(${x})`;
-      // As DAX writes a value as text, a text's n-th occurrence replaced, text read as a date.
-      case 'to_text': return d.text(x, nodes[0].t);
-      case 'replace_nth': return d.fn('substitute', a, nodes);
-      case 'parse_datetime': return d.fn('cast', [x, "'datetime'"], nodes);
     }
     return d.fn(name, a, nodes);
   }

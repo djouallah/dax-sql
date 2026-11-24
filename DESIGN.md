@@ -244,11 +244,14 @@ functions and aggregates with those: a blank compared as 0 is a COALESCE, DIVIDE
 a NULLIF of COUNT, DISTINCTCOUNT a COUNT(DISTINCT) and a count of the blank, a fixed decimal a
 round to four places, a date's serial number microseconds from day zero, a percentile the
 values numbered and the two around the rank. No DAX operator, function or aggregate is left in
-an optimized plan (`operators.mjs` fails on one). What standard SQL has no one function for is a named function of
-the plan's, with its meaning, that each dialect writes: `to_text` (a number with a fraction or a
-date as DAX writes it: 15 digits, a date en-US), `format_number` and `format_date` (FORMAT and
-FIXED: a value by its pattern, parsed), `combinevalues`, `replace_nth` (SUBSTITUTE's instance
-number), `parse_datetime` (text read as a date, en-US forms too).
+an optimized plan (`operators.mjs` fails on one). What standard SQL has no one function for is
+defined once as standard functions (`passes/text.js`), so the plan holds standard functions only:
+a number with a fraction or a date as DAX writes it (15 significant digits as a whole number, the
+point where the exponent puts it; a date en-US), FORMAT and FIXED (the pattern, parsed, written
+out), COMBINEVALUES, SUBSTITUTE's instance number, text read as a date (en-US forms too), UNICODE.
+A value a definition reads more than once is bound: a column of a projection the standard pass
+puts below the relation whose scalars read it. A double is never cast to text (engines each write
+one their own way), only a whole number.
 
 No query plan holds an apply or an EXISTS correlated to a row, as the plan before the passes
 does (`{ optimize: false }`, the reference CI checks the passes against).

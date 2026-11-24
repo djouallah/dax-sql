@@ -9,6 +9,8 @@
 //   replaceNth      SUBSTITUTE with an instance number: the n-th occurrence replaced
 //   parseDatetime   text as a date and time: ISO, or en-US (3/5/2024, March 5, 2024)
 //   codePoint       UNICODE of a printable ASCII character
+//   formatNumber    FORMAT of a number by a pattern (format.js's: sections, digits, separators)
+//   formatDate      FORMAT of a date by a pattern (format.js's tokens)
 //
 // A value read more than once is bound (bind: a column of a projection below the relation whose
 // scalars read it), so a definition is as long as it reads. A number is never cast to text but
@@ -139,7 +141,184 @@ export function definitions(bind) {
     return caseOf([[eq(p, I(0)), lit(null, 'int')]], add(p, I(31)), 'int');
   }
 
-  return { generalNumber, generalDate, combineValues, replaceNth, parseDatetime, codePoint };
+  // --- FORMAT of a number ---
+  // 10^j as a whole number (0 <= j <= 18; else 0).
+  const pow10 = j => caseOf(Array.from({ length: 19 }, (_, i) => [eq(j, I(i)), I(10 ** i)]), I(0), 'int');
+  const idiv = (a, b) => call('idiv', [a, b], 'int');
+  // m >= 0 to 15 significant digits: { M, ex } (m is M * 10^(ex - 14)), as generalNumber has them.
+  function digits15(m0) {
+    // |m|: a value bound is computed for every row, those of the other sections too.
+    const a = bind(call('abs', [cast(m0, 'double')], 'double'), 'fa');
+    const e0 = bind(cast(call('floor', [call('log10', [caseOf([[eq(a, D(0)), D(1)]], a, 'double')], 'double')], 'double'), 'int'), 'fe0');
+    const m = bind(cast(call('round', [pop('mul', [a, call('power', [D(10), sub(I(14), e0)], 'double')], 'double'), I(0)], 'double'), 'int'), 'fm0');
+    const carry = bind(ge(m, I(1e15)), 'fcarry');
+    return { M: bind(caseOf([[carry, I(1e14)]], m, 'int'), 'fm'), ex: bind(add(e0, caseOf([[carry, I(1)]], I(0), 'int')), 'fex') };
+  }
+  // M * 10^k rounded half up to a whole number.
+  const scaleBy = (M, k) => caseOf([
+    // (k at most 3 and a divisor at least 1 in the branch no row takes: in 64 bits, no division by 0.)
+    [ge(k, I(0)), mul(M, pow10(call('least', [k, I(3)], 'int')))],
+    [ge(k, I(-18)), idiv(add(M, mul(I(5), pow10(sub(sub(I(0), k), I(1))))), call('greatest', [pow10(sub(I(0), k)), I(1)], 'int'))],
+  ], I(0), 'int');
+  // M * 10^k (rounded half up) as text: M's digits and k zeros where k >= 0 (past 64 bits: the
+  // 15 digits, then zeros, as DAX writes a number of more), else the whole number.
+  const ZEROS = S('0'.repeat(330));
+  const scaledText = (M, k) => caseOf([[ge(k, I(0)), cat(str(M), left(ZEROS, k))]], str(scaleBy(M, k)), 'string');
+  // A whole number r >= 0 (or its digits, text) as text with n decimals: { int, frac } ("1234", "50").
+  function places(r, n) {
+    const t = bind(r.t === 'string' ? r : str(r), 'ft'), l = bind(len(t), 'fl');
+    if (!n) return { int: t, frac: S('') };
+    return {
+      int: caseOf([[gt(l, I(n)), left(t, sub(l, I(n)))]], S('0'), 'string'),
+      frac: caseOf([[gt(l, I(n)), from(t, add(sub(l, I(n)), I(1)))]], cat(left(S('0'.repeat(n)), sub(I(n), l)), t), 'string'),
+    };
+  }
+  const hasDigits = sec => sec.nInt + sec.nFrac + sec.nExp > 0 || sec.point;
+  const isWhole = (sec, t) => t === 'int' && !sec.scale && !sec.sci;
+  const scaled = (sec, a) => {
+    const up = 100 ** sec.pct, down = 1000 ** sec.scale;
+    if (up === 1 && down === 1) return a;
+    let v = cast(a, 'double');
+    if (up > 1) v = pop('mul', [v, D(up)], 'double');
+    if (down > 1) v = pop('div', [v, D(down)], 'double');
+    return v;
+  };
+  // a >= 0 in a section: { int, frac, e (the exponent), zero (whether it shows as 0) }.
+  function rounded(sec, a, t) {
+    const m = bind(scaled(sec, a), 'fs'), n = sec.nFrac;
+    // A whole number: its digits, n zeros after the point.
+    if (isWhole(sec, t)) return { int: str(m), frac: S('0'.repeat(n)), zero: eq(m, I(0)) };
+    const { M, ex } = digits15(m);
+    if (!sec.sci) {
+      const k = bind(add(sub(ex, I(14)), I(n)), 'fk');
+      const r = bind(scaledText(M, k), 'fr');
+      return { ...places(r, n), zero: or(eq(M, I(0)), eq(r, S('0'))) };
+    }
+    // The exponent puts nInt digits before the point (one more where rounding carries: 9.996 is
+    // 10.00): r the k + n digits.
+    const k = Math.max(sec.nInt, 1);
+    const e0 = bind(caseOf([[eq(m, D(0)), I(0)]], sub(ex, I(k - 1)), 'int'), 'fe');
+    const r0 = bind(scaleBy(M, add(sub(sub(ex, I(14)), e0), I(n))), 'fr0');
+    const over = bind(ge(r0, I(10 ** (k + n))), 'fover');
+    const e = bind(add(e0, caseOf([[over, I(1)]], I(0), 'int')), 'fe1');
+    const r = bind(caseOf([[over, scaleBy(M, add(sub(sub(ex, I(14)), e), I(n)))]], r0, 'int'), 'fr');
+    return { ...places(r, n), e, zero: eq(m, D(0)) };
+  }
+  // A whole number's digits with a comma between each three from the right (30 at most).
+  function thousands(d0) {
+    const d = bind(d0, 'fd'), l = bind(len(d), 'fdl');
+    const first = bind(add(call('mod', [sub(l, I(1)), I(3)], 'int'), I(1)), 'fd1');
+    const groups = Array.from({ length: 9 }, (_, g) => caseOf([[gt(l, add(first, I(3 * g))), cat(S(','), mid(d, add(add(first, I(3 * g)), I(1)), I(3)))]], S(''), 'string'));
+    return cat(left(d, first), ...groups);
+  }
+  // A section's text of a >= 0.
+  function section(sec, a, t) {
+    if (!hasDigits(sec)) return cat(S(''), ...sec.tokens.filter(x => x.t === 'lit').map(x => S(x.v)));
+    const n = sec.nFrac, { int, frac, e } = rounded(sec, a, t);
+    let d = bind(caseOf([[eq(int, S('0')), S('')]], int, 'string'), 'fi');   // "#.##" shows 0.5 as .5
+    if (sec.nZeroInt) d = bind(cat(left(S('0'.repeat(sec.nZeroInt)), sub(I(sec.nZeroInt), len(d))), d), 'fi0');
+    if (sec.thousands && !sec.interleaved) d = bind(thousands(d), 'fi1');
+    let fr = frac;
+    // The fraction's optional digits (#): its zeros at the end, as many as there are of them, gone.
+    if (n > sec.nZeroFrac) {
+      const f0 = bind(frac, 'ff'), w = [];
+      for (let j = n - sec.nZeroFrac; j >= 1; j--) w.push([eq(call('right', [f0, I(j)], 'string'), S('0'.repeat(j))), left(f0, I(n - j))]);
+      fr = caseOf(w, f0, 'string');
+    }
+    const parts = [];
+    let intDone = false, fracDone = false, expDone = false, i = 0;
+    const int0 = () => { if (!intDone) parts.push(d); intDone = true; };
+    for (const x of sec.tokens) {
+      if (x.t === 'lit') parts.push(S(x.v));
+      else if (x.t === 'int' && sec.interleaved) {
+        // Digits fill the placeholders from the right; the first takes the rest.
+        const j = sec.nInt - 1 - i++, l = len(d);
+        parts.push(j === sec.nInt - 1 ? left(d, sub(l, I(j))) : caseOf([[gt(l, I(j)), mid(d, sub(l, I(j)), I(1))]], S(''), 'string'));
+        intDone = true;
+      } else if (x.t === 'int') int0();
+      else if (x.t === 'point') { int0(); parts.push(S('.')); }
+      else if (x.t === 'frac') { if (!fracDone) parts.push(fr); fracDone = true; }
+      else if (x.t === 'exp') {
+        int0();
+        parts.push(S(sec.sci.upper ? 'E' : 'e'), caseOf([[lt(e, I(0)), S('-')]], S(sec.sci.plus ? '+' : ''), 'string'));
+      } else if (x.t === 'expd' && !expDone) {
+        const ae = bind(str(call('abs', [e], 'int')), 'fae');
+        parts.push(cat(left(S('0'.repeat(Math.max(sec.nExp, 1))), sub(I(sec.nExp), len(ae))), ae));
+        expDone = true;
+      }
+    }
+    return cat(S(''), ...parts);
+  }
+  // FORMAT(number, pattern): spec from format.js's numberFormat; t the value's type.
+  function formatNumber(x, spec, t) {
+    if (spec.general) return pop('coalesce', [t === 'int' ? str(x) : t === 'bool' ? caseOf([[x, S('True')]], S('False'), 'string') : generalNumber(x), S('')], 'string', true);
+    if (t === 'bool') { x = caseOf([[x, I(1)]], I(0), 'int'); t = 'int'; }
+    const vt = t === 'int' ? 'int' : 'double';
+    const v = bind(cast(x, vt), 'fv');
+    if (spec.bool) return caseOf([[cond('isnull', [v]), S('')], [cond('ne', [v, I(0)]), S(spec.bool[0])]], S(spec.bool[1]), 'string');
+    const [pos, neg, zero] = spec.sections;
+    const zeroOf = vt === 'int' ? I(0) : D(0);
+    // Zero takes the third section (the first when there is none); a negative value the second,
+    // or the first with a minus sign, and the zero one when it rounds to zero.
+    const z = section(zero ?? pos, zeroOf, vt);
+    const negSec = neg ?? pos, minus = bind(pop('neg', [v], vt), 'fneg');
+    const negZero = !hasDigits(negSec) ? lit(false, 'bool') : negSec.sci ? eq(minus, zeroOf) : rounded(negSec, minus, vt).zero;
+    const negText = caseOf([[negZero, z]], neg ? section(negSec, minus, vt) : cat(S('-'), section(negSec, minus, vt)), 'string');
+    return caseOf([[cond('isnull', [v]), S('')], [gt(v, zeroOf), section(pos, v, vt)], [eq(v, zeroOf), z]], negText, 'string');
+  }
+
+  // --- FORMAT of a date ---
+  const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const MONTH_NAMES = MONTHS.map(m => m[0].toUpperCase() + m.slice(1));
+  function formatDate(x, tokens) {
+    const v = bind(cast(x, 'datetime'), 'fdt');
+    const memo = new Map();
+    const P_ = name => { if (!memo.has(name)) memo.set(name, bind(name === 'dow' ? call('extract_dow', [v], 'int') : part(name, v), `f${name}`)); return memo.get(name); };
+    const day = (names, short) => caseOf(names.map((nm, i) => [eq(P_('dow'), I(i)), S(short ? nm.slice(0, 3) : nm)]), lit(null, 'string'), 'string');
+    const month = short => caseOf(MONTH_NAMES.map((nm, i) => [eq(P_('month'), I(i + 1)), S(short ? nm.slice(0, 3) : nm)]), lit(null, 'string'), 'string');
+    const h12 = () => caseOf([[eq(P_('hour'), I(0)), I(12)], [gt(P_('hour'), I(12)), sub(P_('hour'), I(12))]], P_('hour'), 'int');
+    const ampm = () => caseOf([[lt(P_('hour'), I(12)), S('AM')]], S('PM'), 'string');
+    const year4 = () => { const y = bind(str(P_('year')), 'fy4'); return cat(left(S('000'), sub(I(4), len(y))), y); };
+    const doy = () => add(call('date_diff_day', [call('date_trunc_year', [v], 'date'), v], 'int'), I(1));
+    const piece = t => {
+      switch (t) {
+        case 'd': return str(P_('day'));
+        case 'dd': return two(P_('day'));
+        case 'ddd': return day(DAYS, true);
+        case 'dddd': return day(DAYS, false);
+        case 'ddddd': return cat(str(P_('month')), S('/'), str(P_('day')), S('/'), str(P_('year')));
+        case 'dddddd': return cat(day(DAYS, false), S(', '), month(false), S(' '), str(P_('day')), S(', '), year4());
+        case 'm': return str(P_('month'));
+        case 'mm': return two(P_('month'));
+        case 'mmm': return month(true);
+        case 'mmmm': return month(false);
+        case 'y': return str(doy());
+        case 'yy': return two(call('mod', [P_('year'), I(100)], 'int'));
+        case 'yyyy': return year4();
+        case 'h': return str(P_('hour'));
+        case 'hh': return two(P_('hour'));
+        case 'h12': return str(h12());
+        case 'hh12': return two(h12());
+        case 'n': case 'min': return str(P_('minute'));
+        case 'nn': case 'mins': return two(P_('minute'));
+        case 's': return str(P_('second'));
+        case 'ss': return two(P_('second'));
+        case 'ttttt': return cat(str(h12()), S(':'), two(P_('minute')), S(':'), two(P_('second')), S(' '), ampm());
+        case 'AM/PM': case 'AMPM': return ampm();
+        case 'am/pm': return call('lower', [ampm()], 'string');
+        case 'A/P': return left(ampm(), I(1));
+        case 'a/p': return call('lower', [left(ampm(), I(1))], 'string');
+        case 'w': return str(add(P_('dow'), I(1)));
+        case 'ww': return str(add(idiv(add(sub(doy(), I(1)), call('extract_dow', [call('date_trunc_year', [v], 'date')], 'int')), I(7)), I(1)));
+        case 'q': return str(P_('quarter'));
+        case 'c': return generalDate(v);
+      }
+      throw new Error(`FORMAT: date token ${t}`);
+    };
+    return caseOf([[cond('isnull', [v]), S('')]], cat(S(''), ...tokens.map(x => (x.t === 'lit' ? S(x.v) : piece(x.t)))), 'string');
+  }
+
+  return { generalNumber, generalDate, combineValues, replaceNth, parseDatetime, codePoint, formatNumber, formatDate };
 }
 
 // The columns a scalar reads.

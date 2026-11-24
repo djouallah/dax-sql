@@ -75,6 +75,11 @@ SMALL = [
     ("d9 correlated EXISTS, date_trunc of the inner column", "SELECT a FROM t AS o WHERE EXISTS (SELECT 1 FROM u AS i WHERE date_trunc('month', i.ts) <= i.ts AND o.a > 1)"),
     ("d10 correlated scalar subquery over a CTE, date_trunc of its column", "WITH c AS (SELECT ts AS ts1 FROM u) SELECT a, (SELECT COUNT(*) FROM c WHERE date_trunc('month', ts1) <= ts1 AND a > 1) AS n FROM t"),
     ("d11 LATERAL over a CTE, date_trunc of the outer column", "WITH c AS (SELECT ts AS ts1 FROM u) SELECT * FROM (SELECT ts AS ts0 FROM u) AS o, LATERAL (SELECT * FROM c WHERE ts1 >= date_trunc('year', o.ts0)) AS a"),
+    ("d12 correlated IN, date_trunc of an outer column a scalar subquery made", "SELECT ts FROM (SELECT ts, (SELECT MAX(ts) FROM u) AS m FROM u) AS o WHERE ts IN (SELECT ts1 FROM (SELECT ts AS ts1 FROM u) AS s WHERE ts1 >= date_trunc('year', m))"),
+    ("d13 the same, o.m qualified", "SELECT ts FROM (SELECT ts, (SELECT MAX(ts) FROM u) AS m FROM u) AS o WHERE ts IN (SELECT ts1 FROM (SELECT ts AS ts1 FROM u) AS s WHERE ts1 >= date_trunc('year', o.m))"),
+    ("d14 correlated IN with no derived table", "SELECT ts FROM (SELECT ts, (SELECT MAX(ts) FROM u) AS m FROM u) AS o WHERE ts IN (SELECT i.ts FROM u AS i WHERE i.ts >= date_trunc('year', o.m))"),
+    ("d15 correlated IN, the outer column a plain one", "SELECT ts FROM (SELECT ts, ts AS m FROM u) AS o WHERE ts IN (SELECT i.ts FROM u AS i WHERE i.ts >= date_trunc('year', o.m))"),
+    ("d16 correlated IN, no date_trunc", "SELECT ts FROM (SELECT ts, (SELECT MAX(ts) FROM u) AS m FROM u) AS o WHERE ts IN (SELECT i.ts FROM u AS i WHERE i.ts <= o.m)"),
     ("u5 LATERAL over a CTE, reading nothing outside", "WITH c AS (SELECT MAX(a) AS m FROM t) SELECT o.a, l.m FROM t AS o, LATERAL (SELECT m FROM c) AS l"),
 ]
 frames = {"t": pl.DataFrame({"a": [1, 2, 3]}),

@@ -296,6 +296,7 @@ kbd { font: 11px var(--mono); border: 1px solid var(--line-2); border-bottom-wid
       <li><b>There is no blank row.</b> Every key in a fact table must exist in its dimension. A sale whose key is missing from the dimension still counts in the total, but appears under no value of that dimension.</li>
       <li><b>A column that mixes numbers and text comes back as text.</b></li>
       <li><b><code>IFERROR</code> returns its first argument.</b> SQL has no error values.</li>
+      <li><b><code>PATH</code> walks at most 32 levels.</b> A row deeper in its hierarchy gets a blank path. SQL plans have no recursion, so the levels are fixed.</li>
       <li><b>Values come back unformatted.</b> Applying a measure's format string is up to you. <code>FORMAT</code> works in English (en-US) with a fixed pattern only.</li>
     </ol>
     </div>
@@ -304,7 +305,6 @@ kbd { font: 11px var(--mono); border: 1px solid var(--line-2); border-bottom-wid
     <ol>
       <li><b><code>1 / BLANK()</code> is blank,</b> not infinity. T-SQL has no infinity.</li>
       <li><b>Sums of floating-point numbers are computed exactly,</b> so they can differ from Power BI's in the last digit.</li>
-      <li><b><code>PATH</code> functions are not available.</b> Fabric has no recursive queries.</li>
     </ol>
 
     <h3>DAX and Ossie SQL differ, by design</h3>

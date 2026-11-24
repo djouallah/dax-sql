@@ -359,7 +359,7 @@ kbd { font: 11px var(--mono); border: 1px solid var(--line-2); border-bottom-wid
       <button type="button" role="tab" data-k="model">Model</button>
       <button type="button" role="tab" data-k="query">Live query</button>
     </div>
-    <span class="sub">DAX, or SQL over the model (<code>SELECT Color, AGG([Sales Amount]) FROM contoso GROUP BY ALL</code>), answered by DuckDB in this tab.</span>
+    <span class="sub">SQL over the model (<code>SELECT Color, AGG("Sales Amount") FROM contoso GROUP BY ALL</code>: a measure by its name, no joins), or DAX, answered by DuckDB in this tab.</span>
   </div>
 
   <div class="card" data-pane="model">

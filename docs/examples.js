@@ -76,81 +76,60 @@ export const problem = [
   },
 ];
 
-// The playground's time intelligence example.
-const timeIntel = `EVALUATE
-SUMMARIZECOLUMNS(
-  'Date'[Year], 'Date'[Month],
-  "Sales", [Sales Amount],
-  "Last year", [Sales PY],
-  "YTD", [Sales YTD]
-)
-ORDER BY 'Date'[Year], 'Date'[Month]`;
-
-// The playground's first two examples.
-const y = "'Date'[Year]";
-const sc = cols => `EVALUATE\nSUMMARIZECOLUMNS(\n  ${[y, ...cols].join(',\n  ')}\n)\nORDER BY ${y}`;
-
-// One plan, two languages: a SELECT over the model, and the DAX it stands for.
-export const sql = `SELECT Color, AGG([Sales Amount]) AS sales, MEASURE(Orders) AS orders
-FROM contoso
-WHERE Customer.City = 'Paris'
-GROUP BY ALL
-ORDER BY Color`;
-
-// A query nobody wrote a case for.
-export const unseen = `EVALUATE
-SUMMARIZECOLUMNS(
-  Customer[City],
-  "Sales", [Sales Amount],
-  "Share", DIVIDE([Sales Amount], CALCULATE([Sales Amount], ALLSELECTED(Customer))),
-  "Top product", CONCATENATEX(TOPN(1, VALUES(Product[Name]), [Sales Amount]), Product[Name], ", ")
-)
-ORDER BY [Sales] DESC`;
-
-// The playground's examples.
+// The playground's examples: SQL over the model (a measure is AGG(name); the model knows the
+// joins). The playground takes DAX too.
 export const playground = [
-  ['Sales by year', sc(['"Sales", [Sales Amount]'])],
-  ['Five filter contexts', sc([
-    '"Sales", [Sales Amount]',
-    '"Bikes", CALCULATE([Sales Amount], Category[Category] = "Bikes")',
-    `"All years", CALCULATE([Sales Amount], ALL('Date'))`,
-    '"Best customer", MAXX(VALUES(Customer[Customer]), [Sales Amount])',
-  ])],
-  ['Time intelligence', timeIntel],
-  ['Share of category', `EVALUATE
-SUMMARIZECOLUMNS(
-  Category[Category], Product[Name],
-  "Sales", [Sales Amount],
-  "Share of category", [Share of Category]
-)
-ORDER BY Category[Category], Product[Name]`],
-  ['Inactive relationship', `EVALUATE
-SUMMARIZECOLUMNS(
-  'Date'[Year], 'Date'[Month],
-  "By order date", [Sales Amount],
-  "By ship date", [Sales by Ship Date]
-)
-ORDER BY 'Date'[Year], 'Date'[Month]`],
-  ['Many-to-many', `EVALUATE
-SUMMARIZECOLUMNS(
-  Customer[City],
-  "Sales", [Sales Amount],
-  "Target", [Target]
-)
-ORDER BY Customer[City]`],
-  ['Calculation group', `EVALUATE
-SUMMARIZECOLUMNS(
-  'Date'[Year], 'Time Calc'[Time Calc],
-  "Sales", [Sales Amount]
-)
-ORDER BY 'Date'[Year], 'Time Calc'[Time Calc]`],
-  ['Ranking', `EVALUATE
-ADDCOLUMNS(
-  VALUES(Product[Name]),
-  "Sales", [Sales Amount],
-  "Rank", RANKX(ALL(Product[Name]), [Sales Amount])
-)
-ORDER BY [Rank]`],
-  ['A query nobody wrote a case for', unseen],
-  ['SQL over the model', sql],
+  ['Sales by year', `SELECT "Date".Year, AGG("Sales Amount") AS sales
+FROM contoso
+GROUP BY ALL
+ORDER BY Year`],
+  ['Filters', `SELECT Category.Category, Product.Color, AGG("Sales Amount") AS sales, AGG(Orders) AS orders
+FROM contoso
+WHERE Customer.City IN ('Paris', 'Lyon') AND "Date".Year = 2024
+GROUP BY ALL
+ORDER BY Category, Color`],
+  ['Measures that change the filter', `SELECT Category.Category, AGG("Sales Amount") AS sales,
+  AGG("All Sales") AS all_sales, AGG("Red Sales") AS red_sales,
+  AGG("Best Customer Sales") AS best_customer
+FROM contoso
+GROUP BY ALL
+ORDER BY Category`],
+  ['Time intelligence', `SELECT "Date".Year, "Date".Month, AGG("Sales Amount") AS sales,
+  AGG("Sales PY") AS last_year, AGG("Sales YTD") AS ytd
+FROM contoso
+GROUP BY ALL
+ORDER BY Year, Month`],
+  ['Share of category', `SELECT Category.Category, Product.Name, AGG("Sales Amount") AS sales,
+  AGG("Share of Category") AS share
+FROM contoso
+GROUP BY ALL
+ORDER BY Category, Name`],
+  ['Inactive relationship', `SELECT "Date".Year, "Date".Month, AGG("Sales Amount") AS by_order_date,
+  AGG("Sales by Ship Date") AS by_ship_date
+FROM contoso
+GROUP BY ALL
+ORDER BY Year, Month`],
+  ['Many-to-many', `SELECT Customer.City, AGG("Sales Amount") AS sales, AGG(Target) AS target
+FROM contoso
+GROUP BY ALL
+ORDER BY City`],
+  ['Calculation group', `SELECT "Date".Year, "Time Calc"."Time Calc", AGG("Sales Amount") AS sales
+FROM contoso
+GROUP BY ALL
+ORDER BY Year, "Time Calc"`],
+  ['Top products', `SELECT Product.Name, AGG("Sales Amount") AS sales
+FROM contoso
+GROUP BY ALL
+ORDER BY sales DESC
+FETCH FIRST 3 ROWS WITH TIES`],
+  ['Subtotals', `SELECT Category.Category, Product.Color, AGG("Sales Amount") AS sales,
+  GROUPING(Product.Color) AS is_total
+FROM contoso
+GROUP BY Category.Category, ROLLUP(Product.Color)
+ORDER BY Category, is_total, Color`],
+  ['Groups that pass a test', `SELECT Customer.Customer, AGG(Orders) AS orders, AGG("Sales Amount") AS sales
+FROM contoso
+GROUP BY ALL
+HAVING orders > 1
+ORDER BY sales DESC`],
 ];

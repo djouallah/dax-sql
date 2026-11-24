@@ -53,9 +53,6 @@ export class PolarsDialect extends PostgresDialect {
   // Each relation a SELECT reads a CTE of its own: Polars' parser takes subqueries nested only
   // so deep (a calculation group's plan is past it).
   flatSql = true;
-  // A join's condition its keys (Polars takes two comparisons of a column with constants in ON
-  // for keys: "joining with repeated key names").
-  joinKeysOnly = true;
 
   // A blank-safe key: = of each side with a blank as a value of its type no data holds (Polars
   // joins on IS NOT DISTINCT FROM tens of times slower than on =: repros.py; past 30 s for a

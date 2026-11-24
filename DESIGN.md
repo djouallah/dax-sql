@@ -1210,9 +1210,7 @@ and no LATERAL. Where it differs from PostgreSQL's:
   a duration).
 - An interval is of a fixed length: a constant number of months is `INTERVAL 'k months'`, any
   other number made of the date's parts.
-- A join's condition is its keys (`joinKeysOnly`): an inner join's other conditions its `WHERE`,
-  a left join's on its right the right's filter (Polars takes a comparison with a constant for a
-  key). A blank-safe key is `IS NOT DISTINCT FROM`.
+- A blank-safe key is `=` of `COALESCE` with a value no data holds.
 - `strpos` reads its needle as a pattern: a text's position is the length before its first
   occurrence. `ROUND`'s places are a constant. Whole numbers are 64 bits: Polars computes a
   `CASE`'s branches no row takes.

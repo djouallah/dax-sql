@@ -1,0 +1,2 @@
+// note: LINESTX: a least-squares line of sales amount over quantity
+EVALUATE SELECTCOLUMNS(LINESTX(Sales, Sales[Amount], Sales[Qty]), "Slope", [Slope1], "Intercept", [Intercept], "R2", [CoefficientOfDetermination])

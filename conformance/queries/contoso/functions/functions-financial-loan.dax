@@ -1,0 +1,5 @@
+// note: a loan's payments and rates: PMT, IPMT, PPMT, PV, FV, NPER, RATE, CUMIPMT, CUMPRINC, ISPMT, EFFECT, NOMINAL, RRI and PDURATION
+EVALUATE ROW("pmt", PMT(0.08 / 12, 10, 10000), "ipmt", IPMT(0.1 / 12, 1, 36, 8000), "ppmt", PPMT(0.1 / 12, 1, 24, 2000), "pv", PV(0.08 / 12, 240, 500),
+    "fv", FV(0.06 / 12, 10, -200, -500, 1), "nper", NPER(0.12 / 12, -100, -1000, 10000, 1), "rate", RATE(48, -200, 8000),
+    "cumipmt", CUMIPMT(0.09 / 12, 360, 125000, 13, 24, 0), "cumprinc", CUMPRINC(0.09 / 12, 360, 125000, 13, 24, 0), "ispmt", ISPMT(0.1 / 12, 1, 36, 8000000),
+    "effect", EFFECT(0.0525, 4), "nominal", NOMINAL(0.053543, 4), "rri", RRI(96, 10000, 11000), "pduration", PDURATION(0.025, 2000, 2200))

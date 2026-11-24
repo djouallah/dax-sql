@@ -1,0 +1,3 @@
+// note: GEOMEAN of a column and GEOMEANX of an expression, by category
+EVALUATE SUMMARIZECOLUMNS(Category[Category], "Geomean Price", GEOMEAN(Product[Price]), "Geomean Qty", GEOMEANX(Sales, Sales[Qty]))
+ORDER BY Category[Category]

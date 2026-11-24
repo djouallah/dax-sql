@@ -1,0 +1,4 @@
+// note: RANK.EQ of each product's price among all products' prices, descending and ascending
+EVALUATE ADDCOLUMNS(VALUES(Product[Name]), "Price", CALCULATE(MAX(Product[Price])),
+    "Rank Desc", RANK.EQ(CALCULATE(MAX(Product[Price])), Product[Price]), "Rank Asc", RANK.EQ(CALCULATE(MAX(Product[Price])), Product[Price], 1))
+ORDER BY [Name]

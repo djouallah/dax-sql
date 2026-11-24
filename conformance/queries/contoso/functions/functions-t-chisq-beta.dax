@@ -1,0 +1,5 @@
+// note: Student's t, chi-squared and beta distributions and their inverses, CONFIDENCE.NORM and CONFIDENCE.T
+EVALUATE ROW("t", T.DIST(1.96, 10, TRUE), "t2", T.DIST.2T(1.96, 10), "trt", T.DIST.RT(1.96, 10), "tinv", T.INV(0.75, 2), "tinv2", T.INV.2T(0.546449, 60),
+    "chi", CHISQ.DIST(0.5, 1, TRUE), "chirt", CHISQ.DIST.RT(18.307, 10), "chiinv", CHISQ.INV(0.93, 1), "chiinvrt", CHISQ.INV.RT(0.050001, 10),
+    "beta", BETA.DIST(2, 8, 10, TRUE, 1, 3), "betainv", BETA.INV(0.685470581, 8, 10, 1, 3),
+    "cnorm", CONFIDENCE.NORM(0.05, 2.5, 50), "ct", CONFIDENCE.T(0.05, 1, 50))

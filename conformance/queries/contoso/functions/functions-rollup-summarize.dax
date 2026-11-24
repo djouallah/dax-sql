@@ -1,0 +1,3 @@
+// note: SUMMARIZE with ROLLUP and ISSUBTOTAL: each color's sales and the total
+EVALUATE SUMMARIZE(Product, ROLLUP(Product[Color]), "Sales", [Sales Amount], "Is Total", ISSUBTOTAL(Product[Color]))
+ORDER BY [Is Total], Product[Color]

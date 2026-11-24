@@ -1,0 +1,3 @@
+// note: EVALUATEANDLOG returns its value as it is
+EVALUATE SUMMARIZECOLUMNS(Category[Category], "Sales", EVALUATEANDLOG([Sales Amount]))
+ORDER BY Category[Category]

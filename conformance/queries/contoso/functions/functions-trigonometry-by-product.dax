@@ -1,0 +1,3 @@
+// note: trigonometric functions of a column, per product
+EVALUATE SELECTCOLUMNS(Product, "Product", Product[Name], "Sin", SIN(Product[Price] / 100), "Atan", ATAN(Product[Price]), "Degrees", DEGREES(Product[Price] / 100))
+ORDER BY [Product]

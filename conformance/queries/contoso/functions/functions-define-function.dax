@@ -1,0 +1,4 @@
+// note: a user-defined function (DEFINE FUNCTION), applied to a measure by category
+DEFINE FUNCTION AddTax = (amount : NUMERIC, rate : NUMERIC) => amount * (1 + rate)
+EVALUATE SUMMARIZECOLUMNS(Category[Category], "Sales", [Sales Amount], "With Tax", AddTax([Sales Amount], 0.1))
+ORDER BY Category[Category]

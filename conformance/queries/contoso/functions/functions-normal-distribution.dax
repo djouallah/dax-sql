@@ -1,0 +1,4 @@
+// note: NORM.DIST, NORM.INV, NORM.S.DIST, NORM.S.INV, EXPON.DIST and POISSON.DIST, cumulative and not
+EVALUATE ROW("norm", NORM.DIST(42, 40, 1.5, TRUE), "normpdf", NORM.DIST(42, 40, 1.5, FALSE), "norminv", NORM.INV(0.908789, 40, 1.5),
+    "snorm", NORM.S.DIST(1.333333, TRUE), "snorminv", NORM.S.INV(0.908789), "expon", EXPON.DIST(0.2, 10, TRUE),
+    "poisson", POISSON.DIST(2, 5, TRUE), "poissonpmf", POISSON.DIST(2, 5, FALSE))

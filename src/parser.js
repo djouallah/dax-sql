@@ -17,7 +17,7 @@
 // and a table WITH VISUAL SHAPE (a visual calculation's) also has
 //   shape: { axes: [{ name, groups: [{ cols, total }], order: [{ col, desc }] }], densify }
 import { lex } from './lexer.js';
-import { syntax } from './errors.js';
+import { syntax, unsupported } from './errors.js';
 
 // Words that cannot be a bare name. (ASC and DESC can: they are arguments of TOPN, RANKX.)
 const KEYWORDS = new Set(['VAR', 'RETURN', 'EVALUATE', 'DEFINE', 'MEASURE', 'ORDER', 'BY', 'IN', 'NOT', 'START']);
@@ -78,7 +78,8 @@ class Parser {
           const d = { kind, name: name.v, e: this.expr(), pos };
           if (kind === 'table' && this.isKw('WITH')) d.shape = this.visualShape();
           defines.push(d);
-        } else break;
+        } else if (this.isKw('FUNCTION')) throw unsupported('DEFINE FUNCTION (a user-defined function)');
+        else break;
       }
     }
     while (this.eat('EVALUATE')) {

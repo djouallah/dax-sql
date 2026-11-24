@@ -1,0 +1,2 @@
+// note: BITAND, BITOR, BITXOR, BITLSHIFT and BITRSHIFT
+EVALUATE ROW("and", BITAND(12, 10), "or", BITOR(12, 10), "xor", BITXOR(12, 10), "lshift", BITLSHIFT(3, 4), "rshift", BITRSHIFT(48, 4), "neg", BITAND(-1, 255))

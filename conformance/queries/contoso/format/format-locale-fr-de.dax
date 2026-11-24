@@ -1,0 +1,2 @@
+// note: FORMAT with a locale: French and German separators, a French date
+EVALUATE ROW("fr", FORMAT(1234567.891, "#,##0.00", "fr-FR"), "de", FORMAT(1234567.891, "#,##0.00", "de-DE"), "frdate", FORMAT(DATE(2024, 3, 5), "dddd d mmmm yyyy", "fr-FR"))

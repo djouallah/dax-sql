@@ -1,0 +1,3 @@
+// note: FORMAT with a pattern that is not a constant: each product's price by a pattern its price chooses
+EVALUATE SELECTCOLUMNS(Product, "Product", Product[Name], "Price", FORMAT(Product[Price], IF(Product[Price] >= 100, "#,##0", "0.00")))
+ORDER BY [Product]

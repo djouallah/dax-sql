@@ -1,0 +1,2 @@
+// note: depreciation: SLN, SYD, DB, DDB and VDB
+EVALUATE ROW("sln", SLN(30000, 7500, 10), "syd", SYD(30000, 7500, 10, 1), "db", DB(1000000, 100000, 6, 1, 7), "ddb", DDB(2400, 300, 10, 1, 2), "vdb", VDB(2400, 300, 10, 0, 1, 2))

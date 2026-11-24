@@ -1,0 +1,3 @@
+// note: ISONORAFTER: the products on or after a price of 50 and the name "M", in descending price and ascending name order
+EVALUATE FILTER(SELECTCOLUMNS(Product, "Name", Product[Name], "Price", Product[Price]), ISONORAFTER([Price], 50, DESC, [Name], "M", ASC))
+ORDER BY [Price] DESC, [Name]

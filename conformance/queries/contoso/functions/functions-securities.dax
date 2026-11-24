@@ -1,0 +1,6 @@
+// note: discounted securities and treasury bills: DISC, INTRATE, RECEIVED, PRICEDISC, YIELDDISC, TBILLPRICE, TBILLYIELD, TBILLEQ, DOLLARDE and DOLLARFR
+EVALUATE ROW("disc", DISC(DATE(2018, 7, 1), DATE(2048, 1, 1), 97.975, 100, 1), "intrate", INTRATE(DATE(2008, 2, 15), DATE(2008, 5, 15), 1000000, 1014420, 2),
+    "received", RECEIVED(DATE(2008, 2, 15), DATE(2008, 5, 15), 1000000, 0.0575, 2), "pricedisc", PRICEDISC(DATE(2008, 2, 16), DATE(2008, 3, 1), 0.0525, 100, 2),
+    "yielddisc", YIELDDISC(DATE(2008, 2, 16), DATE(2008, 3, 1), 99.795, 100, 2), "tbillprice", TBILLPRICE(DATE(2008, 3, 31), DATE(2008, 6, 1), 0.09),
+    "tbillyield", TBILLYIELD(DATE(2008, 3, 31), DATE(2008, 6, 1), 98.45), "tbilleq", TBILLEQ(DATE(2008, 3, 31), DATE(2008, 6, 1), 0.0914),
+    "dollarde", DOLLARDE(1.02, 16), "dollarfr", DOLLARFR(1.125, 16))

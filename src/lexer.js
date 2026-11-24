@@ -8,7 +8,8 @@
 //   op   an operator or punctuation
 import { syntax } from './errors.js';
 
-const OPS = ['==', '&&', '||', '<>', '<=', '>=', '=', '<', '>', '+', '-', '*', '/', '^', '&', '(', ')', '{', '}', ','];
+// (=> and : are DEFINE FUNCTION's, which the parser reports as not supported.)
+const OPS = ['==', '=>', ':', '&&', '||', '<>', '<=', '>=', '=', '<', '>', '+', '-', '*', '/', '^', '&', '(', ')', '{', '}', ','];
 
 export function lex(src) {
   const out = [];

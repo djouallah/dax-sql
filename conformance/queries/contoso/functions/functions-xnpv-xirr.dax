@@ -1,0 +1,4 @@
+// note: XNPV and XIRR over a table of dated cash flows
+EVALUATE
+VAR Flows = DATATABLE("Date", DATETIME, "Amount", DOUBLE, {{"2014-01-01", -10000}, {"2014-03-01", 2750}, {"2014-10-30", 4250}, {"2015-02-15", 3250}, {"2015-04-01", 2750}})
+RETURN ROW("xnpv", XNPV(Flows, [Amount], [Date], 0.09), "xirr", XIRR(Flows, [Amount], [Date]))

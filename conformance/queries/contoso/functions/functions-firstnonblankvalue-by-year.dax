@@ -1,0 +1,3 @@
+// note: FIRSTNONBLANKVALUE and LASTNONBLANKVALUE: the sales of the first and the last day with a sale, by year
+EVALUATE SUMMARIZECOLUMNS('Date'[Year], "First Day Sales", FIRSTNONBLANKVALUE('Date'[Date], [Sales Amount]), "Last Day Sales", LASTNONBLANKVALUE('Date'[Date], [Sales Amount]))
+ORDER BY 'Date'[Year]

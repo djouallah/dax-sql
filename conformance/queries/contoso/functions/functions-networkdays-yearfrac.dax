@@ -1,0 +1,6 @@
+// note: NETWORKDAYS (Saturday and Sunday, and Friday and Saturday off) and YEARFRAC (30/360 and actual), between the first orders' dates and their ship dates
+EVALUATE SELECTCOLUMNS(TOPN(5, Sales, Sales[OrderDate], ASC, Sales[ProductKey], ASC, Sales[CustomerKey], ASC),
+    "Order", Sales[OrderDate], "Ship", Sales[ShipDate], "Workdays", NETWORKDAYS(Sales[OrderDate], Sales[ShipDate]),
+    "Fri-Sat Weekend", NETWORKDAYS(Sales[OrderDate], Sales[ShipDate], 7), "Year Frac", YEARFRAC(Sales[OrderDate], Sales[ShipDate]),
+    "Year Frac Actual", YEARFRAC(Sales[OrderDate], Sales[ShipDate], 1))
+ORDER BY [Order], [Ship]

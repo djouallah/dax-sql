@@ -1,0 +1,2 @@
+// note: TIMEVALUE of a text: the time of day alone
+EVALUATE ROW("t", TIMEVALUE("14:30:15"), "pm", TIMEVALUE("2:30 PM"), "withdate", TIMEVALUE("2024-03-05 08:15:00"))

@@ -1,0 +1,3 @@
+// note: TOCSV and TOJSON of a small table
+EVALUATE VAR T = TOPN(3, SELECTCOLUMNS(Product, "Key", Product[ProductKey], "Name", Product[Name]), [Key], ASC)
+RETURN ROW("csv", TOCSV(T), "json", TOJSON(T))

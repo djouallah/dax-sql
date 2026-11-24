@@ -1,0 +1,5 @@
+// note: the trigonometric and hyperbolic functions, DEGREES, RADIANS and SQRTPI
+EVALUATE ROW("sin", SIN(0.5), "cos", COS(0.5), "tan", TAN(0.5), "asin", ASIN(0.5), "acos", ACOS(0.5), "atan", ATAN(0.5),
+    "cot", COT(0.5), "acot", ACOT(0.5), "sinh", SINH(0.5), "cosh", COSH(0.5), "tanh", TANH(0.5), "asinh", ASINH(0.5),
+    "acosh", ACOSH(1.5), "atanh", ATANH(0.5), "coth", COTH(0.5), "acoth", ACOTH(1.5),
+    "deg", DEGREES(PI()), "rad", RADIANS(180), "sqrtpi", SQRTPI(2))

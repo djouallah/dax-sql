@@ -58,6 +58,14 @@ SMALL = [
     ("d1 date_trunc of an outer column", "SELECT ts, (SELECT COUNT(*) FROM u AS i WHERE i.ts >= date_trunc('month', o.ts)) AS n FROM u AS o"),
     ("d2 date_trunc of an outer column in a LATERAL", "SELECT o.ts, x.n FROM u AS o, LATERAL (SELECT COUNT(*) AS n FROM u AS i WHERE i.ts >= date_trunc('year', o.ts)) AS x"),
     ("c1 CAST of a column in a branch no row takes", "SELECT CASE WHEN s <> 'x' THEN CAST(s AS INTEGER) END AS r FROM v"),
+    # The outer column read unqualified (as dax-sql writes it: each column's name unique in the query).
+    ("u1 unqualified outer column, derived table with no FROM", "SELECT x, (SELECT b.v FROM (SELECT x * 10 AS v) AS b) AS r FROM (SELECT a AS x FROM t) AS o"),
+    ("u2 unqualified outer column, derived table's WHERE", "SELECT x, (SELECT COUNT(*) FROM (SELECT * FROM t AS i WHERE i.a <= x) AS s) AS n FROM (SELECT a AS x FROM t) AS o"),
+    ("u2q the same qualified", "SELECT x, (SELECT COUNT(*) FROM (SELECT * FROM t AS i WHERE i.a <= o.x) AS s) AS n FROM (SELECT a AS x FROM t) AS o"),
+    ("u3 unqualified outer column, LATERAL's derived table", "SELECT o.x, l.y FROM (SELECT a AS x FROM t) AS o, LATERAL (SELECT DISTINCT * FROM (SELECT i.a AS y FROM t AS i WHERE i.a <= x) AS s) AS l"),
+    ("u3q the same qualified", "SELECT o.x, l.y FROM (SELECT a AS x FROM t) AS o, LATERAL (SELECT DISTINCT * FROM (SELECT i.a AS y FROM t AS i WHERE i.a <= o.x) AS s) AS l"),
+    ("u4 LATERAL of a UNION ALL reading the outer row", "SELECT o.x, l.y FROM (SELECT a AS x FROM t) AS o, LATERAL (SELECT y FROM (SELECT a AS y FROM t WHERE a <= o.x) AS p UNION ALL SELECT y FROM (SELECT a AS y FROM t WHERE a > o.x) AS q) AS l"),
+    ("u5 LATERAL over a CTE, reading nothing outside", "WITH c AS (SELECT MAX(a) AS m FROM t) SELECT o.a, l.m FROM t AS o, LATERAL (SELECT m FROM c) AS l"),
 ]
 frames = {"t": pl.DataFrame({"a": [1, 2, 3]}),
           "u": pl.DataFrame({"ts": [datetime.datetime(2024, 1, 31), datetime.datetime(2024, 2, 29), datetime.datetime(2024, 3, 1)]}),

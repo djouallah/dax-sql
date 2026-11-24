@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 37)
+EVALUATE SUMMARIZECOLUMNS('Category'[Category], 'Customer'[City], FILTER(VALUES('Date'[Quarter]), 'Date'[Quarter] IN { 3 }), FILTER(VALUES('Date'[Year]), 'Date'[Year] IN { 2023, -1 }), "m0", IF(ISBLANK(ROUND(COUNTROWS('Product'), 2)), 0, MAX('Sales'[Amount])), "m1", CALCULATE(VAR v = [Sales by Ship Date] RETURN v * 2 + SUM('Returns'[ReturnQty]), REMOVEFILTERS('Product')))

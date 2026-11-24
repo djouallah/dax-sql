@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 70)
+EVALUATE ROW("m0", CALCULATE([Catalog Net Profit], KEEPFILTERS('item'[i_color] = "plum")), "m1", DISTINCTCOUNT('item'[i_color]), "m2", IF(HASONEVALUE('store'[s_state]), [Catalog Sales Same Period LY]))

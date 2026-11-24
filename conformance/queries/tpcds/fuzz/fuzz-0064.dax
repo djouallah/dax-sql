@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 64)
+EVALUATE ADDCOLUMNS(VALUES('store'[s_city]), "m0", IF(ISBLANK(MAX([Store Revenue], [Store Revenue YoY])), 0, IF(HASONEVALUE('customer_demographics'[cd_marital_status]), COUNTROWS('store'))), "m1", (ABS(MAX('catalog_sales'[cs_ext_sales_price])) + ABS([Catalog Net Profit])))

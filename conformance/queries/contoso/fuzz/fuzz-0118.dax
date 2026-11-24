@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 118)
+EVALUATE TOPN(4, SUMMARIZECOLUMNS('Date'[Quarter], "m0", CALCULATE(DISTINCTCOUNT('Product'[Color]), ALLEXCEPT('Date', 'Date'[Quarter]), REMOVEFILTERS('Customer'))), [m0], DESC)

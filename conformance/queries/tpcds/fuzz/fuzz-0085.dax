@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 85)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('date_dim'[d_year], "m0", DIVIDE([Store Distinct Customers], CALCULATE(COUNTROWS('item'), ALL('date_dim'[d_moy])))), USERELATIONSHIP('catalog_sales'[cs_ship_addr_sk], 'customer_address'[ca_address_sk]))

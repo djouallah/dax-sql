@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 29)
+EVALUATE SUMMARIZECOLUMNS(TREATAS({ "zz-none", "Alice" }, 'Customer'[Customer]), FILTER(ALL('Date'[Year]), 'Date'[Year] <> 2024), "m0", CALCULATE(DISTINCTCOUNT('Category'[Category]), REMOVEFILTERS('Date')), "m1", COUNTROWS('Sales'), "m2", [Best Customer Sales])

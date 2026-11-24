@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 4)
+EVALUATE ROW("m0", [Store Revenue], "m1", ((DIVIDE(AVERAGE('store_sales'[ss_ext_sales_price]), MAX('catalog_sales'[cs_quantity])) + [Store Distinct Customers]) - DIVIDE(DIVIDE(DISTINCTCOUNT('store'[s_store_name]), CALCULATE([Store Net Profit], ALL('customer_address'[ca_state]))), IF(ISBLANK(MIN('catalog_sales'[cs_net_profit])), 0, [Catalog Sales Same Period LY]))))

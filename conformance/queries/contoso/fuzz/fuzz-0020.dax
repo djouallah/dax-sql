@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 20)
+EVALUATE SUMMARIZECOLUMNS("m0", DISTINCTCOUNT('Customer'[Customer]), "m1", IF(MAX('Returns'[ReturnQty]) > 1, IF(ISINSCOPE('Date'[Year]), SUM('Returns'[ReturnQty]), [Red Sales Kept]), CALCULATE([Red Sales], DATESBETWEEN('Date'[Date], DATE(2024, 3, 28), DATE(2024, 5, 1)))))

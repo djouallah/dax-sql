@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 22)
+EVALUATE SUMMARIZECOLUMNS('date_dim'[d_moy], 'date_dim'[d_qoy], 'item'[i_class], TREATAS({ "Shoes", "Home" }, 'item'[i_category]), TREATAS({ 2026 }, 'date_dim'[d_year]), "m0", DIVIDE(AVERAGE('store_sales'[ss_ext_sales_price]), CALCULATE([Catalog Sales Quantity], ALL('date_dim'[d_year]))))

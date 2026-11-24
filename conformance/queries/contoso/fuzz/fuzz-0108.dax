@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 108)
+EVALUATE ROW("m0", CALCULATE([Returned], DATESBETWEEN('Date'[Date], DATE(2023, 12, 11), DATE(2023, 2, 6))), "m1", MAX(DISTINCTCOUNT('Product'[Name]), [Line Value]), "m2", MAX([Sales by Ship Date], [Orders]))

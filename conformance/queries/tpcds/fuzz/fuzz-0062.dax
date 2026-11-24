@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 62)
+EVALUATE ROW("m0", CALCULATE(AVERAGEX(VALUES('promotion'[p_promo_name]), [Store Revenue YTD]), ALLEXCEPT('date_dim', 'date_dim'[d_year])))

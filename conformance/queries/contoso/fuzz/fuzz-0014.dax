@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 14)
+EVALUATE SUMMARIZECOLUMNS('Category'[Category], "m0", AVERAGE('Sales'[Amount]), "m1", CALCULATE([Customers], DATESBETWEEN('Date'[Date], DATE(2024, 4, 30), DATE(2024, 3, 24))), "m2", DIVIDE([Target Total], CALCULATE(CALCULATE([Product Count], 'Product'[Name] IN { "Helmet", "Cap" }, KEEPFILTERS('Date'[Month] = 11)), ALL('Date'[Month]))))

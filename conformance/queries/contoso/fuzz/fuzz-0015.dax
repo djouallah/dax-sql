@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 15)
+EVALUATE ROW("m0", IF(HASONEVALUE('Product'[Name]), COUNTROWS('Returns')), "m1", VAR v = [Products Sold] RETURN v * 2 + [Orders], "m2", ABS([Sales PY]))

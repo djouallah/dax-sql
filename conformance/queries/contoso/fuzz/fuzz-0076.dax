@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 76)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('Date'[Year], "m0", [Sales PY], "m1", CALCULATE(COALESCE(VAR v = [Return Rate] RETURN v * 2 + [Return Rate], 0), KEEPFILTERS('Product'[Color] = "Blue"))), ALL('Date'[Quarter]))

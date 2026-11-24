@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 62)
+EVALUATE ADDCOLUMNS(VALUES('Date'[Year]), "m0", ABS([Share of Category]), "m1", VAR v = MIN('Sales'[Qty]) RETURN v * 2 + [Quantity])

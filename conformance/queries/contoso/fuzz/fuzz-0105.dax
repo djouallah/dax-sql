@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 105)
+EVALUATE SUMMARIZECOLUMNS('Product'[Name], "m0", CALCULATE([Quantity], USERELATIONSHIP('Sales'[ShipDate], 'Date'[Date]), ALLEXCEPT('Product', 'Product'[Name])), "m1", COALESCE(AVERAGE('Returns'[ReturnQty]), 0), "m2", ABS([Sales PY]))

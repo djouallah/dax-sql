@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 10)
+EVALUATE ADDCOLUMNS(VALUES('date_dim'[d_qoy]), "m0", DIVIDE([Archive Files], [Catalog Sales YoY]), "m1", [Catalog Net Profit])

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 48)
+EVALUATE TOPN(2, SUMMARIZECOLUMNS('Product'[Price], "m0", IF(ISBLANK(IF(SUM('Returns'[ReturnQty]) > 1000, [Best Customer Sales], [All Sales])), 0, CALCULATE([Products Sold], PREVIOUSMONTH('Date'[Date]), 'Category'[Category] = "zz-none"))), [m0], ASC)

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 26)
+EVALUATE SUMMARIZECOLUMNS('Date'[Quarter], "m0", COUNTROWS(FILTER(VALUES('Date'[Month]), IF(ISINSCOPE('Product'[Color]), [Returned], [Red Sales Kept]) > 0)), "m1", DIVIDE(ROUND([Orders], 2), DIVIDE([Quantity], [Red Sales])))

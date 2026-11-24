@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 92)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('Product'[PriceBand], "m0", CALCULATE([Return Rate], ALL('Product'[Color]))), 'Customer'[City] = "Berlin")

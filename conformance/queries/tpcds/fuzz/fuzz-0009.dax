@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 9)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('store'[s_city], "m0", CALCULATE(IF(HASONEVALUE('promotion'[p_promo_name]), AVERAGE('store_sales'[ss_net_profit])), DATESBETWEEN('date_dim'[d_date], DATE(2026, 6, 7), DATE(2025, 3, 16)))), USERELATIONSHIP('catalog_sales'[cs_ship_addr_sk], 'customer_address'[ca_address_sk]))

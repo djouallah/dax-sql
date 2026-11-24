@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 86)
+EVALUATE ADDCOLUMNS(VALUES('store'[s_store_name]), "m0", IF(HASONEVALUE('item'[i_color]), MAX('store_sales'[ss_net_profit])), "m1", [Store Revenue YTD])

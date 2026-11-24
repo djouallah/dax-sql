@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 78)
+EVALUATE SUMMARIZECOLUMNS(FILTER(ALL('item'[i_color]), 'item'[i_color] <> "olive"), FILTER(VALUES('customer_address'[ca_state]), 'customer_address'[ca_state] IN { "CA", "AR" }), "m0", ABS([Catalog Sales Quantity]), "m1", DIVIDE(DISTINCTCOUNT('promotion'[p_promo_name]), [Catalog Sales Same Period LY]), "m2", [Store Revenue YTD])

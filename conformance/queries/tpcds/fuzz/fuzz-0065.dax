@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 65)
+EVALUATE ADDCOLUMNS(VALUES('customer_demographics'[cd_marital_status]), "m0", CALCULATE([Store Net Profit], DATESBETWEEN('date_dim'[d_date], DATE(2025, 1, 15), DATE(2026, 11, 4))), "m1", RANKX(ALL('store'[s_state]), RANKX(ALL('ship_mode'[sm_type]), VAR v = MAX('catalog_sales'[cs_ext_sales_price]) RETURN v * 2 + MIN('catalog_sales'[cs_ext_sales_price]), , DESC, Dense)))

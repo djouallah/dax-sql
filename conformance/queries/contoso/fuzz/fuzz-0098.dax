@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 98)
+EVALUATE SUMMARIZECOLUMNS('Category'[Category], 'Product'[Name], KEEPFILTERS(TREATAS({ "Accessories", "Clothing" }, 'Category'[Category])), FILTER(VALUES('Product'[Price]), 'Product'[Price] IN { 20, 1000 }), "m0", IF(ISBLANK([Sales Amount]), 0, MAX('Sales'[Amount])), "m1", COUNTROWS(FILTER(VALUES('Date'[Month]), [Orders] > 10)))

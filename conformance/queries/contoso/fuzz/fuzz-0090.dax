@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 90)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('Date'[Year], "m0", DIVIDE([Orders], CALCULATE(COUNTROWS('Product'), ALL('Date'[Month])))), USERELATIONSHIP('Sales'[ShipDate], 'Date'[Date]))

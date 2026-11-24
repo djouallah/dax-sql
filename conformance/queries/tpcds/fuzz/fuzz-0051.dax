@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 51)
+EVALUATE ADDCOLUMNS(VALUES('item'[i_current_price]), "m0", IF(ISBLANK(SUMX(VALUES('item'[i_current_price]), ROUND(SUM('store_sales'[ss_quantity]), 1))), 0, IF(ISINSCOPE('item'[i_current_price]), DIVIDE(COUNTROWS('store_sales'), CALCULATE([Store Revenue Same Period LY], ALL('item'[i_category]))), [Store Revenue Same Period LY])))

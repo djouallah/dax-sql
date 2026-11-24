@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 89)
+EVALUATE ROW("m0", SUMX(VALUES('Product'[Color]), COUNTROWS('Customer')), "m1", [Returned])

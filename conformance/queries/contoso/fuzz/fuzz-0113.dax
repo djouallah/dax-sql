@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 113)
+EVALUATE TOPN(2, SUMMARIZECOLUMNS('Date'[Month], "m0", TOTALYTD(RANKX(ALL('Date'[Year]), SUMX(VALUES('Product'[Name]), [Return Rate])), 'Date'[Date])), [m0], DESC)

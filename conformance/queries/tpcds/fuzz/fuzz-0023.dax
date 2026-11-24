@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 23)
+EVALUATE SUMMARIZECOLUMNS(KEEPFILTERS(TREATAS({ "Secondary", "2 yr Degree" }, 'customer_demographics'[cd_education_status])), TREATAS({ "TWO DAY", "NEXT DAY" }, 'ship_mode'[sm_type]), "m0", [Store Net Profit], "m1", MAX([Archive Files], AVERAGE('store_sales'[ss_ext_sales_price])), "m2", IF(HASONEVALUE('store'[s_state]), [Store Revenue Same Period LY]))

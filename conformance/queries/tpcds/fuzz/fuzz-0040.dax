@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 40)
+EVALUATE SUMMARIZECOLUMNS('date_dim'[d_qoy], FILTER(ALL('item'[i_category]), 'item'[i_category] <> "Jewelry"), "m0", CALCULATE([Archive Files], KEEPFILTERS('store'[s_store_name] IN { "anti", "zz-none" })))

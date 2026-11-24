@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 54)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('Category'[Category], 'Customer'[Customer], "m0", COUNTROWS('Product')), KEEPFILTERS('Category'[Category] = "Bikes"))

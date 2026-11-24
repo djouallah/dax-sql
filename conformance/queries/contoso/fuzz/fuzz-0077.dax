@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 77)
+EVALUATE TOPN(4, SUMMARIZECOLUMNS('Product'[Price], "m0", (MAX('Sales'[Qty]) - MAX('Sales'[Amount]))), [m0], ASC)

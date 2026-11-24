@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 86)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('Date'[Quarter], "m0", [Big Orders]), KEEPFILTERS('Date'[Month] IN { 7, 5, 2 }))

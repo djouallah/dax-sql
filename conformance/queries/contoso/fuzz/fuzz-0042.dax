@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 42)
+EVALUATE SUMMARIZECOLUMNS('Date'[Year], 'Date'[Month], FILTER(ALL('Product'[Name]), 'Product'[Name] <> "Jersey"), "m0", CALCULATE([Return Rate], KEEPFILTERS('Product'[Price] IN { 20, -1 })))

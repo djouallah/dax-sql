@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 45)
+EVALUATE SUMMARIZECOLUMNS('customer_demographics'[cd_education_status], 'date_dim'[d_qoy], 'item'[i_class], KEEPFILTERS(TREATAS({ "importcorp #1", "amalgpack #6" }, 'item'[i_brand])), "m0", MAX(TOTALYTD(MAX('catalog_sales'[cs_net_profit]), 'date_dim'[d_date]), DIVIDE(SUM('store_sales'[ss_net_profit]), [Archive Files])))

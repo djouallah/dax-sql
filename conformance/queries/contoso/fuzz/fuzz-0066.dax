@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 66)
+EVALUATE ADDCOLUMNS(VALUES('Category'[Category]), "m0", IF(ISBLANK(MAX([Avg Price], [Red Sales Kept])), 0, IF(HASONEVALUE('Customer'[City]), COUNTROWS('Customer'))), "m1", (ABS(MAX('Returns'[ReturnQty])) + ABS([Line Value Column])))

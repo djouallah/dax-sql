@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 60)
+EVALUATE ADDCOLUMNS(VALUES('date_dim'[d_year]), "m0", ABS([Store Revenue YTD]), "m1", VAR v = MIN('store_sales'[ss_quantity]) RETURN v * 2 + [Store Distinct Customers])

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 64)
+EVALUATE ROW("m0", CALCULATE(AVERAGEX(VALUES('Date'[Quarter]), [Share of Category]), ALLEXCEPT('Date', 'Date'[Year])))

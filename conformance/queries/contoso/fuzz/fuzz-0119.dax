@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 119)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('Customer'[Customer], 'Customer'[City], "m0", MAX('Sales'[Amount])), 'Product'[Price] = 60)

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 65)
+EVALUATE ADDCOLUMNS(VALUES('Product'[Color]), "m0", COUNTROWS(FILTER(VALUES('Customer'[City]), ROUND([Return Rate], 1) > 0)), "m1", ROUND(VAR v = [Quantity] RETURN v * 2 + [Target Total], 2))

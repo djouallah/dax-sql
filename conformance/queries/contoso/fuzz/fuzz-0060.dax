@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 60)
+EVALUATE ADDCOLUMNS(VALUES('Product'[PriceBand]), "m0", RANKX(ALL('Product'[Color]), AVERAGE('Sales'[Amount])))

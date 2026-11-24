@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 24)
+EVALUATE SUMMARIZECOLUMNS('ship_mode'[sm_type], "m0", COUNTROWS(FILTER(VALUES('date_dim'[d_qoy]), IF(ISINSCOPE('item'[i_class]), [Archive Files], [Store Revenue YoY]) > 0)), "m1", DIVIDE(ROUND([Store Profit % by Item Category], 2), DIVIDE([Store Distinct Customers], [Store Revenue Same Period LY])))

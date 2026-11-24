@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 3)
+EVALUATE TOPN(1, SUMMARIZECOLUMNS('Date'[Month], "m0", MAXX(VALUES('Date'[Month]), MAX(ABS(SUM('Returns'[ReturnQty])), [Sales by Ship Date]))), [m0], ASC)

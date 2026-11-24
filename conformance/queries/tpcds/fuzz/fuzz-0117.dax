@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 117)
+EVALUATE SUMMARIZECOLUMNS('item'[i_brand], 'date_dim'[d_qoy], FILTER(VALUES('date_dim'[d_moy]), 'date_dim'[d_moy] IN { 10, 8 }), TREATAS({ 2025, -1, 2026 }, 'date_dim'[d_year]), "m0", ([Catalog Sales Same Period LY] * DIVIDE(DISTINCTCOUNT('date_dim'[d_year]), CALCULATE(MIN('catalog_sales'[cs_net_profit]), ALL('item'[i_color])))))

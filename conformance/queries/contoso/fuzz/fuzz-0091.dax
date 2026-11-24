@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 91)
+EVALUATE ADDCOLUMNS(VALUES('Product'[Price]), "m0", IF(HASONEVALUE('Product'[PriceBand]), MAX('Sales'[Amount])), "m1", [Share of Category])

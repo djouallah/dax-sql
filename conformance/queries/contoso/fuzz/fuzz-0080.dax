@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 80)
+EVALUATE SUMMARIZECOLUMNS("m0", [Red Sales Kept], "m1", IF(ISBLANK(CALCULATE(COUNTROWS('Returns'), KEEPFILTERS('Customer'[Customer] = "Chloe"), PREVIOUSMONTH('Date'[Date]))), 0, CALCULATE([Sales Amount], 'Date'[Quarter] > 3, FILTER(ALL('Date'[Year]), 'Date'[Year] <> 2024))), "m2", COUNTROWS(FILTER(VALUES('Date'[Quarter]), [Return Rate] > 0)))

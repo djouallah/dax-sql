@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 47)
+EVALUATE SUMMARIZECOLUMNS("m0", CALCULATE([Store Revenue Same Period LY], DATESBETWEEN('date_dim'[d_date], DATE(2025, 9, 11), DATE(2025, 6, 30))), "m1", ABS([Store Net Profit]), "m2", AVERAGEX(VALUES('customer_demographics'[cd_education_status]), MAX('store_sales'[ss_net_profit])))

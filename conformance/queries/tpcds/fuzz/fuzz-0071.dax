@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 71)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('date_dim'[d_qoy], "m0", DIVIDE(ROUND(MIN('store_sales'[ss_ext_sales_price]), 0), MAX('store_sales'[ss_net_profit]))), USERELATIONSHIP('catalog_sales'[cs_ship_addr_sk], 'customer_address'[ca_address_sk]))

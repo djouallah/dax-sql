@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 17)
+EVALUATE SUMMARIZECOLUMNS('Customer'[Customer], 'Category'[Category], "m0", [Line Value Column], "m1", IF(ISINSCOPE('Product'[PriceBand]), ABS(IF(ISBLANK([All Sales]), 0, [Sales PY])), VAR v = CALCULATE([Red Sales], REMOVEFILTERS('Customer')) RETURN v * 2 + COALESCE(AVERAGE('Sales'[Amount]), 0)))

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 97)
+EVALUATE SUMMARIZECOLUMNS('Product'[Price], "m0", IF(ISINSCOPE('Date'[Quarter]), IF(ISBLANK(CALCULATE([Best Customer Sales], REMOVEFILTERS('Product'), 'Product'[PriceBand] = "zz-none")), 0, IF(ISBLANK([Big Orders]), 0, COUNTROWS('Customer'))), COUNTROWS('Customer')), "m1", IF(ISBLANK(IF(ISBLANK(IF(HASONEVALUE('Customer'[Customer]), COUNTROWS('Sales'))), 0, [Customers])), 0, COALESCE(IF(ISINSCOPE('Date'[Quarter]), [Best Customer Sales], [Share of Category]), 0)))

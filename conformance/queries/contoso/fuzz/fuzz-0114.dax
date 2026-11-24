@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 114)
+EVALUATE SUMMARIZECOLUMNS('Product'[Name], 'Product'[Color], "m0", [All Sales], "m1", ([Return Rate] - [Line Value]))

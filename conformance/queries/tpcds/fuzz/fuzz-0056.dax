@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 56)
+EVALUATE ROW("m0", IF(ISBLANK([Store Net Profit]), 0, [Store Revenue YTD]))

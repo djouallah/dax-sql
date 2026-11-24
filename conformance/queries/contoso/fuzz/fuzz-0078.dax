@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 78)
+EVALUATE SUMMARIZECOLUMNS('Customer'[City], 'Product'[Name], 'Product'[Color], "m0", (ROUND([Sales YTD], 1) * TOTALYTD(ABS([Products Sold]), 'Date'[Date])), "m1", AVERAGE('Returns'[ReturnQty]), "m2", AVERAGE('Returns'[ReturnQty]))

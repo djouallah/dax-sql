@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 79)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('Date'[Year], 'Product'[Color], "m0", IF(ISINSCOPE('Product'[Name]), (CALCULATE([Returned], KEEPFILTERS('Customer'[Customer] = "Alice"), 'Date'[Month] <> 3) - MINX(VALUES('Category'[Category]), COUNTROWS('Returns'))), AVERAGE('Sales'[Amount]))), KEEPFILTERS('Date'[Year] IN { 2023 }))

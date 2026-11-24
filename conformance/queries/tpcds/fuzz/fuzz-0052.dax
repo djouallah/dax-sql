@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 52)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('store'[s_city], 'customer_address'[ca_state], "m0", COUNTROWS('item')), KEEPFILTERS('store'[s_state] = "TN"))

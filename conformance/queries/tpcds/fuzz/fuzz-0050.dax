@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 50)
+EVALUATE SUMMARIZECOLUMNS('date_dim'[d_moy], 'store'[s_city], 'ship_mode'[sm_type], "m0", COALESCE(ABS(DISTINCTCOUNT('item'[i_current_price])), 0))

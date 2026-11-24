@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 120)
+EVALUATE ROW("m0", TOTALYTD(IF([Orders] > 10, COUNTROWS('Returns'), MAX('Sales'[Qty])), 'Date'[Date]), "m1", (DIVIDE([Products Sold], CALCULATE(DISTINCTCOUNT('Product'[Color]), ALL('Product'[Color]))) - RANKX(ALL('Date'[Quarter]), MIN('Returns'[ReturnQty]))), "m2", VAR v = [Red Sales Kept] RETURN v * 2 + CALCULATE(MIN('Sales'[Amount]), ALL('Category'[Category]), 'Product'[Color] = "Blue"))

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 71)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('Date'[Quarter], "m0", ROUND(ROUND(AVERAGE('Sales'[Qty]), 2), 1)), DATESYTD('Date'[Date]))

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 116)
+EVALUATE ROW("m0", DIVIDE(RANKX(ALL('item'[i_color]), MAX('store_sales'[ss_ext_sales_price]), , DESC, Dense), [Store Revenue YTD]), "m1", [Store Revenue YTD], "m2", CALCULATE(CALCULATE(DIVIDE(DISTINCTCOUNT('ship_mode'[sm_type]), [Archive Source Rows]), KEEPFILTERS('store'[s_city] = "Oak Grove")), DATESBETWEEN('date_dim'[d_date], DATE(1999, 1, 1), DATE(2026, 5, 31))))

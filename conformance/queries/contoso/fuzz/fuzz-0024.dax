@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 24)
+EVALUATE SUMMARIZECOLUMNS('Date'[Month], 'Date'[Year], 'Product'[Color], TREATAS({ "Mountain Bike", "Helmet" }, 'Product'[Name]), TREATAS({ 2024 }, 'Date'[Year]), "m0", DIVIDE(AVERAGE('Sales'[Qty]), CALCULATE([Sales PY], ALL('Customer'[City]))))

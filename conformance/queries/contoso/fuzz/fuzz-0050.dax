@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 50)
+EVALUATE ROW("m0", VAR v = [Red Sales Kept] RETURN v * 2 + ([Line Value Column] * MIN('Sales'[Amount])))

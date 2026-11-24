@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 66)
+EVALUATE SUMMARIZECOLUMNS('customer_demographics'[cd_marital_status], 'item'[i_class], 'ship_mode'[sm_type], "m0", (DIVIDE([Store Distinct Customers], CALCULATE(AVERAGE('store_sales'[ss_ext_sales_price]), ALL('date_dim'[d_year]))) - IF(DISTINCTCOUNT('store'[s_city]) > 1, [Store Net Profit], MIN('store_sales'[ss_ext_sales_price]))), "m1", MIN('catalog_sales'[cs_net_profit]), "m2", MIN('catalog_sales'[cs_net_profit]))

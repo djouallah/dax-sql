@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 106)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('store'[s_store_name], 'customer_demographics'[cd_education_status], "m0", [Catalog Sales Same Period LY], "m1", ROUND(COALESCE([Catalog Sales Same Period LY], 0), 2)), REMOVEFILTERS('store'))

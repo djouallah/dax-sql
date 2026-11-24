@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 111)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('Product'[Price], 'Customer'[City], "m0", [Best Customer Sales], "m1", ROUND(COALESCE([Best Customer Sales], 0), 2)), REMOVEFILTERS('Customer'))

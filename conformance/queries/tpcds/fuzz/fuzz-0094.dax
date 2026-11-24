@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 94)
+EVALUATE ADDCOLUMNS(VALUES('item'[i_category]), "m0", (SUMX(VALUES('store'[s_state]), SUM('catalog_sales'[cs_quantity])) - COALESCE(MIN('catalog_sales'[cs_net_profit]), 0)))

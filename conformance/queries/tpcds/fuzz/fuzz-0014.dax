@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 14)
+EVALUATE SUMMARIZECOLUMNS('customer_demographics'[cd_marital_status], "m0", [Catalog Revenue], "m1", AVERAGE('store_sales'[ss_quantity]), "m2", VAR v = MIN('store_sales'[ss_net_profit]) RETURN v * 2 + [Store Revenue YTD])

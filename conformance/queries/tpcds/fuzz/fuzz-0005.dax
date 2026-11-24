@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 5)
+EVALUATE SUMMARIZECOLUMNS('ship_mode'[sm_type], "m0", CALCULATE(ABS(COALESCE(DISTINCTCOUNT('date_dim'[d_qoy]), 0)), ALL('store'[s_state])), "m1", IF(ISBLANK(AVERAGEX(VALUES('item'[i_class]), [Store Net Profit])), 0, CALCULATE(IF(ISBLANK(SUM('store_sales'[ss_ext_sales_price])), 0, MAX('catalog_sales'[cs_net_profit])), TREATAS({ "Fairview", "Oak Grove", "Midway" }, 'store'[s_city]))), "m2", [Catalog Sales YoY])

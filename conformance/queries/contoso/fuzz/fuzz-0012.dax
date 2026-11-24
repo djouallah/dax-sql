@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 12)
+EVALUATE ADDCOLUMNS(VALUES('Date'[Year]), "m0", ROUND(IF(ISINSCOPE('Product'[Price]), IF(ISBLANK([Red Sales Kept]), 0, [All Sales]), (MIN('Returns'[ReturnQty]) + [Line Value Column])), 1))

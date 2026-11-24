@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 93)
+EVALUATE SUMMARIZECOLUMNS('store'[s_city], 'item'[i_category], KEEPFILTERS(TREATAS({ "Fairview", "Oak Grove" }, 'store'[s_city])), FILTER(VALUES('store'[s_state]), 'store'[s_state] IN { "TN", "GA" }), "m0", IF(ISBLANK([Store Net Profit]), 0, MAX('catalog_sales'[cs_quantity])), "m1", COUNTROWS(FILTER(VALUES('date_dim'[d_moy]), [Store Profit % by Item Category] > 10)))

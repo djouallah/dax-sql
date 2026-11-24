@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 116)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('Date'[Quarter], "m0", TOTALYTD([Sales YTD], 'Date'[Date])), TREATAS({ "Helmet" }, 'Product'[Name]))

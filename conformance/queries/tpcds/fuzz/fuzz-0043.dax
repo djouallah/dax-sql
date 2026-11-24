@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 43)
+EVALUATE SUMMARIZECOLUMNS('customer_demographics'[cd_marital_status], "m0", MAX('store_sales'[ss_quantity]))

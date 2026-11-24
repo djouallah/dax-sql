@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 45)
+EVALUATE SUMMARIZECOLUMNS('Customer'[City], "m0", MAX('Sales'[Qty]))

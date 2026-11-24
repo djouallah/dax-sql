@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 21)
+EVALUATE SUMMARIZECOLUMNS("m0", MAX(([Share of Category] + DISTINCTCOUNT('Category'[Category])), TOTALYTD([Best Customer Sales], 'Date'[Date])), "m1", ROUND(IF([Best Customer Sales] > 10, [All Sales], [Sales Amount]), 0), "m2", [Line Value Column])

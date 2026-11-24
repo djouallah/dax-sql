@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 54)
+EVALUATE SUMMARIZECOLUMNS('customer_demographics'[cd_education_status], 'store'[s_city], "m0", [Catalog Sales YoY], "m1", SUM('store_sales'[ss_ext_sales_price]))

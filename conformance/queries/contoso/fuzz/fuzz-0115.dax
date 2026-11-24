@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 115)
+EVALUATE SUMMARIZECOLUMNS(FILTER(ALL('Product'[Price]), 'Product'[Price] <> -1), FILTER(VALUES('Date'[Quarter]), 'Date'[Quarter] IN { 4, 2 }), "m0", DISTINCTCOUNT('Customer'[Customer]))

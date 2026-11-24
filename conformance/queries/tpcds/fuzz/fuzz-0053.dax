@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 53)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('ship_mode'[sm_type], 'store'[s_state], "m0", [Store Revenue Same Period LY], "m1", ROUND(DISTINCTCOUNT('customer_demographics'[cd_marital_status]), 2)), 'customer_demographics'[cd_marital_status] = "S")

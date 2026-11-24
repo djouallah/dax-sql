@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 11)
+EVALUATE ROW("m0", MAX(IF(HASONEVALUE('date_dim'[d_year]), SUM('catalog_sales'[cs_ext_sales_price])), VAR v = COALESCE([Store Revenue YTD], 0) RETURN v * 2 + MAX([Store Revenue YoY], [Store Revenue])))

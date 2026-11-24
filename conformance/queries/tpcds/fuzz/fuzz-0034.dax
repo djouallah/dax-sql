@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 34)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('item'[i_color], 'item'[i_category], "m0", COUNTROWS(FILTER(VALUES('ship_mode'[sm_type]), ([Catalog Revenue] - [Store Profit % by Item Category]) > 1000)), "m1", COUNTROWS(FILTER(VALUES('store'[s_state]), [Store Revenue YoY] > 100))), KEEPFILTERS('store'[s_city] IN { "Fairview", "Midway", "Oak Grove" }))

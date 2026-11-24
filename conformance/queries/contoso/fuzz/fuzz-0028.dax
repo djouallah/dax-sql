@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 28)
+EVALUATE SUMMARIZECOLUMNS('Customer'[Customer], 'Customer'[City], 'Product'[Name], "m0", ROUND([Line Value Column], 1), "m1", ([Sales YTD] - MIN('Returns'[ReturnQty])), "m2", ABS([Sales YTD]))

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 82)
+EVALUATE SUMMARIZECOLUMNS('date_dim'[d_qoy], 'customer_demographics'[cd_marital_status], "m0", TOTALYTD([Store Revenue YTD], 'date_dim'[d_date]), "m1", DIVIDE([Store Revenue YTD], [Store Revenue]), "m2", ABS([Catalog Sales Same Period LY]))

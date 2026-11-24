@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 88)
+EVALUATE SUMMARIZECOLUMNS('item'[i_category], 'customer_address'[ca_state], 'store'[s_state], "m0", CALCULATE(IF(ISINSCOPE('customer_demographics'[cd_marital_status]), [Catalog Revenue], SUM('store_sales'[ss_net_profit])), 'customer_demographics'[cd_marital_status] <> "M"))

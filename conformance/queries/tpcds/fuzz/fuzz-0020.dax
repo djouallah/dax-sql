@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 20)
+EVALUATE SUMMARIZECOLUMNS('item'[i_class], 'customer_demographics'[cd_education_status], FILTER(ALL('promotion'[p_promo_name]), 'promotion'[p_promo_name] <> "pri"), KEEPFILTERS(TREATAS({ "Midway", "zz-none" }, 'store'[s_city])), "m0", DIVIDE(COUNTROWS('item'), COUNTROWS('item')), "m1", COUNTROWS(FILTER(VALUES('item'[i_category]), DISTINCTCOUNT('date_dim'[d_qoy]) > 1000)), "m2", DIVIDE([Catalog Revenue], MAX('store_sales'[ss_quantity])))

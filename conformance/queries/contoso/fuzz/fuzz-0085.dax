@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 85)
+EVALUATE SUMMARIZECOLUMNS("m0", [Sales PY], "m1", SUM('Sales'[Qty]), "m2", COUNTROWS(FILTER(VALUES('Product'[Name]), CALCULATE(CALCULATE(MIN('Sales'[Amount]), DATESBETWEEN('Date'[Date], DATE(2023, 5, 24), DATE(2023, 5, 5))), DATESBETWEEN('Date'[Date], DATE(2024, 11, 30), DATE(2024, 10, 4))) > 100)))

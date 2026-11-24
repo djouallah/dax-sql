@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 99)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('store'[s_state], 'item'[i_current_price], "m0", IF(ISBLANK(ABS(DIVIDE([Store Revenue YoY], [Catalog Sales Quantity]))), 0, CALCULATE(MAX('catalog_sales'[cs_ext_sales_price]), DATESBETWEEN('date_dim'[d_date], DATE(1999, 1, 1), DATE(2024, 3, 18))))), 'item'[i_color] IN { "almond" })

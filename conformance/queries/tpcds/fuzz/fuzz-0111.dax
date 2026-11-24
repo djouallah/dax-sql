@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 111)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('promotion'[p_promo_name], "m0", TOTALYTD([Catalog Revenue], 'date_dim'[d_date])), TREATAS({ "eduuniv #3" }, 'item'[i_brand]))

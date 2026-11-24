@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 25)
+EVALUATE SUMMARIZECOLUMNS(KEEPFILTERS(TREATAS({ "Rome", "Berlin" }, 'Customer'[City])), TREATAS({ 4, 2 }, 'Date'[Quarter]), "m0", [Product Count], "m1", MAX([Return Rate], AVERAGE('Sales'[Qty])), "m2", IF(HASONEVALUE('Category'[Category]), [Red Sales]))

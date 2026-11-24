@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 89)
+EVALUATE ADDCOLUMNS(VALUES('store'[s_state]), "m0", COUNTROWS(FILTER(VALUES('customer_demographics'[cd_marital_status]), SUM('store_sales'[ss_net_profit]) > 10)))

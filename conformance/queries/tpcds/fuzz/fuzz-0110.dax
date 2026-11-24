@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 110)
+EVALUATE SUMMARIZECOLUMNS(FILTER(ALL('store'[s_store_name]), 'store'[s_store_name] <> "zz-none"), FILTER(VALUES('ship_mode'[sm_type]), 'ship_mode'[sm_type] IN { "TWO DAY", "NEXT DAY" }), "m0", DISTINCTCOUNT('customer_demographics'[cd_marital_status]))

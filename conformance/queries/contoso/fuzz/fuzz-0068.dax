@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 68)
+EVALUATE SUMMARIZECOLUMNS('Customer'[Customer], 'Product'[Color], 'Date'[Quarter], "m0", (DIVIDE([Quantity], CALCULATE(AVERAGE('Sales'[Qty]), ALL('Date'[Year]))) - IF(DISTINCTCOUNT('Category'[Category]) > 1, [Product Count], MIN('Sales'[Qty]))), "m1", MIN('Returns'[ReturnQty]), "m2", MIN('Returns'[ReturnQty]))

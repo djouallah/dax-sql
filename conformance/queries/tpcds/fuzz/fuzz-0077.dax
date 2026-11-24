@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 77)
+EVALUATE TOPN(4, SUMMARIZECOLUMNS('customer_address'[ca_state], "m0", SUMX(VALUES('customer_demographics'[cd_marital_status]), IF(MIN('catalog_sales'[cs_quantity]) > 1000, AVERAGE('store_sales'[ss_net_profit]), DISTINCTCOUNT('item'[i_current_price])))), [m0], DESC)

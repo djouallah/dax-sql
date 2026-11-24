@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 90)
+EVALUATE SUMMARIZECOLUMNS('promotion'[p_promo_name], 'store'[s_city], 'item'[i_class], "m0", [Store Revenue YTD])

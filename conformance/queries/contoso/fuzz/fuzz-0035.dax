@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 35)
+EVALUATE TOPN(2, SUMMARIZECOLUMNS('Date'[Month], "m0", IF(ISBLANK([Line Value Column]), 0, [Product Count])), [m0], DESC)

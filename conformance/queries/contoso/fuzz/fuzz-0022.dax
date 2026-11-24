@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 22)
+EVALUATE SUMMARIZECOLUMNS(KEEPFILTERS(TREATAS({ 800 }, 'Product'[Price])), KEEPFILTERS(TREATAS({ "Red", "Blue" }, 'Product'[Color])), "m0", VAR v = [Quantity] RETURN v * 2 + VAR v = COUNTROWS('Product') RETURN v * 2 + DISTINCTCOUNT('Customer'[Customer]))

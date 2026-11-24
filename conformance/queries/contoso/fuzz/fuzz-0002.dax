@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 2)
+EVALUATE SUMMARIZECOLUMNS('Date'[Month], 'Category'[Category], "m0", CALCULATE(VAR v = SUM('Sales'[Qty]) RETURN v * 2 + COALESCE([Returned], 0), DATESYTD('Date'[Date]), USERELATIONSHIP('Sales'[ShipDate], 'Date'[Date])), "m1", ROUND(DIVIDE(CALCULATE([Line Value], REMOVEFILTERS('Customer'), TREATAS({ "zz-none" }, 'Product'[PriceBand])), CALCULATE([Line Value], ALL('Product'[Name]))), 0))

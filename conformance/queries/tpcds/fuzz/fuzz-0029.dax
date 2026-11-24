@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 29)
+EVALUATE ADDCOLUMNS(VALUES('store'[s_store_name]), "m0", ABS(COUNTROWS('store')))

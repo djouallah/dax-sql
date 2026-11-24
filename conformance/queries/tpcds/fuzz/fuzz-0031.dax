@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 31)
+EVALUATE SUMMARIZECOLUMNS("m0", IF(MAX('catalog_sales'[cs_net_profit]) > 1000, [Store Net Profit], [Store Distinct Customers]))

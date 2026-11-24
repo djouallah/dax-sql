@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 33)
+EVALUATE SUMMARIZECOLUMNS("m0", IF(MAX('Returns'[ReturnQty]) > 1000, [Sales Amount], [Quantity]))

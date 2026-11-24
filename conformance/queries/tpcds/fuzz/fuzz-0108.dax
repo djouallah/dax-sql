@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 108)
+EVALUATE TOPN(2, SUMMARIZECOLUMNS('date_dim'[d_moy], "m0", TOTALYTD(RANKX(ALL('date_dim'[d_year]), SUMX(VALUES('item'[i_brand]), [Archive Files])), 'date_dim'[d_date])), [m0], DESC)

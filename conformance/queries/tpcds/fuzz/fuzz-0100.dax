@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 100)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('store'[s_city], 'item'[i_class], "m0", DIVIDE(CALCULATE(DISTINCTCOUNT('store'[s_city]), DATESYTD('date_dim'[d_date])), IF(ISBLANK(AVERAGE('store_sales'[ss_ext_sales_price])), 0, [Store Distinct Customers]))), 'item'[i_class] = "pants")

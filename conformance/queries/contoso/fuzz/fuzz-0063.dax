@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 63)
+EVALUATE SUMMARIZECOLUMNS('Customer'[Customer], "m0", CALCULATE(MIN('Returns'[ReturnQty]), TREATAS({ 3 }, 'Date'[Quarter]), ALLEXCEPT('Date', 'Date'[Year])), "m1", CALCULATE(DISTINCTCOUNT('Product'[Price]), ALLEXCEPT('Category', 'Category'[Category]), KEEPFILTERS('Category'[Category] = "Accessories")), "m2", [Product Count])

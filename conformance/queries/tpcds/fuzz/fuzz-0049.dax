@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 49)
+EVALUATE SUMMARIZECOLUMNS('store'[s_city], 'store'[s_state], "m0", ABS(COALESCE(MIN('catalog_sales'[cs_quantity]), 0)))

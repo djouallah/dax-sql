@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 46)
+EVALUATE TOPN(2, SUMMARIZECOLUMNS('store'[s_store_name], "m0", IF(ISBLANK(IF(SUM('catalog_sales'[cs_ext_sales_price]) > 1000, [Catalog Sales Same Period LY], [Store Revenue Same Period LY])), 0, CALCULATE([Catalog Sales YoY], PREVIOUSMONTH('date_dim'[d_date]), 'store'[s_state] = "zz-none"))), [m0], ASC)

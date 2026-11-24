@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 87)
+EVALUATE TOPN(2, SUMMARIZECOLUMNS('Date'[Quarter], "m0", DIVIDE(MAX('Returns'[ReturnQty]), CALCULATE(COUNTROWS('Product'), ALL('Product'[Name])))), [m0], DESC)

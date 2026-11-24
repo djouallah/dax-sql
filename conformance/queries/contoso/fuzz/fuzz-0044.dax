@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 44)
+EVALUATE SUMMARIZECOLUMNS('Date'[Quarter], "m0", [Sales PY], "m1", IF(ISINSCOPE('Category'[Category]), CALCULATE([Red Sales], FILTER(VALUES('Category'[Category]), ABS(SUM('Returns'[ReturnQty])) > 0)), SUMX(VALUES('Product'[Color]), [Target Total])))

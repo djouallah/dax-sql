@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 16)
+EVALUATE SUMMARIZECOLUMNS("m0", IF(ISBLANK(AVERAGE('catalog_sales'[cs_net_profit])), 0, [Store Revenue YoY]), "m1", [Archive Files])

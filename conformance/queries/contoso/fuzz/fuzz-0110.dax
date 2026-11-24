@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 110)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('Product'[Name], "m0", TOTALYTD([Products Sold], 'Date'[Date])), REMOVEFILTERS('Category'))

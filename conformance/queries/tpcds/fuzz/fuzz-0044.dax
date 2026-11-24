@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 44)
+EVALUATE SUMMARIZECOLUMNS('date_dim'[d_year], "m0", [Store Revenue Same Period LY], "m1", MIN('store_sales'[ss_ext_sales_price]), "m2", [Catalog Sales Quantity])

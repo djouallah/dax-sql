@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 118)
+EVALUATE TOPN(2, SUMMARIZECOLUMNS('ship_mode'[sm_type], "m0", CALCULATE(MIN('catalog_sales'[cs_ext_sales_price]), DATESBETWEEN('date_dim'[d_date], DATE(1999, 1, 1), DATE(2026, 7, 30)))), [m0], DESC)

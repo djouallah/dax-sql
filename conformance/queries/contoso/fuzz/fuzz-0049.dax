@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 49)
+EVALUATE SUMMARIZECOLUMNS("m0", CALCULATE([All Sales], DATESBETWEEN('Date'[Date], DATE(2024, 2, 18), DATE(2023, 12, 31))), "m1", ABS([Sales Amount]), "m2", AVERAGEX(VALUES('Customer'[City]), MAX('Sales'[Amount])))

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 106)
+EVALUATE SUMMARIZECOLUMNS('Customer'[City], FILTER(VALUES('Date'[Year]), 'Date'[Year] IN { 2023 }), "m0", [Product Count])

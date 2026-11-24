@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 36)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('Product'[PriceBand], 'Product'[Name], "m0", COUNTROWS(FILTER(VALUES('Date'[Quarter]), ([Sales YTD] - [Customers]) > 1000)), "m1", COUNTROWS(FILTER(VALUES('Product'[Price]), [Red Sales] > 100))), KEEPFILTERS('Category'[Category] IN { "Accessories", "Bikes", "Clothing" }))

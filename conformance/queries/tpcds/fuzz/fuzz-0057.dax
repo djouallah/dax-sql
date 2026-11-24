@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 57)
+EVALUATE TOPN(3, SUMMARIZECOLUMNS('customer_demographics'[cd_education_status], "m0", IF(ISBLANK([Catalog Net Profit]), 0, TOTALYTD([Catalog Net Profit], 'date_dim'[d_date]))), [m0], DESC)

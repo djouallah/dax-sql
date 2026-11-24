@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 8)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('store'[s_state], "m0", CALCULATE(CALCULATE([Store Profit % by Item Category], REMOVEFILTERS('catalog_sales'), 'store'[s_city] = "Fairview"), KEEPFILTERS('customer_demographics'[cd_education_status] IN { "4 yr Degree" }), KEEPFILTERS('store'[s_store_name] = "cally"))), ALLEXCEPT('store', 'store'[s_state]))

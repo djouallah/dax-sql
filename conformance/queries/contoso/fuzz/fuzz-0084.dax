@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 84)
+EVALUATE ROW("m0", ROUND(AVERAGE('Sales'[Amount]), 1), "m1", [Sales PY], "m2", AVERAGEX(VALUES('Category'[Category]), SUM('Returns'[ReturnQty])))

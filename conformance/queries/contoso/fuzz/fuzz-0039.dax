@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 39)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('Customer'[City], "m0", IF(ISBLANK(CALCULATE(MAX([Sales YTD], SUM('Sales'[Amount])), KEEPFILTERS('Date'[Month] = 2))), 0, AVERAGEX(VALUES('Product'[Color]), CALCULATE([All Sales], ALL('Product'[Name])))), "m1", IF(ISBLANK(TOTALYTD([Line Value], 'Date'[Date])), 0, [Sales PY])), FILTER(ALL('Product'[Name]), 'Product'[Name] <> "Jersey"))

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 107)
+EVALUATE TOPN(4, SUMMARIZECOLUMNS('Date'[Month], "m0", RANKX(ALL('Product'[Price]), ABS(COUNTROWS('Customer')), , DESC, Dense)), [m0], DESC)

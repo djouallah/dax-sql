@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 9)
+EVALUATE ADDCOLUMNS(VALUES('Customer'[City]), "m0", IF(ISBLANK(MAX(MAXX(VALUES('Customer'[City]), SUM('Returns'[ReturnQty])), SUMX(VALUES('Date'[Year]), [Products Sold]))), 0, ([Line Value] - ABS([Target Total]))))

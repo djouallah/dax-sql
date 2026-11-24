@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 95)
+EVALUATE SUMMARIZECOLUMNS('Date'[Quarter], 'Category'[Category], 'Product'[Color], "m0", [Sales by Ship Date])

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 76)
+EVALUATE TOPN(3, SUMMARIZECOLUMNS('store'[s_city], "m0", CALCULATE(MAX(CALCULATE(COUNTROWS('catalog_sales'), DATESBETWEEN('date_dim'[d_date], DATE(2026, 2, 5), DATE(2024, 8, 29))), TOTALYTD([Catalog Sales Quantity], 'date_dim'[d_date])), KEEPFILTERS('item'[i_color] = "almond"))), [m0], DESC)

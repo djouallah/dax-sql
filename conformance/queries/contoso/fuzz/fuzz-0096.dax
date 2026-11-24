@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 96)
+EVALUATE ROW("m0", ROUND(VAR v = MAX('Returns'[ReturnQty]) RETURN v * 2 + MIN('Returns'[ReturnQty]), 2), "m1", MAXX(VALUES('Product'[Price]), [Return Rate]))

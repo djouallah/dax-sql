@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 69)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('ship_mode'[sm_type], "m0", ROUND(ROUND(AVERAGE('store_sales'[ss_ext_sales_price]), 2), 1)), DATESYTD('date_dim'[d_date]))

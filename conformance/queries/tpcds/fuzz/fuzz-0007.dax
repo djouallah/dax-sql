@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 7)
+EVALUATE ROW("m0", ROUND(SUM('store_sales'[ss_ext_sales_price]), 2))

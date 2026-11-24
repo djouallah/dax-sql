@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 33)
+EVALUATE TOPN(2, SUMMARIZECOLUMNS('date_dim'[d_moy], "m0", IF(ISBLANK([Catalog Net Profit]), 0, [Store Net Profit])), [m0], DESC)

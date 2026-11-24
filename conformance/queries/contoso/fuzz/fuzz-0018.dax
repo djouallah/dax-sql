@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 18)
+EVALUATE ROW("m0", VAR v = [Line Value] RETURN v * 2 + [Target Total], "m1", IF(HASONEVALUE('Product'[Color]), DISTINCTCOUNT('Product'[PriceBand])))

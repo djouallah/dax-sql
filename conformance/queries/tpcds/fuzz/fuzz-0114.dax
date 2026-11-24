@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 114)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('customer_address'[ca_state], 'customer_demographics'[cd_education_status], "m0", MAX('catalog_sales'[cs_quantity])), 'store'[s_store_name] = "ought")

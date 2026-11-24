@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 61)
+EVALUATE SUMMARIZECOLUMNS('customer_demographics'[cd_marital_status], "m0", CALCULATE(MIN('catalog_sales'[cs_ext_sales_price]), TREATAS({ "REGULAR" }, 'ship_mode'[sm_type]), ALLEXCEPT('date_dim', 'date_dim'[d_qoy])), "m1", CALCULATE(DISTINCTCOUNT('store'[s_store_name]), ALLEXCEPT('store', 'store'[s_city]), KEEPFILTERS('store'[s_city] = "Fairview")), "m2", [Store Revenue])

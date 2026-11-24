@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 103)
+EVALUATE SUMMARIZECOLUMNS('ship_mode'[sm_type], 'item'[i_brand], 'store'[s_state], "m0", IF(HASONEVALUE('promotion'[p_promo_name]), MAX('store_sales'[ss_ext_sales_price])))

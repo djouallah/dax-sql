@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 113)
+EVALUATE TOPN(4, SUMMARIZECOLUMNS('ship_mode'[sm_type], "m0", CALCULATE(DISTINCTCOUNT('item'[i_class]), ALLEXCEPT('ship_mode', 'ship_mode'[sm_type]), REMOVEFILTERS('date_dim'))), [m0], DESC)

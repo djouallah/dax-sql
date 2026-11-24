@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 26)
+EVALUATE SUMMARIZECOLUMNS('customer_address'[ca_state], 'date_dim'[d_year], 'item'[i_brand], "m0", ROUND([Catalog Net Profit], 1), "m1", ([Catalog Revenue] - MIN('catalog_sales'[cs_net_profit])), "m2", ABS([Catalog Revenue]))

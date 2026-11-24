@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 63)
+EVALUATE ADDCOLUMNS(VALUES('item'[i_class]), "m0", COUNTROWS(FILTER(VALUES('date_dim'[d_year]), ROUND([Archive Files], 1) > 0)), "m1", ROUND(VAR v = [Store Distinct Customers] RETURN v * 2 + [Archive Source Rows], 2))

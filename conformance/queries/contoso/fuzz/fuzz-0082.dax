@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 82)
+EVALUATE TOPN(1, SUMMARIZECOLUMNS('Date'[Year], "m0", IF(ISINSCOPE('Product'[PriceBand]), (SUM('Sales'[Amount]) + MIN('Sales'[Amount])), CALCULATE([Return Rate], KEEPFILTERS('Product'[PriceBand] = "zz-none"), 'Customer'[Customer] <> "Erin"))), [m0], DESC)

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 88)
+EVALUATE ROW("m0", SUMX(VALUES('Product'[Color]), [Target Total]), "m1", IF(HASONEVALUE('Date'[Month]), CALCULATE(SUM('Sales'[Amount]), 'Category'[Category] IN { "Bikes", "Accessories" }, DATEADD('Date'[Date], -1, QUARTER))))

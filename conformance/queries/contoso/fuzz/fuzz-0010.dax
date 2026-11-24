@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 10)
+EVALUATE SUMMARIZECOLUMNS('Category'[Category], 'Product'[Name], 'Date'[Quarter], "m0", [Returned], "m1", COALESCE(ABS([Line Value Column]), 0))

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 27)
+EVALUATE SUMMARIZECOLUMNS(TREATAS({ "zz-none", "M" }, 'customer_demographics'[cd_marital_status]), FILTER(ALL('date_dim'[d_year]), 'date_dim'[d_year] <> 2026), "m0", CALCULATE(DISTINCTCOUNT('store'[s_city]), REMOVEFILTERS('store_sales')), "m1", COUNTROWS('store_sales'), "m2", [Catalog Sales Same Period LY])

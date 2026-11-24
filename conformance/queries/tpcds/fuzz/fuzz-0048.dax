@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 48)
+EVALUATE ROW("m0", VAR v = [Store Revenue YoY] RETURN v * 2 + ([Catalog Net Profit] * MIN('store_sales'[ss_net_profit])))

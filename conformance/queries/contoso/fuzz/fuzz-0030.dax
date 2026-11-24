@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 30)
+EVALUATE ROW("m0", CALCULATE(MIN('Returns'[ReturnQty]), DATESBETWEEN('Date'[Date], DATE(2023, 4, 21), DATE(2024, 2, 18))), "m1", TOTALYTD(DISTINCTCOUNT('Product'[Price]), 'Date'[Date]))

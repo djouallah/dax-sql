@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 72)
+EVALUATE ROW("m0", CALCULATE([Line Value Column], KEEPFILTERS('Product'[PriceBand] = "zz-none")), "m1", DIVIDE(AVERAGE('Returns'[ReturnQty]), CALCULATE([Red Sales Kept], ALL('Date'[Year]))), "m2", IF(HASONEVALUE('Customer'[City]), [Line Value]))

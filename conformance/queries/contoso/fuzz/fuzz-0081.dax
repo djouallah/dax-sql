@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 81)
+EVALUATE ADDCOLUMNS(VALUES('Category'[Category]), "m0", DIVIDE(AVERAGE('Returns'[ReturnQty]), CALCULATE(MAX('Sales'[Qty]), ALL('Product'[Color]))))

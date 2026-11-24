@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 7)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('Date'[Quarter], 'Product'[Price], "m0", IF(HASONEVALUE('Product'[Color]), CALCULATE(MAX([Red Sales], DISTINCTCOUNT('Customer'[Customer])), DATESBETWEEN('Date'[Date], DATE(2023, 12, 18), DATE(1999, 1, 1)))), "m1", ABS(COALESCE(DIVIDE([Red Sales Kept], CALCULATE([Line Value], ALL('Product'[PriceBand]))), 0))), DATESYTD('Date'[Date]))

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 105)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('item'[i_category], "m0", TOTALYTD([Catalog Sales YoY], 'date_dim'[d_date])), REMOVEFILTERS('customer_address'))

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 72)
+EVALUATE ADDCOLUMNS(VALUES('promotion'[p_promo_name]), "m0", RANKX(ALL('customer_address'[ca_state]), ABS(CALCULATE([Catalog Sales Quantity], FILTER(ALL('item'[i_category]), 'item'[i_category] <> "Jewelry"), KEEPFILTERS('item'[i_brand] IN { "edupack #9", "scholaruniv #4" })))), "m1", [Catalog Net Profit])

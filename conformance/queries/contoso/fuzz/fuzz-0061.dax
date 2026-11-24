@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 61)
+EVALUATE SUMMARIZECOLUMNS('Date'[Year], FILTER(VALUES('Product'[Name]), 'Product'[Name] IN { "Jersey", "Mountain Bike" }), "m0", MIN('Sales'[Amount]))

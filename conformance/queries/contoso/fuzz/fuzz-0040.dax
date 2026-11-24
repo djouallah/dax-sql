@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 40)
+EVALUATE SUMMARIZECOLUMNS('Product'[PriceBand], 'Customer'[City], "m0", IF(AVERAGE('Sales'[Amount]) > 1000, MAX('Returns'[ReturnQty]), [Customers]), "m1", ABS(MAX('Sales'[Qty])), "m2", VAR v = DISTINCTCOUNT('Date'[Month]) RETURN v * 2 + [Share of Category])

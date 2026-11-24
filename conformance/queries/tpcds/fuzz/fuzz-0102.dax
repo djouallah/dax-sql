@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 102)
+EVALUATE TOPN(4, SUMMARIZECOLUMNS('customer_address'[ca_state], "m0", VAR v = TOTALYTD(AVERAGE('catalog_sales'[cs_ext_sales_price]), 'date_dim'[d_date]) RETURN v * 2 + TOTALYTD(CALCULATE([Archive Source Rows], DATESBETWEEN('date_dim'[d_date], DATE(2025, 5, 30), DATE(2024, 2, 24))), 'date_dim'[d_date])), [m0], ASC)

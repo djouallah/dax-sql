@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 80)
+EVALUATE ADDCOLUMNS(VALUES('item'[i_brand]), "m0", ROUND(COUNTROWS('catalog_sales'), 2), "m1", IF(HASONEVALUE('store'[s_state]), [Archive Source Rows]))

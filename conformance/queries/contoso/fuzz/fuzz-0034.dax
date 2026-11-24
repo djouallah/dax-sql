@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 34)
+EVALUATE SUMMARIZECOLUMNS('Product'[Color], 'Product'[PriceBand], "m0", COUNTROWS('Customer'))

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 87)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('item'[i_color], "m0", CALCULATE([Archive Files], ALL('item'[i_class]))), 'customer_demographics'[cd_education_status] = "4 yr Degree")

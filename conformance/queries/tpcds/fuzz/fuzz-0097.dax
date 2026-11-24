@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 97)
+EVALUATE SUMMARIZECOLUMNS('customer_demographics'[cd_marital_status], "m0", AVERAGE('catalog_sales'[cs_quantity]), "m1", [Catalog Sales Quantity])

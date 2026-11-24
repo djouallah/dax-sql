@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 57)
+EVALUATE SUMMARIZECOLUMNS('Customer'[City], 'Product'[Name], 'Product'[Color], "m0", MAX('Returns'[ReturnQty]), "m1", MINX(VALUES('Date'[Month]), [Sales PY]), "m2", [Sales PY])

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 4)
+EVALUATE SUMMARIZECOLUMNS('Product'[Name], 'Customer'[City], 'Category'[Category], FILTER(VALUES('Customer'[Customer]), 'Customer'[Customer] IN { "zz-none", "Alice" }), KEEPFILTERS(TREATAS({ 2, 4 }, 'Date'[Quarter])), "m0", ABS(CALCULATE(AVERAGE('Sales'[Qty]), 'Product'[PriceBand] >= "zz-none")), "m1", [Line Value], "m2", CALCULATE(IF(HASONEVALUE('Date'[Quarter]), MAX('Sales'[Qty])), ALLEXCEPT('Date', 'Date'[Year])))

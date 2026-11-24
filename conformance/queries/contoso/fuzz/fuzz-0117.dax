@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 117)
+EVALUATE ADDCOLUMNS(VALUES('Date'[Year]), "m0", ROUND(MIN('Sales'[Qty]), 1), "m1", IF(ISINSCOPE('Product'[PriceBand]), TOTALYTD(TOTALYTD([Red Sales], 'Date'[Date]), 'Date'[Date]), MINX(VALUES('Date'[Month]), RANKX(ALL('Date'[Year]), DISTINCTCOUNT('Product'[Price])))))

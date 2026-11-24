@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 12)
+EVALUATE SUMMARIZECOLUMNS('item'[i_current_price], 'date_dim'[d_moy], KEEPFILTERS(TREATAS({ "Primary" }, 'customer_demographics'[cd_education_status])), FILTER(ALL('date_dim'[d_moy]), 'date_dim'[d_moy] <> 4), "m0", [Catalog Sales Quantity], "m1", [Catalog Sales Quantity], "m2", [Catalog Revenue])

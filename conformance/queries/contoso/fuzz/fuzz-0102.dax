@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 102)
+EVALUATE SUMMARIZECOLUMNS('Customer'[Customer], "m0", AVERAGE('Sales'[Amount]), "m1", [Big Orders])

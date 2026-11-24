@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 100)
+EVALUATE TOPN(1, SUMMARIZECOLUMNS('Date'[Month], "m0", CALCULATE(MAX(TOTALYTD(COUNTROWS('Customer'), 'Date'[Date]), ABS(COUNTROWS('Product'))), KEEPFILTERS('Customer'[Customer] IN { "Alice", "Erin" }), KEEPFILTERS('Date'[Year] IN { 2023 }))), [m0], ASC)

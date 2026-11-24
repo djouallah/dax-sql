@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 52)
+EVALUATE SUMMARIZECOLUMNS('Date'[Month], 'Category'[Category], 'Date'[Quarter], "m0", COALESCE(ABS(DISTINCTCOUNT('Product'[Price])), 0))

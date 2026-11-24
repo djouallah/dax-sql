@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 1)
+EVALUATE TOPN(3, SUMMARIZECOLUMNS('promotion'[p_promo_name], "m0", IF(HASONEVALUE('date_dim'[d_year]), [Catalog Net Profit])), [m0], DESC)

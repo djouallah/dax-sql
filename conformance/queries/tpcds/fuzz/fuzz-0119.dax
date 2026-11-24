@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 119)
+EVALUATE ADDCOLUMNS(VALUES('customer_address'[ca_state]), "m0", DISTINCTCOUNT('date_dim'[d_moy]), "m1", IF([Store Revenue YTD] > 1, [Store Distinct Customers], SUM('store_sales'[ss_ext_sales_price])))

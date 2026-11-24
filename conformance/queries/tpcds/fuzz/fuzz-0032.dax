@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 32)
+EVALUATE SUMMARIZECOLUMNS('item'[i_class], 'item'[i_color], "m0", COUNTROWS('store'))

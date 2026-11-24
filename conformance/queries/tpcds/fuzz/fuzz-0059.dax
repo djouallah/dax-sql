@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 59)
+EVALUATE SUMMARIZECOLUMNS('date_dim'[d_qoy], FILTER(VALUES('item'[i_category]), 'item'[i_category] IN { "Men", "Music" }), "m0", MIN('catalog_sales'[cs_quantity]))

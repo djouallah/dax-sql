@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 25)
+EVALUATE SUMMARIZECOLUMNS("m0", CALCULATE(DIVIDE([Catalog Sales Same Period LY], CALCULATE([Store Net Profit], ALL('date_dim'[d_moy]))), DATESBETWEEN('date_dim'[d_date], DATE(1999, 1, 1), DATE(2025, 10, 2))), "m1", MAX('catalog_sales'[cs_quantity]))

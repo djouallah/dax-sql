@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 101)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('Date'[Quarter], "m0", MAXX(VALUES('Product'[PriceBand]), IF(ISBLANK(MAX([Products Sold], DISTINCTCOUNT('Customer'[Customer]))), 0, [Line Value Column])), "m1", COUNTROWS('Sales')), 'Product'[Name] = "Mountain Bike")

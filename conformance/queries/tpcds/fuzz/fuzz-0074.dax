@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 74)
+EVALUATE SUMMARIZECOLUMNS('customer_demographics'[cd_education_status], 'store'[s_city], KEEPFILTERS(TREATAS({ 4 }, 'date_dim'[d_qoy])), "m0", [Store Profit % by Item Category], "m1", ABS(MAX('store_sales'[ss_ext_sales_price])), "m2", RANKX(ALL('item'[i_class]), COUNTROWS('store_sales')))

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 27)
+EVALUATE SUMMARIZECOLUMNS("m0", CALCULATE(DIVIDE([Best Customer Sales], CALCULATE([Product Count], ALL('Date'[Month]))), DATESBETWEEN('Date'[Date], DATE(1999, 1, 1), DATE(2024, 3, 3))), "m1", MAX('Sales'[Amount]))

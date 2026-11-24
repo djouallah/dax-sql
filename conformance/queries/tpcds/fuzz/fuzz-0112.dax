@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 112)
+EVALUATE ADDCOLUMNS(VALUES('date_dim'[d_year]), "m0", ROUND(MIN('store_sales'[ss_quantity]), 1), "m1", IF(ISINSCOPE('item'[i_color]), TOTALYTD(TOTALYTD([Store Revenue Same Period LY], 'date_dim'[d_date]), 'date_dim'[d_date]), MINX(VALUES('date_dim'[d_moy]), RANKX(ALL('date_dim'[d_year]), DISTINCTCOUNT('store'[s_state])))))

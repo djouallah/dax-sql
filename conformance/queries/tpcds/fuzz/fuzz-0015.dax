@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 15)
+EVALUATE ROW("m0", MAX(CALCULATE(TOTALYTD([Store Profit % by Item Category], 'date_dim'[d_date]), DATESBETWEEN('date_dim'[d_date], DATE(2024, 4, 24), DATE(2026, 8, 28))), COALESCE([Catalog Sales Quantity], 0)))

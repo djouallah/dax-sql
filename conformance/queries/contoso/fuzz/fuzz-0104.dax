@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 104)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('Category'[Category], 'Product'[PriceBand], "m0", IF(ISBLANK(ABS(DIVIDE([Red Sales Kept], [Big Orders]))), 0, CALCULATE(MAX('Returns'[ReturnQty]), DATESBETWEEN('Date'[Date], DATE(1999, 1, 1), DATE(2023, 2, 21))))), 'Product'[PriceBand] IN { "zz-none" })

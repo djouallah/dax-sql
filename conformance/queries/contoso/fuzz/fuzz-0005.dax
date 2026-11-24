@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 5)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('Product'[Name], 'Product'[Color], "m0", COALESCE([Orders], 0)), REMOVEFILTERS('Customer'))

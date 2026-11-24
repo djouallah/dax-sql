@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 112)
+EVALUATE SUMMARIZECOLUMNS('Date'[Month], "m0", RANKX(ALL('Date'[Month]), MIN('Sales'[Amount])))

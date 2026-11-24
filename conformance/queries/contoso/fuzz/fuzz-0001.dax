@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 1)
+EVALUATE TOPN(3, SUMMARIZECOLUMNS('Date'[Quarter], "m0", IF(HASONEVALUE('Date'[Year]), [Line Value])), [m0], DESC)

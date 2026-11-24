@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 28)
+EVALUATE ROW("m0", CALCULATE(MIN('catalog_sales'[cs_net_profit]), DATESBETWEEN('date_dim'[d_date], DATE(2024, 6, 14), DATE(2025, 9, 11))), "m1", TOTALYTD(DISTINCTCOUNT('store'[s_store_name]), 'date_dim'[d_date]))

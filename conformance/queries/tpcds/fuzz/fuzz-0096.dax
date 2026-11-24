@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 96)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('promotion'[p_promo_name], "m0", MAXX(VALUES('item'[i_current_price]), IF(ISBLANK(MAX([Catalog Sales YoY], DISTINCTCOUNT('customer_demographics'[cd_marital_status]))), 0, [Catalog Net Profit])), "m1", COUNTROWS('store_sales')), 'item'[i_brand] = "importcorp #7")

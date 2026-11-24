@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 6)
+EVALUATE SUMMARIZECOLUMNS('Customer'[Customer], 'Product'[Name], FILTER(VALUES('Product'[Color]), 'Product'[Color] IN { "Black", "Blue" }), "m0", IF([Big Orders] > 0, COUNTROWS('Sales'), [Sales YTD]))

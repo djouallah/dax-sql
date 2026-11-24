@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 37)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('customer_demographics'[cd_marital_status], "m0", IF(ISBLANK(CALCULATE(MAX([Catalog Revenue], SUM('catalog_sales'[cs_quantity])), KEEPFILTERS('date_dim'[d_moy] = 2))), 0, AVERAGEX(VALUES('item'[i_category]), CALCULATE([Store Revenue Same Period LY], ALL('item'[i_category])))), "m1", IF(ISBLANK(TOTALYTD([Catalog Sales YoY], 'date_dim'[d_date])), 0, [Catalog Sales Quantity])), FILTER(ALL('item'[i_brand]), 'item'[i_brand] <> "importcorp #1"))

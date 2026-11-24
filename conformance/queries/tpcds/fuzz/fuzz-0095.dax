@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 95)
+EVALUATE TOPN(1, SUMMARIZECOLUMNS('date_dim'[d_moy], "m0", CALCULATE(MAX(TOTALYTD(COUNTROWS('store'), 'date_dim'[d_date]), ABS(COUNTROWS('item'))), KEEPFILTERS('customer_address'[ca_state] IN { "AR", "TX" }), KEEPFILTERS('date_dim'[d_qoy] IN { 2, 1 }))), [m0], ASC)

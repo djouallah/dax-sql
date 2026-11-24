@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 120 20261124, number 16)
+EVALUATE SUMMARIZECOLUMNS(TREATAS({ "Road Bike", "Helmet" }, 'Product'[Name]), TREATAS({ 11 }, 'Date'[Month]), "m0", SUM('Returns'[ReturnQty]))

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 91)
+EVALUATE ROW("m0", ROUND(VAR v = MAX('catalog_sales'[cs_ext_sales_price]) RETURN v * 2 + MIN('catalog_sales'[cs_ext_sales_price]), 2), "m1", MAXX(VALUES('item'[i_current_price]), [Archive Files]))

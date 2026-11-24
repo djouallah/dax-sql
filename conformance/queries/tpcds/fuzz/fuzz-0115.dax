@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 120 20261124, number 115)
+EVALUATE ROW("m0", TOTALYTD(IF([Store Profit % by Item Category] > 10, COUNTROWS('catalog_sales'), MAX('store_sales'[ss_quantity])), 'date_dim'[d_date]), "m1", (DIVIDE([Catalog Sales YoY], CALCULATE(DISTINCTCOUNT('item'[i_class]), ALL('item'[i_class]))) - RANKX(ALL('ship_mode'[sm_type]), MIN('catalog_sales'[cs_ext_sales_price]))), "m2", VAR v = [Store Revenue YoY] RETURN v * 2 + CALCULATE(MIN('catalog_sales'[cs_quantity]), ALL('store'[s_state]), 'item'[i_class] = "fiction"))

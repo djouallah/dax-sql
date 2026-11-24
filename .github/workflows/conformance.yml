@@ -34,14 +34,31 @@ jobs:
           cache: npm
       - run: npm ci --no-audit --no-fund
       - name: The suite against dax-sql
+        env:
+          DAXSQL_TIMES: ${{ runner.temp }}/duckdb-times.json
         run: |
           node conformance/runner/run.mjs --adapter "node conformance/engines/dax-sql/adapter.mjs ." \
             --known conformance/engines/dax-sql/known.json --report "$RUNNER_TEMP/dax-sql.json"
+      # Each query's time on DuckDB, measured as the T-SQL adapter measures Fabric's (the query
+      # alone, from sent to its rows read), added up, and the slowest.
+      - name: The time on DuckDB
+        if: always()
+        run: |
+          test -f "$RUNNER_TEMP/duckdb-times.json" || exit 0
+          node -e '
+            const t = require(process.argv[1]);
+            const sum = t.reduce((a, x) => a + x.ms, 0) / 1000;
+            const rows = t.slice(0, 15).map(x => `| ${x.id} | ${(x.ms / 1000).toFixed(2)} |`).join("\n");
+            require("fs").appendFileSync(process.env.GITHUB_STEP_SUMMARY, `### The time on DuckDB\n\n${t.length} queries, ${sum.toFixed(1)} s added up.\n\n| query | s |\n|---|---|\n${rows}\n`);
+            console.log(`${t.length} queries, ${sum.toFixed(1)} s added up`);
+          ' "$RUNNER_TEMP/duckdb-times.json"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: dax-sql-report
-          path: ${{ runner.temp }}/dax-sql.json
+          path: |
+            ${{ runner.temp }}/dax-sql.json
+            ${{ runner.temp }}/duckdb-times.json
 
   agree:
     runs-on: ubuntu-latest
@@ -95,8 +112,10 @@ jobs:
         if: always()
         env:
           DAXSQL_PLAN: unnest
+          DAXSQL_TIMES: ${{ runner.temp }}/duckdb-unnest-times.json
         run: |
           node conformance/runner/run.mjs --adapter "node conformance/engines/dax-sql/adapter.mjs ."             --known conformance/engines/dax-sql/known.json,conformance/engines/dax-sql/known-plan.json --report "$RUNNER_TEMP/plan-unnest.json"
+          node -e 'const t = require(process.argv[1]); const s = (t.reduce((a, x) => a + x.ms, 0) / 1000).toFixed(1); console.log(`time on DuckDB, unnested plan: ${t.length} queries, ${s} s added up`); require("fs").appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\n**Time on DuckDB, unnested plan:** ${t.length} queries, ${s} s added up.\n`)' "$RUNNER_TEMP/duckdb-unnest-times.json"
       - name: The suite through the optimized query plan
         if: always()
         env:

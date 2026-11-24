@@ -9,13 +9,15 @@
 // SQL of the query plan, optimized (planSql); DAXSQL_PLAN=raw: the plan as it is;
 // DAXSQL_PLAN=correlated: the plan before decorrelation, its scalars standard (DuckDB unnests it);
 // DAXSQL_PLAN=unnest: that plan unnested (passes/unnest.js: no apply, for an engine that does not unnest).
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { engine, value } from './db.mjs';
 
 const e = await engine(process.argv[2]);
 const OPTIMIZE = process.env.DAXSQL_OPTIMIZE === '0' ? { optimize: false } : {};
 const PLAN = process.env.DAXSQL_PLAN;
 
+// With DAXSQL_TIMES, each query's time to answer (ms, as the T-SQL adapter measures it), to that file.
+const times = [];
 const request = JSON.parse(readFileSync(process.argv[3], 'utf8'));
 const dbs = new Map();
 for (const q of request.queries) {
@@ -28,10 +30,13 @@ for (const q of request.queries) {
     if (!db.compilers.has(roles)) db.compilers.set(roles, e.createCompiler(db.model, { columnNames: 'dax', ...OPTIMIZE, ...(q.roles ? { roles: q.roles } : {}) }));
     const c = db.compilers.get(roles);
     const { sql, columns } = PLAN ? c.planSql(q.dax, PLAN === 'correlated' ? { correlated: true } : PLAN === 'unnest' ? { unnest: true } : { optimize: PLAN !== 'raw' }) : c.compile(q.dax);
+    const t0 = performance.now();
     const reader = await db.con.runAndReadAll(sql);
+    times.push({ id: q.id, ms: Math.round(performance.now() - t0), bytes: sql.length });
     answer = { id: q.id, columns: columns.map(c => c.name), rows: reader.getRowsJS().map(r => r.map(value)) };
   } catch (err) {
     answer = { id: q.id, error: `${err.code ? `${err.code}: ` : ''}${err.message.split('\n')[0]}`, ...(err.code === 'UNSUPPORTED' ? { unsupported: true } : {}) };
   }
   process.stdout.write(`${JSON.stringify(answer)}\n`);
 }
+if (process.env.DAXSQL_TIMES) writeFileSync(process.env.DAXSQL_TIMES, JSON.stringify(times.sort((a, b) => b.ms - a.ms), null, 1));

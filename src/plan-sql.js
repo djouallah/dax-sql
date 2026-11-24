@@ -262,7 +262,7 @@ export class PlanSql extends Emitter {
     }
     switch (name) {
       case 'strpos': return ts ? `CHARINDEX(${y}, ${x})` : pg ? `strpos(${x}, ${y})` : `instr(${x}, ${y})`;
-      case 'substring_from': return ts ? `SUBSTRING(${x}, ${y}, LEN(${x}))` : `substring(${x}, ${y})`;
+      case 'substring_from': return ts ? `SUBSTRING(${x}, ${y}, LEN(${x}))` : d.name === 'postgres' ? `substr(${x}, CAST(${y} AS INTEGER))` : `substring(${x}, ${y})`;
       case 'regexp_replace': return `regexp_replace(${x}, ${y}, ${z}, 'g')`;
       case 'extract_dow': return ts ? `(DATEPART(weekday, ${x}) - 1)` : pg ? `CAST(EXTRACT(DOW FROM ${x}) AS BIGINT)` : `dayofweek(${x})`;
       case 'make_date': return ts ? `DATEFROMPARTS(${a.join(', ')})` : pg ? `make_date(${a.map(v => `CAST(${v} AS INTEGER)`).join(', ')})` : `make_date(${a.join(', ')})`;

@@ -16,6 +16,7 @@ REPROS = [
     ("IS NOT DISTINCT FROM between two CASTs in a join", "SELECT COUNT(*) AS n FROM t AS l JOIN (SELECT a AS b FROM t) AS r ON CAST(l.a AS BIGINT) IS NOT DISTINCT FROM CAST(r.b AS BIGINT)", "keys as = of COALESCE with a value no data holds"),
     ("IS NOT DISTINCT FROM beside an expression key", "SELECT COUNT(*) AS n FROM t AS l JOIN (SELECT a AS b FROM t) AS r ON l.a IS NOT DISTINCT FROM r.b AND CAST(l.a AS BIGINT) = CAST(r.b AS BIGINT)", "keys as = of COALESCE with a value no data holds"),
     ("a constant's comparison in a join's ON", "SELECT COUNT(*) AS n FROM t AS l JOIN (SELECT a AS b FROM t) AS r ON l.a = r.b AND r.b = 2", "an inner join's other conditions its WHERE"),
+    ("two comparisons of one column with constants in a join's ON", "SELECT COUNT(*) AS n FROM t AS l JOIN (SELECT a AS b FROM t) AS r ON l.a = r.b AND r.b = 2 AND r.b = 3", "an inner join's other conditions its WHERE"),
     ("a left join's ON with a condition on its right alone", "SELECT COUNT(*) AS n FROM t AS l LEFT JOIN (SELECT a AS b FROM t) AS r ON l.a = r.b AND r.b = 2", "the condition a filter of the right"),
     ("join keys DATE and TIMESTAMP", "SELECT COUNT(*) AS n FROM u AS l JOIN (SELECT ts FROM u) AS r ON l.d = r.ts", "every date a TIMESTAMP"),
     ("CASE: failing cast in a branch no row takes", "SELECT CASE WHEN a > 5 THEN CAST('x' AS INTEGER) ELSE a END AS r FROM t", "lengths at least 0, divisors at least 1, 64-bit whole numbers"),

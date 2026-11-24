@@ -76,6 +76,30 @@ jobs:
       - name: With the rewrites and without
         run: node conformance/engines/dax-sql/agree.mjs .
 
+  # Every query's plan as Substrait, read against the specification on main (substrait-io/
+  # substrait, cloned at its latest commit): each a Plan message of its protos, each function one
+  # of its extension files'.
+  substrait:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: djouallah/dax-sql
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -q grpcio-tools pyyaml
+      - run: git clone -q --depth 1 https://github.com/substrait-io/substrait "$RUNNER_TEMP/substrait"
+      - run: node conformance/tools/substrait-plans.mjs "$RUNNER_TEMP/plans"
+      - name: The plans, Substrait main's
+        run: python conformance/tools/substrait_check.py "$RUNNER_TEMP/substrait" "$RUNNER_TEMP/plans"
+
   plan:
     runs-on: ubuntu-latest
     timeout-minutes: 45

@@ -2,12 +2,41 @@
 // 0, a blank plus a blank is blank, DIVIDE's zero), as the standard operators any engine has:
 // comparisons, + - * /, AND OR NOT, IN, IS NULL, COALESCE, NULLIF, CASE, CAST, and standard
 // functions under standard names (power, round, upper, length, substring, extract_year,
-// add_days, date_trunc, …); what standard SQL has no one function for, a named function of the
-// plan's that each dialect writes (to_text, format_number, format_date, combinevalues,
-// replace_nth, parse_datetime).
+// add_days, date_trunc, …). What standard SQL has no one function for is defined as standard
+// functions (text.js: a number or a date as text, COMBINEVALUES, SUBSTITUTE's instance, text as
+// a date, UNICODE); FORMAT is a named function of the plan's that each dialect writes
+// (format_number, format_date).
 import * as P from '../plan.js';
 import { mapKids, mapScalars } from './decorrelate.js';
 import { clone } from './clone.js';
+import { definitions, refsIn } from './text.js';
+
+// A value a definition reads more than once (text.js): bound, a column of a projection below the
+// relation whose scalars read it (one projection for each depth of them); where no relation is
+// in hand (a join's condition, a row of constants), written where it is read.
+let lets = null;
+function bind(expr, name = 'v') {
+  if (!lets || expr.k === 'ref' || expr.k === 'lit') return expr;
+  const reads = refsIn(expr);
+  const layer = 1 + Math.max(0, ...lets.filter(l => reads.has(l.col)).map(l => l.layer));
+  const col = P.newCol(name, expr.t ?? 'string', { nn: !!expr.nn });
+  lets.push({ col, expr, layer });
+  return P.ref(col);
+}
+const DEF = definitions(bind);
+// The relations whose scalars are of a row of their input.
+const SCOPED = new Set(['select', 'project', 'aggregate', 'window', 'output']);
+const same = cols => cols.map(c => ({ col: c, expr: P.ref(c) }));
+// r's input with the bound values as its columns, each depth a projection.
+function hoist(r, out, bound) {
+  let src = out.src;
+  const depth = Math.max(...bound.map(l => l.layer));
+  for (let k = 1; k <= depth; k++) src = P.projectAs(src, [...same(src.cols), ...bound.filter(l => l.layer === k).map(l => ({ col: l.col, expr: l.expr }))]);
+  // A filter's and a window's own columns are their input's: the bound ones left out above.
+  if (out.k === 'select') return P.projectAs({ ...out, src, cols: src.cols }, same(r.cols));
+  if (out.k === 'window') return P.projectAs({ ...out, src, cols: [...src.cols, ...out.fns.map(f => f.col)] }, same(r.cols));
+  return { ...out, src };
+}
 
 export function standard(root) {
   for (const d of root.defs ?? []) d.rel = R(d.rel);
@@ -16,10 +45,16 @@ export function standard(root) {
 
 function R(r) {
   r = mapKids(r, R);
-  if (r.k === 'select') return { ...r, pred: L(r.pred, true) };
-  if (r.k === 'join' && r.on) return { ...r, on: L(r.on, true) };
-  r = mapScalars(r, x => L(x, false));
-  return r.k === 'aggregate' ? aggregates(r) : r;
+  const outer = lets;
+  lets = SCOPED.has(r.k) ? [] : null;
+  let out;
+  try {
+    if (r.k === 'select') out = { ...r, pred: L(r.pred, true) };
+    else if (r.k === 'join' && r.on) out = { ...r, on: L(r.on, true) };
+    else out = mapScalars(r, x => L(x, false));
+    if (lets?.length) out = hoist(r, out, lets);
+  } finally { lets = outer; }
+  return out.k === 'aggregate' ? aggregates(out) : out;
 }
 
 // DAX's aggregates as standard ones, and what DAX makes of them above the grouping: a count of
@@ -258,7 +293,7 @@ function asText(v) {
   if (v.t === 'string' || v.t === 'blank') return v;
   if (v.t === 'int') return cast(v, 'string');
   if (v.t === 'bool') return caseOf([[cond('eq', [v, lit(true, 'bool')]), lit('TRUE', 'string')], [cond('eq', [v, lit(false, 'bool')]), lit('FALSE', 'string')]], lit(null, 'string'), 'string');
-  return call('to_text', [v], 'string', v.nn);
+  return isDate(v.t) ? DEF.generalDate(v) : DEF.generalNumber(v);
 }
 // A value read to 15 significant digits, as Power BI does before it cuts one (0.29 * 100 is
 // 28.999999999999996 in binary; ROUNDDOWN(0.29, 2) is 0.29).
@@ -327,7 +362,7 @@ function fn(x) {
     case 'exact': return cond('eq', [coalesce(T(0), lit('', 'string')), coalesce(T(1), lit('', 'string'))]);
     case 'containsstringexact': return call('contains', [coalesce(T(0), lit('', 'string')), coalesce(T(1), lit('', 'string'))], 'bool', true);
     case 'containsstring': return call('contains', [call('lower', [coalesce(T(0), lit('', 'string'))], 'string'), call('lower', [coalesce(T(1), lit('', 'string'))], 'string')], 'bool', true);
-    case 'unicode': return call('code_point', [T(0)], 'int');
+    case 'unicode': return DEF.codePoint(T(0));
     // FIND(text, within, start, notfound), and SEARCH without regard to case.
     case 'find': case 'search': {
       const low = v => (x.name === 'search' ? call('lower', [v], 'string') : v);
@@ -335,7 +370,7 @@ function fn(x) {
       const pos = call('strpos', [low(within), low(coalesce(T(0), lit('', 'string')))], 'int');
       return caseOf([[cond('eq', [pos, int(0)]), a[3]]], pop('add', [pos, pop('sub', [s, int(1)], 'int')], 'int'), 'int');
     }
-    case 'substitute': return a.length === 3 ? call('replace', [T(0), T(1), T(2)], 'string') : call('replace_nth', [T(0), T(1), T(2), a[3]], 'string');
+    case 'substitute': return a.length === 3 ? call('replace', [T(0), T(1), T(2)], 'string') : DEF.replaceNth(T(0), T(1), T(2), a[3]);
     // A path's items ("|" between them): "" holds none, a blank path's length is blank, a
     // position past either end is blank.
     case 'pathlength': return caseOf([[cond('eq', [T(0), lit('', 'string')]), int(0)]], pop('add', [pop('sub', [call('length', [T(0)], 'int'), call('length', [call('replace', [T(0), lit('|', 'string'), lit('', 'string')], 'string')], 'int')], 'int'), int(1)], 'int'), 'int');
@@ -368,14 +403,15 @@ function fn(x) {
     case 'mround': return pop('mul', [halfAway(pop('div', [p, q], 'double')), q], 'double');
     // FORMAT: a number or a date by a pattern (parsed: its sections, digits, separators, the
     // names of days and months), as text; COMBINEVALUES: values joined by a separator.
-    case 'format_number': case 'format_date': case 'combinevalues': return call(x.name, a, 'string', true);
+    case 'format_number': case 'format_date': return call(x.name, a, 'string', true);
+    case 'combinevalues': return DEF.combineValues(T(0), a.slice(1).map(asText));
     case 'year': case 'month': case 'day': case 'hour': case 'minute': case 'second': case 'quarter':
       return isDate(p.t) ? call(`extract_${x.name}`, [p], 'int') : keep();
     case 'cast': {
       const to = q?.v;
       // Text as a date: an ISO literal (YYYY-MM-DD) a cast; else parse_datetime (DAX's en-US
       // forms too: 3/5/2024, March 5, 2024), as each dialect reads it.
-      if (to === 'datetime' && p.t === 'string') return p.k === 'lit' && /^\d{4}-\d\d-\d\d([ T]\d\d:\d\d(:\d\d)?)?$/.test(p.v) ? cast(p, to) : call('parse_datetime', [p], 'datetime');
+      if (to === 'datetime' && p.t === 'string') return p.k === 'lit' && /^\d{4}-\d\d-\d\d([ T]\d\d:\d\d(:\d\d)?)?$/.test(p.v) ? cast(p, to) : DEF.parseDatetime(p);
       if (to === 'string') return asText(p);
       return ['int', 'double', 'decimal', 'bool', 'datetime'].includes(to) ? cast(p, to) : keep();
     }

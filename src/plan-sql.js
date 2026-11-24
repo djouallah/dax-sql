@@ -269,7 +269,9 @@ export class PlanSql extends Emitter {
       case 'ceil': return ts ? `CEILING(${x})` : `ceil(${x})`;
       case 'replace': return `replace(${x}, ${y}, ${z})`;
       // T-SQL: the n-th of STRING_SPLIT's parts by their ordinal (none past the last, as a blank).
-      case 'split_part': return ts ? `(SELECT value FROM STRING_SPLIT(${x}, ${y}, 1) WHERE ordinal = ${z})` : pg ? `split_part(${x}, ${y}, CAST(${z} AS INTEGER))` : `split_part(${x}, ${y}, ${z})`;
+      case 'split_part': return ts ? `(SELECT value FROM STRING_SPLIT(${x}, ${y}, 1) WHERE ordinal = ${z})`
+        // DataFusion computes a CASE's branch no row takes too, and a position below 1 is an error.
+        : df ? `split_part(${x}, ${y}, CAST(greatest(${z}, 1) AS INTEGER))` : pg ? `split_part(${x}, ${y}, CAST(${z} AS INTEGER))` : `split_part(${x}, ${y}, ${z})`;
       case 'date_diff_microsecond': return ts ? `DATEDIFF_BIG(microsecond, ${x}, ${y})` : d.name === 'polars' || df ? `CAST(round((EXTRACT(EPOCH FROM ${y}) - EXTRACT(EPOCH FROM ${x})) * 1000000) AS BIGINT)` : pg ? `CAST(EXTRACT(EPOCH FROM (${y} - ${x})) * 1000000 AS BIGINT)` : `date_diff('microsecond', ${x}, ${y})`;
       case 'add_microseconds': return ts ? `DATEADD(microsecond, ${y}, ${x})` : df ? `(CAST(${x} AS TIMESTAMP) + CAST(CONCAT(CAST(CAST(${y} AS BIGINT) AS VARCHAR), ' microseconds') AS INTERVAL))` : d.name === 'polars' ? `(CAST(${x} AS TIMESTAMP) + CAST(${y} AS BIGINT) * INTERVAL '1 microsecond')` : pg ? `(${x} + ${y} * INTERVAL '1 microsecond')` : `(${x} + to_microseconds(${y}))`;
     }

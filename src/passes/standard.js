@@ -377,7 +377,10 @@ function fn(x) {
     case 'pathitem': case 'pathitemreverse': {
       const len = fn({ ...x, name: 'pathlength', a: [x.a[0]] });
       const at = x.name === 'pathitem' ? cast(q, 'int') : pop('add', [pop('sub', [len, cast(q, 'int')], 'int'), int(1)], 'int');
-      return caseOf([[cond('ge', [q, int(1)]), pop('nullif', [call('split_part', [T(0), lit('|', 'string'), at], 'string'), lit('', 'string')], 'string')]], lit(null, 'string'), 'string');
+      // (Its position within the path: a part's at 0 or below is no part on some engines, an
+      // error on others.)
+      const within = x.name === 'pathitem' ? cond('ge', [q, int(1)]) : cond('and', [cond('ge', [q, int(1)]), cond('ge', [at, int(1)])]);
+      return caseOf([[within, pop('nullif', [call('split_part', [T(0), lit('|', 'string'), at], 'string'), lit('', 'string')], 'string')]], lit(null, 'string'), 'string');
     }
     case 'pathcontains': return coalesce(cond('gt', [call('strpos', [tcat(lit('|', 'string'), pop('nullif', [T(0), lit('', 'string')], 'string'), lit('|', 'string')), tcat(lit('|', 'string'), T(1), lit('|', 'string'))], 'int'), int(0)]), lit(false, 'bool'));
     case 'weekday': {

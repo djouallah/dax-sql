@@ -9,7 +9,7 @@
 // - An interval of n units is cast from text ('n days'): no make_interval.
 // - generate_series is a table (its rows' column `value`); a series whose bounds are a row's
 //   reads them by scalar subqueries (no LATERAL).
-// - A sum in no order (SUM takes no ORDER BY); MEDIAN is median.
+// - A sum of floating-point values as a DECIMAL's (the same at each read of its CTE); MEDIAN is median.
 import { PostgresDialect } from './postgres.js';
 
 const UNITS = { day: 'DAY', week: 'WEEK', month: 'MONTH', quarter: 'QUARTER', year: 'YEAR', hour: 'HOUR', minute: 'MINUTE', second: 'SECOND' };
@@ -20,6 +20,8 @@ const int = v => `CAST(round(CAST(${v} AS DOUBLE)) AS BIGINT)`;
 // n units as an interval.
 const every = (n, u) => `CAST(CONCAT(CAST(${n} AS VARCHAR), ' ${u}') AS INTERVAL)`;
 const days = v => `CAST(CAST(${v} AS DATE) AS BIGINT)`;
+// A series of bounds that are not constants: this many steps at most.
+export const SERIES_STEPS = 1000000;
 
 export class DataFusionDialect extends PostgresDialect {
   name = 'datafusion';
@@ -35,7 +37,15 @@ export class DataFusionDialect extends PostgresDialect {
   bind(vals, body) { return body(...vals); }
   sumOfGroups(v) { return `SUM(${v})`; }
 
+  // generate_series takes constants only: bounds of a row (CALENDARAUTO's) the steps of a series
+  // of constants (SERIES_STEPS at most) that the bounds keep.
   series(start, end, step, t) {
+    const constant = v => /^\(*-?[\d.]+\)*$|^(DATE|TIMESTAMP) '[^']*'$/.test(String(v).trim());
+    if (![start, end, step].every(constant)) {
+      const n = t === 'datetime' ? `(${days(end)} - ${days(start)}) / ${int(step)}` : `floor(CAST((${end}) - (${start}) AS DOUBLE) / (${step}) + 1e-9)`;
+      const v = t === 'datetime' ? `CAST(CAST(${start} AS DATE) + ${every(`value * ${int(step)}`, 'days')} AS DATE)` : `${start} + ${step} * value`;
+      return `(SELECT ${v} AS v FROM generate_series(0, ${SERIES_STEPS}) WHERE value <= ${n})`;
+    }
     if (t === 'datetime') return `(SELECT CAST(value AS DATE) AS v FROM generate_series(CAST(${start} AS TIMESTAMP), CAST(${end} AS TIMESTAMP), ${every(int(step), 'days')}))`;
     if (t === 'int') return `(SELECT value AS v FROM generate_series(CAST(${start} AS BIGINT), CAST(${end} AS BIGINT), CAST(${step} AS BIGINT)))`;
     // A step with a fraction: start + step * i.
@@ -79,7 +89,11 @@ export class DataFusionDialect extends PostgresDialect {
     return super.fn(name, a, nodes);
   }
 
+  // A sum of floating-point values: as a DECIMAL's, the same in any order. DataFusion computes
+  // a CTE at each read, in parallel: two reads of one sum differ in the last digit, and a join
+  // on it loses rows.
   agg(fn, x, extra = {}) {
+    if ((fn === 'sum' || fn === 'avg') && extra.t === 'double' && !extra.exact) return super.agg(fn, x, { ...extra, exact: true });
     if (fn === 'median') return `median(${x})${extra.filter ? ` FILTER (WHERE ${extra.filter})` : ''}`;
     return super.agg(fn, x, extra);
   }

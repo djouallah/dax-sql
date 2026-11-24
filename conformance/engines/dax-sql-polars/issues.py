@@ -65,6 +65,16 @@ SMALL = [
     ("u3 unqualified outer column, LATERAL's derived table", "SELECT o.x, l.y FROM (SELECT a AS x FROM t) AS o, LATERAL (SELECT DISTINCT * FROM (SELECT i.a AS y FROM t AS i WHERE i.a <= x) AS s) AS l"),
     ("u3q the same qualified", "SELECT o.x, l.y FROM (SELECT a AS x FROM t) AS o, LATERAL (SELECT DISTINCT * FROM (SELECT i.a AS y FROM t AS i WHERE i.a <= o.x) AS s) AS l"),
     ("u4 LATERAL of a UNION ALL reading the outer row", "SELECT o.x, l.y FROM (SELECT a AS x FROM t) AS o, LATERAL (SELECT y FROM (SELECT a AS y FROM t WHERE a <= o.x) AS p UNION ALL SELECT y FROM (SELECT a AS y FROM t WHERE a > o.x) AS q) AS l"),
+    # DATE_TRUNC "cannot determine the type", as the suite's correlated plan meets it.
+    ("d3 date_trunc of an unqualified outer column, scalar subquery", "SELECT ts0, (SELECT COUNT(*) FROM u AS i WHERE i.ts >= date_trunc('month', ts0)) AS n FROM (SELECT ts AS ts0 FROM u) AS o"),
+    ("d4 date_trunc of an unqualified outer column, LATERAL", "SELECT o.ts0, x.n FROM (SELECT ts AS ts0 FROM u) AS o, LATERAL (SELECT COUNT(*) AS n FROM u AS i WHERE i.ts >= date_trunc('year', ts0)) AS x"),
+    ("d5 LATERAL SELECT * over a derived table, date_trunc of o.ts0 cast", "SELECT * FROM (SELECT ts AS ts0 FROM u) AS o, LATERAL (SELECT * FROM (SELECT ts AS ts1 FROM u) AS s WHERE ts1 >= CAST(CAST(date_trunc('year', o.ts0) AS DATE) AS TIMESTAMP) AND ts1 <= o.ts0) AS a"),
+    ("d6 LATERAL SELECT * over a table, date_trunc of o.ts0 in COALESCE", "SELECT * FROM (SELECT ts AS ts0 FROM u) AS o, LATERAL (SELECT * FROM u AS s WHERE COALESCE(s.ts, TIMESTAMP '1899-12-30 00:00:00') >= COALESCE(CAST(CAST(date_trunc('year', o.ts0) AS DATE) AS TIMESTAMP), TIMESTAMP '1899-12-30 00:00:00')) AS a"),
+    ("d7 LATERAL SELECT * over a table, date_trunc of o.ts0", "SELECT * FROM (SELECT ts AS ts0 FROM u) AS o, LATERAL (SELECT * FROM u AS s WHERE s.ts >= date_trunc('year', o.ts0)) AS a"),
+    ("d8 correlated EXISTS, date_trunc of the outer column", "SELECT ts0 FROM (SELECT ts AS ts0 FROM u) AS o WHERE EXISTS (SELECT 1 FROM u AS i WHERE i.ts >= date_trunc('month', o.ts0))"),
+    ("d9 correlated EXISTS, date_trunc of the inner column", "SELECT a FROM t AS o WHERE EXISTS (SELECT 1 FROM u AS i WHERE date_trunc('month', i.ts) <= i.ts AND o.a > 1)"),
+    ("d10 correlated scalar subquery over a CTE, date_trunc of its column", "WITH c AS (SELECT ts AS ts1 FROM u) SELECT a, (SELECT COUNT(*) FROM c WHERE date_trunc('month', ts1) <= ts1 AND a > 1) AS n FROM t"),
+    ("d11 LATERAL over a CTE, date_trunc of the outer column", "WITH c AS (SELECT ts AS ts1 FROM u) SELECT * FROM (SELECT ts AS ts0 FROM u) AS o, LATERAL (SELECT * FROM c WHERE ts1 >= date_trunc('year', o.ts0)) AS a"),
     ("u5 LATERAL over a CTE, reading nothing outside", "WITH c AS (SELECT MAX(a) AS m FROM t) SELECT o.a, l.m FROM t AS o, LATERAL (SELECT m FROM c) AS l"),
 ]
 frames = {"t": pl.DataFrame({"a": [1, 2, 3]}),

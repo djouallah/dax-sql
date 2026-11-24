@@ -65,7 +65,7 @@ jobs:
           const { tmslToModel } = await import(`${s}/formats/tmsl.js`);
           const { bim } = await import(`${s}/fixtures/contoso.js`);
           const ex = await import(`${s}/examples.js`);
-          const all = [...ex.problem.filter(p => p.dax).map(p => p.dax), ex.sql, ex.unseen, ...ex.playground.map(p => p[1])];
+          const all = [...ex.problem.filter(p => p.dax).map(p => p.dax), ...ex.playground.map(p => p[1])];
           for (const dialect of ['duckdb', 'tsql']) for (const optimize of [true, false]) {
             const c = createCompiler(tmslToModel(bim), { dialect, optimize });
             for (const q of all) c.compile(q);

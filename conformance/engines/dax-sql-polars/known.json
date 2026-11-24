@@ -10,9 +10,5 @@
   {"id":"contoso/scalar/scalar-text-as-date-en-us","reason":"Polars: text read as a date in en-US forms (a month's name, slashes) is not written for Polars yet"},
   {"id":"contoso/tables/tables-calendarauto","reason":"Polars: a series whose bounds are a row's (CALENDARAUTO) is a LATERAL, which Polars has none of"},
   {"id":"contoso/text/text-substitute-instance","reason":"Polars: SUBSTITUTE with an instance number is not written for Polars yet (PostgreSQL's slices an array, which Polars SQL does not)"},
-  {"id":"patterns/gaps/gaps-substitute-instance","reason":"Polars: SUBSTITUTE with an instance number is not written for Polars yet (PostgreSQL's slices an array, which Polars SQL does not)"},
-  {"id":"patterns/relationships/relationships-currency-closing-vs-average-rate","reason":"slow: past 30 s on Polars, a LASTNONBLANK of a date: the plan crosses each date with each date (a range join) and each currency; DuckDB answers it at once"},
-  {"id":"patterns/relationships/relationships-currency-usd-at-delivery","reason":"slow: past 30 s on Polars, a LASTNONBLANK of a date: the plan crosses each date with each date (a range join) and each currency; DuckDB answers it at once"},
-  {"id":"patterns/relationships/relationships-currency-usd-by-country","reason":"slow: past 30 s on Polars, a LASTNONBLANK of a date: the plan crosses each date with each date (a range join) and each currency; DuckDB answers it at once"},
-  {"id":"patterns/relationships/relationships-rls-france-no-escape","reason":"slow: past 30 s on Polars, a LASTNONBLANK of a date: the plan crosses each date with each date (a range join) and each currency; DuckDB answers it at once"}
+  {"id":"patterns/gaps/gaps-substitute-instance","reason":"Polars: SUBSTITUTE with an instance number is not written for Polars yet (PostgreSQL's slices an array, which Polars SQL does not)"}
 ]

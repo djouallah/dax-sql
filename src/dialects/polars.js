@@ -34,6 +34,12 @@ const constInt = n => (n?.k === 'lit' && Number.isInteger(n.v) ? n.v
 // A constant number of months: an INTERVAL (of months it is, of the month's last day at most).
 const months = (x, k) => (k === 0 ? x : `(${x} ${k > 0 ? '+' : '-'} INTERVAL '${Math.abs(k)} months')`);
 
+// A blank as a key, by type: a value no data holds.
+const SENTINELS = {
+  int: 'CAST(-9223372036854775807 AS BIGINT)', double: 'CAST(-1.7976931348623157e308 AS DOUBLE PRECISION)',
+  decimal: 'CAST(-99999999999999.9999 AS DECIMAL(19,4))', string: "'\u0001'",
+  date: "TIMESTAMP '0001-01-01 00:00:00'", datetime: "TIMESTAMP '0001-01-01 00:00:00'",
+};
 const DATES = new Set(['start_of', 'end_of', 'today', 'utctoday']);
 
 export class PolarsDialect extends PostgresDialect {
@@ -46,7 +52,13 @@ export class PolarsDialect extends PostgresDialect {
   flatSql = true;
   joinKeysOnly = true;
 
-  isNotDistinct(a, b) { return `(${a} IS NOT DISTINCT FROM ${b})`; }
+  // A blank-safe key: = of each side with a blank as a value of its type no data holds (Polars
+  // joins on IS NOT DISTINCT FROM a hundred times slower than on =: past 30 s for a LASTNONBLANK).
+  isNotDistinct(a, b, t) {
+    const none = SENTINELS[t];
+    if (!none) return `(${a} IS NOT DISTINCT FROM ${b})`;
+    return `(COALESCE(${a}, ${none}) = COALESCE(${b}, ${none}))`;
+  }
 
   // A date: a TIMESTAMP (a cast to one at midnight), a constant one too.
   type(t) { return t === 'date' ? 'TIMESTAMP' : super.type(t); }

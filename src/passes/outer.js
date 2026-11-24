@@ -145,7 +145,14 @@ function ev(x, nulls) {
     case 'and': { const v = A(); if (v.some(t => t === false)) return false; if (v.some(t => t === undefined)) return undefined; return v.some(t => t === null) ? null : true; }
     case 'or': { const v = A(); if (v.some(t => t === true)) return true; if (v.some(t => t === undefined)) return undefined; return v.some(t => t === null) ? null : false; }
     case 'coalesce': { for (const y of x.a) { const v = ev(y, nulls); if (v === undefined) return undefined; if (v !== null) return v; } return null; }
-    case 'nullif': { const v = ev(x.a[0], nulls); return v === null ? null : undefined; }
+    // NULLIF(a, b): NULL when a is, or when both are known and equal (NULLIF(COALESCE(count, 0), 0)
+    // of a row a left join adds: a count over no rows, a blank).
+    case 'nullif': {
+      const [a, b] = A();
+      if (a === null) return null;
+      if (a === undefined || b === undefined) return undefined;
+      return b !== null && a === b ? null : a;
+    }
     case 'cast': case 'neg': { const v = ev(x.a[0], nulls); return v === null ? null : v === undefined ? undefined : x.op === 'neg' ? -v : v; }
     case 'call': { if (!STRICT.has(x.name)) return undefined; return A().some(v => v === null) ? null : undefined; }
     case 'in': { const v = ev(x.a[0], nulls); return v === null ? null : undefined; }

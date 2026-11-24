@@ -1201,7 +1201,8 @@ derived table of a correlated subquery or a `LATERAL` (pola-rs/polars#31059, #31
 runs the correlated plan beside, as a measure.
 Where it differs from PostgreSQL's:
 
-- No `MATERIALIZED`.
+- No `MATERIALIZED`. Each relation a SELECT reads is a CTE of its own (`flatSql`): Polars runs the
+  suite 13% faster so than with relations nested.
 - A value is written where it is read, not bound in a subquery's row: that row reads the outer
   row by its columns' names alone, which Polars does not find (pola-rs/polars#31067).
 - A date is a `TIMESTAMP` at midnight, as a DAX date is a date and time: a Polars `DATE` takes no

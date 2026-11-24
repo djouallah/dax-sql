@@ -60,6 +60,9 @@ export class PolarsDialect extends PostgresDialect {
   cast(sql, t) { return t === 'date' ? `CAST(CAST(${sql} AS DATE) AS TIMESTAMP)` : super.cast(sql, t); }
   datetime(v) { return /\d:\d/.test(v) ? `TIMESTAMP ${this.str(v)}` : `TIMESTAMP ${this.str(`${v} 00:00:00`)}`; }
   blankOf(t) { return t === 'datetime' || t === 'date' ? "TIMESTAMP '1899-12-30 00:00:00'" : super.blankOf(t); }
+  // Each relation a SELECT reads a CTE of its own: not for Polars' parser (2.2 nests deep), for its
+  // speed: the suite in 111.6 s so, 125.9 s with relations nested (polars.yml, the same queries).
+  flatSql = true;
   keysTogether = null;
   bind(vals, body) { return body(...vals); }
   sumOfGroups(v) { return `SUM(${v})`; }

@@ -91,6 +91,11 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - name: The query plan's operators (optimized, only the plan's simple operators)
         run: node conformance/engines/dax-sql/operators.mjs .
+      # Every dialect's SQL is written from the plan as Substrait, read back: the same text as
+      # from the plan itself, for every query (nothing the Substrait does not carry).
+      - name: The SQL through Substrait, the same as through the plan
+        if: always()
+        run: node conformance/tools/roundtrip.mjs --show 10
       - name: The suite through the query plan as it is
         if: always()
         env:

@@ -4,21 +4,24 @@ Nothing here blocks a release. DAX on DuckDB has nothing left; T-SQL is the last
 
 # Wave 2: T-SQL
 
-- **2 queries past Fabric's 30 s**, on the known list as slow. Each holds a subquery of each
-  group that the mapping does not reach yet: `segmentation-calc-group-name-ordinal-filter` (60 s
-  alone), `segmentation-summarize-sply-quarter-band` (21 s alone, past 30 s beside 7 others; its
-  prior year's Low-band customer count is 8 s by itself).
+- **The unnested plan on Fabric** (`tsql.yml`'s second step): the queries the compiled SQL takes
+  past 30 s answer through it (`known-compile.json`), and the suite adds up to half the time.
+  Left: `segmentation-bands-matrix-two-totals` near 30 s (26 s alone; the compiled SQL 10 s),
+  a measure's grouping read 8 times, which Fabric computes at each read. Then `compile()` on
+  T-SQL through the plan.
 - `agree.mjs` holds the rewrites to the plain SQL on DuckDB only: T-SQL's own (`bind`,
   `fuseRows`) are checked by the goldens in `tsql.yml`, not on the queries of its known list.
 
 # Wave 3: PostgreSQL
 
-- **3 queries past 10 min** on the CI's PostgreSQL 17, on its known list as slow: a calculation
-  item over a running total (`segmentation-cumulative-calc-group`) or a segmentation
-  (`segmentation-customer-bands-calc-group`), and a calculation item as a CALCULATE filter
-  (`filters-calcgroup-item-as-calculate-filter`). The same kind as Fabric's: a subquery of each
-  group the mapping does not reach, which PostgreSQL runs as a loop. Others take 15 s to 132 s
-  (`segmentation-summarize-sply-quarter-band`); the run's summary lists them.
+- The optimized and unnested plans answer the 3 queries the compiled SQL takes past 10 min
+  (`known-compile.json`); `compile()` on PostgreSQL through the plan is next.
+
+# Wave 4: Polars
+
+- 1199 of 1286 match on Polars 2.1.0 (`polars.yml`); the rest on its known list. Left: FORMAT,
+  SUBSTITUTE's instance, en-US text as a date, CALENDARAUTO's series; LASTNONBLANK of a date,
+  whose range join of dates by dates is past 30 s on Polars.
 
 # The query plan
 
@@ -26,9 +29,10 @@ Nothing here blocks a release. DAX on DuckDB has nothing left; T-SQL is the last
 
 1. Done: the plan, as it is (`lower.js`, `plan-sql.js`, `explain.js`); every query of the
    suite answers through `planSql` on DuckDB as it does through `compile`.
-2. **Decorrelation**: the correlated plan unnested top down (`unnest.js`, `{ unnest: true }`):
-   no apply left on the suite; its answers on DuckDB, PostgreSQL and DataFusion in CI. Next: the
-   plan path on T-SQL and PostgreSQL through it, their slow queries under limit.
+2. Done: **decorrelation**, the correlated plan unnested top down (`unnest.js`,
+   `{ unnest: true }`): no apply left on the suite; D read from the base rows, not the levels
+   below (Fabric computes a CTE at each read). Its answers on DuckDB, PostgreSQL, Fabric, Polars
+   and DataFusion in CI.
 3. **The emitter's rewrites as passes**, one at a time, each checked against the plan as it
    is: fusion, filters on the scan, grouping below joins, sharing.
 4. Done on DuckDB: `compile()` through the plan, held to `emit.js`'s SQL by `perf.yml` (the

@@ -1172,6 +1172,37 @@ from DuckDB's reading of the CSVs (the same values, of the same types), with its
 10 min: a subquery of each group the mapping does not reach yet, as on Fabric). `postgres.yml`
 runs it on each push that changes the compiler or the suite, on a `postgres:17` service with
 `--locale=C`: the answers are checked, and the slowest queries reported (a query has 5 min).
+Its `plan` jobs run the suite through the optimized and the unnested plans (30 s a query), which
+answer the three queries the compiled SQL takes past 10 min for (`known-compile.json`, read by
+the compiled SQL's job alone).
+
+### Polars
+
+`dialect: 'polars'` writes PostgreSQL's SQL as Polars' SQLContext reads it (tested on 2.1), over
+the query plan unnested (`planSql(query, { unnest: true })`): Polars runs no correlated subquery
+and no LATERAL. Where it differs from PostgreSQL's:
+
+- Each relation a SELECT reads is a CTE of its own (`flatSql`): Polars' parser nests subqueries
+  only so deep. No `MATERIALIZED`.
+- A value is written where it is read, not bound in a subquery's row (which reads the outer row).
+- A date is a `TIMESTAMP` at midnight, as the worker reads the data's dates: one type to compare,
+  join and union on. A difference of dates in days is the days since 1970 (a date less a date is
+  a duration).
+- An interval is of a fixed length: a constant number of months is `INTERVAL 'k months'`, any
+  other number made of the date's parts.
+- A join's condition is its keys (`joinKeysOnly`): an inner join's other conditions its `WHERE`,
+  a left join's on its right the right's filter (Polars takes a comparison with a constant for a
+  key). A blank-safe key is `IS NOT DISTINCT FROM`.
+- `strpos` reads its needle as a pattern: a text's position is the length before its first
+  occurrence. `ROUND`'s places are a constant. Whole numbers are 64 bits: Polars computes a
+  `CASE`'s branches no row takes.
+
+`conformance/engines/dax-sql-polars/adapter.mjs` runs the suite on Polars over the CSVs
+(`worker.py`, one process for each model), against DuckDB's known lists and its own (FORMAT,
+SUBSTITUTE's instance, en-US text as a date, CALENDARAUTO not written for Polars yet; four
+LASTNONBLANK-of-a-date queries past 30 s). `polars.yml` runs it on each push that changes the
+compiler or the suite, on Polars 2.1.0 from pip. `polars-main.yml` (Polars built from its main
+branch, the probe and the SQL shapes) is run by hand.
 
 ### Tests
 

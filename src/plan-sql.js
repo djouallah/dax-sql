@@ -199,7 +199,7 @@ export class PlanSql extends Emitter {
 
   // A standard function, as the dialect writes it.
   call(name, a, nodes, t) {
-    const d = this.d, [x, y, z] = a, pg = d.name === 'postgres', ts = d.name === 'tsql';
+    const d = this.d, [x, y, z] = a, pg = d.name === 'postgres' || d.name === 'polars', ts = d.name === 'tsql';
     // The last day of a month (EOMONTH, the end of a period: the month's start, q months on, a day
     // back) as DuckDB's last_day, which it pushes below a join as a condition on the column
     // (the month ends of SAMEPERIODLASTYEAR: 1.2 million rows tested after a join, 39 thousand so).
@@ -237,7 +237,7 @@ export class PlanSql extends Emitter {
       case 'contains': return d.fn('containsstringexact', a, nodes);
       case 'mod': return `(${x} % ${y})`;
       // Whole-number division.
-      case 'idiv': return d.name === 'duckdb' ? `(${x} // ${y})` : d.name === 'postgres' ? `div(${x}, ${y})` : `(${x} / ${y})`;
+      case 'idiv': return d.name === 'duckdb' ? `(${x} // ${y})` : pg ? `div(${x}, ${y})` : `(${x} / ${y})`;
       case 'trunc': return ts ? `ROUND(${x}, 0, 1)` : `trunc(${x})`;
       // A fixed decimal (CURRENCY) on T-SQL: rounded as a DECIMAL, not as the FLOAT's binary value
       // (1.0001 / 2.0, 0.50005, is 0.5001), as the compiled SQL rounds one.

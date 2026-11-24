@@ -3,7 +3,10 @@
 # Each table of the model.bim read from data/<entity>.csv with the bim's types, registered as
 # <name>__<entity>. Prints {"ready": true}, then reads one JSON {"sql"} per line and answers each
 # with one JSON line: {"rows": [...]} or {"error": "<class>: <first line>"}.
+import datetime
+import decimal
 import json
+import math
 import re
 import sys
 
@@ -34,13 +37,28 @@ def load(model_dir, name):
     return ctx
 
 
+def value(v):
+    # As the DuckDB adapter writes one: a date as YYYY-MM-DD, a date and time as YYYY-MM-DD
+    # HH:MM:SS (midnight as the date alone), a decimal as a number.
+    if isinstance(v, datetime.datetime):
+        return v.strftime("%Y-%m-%d") if v.time() == datetime.time() else v.strftime("%Y-%m-%d %H:%M:%S")
+    if isinstance(v, datetime.date):
+        return v.isoformat()
+    if isinstance(v, decimal.Decimal):
+        return float(v)
+    # Infinity and NaN: JSON has neither (the DuckDB adapter's are written null too).
+    if isinstance(v, float) and (math.isnan(v) or math.isinf(v)):
+        return None
+    return v
+
+
 def main():
     ctx = load(sys.argv[1], sys.argv[2])
     print(json.dumps({"ready": True}), flush=True)
     for line in sys.stdin:
         q = json.loads(line)
         try:
-            out = {"rows": ctx.execute(q["sql"], eager=True).rows()}
+            out = {"rows": [[value(v) for v in r] for r in ctx.execute(q["sql"], eager=True).rows()]}
         except BaseException as e:  # noqa: BLE001
             out = {"error": f"{type(e).__name__}: " + (str(e).splitlines()[0][:300] if str(e) else "")}
         print(json.dumps(out, default=str), flush=True)

@@ -1,0 +1,85 @@
+name: Polars
+
+# Runs the conformance suite on Polars (released, pinned): each query compiled with the `polars`
+# dialect through the query plan unnested (planSql { unnest: true }), run on Polars' SQLContext
+# over the suite's CSVs (conformance/engines/dax-sql-polars/adapter.mjs), held to Power BI's
+# answers and the known lists: DuckDB's (what holds for every engine) and Polars' own.
+
+on:
+  push:
+    paths:
+      - "src/**"
+      - "formats/**"
+      - "conformance/queries/**"
+      - "conformance/golden/**"
+      - "conformance/runner/**"
+      - "conformance/engines/dax-sql/known*.json"
+      - "conformance/engines/dax-sql-polars/**"
+      - ".github/workflows/polars.yml"
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+concurrency:
+  group: polars-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  polars:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -q polars==2.1.0
+      - name: The suite on Polars, through the unnested query plan
+        env:
+          PY: python
+          DAXSQL_TIMES: ${{ runner.temp }}/polars-times.json
+        run: |
+          node conformance/runner/run.mjs --adapter "node conformance/engines/dax-sql-polars/adapter.mjs ." \
+            --known conformance/engines/dax-sql/known.json,conformance/engines/dax-sql/known-plan.json,conformance/engines/dax-sql-polars/known.json \
+            --report "$RUNNER_TEMP/polars.json"
+      # The errors by kind (their text with names and numbers left out), the most frequent first,
+      # and the time: what to fix next.
+      - name: Summary
+        if: always()
+        run: |
+          test -f "$RUNNER_TEMP/polars.json" || exit 0
+          node -e '
+            const r = require(process.argv[1]), t = r.total;
+            const out = [`### Polars 2.1.0, unnested plan`, "", "| match | fail | error | unsupported | known |", "|---|---|---|---|---|", `| ${t.match} | ${t.fail} | ${t.error} | ${t.unsupported} | ${t.known} |`, ""];
+            const groups = new Map();
+            for (const q of r.queries.filter(q => q.outcome === "error" && !q.known)) {
+              const k = String(q.detail ?? "").replace(/\s+/g, " ").replace(/"[^"]*"|\x27[^\x27]*\x27|\d+/g, "…").slice(0, 140);
+              const g = groups.get(k) ?? { n: 0, ex: q.id };
+              g.n++; groups.set(k, g);
+            }
+            out.push("| errors | kind | e.g. |", "|---|---|---|", ...[...groups].sort((a, b) => b[1].n - a[1].n).slice(0, 40).map(([k, g]) => `| ${g.n} | ${k.replace(/\|/g, "\|")} | ${g.ex} |`), "");
+            const fails = r.queries.filter(q => q.outcome === "fail" && !q.known).map(q => q.id);
+            out.push(`**Different answers (${fails.length}):** ${fails.slice(0, 40).join(", ")}`, "");
+            try {
+              const tm = require(process.argv[2]);
+              out.push(`**Time:** ${tm.length} queries, ${(tm.reduce((a, x) => a + x.ms, 0) / 1000).toFixed(1)} s added up; the slowest: ${tm.slice(0, 8).map(x => `${x.id} ${(x.ms / 1000).toFixed(1)} s`).join(", ")}`);
+            } catch {}
+            require("fs").appendFileSync(process.env.GITHUB_STEP_SUMMARY, out.join("\n") + "\n");
+            console.log(out.join("\n"));
+          ' "$RUNNER_TEMP/polars.json" "$RUNNER_TEMP/polars-times.json"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: polars-report
+          path: |
+            ${{ runner.temp }}/polars.json
+            ${{ runner.temp }}/polars-times.json

@@ -53,9 +53,21 @@ writeFileSync(requestFile, JSON.stringify({
 const { map: answers, code: adapterCode } = await new Promise((done, fail) => {
   const child = spawn(`${adapter} "${requestFile}"`, { shell: true, stdio: ['ignore', 'pipe', 'inherit'] });
   let out = '';
-  child.stdout.on('data', d => { out += d; });
+  // Progress, on stderr every 15 s: the queries answered so far, those with an error, the time.
+  const t0 = Date.now();
+  let answered = 0, errors = 0, pending = '';
+  child.stdout.on('data', d => {
+    out += d;
+    const lines = (pending + d).split('\n');
+    pending = lines.pop();
+    for (const l of lines) if (l.trim()) { answered++; if (l.includes('"error"')) errors++; }
+  });
+  const say = () => console.error(`… ${answered}/${queries.length} answered (${errors} with an error), ${Math.round((Date.now() - t0) / 1000)} s`);
+  const tick = setInterval(say, 15000);
   child.on('error', fail);
   child.on('close', code => {
+    clearInterval(tick);
+    if (Date.now() - t0 > 15000) say();
     const map = new Map();
     for (const line of out.split('\n')) {
       if (!line.trim()) continue;

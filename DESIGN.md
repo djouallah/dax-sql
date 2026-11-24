@@ -306,7 +306,22 @@ condition when that is a range. A grouping of no key is grouped by F and left-jo
 count over no rows 0. An apply inside the right is pushed into its left and unnested there, its
 D carrying the columns of every level. Nothing stays an apply. Then joins, outer joins, fusion,
 sharing, inlining, renames and pruning. CI holds it to the contract (`operators.mjs`) and runs
-the suite through it on DuckDB, PostgreSQL and Substrait on DataFusion.
+the suite through it on DuckDB, PostgreSQL, Fabric, Polars and DataFusion.
+
+**Substrait is the plan the SQL is written from** (`substrait.js`, `substrait-read.js`):
+`planSql` writes the plan as Substrait (the specification on main) and reads it back, and every
+dialect's SQL is written from what it reads, so nothing reaches an engine that the Substrait does
+not carry. The plan's relations are Substrait's own: an apply is a `LateralJoinRel` (outer
+references by `rel_reference`), GENERATESERIES the standard `generate_series` table function, a
+membership an `in_predicate`, a definition read twice a `ReferenceRel`. Its functions are
+Substrait's standard ones; a plan function no single standard function means (DATEDIFF, TRUNC,
+EDATE, a part of a text, FORMAT) is a named lambda, its body its definition in standard functions
+and its name which function it is, so a dialect with one of that name writes its own (T-SQL's
+FORMAT). Hints carry what the reader needs and no consumer does: each relation's columns named
+(`output_names`), a scan's model table, a distinct or a series written in another relation's form
+(`alias`). CI checks both ways: every suite query's SQL is the same written from the Substrait as
+from the plan itself (`roundtrip.mjs`, 7410 texts), and every plan parses as a `Plan` message of
+Substrait main's protos with each function one its extension file declares (`substrait_check.py`).
 
 ### The intermediate form
 

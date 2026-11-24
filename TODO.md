@@ -25,7 +25,12 @@ Nothing here blocks a release. DAX on DuckDB has nothing left; T-SQL is the last
 
 # The query plan
 
-`DAX → query plan → optimizer (every engine) → engine passes (only what one needs) → SQL`.
+`DAX → query plan → optimizer (every engine) → Substrait → engine passes (only what one needs) → SQL`.
+
+Done: Substrait (main) is the plan every dialect's SQL is written from (`planSql`: the plan
+written as Substrait, read back); DataFusion gets SQL as every engine does. Left: `compile()`
+through it (DuckDB's `compile()` skips the standard scalars; T-SQL, PostgreSQL and Polars
+`compile()` are still `emit.js`).
 
 1. Done: the plan, as it is (`lower.js`, `plan-sql.js`, `explain.js`); every query of the
    suite answers through `planSql` on DuckDB as it does through `compile`.

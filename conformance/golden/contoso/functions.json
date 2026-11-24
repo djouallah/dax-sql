@@ -50,8 +50,23 @@
   ]
  },
  "functions-combinatorics": {
-  "hash": "4950109a94694ae98ac18437482e27ccf50d1631",
-  "error": "Query (2, 79) An argument of function 'COMBIN' has the wrong data type or the result is too large or too small."
+  "hash": "ee709082caee6d9cfad614a37aa6a54103591d50",
+  "columns": [
+   "[combin]",
+   "[combina]",
+   "[permut]",
+   "[combinfrac]",
+   "[zero]"
+  ],
+  "rows": [
+   [
+    28.0,
+    20.0,
+    970200.0,
+    83.99999999999999,
+    1.0
+   ]
+  ]
  },
  "functions-define-function": {
   "hash": "b055bd7c2aa45871cd7b6fe112b826c549d065c6",

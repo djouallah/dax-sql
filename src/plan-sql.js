@@ -184,16 +184,21 @@ export class PlanSql extends Emitter {
         add: () => `(${a} + ${b})`, sub: () => `(${a} - ${b})`, mul: () => `(${a} * ${b})`, div: () => this.d.div(a, b), neg: () => `(-${a})`,
         coalesce: () => `COALESCE(${A.join(', ')})`, nullif: () => `NULLIF(${a}, ${b})`,
         cast: () => this.d.cast(a, x.to), concat: () => this.d.concat(a, b),
-        call: () => this.call(x.name, A, x.a),
+        call: () => this.call(x.name, A, x.a, x.t),
         true: () => this.d.always, false: () => this.d.never,
       }[x.op]();
-      return this.d.boolValues || !isCondOp(x.op) || pred ? s : this.d.value(s);
+      if (this.d.boolValues) return s;
+      // Where a condition is no value (T-SQL): a condition asked for as a value is one; a
+      // boolean value (COALESCE of conditions, a CASE) asked for as a condition is one too.
+      // (contains: the dialect's CONTAINSSTRING, a condition where there are no boolean values.)
+      if (isCondOp(x.op) || (x.op === 'call' && x.name === 'contains')) return pred ? s : this.d.value(s);
+      return pred && x.t === 'bool' ? this.d.cond(s) : s;
     }
     return super.scalar(x, scope, pred);
   }
 
   // A standard function, as the dialect writes it.
-  call(name, a, nodes) {
+  call(name, a, nodes, t) {
     const d = this.d, [x, y, z] = a, pg = d.name === 'postgres', ts = d.name === 'tsql';
     // The last day of a month (EOMONTH, the end of a period: the month's start, q months on, a day
     // back) as DuckDB's last_day, which it pushes below a join as a condition on the column
@@ -214,7 +219,8 @@ export class PlanSql extends Emitter {
       case 'make_date': return ts ? `DATEFROMPARTS(${a.join(', ')})` : pg ? `make_date(${a.map(v => `CAST(${v} AS INTEGER)`).join(', ')})` : `make_date(${a.join(', ')})`;
       case 'ceil': return ts ? `CEILING(${x})` : `ceil(${x})`;
       case 'replace': return `replace(${x}, ${y}, ${z})`;
-      case 'split_part': return pg ? `split_part(${x}, ${y}, CAST(${z} AS INTEGER))` : `split_part(${x}, ${y}, ${z})`;
+      // T-SQL: the n-th of STRING_SPLIT's parts by their ordinal (none past the last, as a blank).
+      case 'split_part': return ts ? `(SELECT value FROM STRING_SPLIT(${x}, ${y}, 1) WHERE ordinal = ${z})` : pg ? `split_part(${x}, ${y}, CAST(${z} AS INTEGER))` : `split_part(${x}, ${y}, ${z})`;
       case 'date_diff_microsecond': return ts ? `DATEDIFF_BIG(microsecond, ${x}, ${y})` : pg ? `CAST(EXTRACT(EPOCH FROM (${y} - ${x})) * 1000000 AS BIGINT)` : `date_diff('microsecond', ${x}, ${y})`;
       case 'add_microseconds': return ts ? `DATEADD(microsecond, ${y}, ${x})` : pg ? `(${x} + ${y} * INTERVAL '1 microsecond')` : `(${x} + to_microseconds(${y}))`;
     }
@@ -232,7 +238,10 @@ export class PlanSql extends Emitter {
       case 'mod': return `(${x} % ${y})`;
       // Whole-number division.
       case 'idiv': return d.name === 'duckdb' ? `(${x} // ${y})` : d.name === 'postgres' ? `div(${x}, ${y})` : `(${x} / ${y})`;
-      case 'trunc': return `trunc(${x})`;
+      case 'trunc': return ts ? `ROUND(${x}, 0, 1)` : `trunc(${x})`;
+      // A fixed decimal (CURRENCY) on T-SQL: rounded as a DECIMAL, not as the FLOAT's binary value
+      // (1.0001 / 2.0, 0.50005, is 0.5001), as the compiled SQL rounds one.
+      case 'round': if (ts && t === 'decimal') return `CAST(ROUND(CAST(${x} AS DECIMAL(38,12)), ${y}) AS DECIMAL(19,4))`; break;
       case 'floor': return `floor(${x})`;
       // As DAX writes a value as text, a text's n-th occurrence replaced, text read as a date.
       case 'to_text': return d.text(x, nodes[0].t);

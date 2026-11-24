@@ -63,8 +63,9 @@ frames = {"t": pl.DataFrame({"a": [1, 2, 3]}),
           "u": pl.DataFrame({"ts": [datetime.datetime(2024, 1, 31), datetime.datetime(2024, 2, 29), datetime.datetime(2024, 3, 1)]}),
           "v": pl.DataFrame({"s": ["1", "x"]})}
 duck = duckdb.connect()
-for k, f in frames.items():
-    duck.register(k, f.to_arrow())
+duck.execute("CREATE TABLE t AS SELECT * FROM (VALUES (1), (2), (3)) v(a)")
+duck.execute("CREATE TABLE u AS SELECT * FROM (VALUES (TIMESTAMP '2024-01-31'), (TIMESTAMP '2024-02-29'), (TIMESTAMP '2024-03-01')) v(ts)")
+duck.execute("CREATE TABLE v AS SELECT * FROM (VALUES ('1'), ('x')) v(s)")
 for name, q in SMALL:
     try:
         want = sorted(duck.execute(q).fetchall(), key=str)

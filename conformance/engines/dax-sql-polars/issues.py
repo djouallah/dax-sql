@@ -95,3 +95,27 @@ for name, q in SMALL:
     except Exception as e:  # noqa: BLE001
         want = f"error: {str(e).splitlines()[0]}"
     run(f"{name} (DuckDB: {want})", lambda q=q: sorted(pl.SQLContext(**frames).execute(q, eager=True).rows(), key=str))
+
+
+# The DATE_TRUNC type error as the suite meets it: contoso fuzz2-0101's correlated SQL as dax-sql
+# writes it (fuzz2-0101.sql), over three small tables, then smaller forms of it.
+import pathlib  # noqa: E402
+
+print("\n### DATE_TRUNC: contoso fuzz2-0101 and smaller forms\n")
+days = [datetime.datetime(2023, 1, 1), datetime.datetime(2024, 6, 1), datetime.datetime(2024, 12, 31)]
+small = pl.SQLContext(**{
+    "contoso__Date": pl.DataFrame({"Date": days}),
+    "contoso__Sales": pl.DataFrame({"OrderDate": days, "ProductKey": [1, 2, 1], "Amount": [10.0, 20.0, 30.0]}),
+    "contoso__Product": pl.DataFrame({"ProductKey": [1, 2], "Color": ["Red", "Blue"]}),
+}, u=frames["u"], t=frames["t"])
+whole = pathlib.Path(__file__).with_name("fuzz2-0101.sql").read_text()
+run("f0 fuzz2-0101 as dax-sql writes it", lambda: small.execute(whole, eager=True).rows())
+for name, q in [
+    ("f1 CTE with a scalar subquery column, IN reading it in date_trunc", "WITH c AS (SELECT ts, (SELECT MAX(ts) FROM u) AS m FROM u) SELECT ts FROM c WHERE ts IN (SELECT ts1 FROM (SELECT ts AS ts1 FROM u) AS s WHERE ts1 >= date_trunc('year', m))"),
+    ("f2 the same under GROUP BY", "WITH c AS (SELECT ts, 1 AS g, (SELECT MAX(ts) FROM u) AS m FROM u) SELECT g, COUNT(*) AS n FROM c WHERE ts IN (SELECT ts1 FROM (SELECT ts AS ts1 FROM u) AS s WHERE ts1 >= date_trunc('year', m)) GROUP BY g"),
+    ("f3 the scalar subquery over a DISTINCT CTE, SELECT *", "WITH d AS (SELECT DISTINCT ts AS t5 FROM u), c AS (SELECT *, (SELECT MAX(t5) AS m FROM d AS s4) AS m FROM u) SELECT ts FROM c WHERE ts IN (SELECT ts1 FROM (SELECT ts AS ts1 FROM u) AS s WHERE ts1 >= date_trunc('year', m))"),
+    ("f4 f3 with the CAST and COALESCE dax-sql writes", "WITH d AS (SELECT DISTINCT ts AS t5 FROM u), c AS (SELECT *, (SELECT MAX(t5) AS m FROM d AS s4) AS m FROM u) SELECT ts FROM c WHERE ts IN (SELECT ts1 FROM (SELECT ts AS ts1 FROM u) AS s WHERE COALESCE(ts1, TIMESTAMP '1899-12-30 00:00:00') >= COALESCE(CAST(CAST(date_trunc('year', m) AS DATE) AS TIMESTAMP), TIMESTAMP '1899-12-30 00:00:00'))"),
+    ("f5 no IN: the scalar subquery column in date_trunc in a WHERE", "WITH c AS (SELECT ts, (SELECT MAX(ts) FROM u) AS m FROM u) SELECT ts FROM c WHERE ts >= date_trunc('year', m)"),
+    ("f6 no CTE: a derived table with the scalar subquery column", "SELECT ts FROM (SELECT ts, (SELECT MAX(ts) FROM u) AS m FROM u) AS c WHERE ts >= date_trunc('year', m)"),
+]:
+    run(name, lambda q=q: sorted(small.execute(q, eager=True).rows(), key=str))

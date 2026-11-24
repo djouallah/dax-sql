@@ -1,19 +1,19 @@
 // note: auto-exist when a measure removes a column grouped by (no filter argument of its own) on the table of a filter argument: grouped by color and price under a filter on class, what is left of the class filter with the price removed (ALL, REMOVEFILTERS, RANKX's row of each price), with the filter plain, under KEEPFILTERS, and with a filter on the color too
 EVALUATE
 UNION(
-    SUMMARIZECOLUMNS(item[i_color], item[i_current_price], TREATAS({ "pants", "fiction" }, item[i_class]), TREATAS({ "olive" }, item[i_color]),
+    SUMMARIZECOLUMNS('item'[i_color], 'item'[i_current_price], TREATAS({ "pants", "fiction" }, 'item'[i_class]), TREATAS({ "olive" }, 'item'[i_color]),
         "how", "plain",
-        "allPrice", CALCULATE(CONCATENATEX(VALUES(item[i_class]), item[i_class], ",", item[i_class], ASC), ALL(item[i_current_price])),
-        "removePrice", CALCULATE(CONCATENATEX(VALUES(item[i_class]), item[i_class], ",", item[i_class], ASC), REMOVEFILTERS(item[i_current_price])),
-        "perPrice", CONCATENATEX(ALL(item[i_current_price]), CALCULATE(CONCATENATEX(VALUES(item[i_class]), item[i_class], ",", item[i_class], ASC)), ";", item[i_current_price], ASC)),
-    SUMMARIZECOLUMNS(item[i_color], item[i_current_price], KEEPFILTERS(TREATAS({ "pants", "fiction" }, item[i_class])), FILTER(ALL(item[i_color]), item[i_color] = "olive"),
+        "allPrice", CALCULATE(CONCATENATEX(VALUES('item'[i_class]), 'item'[i_class], ",", 'item'[i_class], ASC), ALL('item'[i_current_price])),
+        "removePrice", CALCULATE(CONCATENATEX(VALUES('item'[i_class]), 'item'[i_class], ",", 'item'[i_class], ASC), REMOVEFILTERS('item'[i_current_price])),
+        "perPrice", CONCATENATEX(ALL('item'[i_current_price]), CALCULATE(CONCATENATEX(VALUES('item'[i_class]), 'item'[i_class], ",", 'item'[i_class], ASC)), ";", 'item'[i_current_price], ASC)),
+    SUMMARIZECOLUMNS('item'[i_color], 'item'[i_current_price], KEEPFILTERS(TREATAS({ "pants", "fiction" }, 'item'[i_class])), FILTER(ALL('item'[i_color]), 'item'[i_color] = "olive"),
         "how", "keepfilters",
-        "allPrice", CALCULATE(CONCATENATEX(VALUES(item[i_class]), item[i_class], ",", item[i_class], ASC), ALL(item[i_current_price])),
-        "removePrice", CALCULATE(CONCATENATEX(VALUES(item[i_class]), item[i_class], ",", item[i_class], ASC), REMOVEFILTERS(item[i_current_price])),
-        "perPrice", CONCATENATEX(ALL(item[i_current_price]), CALCULATE(CONCATENATEX(VALUES(item[i_class]), item[i_class], ",", item[i_class], ASC)), ";", item[i_current_price], ASC)),
-    SUMMARIZECOLUMNS(item[i_color], item[i_current_price], FILTER(ALL(item[i_color]), item[i_color] = "olive"),
+        "allPrice", CALCULATE(CONCATENATEX(VALUES('item'[i_class]), 'item'[i_class], ",", 'item'[i_class], ASC), ALL('item'[i_current_price])),
+        "removePrice", CALCULATE(CONCATENATEX(VALUES('item'[i_class]), 'item'[i_class], ",", 'item'[i_class], ASC), REMOVEFILTERS('item'[i_current_price])),
+        "perPrice", CONCATENATEX(ALL('item'[i_current_price]), CALCULATE(CONCATENATEX(VALUES('item'[i_class]), 'item'[i_class], ",", 'item'[i_class], ASC)), ";", 'item'[i_current_price], ASC)),
+    SUMMARIZECOLUMNS('item'[i_color], 'item'[i_current_price], FILTER(ALL('item'[i_color]), 'item'[i_color] = "olive"),
         "how", "no class filter",
-        "allPrice", CALCULATE(CONCATENATEX(VALUES(item[i_class]), item[i_class], ",", item[i_class], ASC), ALL(item[i_current_price])),
-        "removePrice", CALCULATE(CONCATENATEX(VALUES(item[i_class]), item[i_class], ",", item[i_class], ASC), REMOVEFILTERS(item[i_current_price])),
-        "perPrice", CONCATENATEX(ALL(item[i_current_price]), CALCULATE(CONCATENATEX(VALUES(item[i_class]), item[i_class], ",", item[i_class], ASC)), ";", item[i_current_price], ASC))
+        "allPrice", CALCULATE(CONCATENATEX(VALUES('item'[i_class]), 'item'[i_class], ",", 'item'[i_class], ASC), ALL('item'[i_current_price])),
+        "removePrice", CALCULATE(CONCATENATEX(VALUES('item'[i_class]), 'item'[i_class], ",", 'item'[i_class], ASC), REMOVEFILTERS('item'[i_current_price])),
+        "perPrice", CONCATENATEX(ALL('item'[i_current_price]), CALCULATE(CONCATENATEX(VALUES('item'[i_class]), 'item'[i_class], ",", 'item'[i_class], ASC)), ";", 'item'[i_current_price], ASC))
 )

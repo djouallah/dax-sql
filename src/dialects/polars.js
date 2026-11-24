@@ -3,14 +3,17 @@
 // LATERAL, so the plan with neither is the one it takes. What it writes differently from
 // PostgreSQL's:
 // - WITH has no MATERIALIZED (a CTE is a lazy frame, computed once where it is read).
-// - A blank-safe key is IS NOT DISTINCT FROM (no ARRAY = ARRAY, no ROW()::record).
+// - A blank-safe key is = of COALESCE with a value no data holds (no ARRAY = ARRAY, no
+//   ROW()::record; IS NOT DISTINCT FROM joins tens of times slower).
 // - A value is written where it is read, not bound in a subquery's row (which would read the
 //   outer row: a correlated subquery).
 // - An interval is of a fixed length only (n * INTERVAL '1 day', no months): a date moved by
 //   months is made of its parts (the month's first day, the day, the month's last at most).
 // - ROUND's places a constant; log10 is log10; a sum in no order (SUM takes no ORDER BY).
 // - A date is a TIMESTAMP at midnight, as the data's dates are (worker.py reads each date column
-//   as a date and time): one type, so two dates are compared, joined and unioned as they are.
+//   as a date and time): one type, so two dates are compared, joined and unioned as they are
+//   (Polars joins no DATE to a TIMESTAMP).
+// What each is for, on the Polars it runs on: conformance/engines/dax-sql-polars/repros.py.
 import { PostgresDialect } from './postgres.js';
 
 // A whole number (64 bits: Polars computes a CASE's branches no row takes too).
@@ -34,16 +37,6 @@ const constInt = n => (n?.k === 'lit' && Number.isInteger(n.v) ? n.v
 // A constant number of months: an INTERVAL (of months it is, of the month's last day at most).
 const months = (x, k) => (k === 0 ? x : `(${x} ${k > 0 ? '+' : '-'} INTERVAL '${Math.abs(k)} months')`);
 
-const MONTHS = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
-// Text as a TIMESTAMP: M/D/YYYY, "Month D, YYYY" (or Mon), else ISO; a blank where none reads.
-function parseDate(x) {
-  const pad = v => `LPAD(${v}, 2, '0')`;
-  const slash = `CASE WHEN ${x} LIKE '%/%/%' THEN split_part(split_part(${x}, '/', 3), ' ', 1) || '-' || ${pad(`split_part(${x}, '/', 1)`)} || '-' || ${pad(`split_part(${x}, '/', 2)`)} END`;
-  const word = `lower(split_part(trim(${x}), ' ', 1))`;
-  const month = `CASE ${MONTHS.map((m, i) => `WHEN ${word} IN ('${m}', '${m.slice(0, 3)}') THEN '${String(i + 1).padStart(2, '0')}'`).join(' ')} END`;
-  const named = `split_part(trim(${x}), ' ', 3) || '-' || ${month} || '-' || ${pad(`rtrim(split_part(trim(${x}), ' ', 2), ',')`)}`;
-  return `COALESCE(TRY_CAST(${slash} AS TIMESTAMP), TRY_CAST(${named} AS TIMESTAMP), TRY_CAST(${x} AS TIMESTAMP))`;
-}
 // A blank as a key, by type: a value no data holds.
 const SENTINELS = {
   int: 'CAST(-9223372036854775807 AS BIGINT)', double: 'CAST(-1.7976931348623157e308 AS DOUBLE PRECISION)',
@@ -60,10 +53,10 @@ export class PolarsDialect extends PostgresDialect {
   // Each relation a SELECT reads a CTE of its own: Polars' parser takes subqueries nested only
   // so deep (a calculation group's plan is past it).
   flatSql = true;
-  joinKeysOnly = true;
 
   // A blank-safe key: = of each side with a blank as a value of its type no data holds (Polars
-  // joins on IS NOT DISTINCT FROM a hundred times slower than on =: past 30 s for a LASTNONBLANK).
+  // joins on IS NOT DISTINCT FROM tens of times slower than on =: repros.py; past 30 s for a
+  // LASTNONBLANK).
   isNotDistinct(a, b, t) {
     const none = SENTINELS[t];
     if (!none) return `(${a} IS NOT DISTINCT FROM ${b})`;
@@ -76,13 +69,6 @@ export class PolarsDialect extends PostgresDialect {
   datetime(v) { return /\d:\d/.test(v) ? `TIMESTAMP ${this.str(v)}` : `TIMESTAMP ${this.str(`${v} 00:00:00`)}`; }
   blankOf(t) { return t === 'datetime' || t === 'date' ? "TIMESTAMP '1899-12-30 00:00:00'" : super.blankOf(t); }
   keysTogether = null;
-  // The position of text n in h (0: none), as text, not a pattern (Polars' strpos reads its
-  // needle as a regular expression: '|b|' is found at 1 in anything): the length of what is
-  // before its first occurrence.
-  strpos(h, n) {
-    const before = `LENGTH(split_part(${h}, ${n}, 1))`;
-    return `CASE WHEN LENGTH(${n}) = 0 THEN 1 WHEN ${before} = LENGTH(${h}) THEN 0 ELSE ${before} + 1 END`;
-  }
   bind(vals, body) { return body(...vals); }
   sumOfGroups(v) { return `SUM(${v})`; }
   // generate_series as a table (its scalar form is a list); dates as days since 1970 (its step
@@ -101,27 +87,6 @@ export class PolarsDialect extends PostgresDialect {
     const [x, y, z] = a;
     switch (name) {
       case 'log10': return `log10(${x})`;
-      // Text as a date and time, in en-US forms too: Polars' CAST reads ISO text only, and 3/5/2024
-      // day first. M/D/YYYY and "Month D, YYYY" written as ISO first (no STRPTIME, which fails
-      // on a value of another form even in a branch no row takes).
-      case 'cast': if (/^'(datetime|date)'$/.test(y)) return `CAST(${parseDate(x)} AS TIMESTAMP)`; break;
-      // SUBSTITUTE's k-th occurrence (k a constant: Polars slices no array): the text before it is
-      // the first k pieces split on the old text, and k - 1 of it between them.
-      case 'substitute': {
-        const k = constInt(nodes[3]);
-        if (a[3] === undefined || k == null || k < 1) break;
-        const pieces = Array.from({ length: k }, (_, i) => `LENGTH(split_part(${x}, ${y}, ${i + 1}))`);
-        const before = `(${pieces.join(' + ')} + ${k - 1} * LENGTH(${y}))`;
-        return `CASE WHEN ${y} = '' OR array_length(string_to_array(${x}, ${y})) <= ${k} THEN ${x}
-          ELSE LEFT(${x}, ${before}) || ${z} || substr(${x}, ${before} + LENGTH(${y}) + 1) END`;
-      }
-      case 'containsstring': return `(${this.strpos(`lower(COALESCE(${x}, ''))`, `lower(COALESCE(${y}, ''))`)} > 0)`;
-      case 'containsstringexact': return `(${this.strpos(`COALESCE(${x}, '')`, `COALESCE(${y}, '')`)} > 0)`;
-      case 'search': case 'find': {
-        const low = v => (name === 'search' ? `lower(${v})` : v), w = a[3], from = int(z);
-        const pos = this.strpos(low(`substr(COALESCE(${y}, ''), ${from})`), low(`COALESCE(${x}, '')`));
-        return `CASE WHEN ${pos} = 0 THEN ${w} ELSE ${pos} + ${from} - 1 END`;
-      }
       case 'round': {
         const n = nodes[1];
         if (n?.k === 'lit' && Number.isInteger(n.v)) return `CAST(round(CAST(${x} AS NUMERIC), ${n.v}) AS DOUBLE PRECISION)`;
@@ -134,7 +99,6 @@ export class PolarsDialect extends PostgresDialect {
         if (u === 'WEEK') return `CAST(((${days(y)} - ${dow(y)}) - (${days(x)} - ${dow(x)})) / 7 AS BIGINT)`;
         return super.fn(name, a, nodes);
       }
-      case 'date': return `(${first(`${int(x)} * 12 + ${int(y)} - 1`)} + (${int(z)} - 1) * INTERVAL '1 day')`;
       case 'eomonth': {
         const k = constInt(nodes[1]);
         if (k != null) return `(CAST(date_trunc('month', ${months(x, k)}) AS TIMESTAMP) + INTERVAL '1 months' - INTERVAL '1 day')`;

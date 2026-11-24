@@ -4,7 +4,6 @@
 // are written as the emitter writes them (its scalar writer, with DAX's rules for blanks); the
 // rest through the dialect's methods. No rewrite: the SQL says what the plan says.
 import { Emitter, orderTerm } from './emit.js';
-import * as P from './plan.js';
 import { isCondOp } from './plan.js';
 import { refsOf } from './passes/decorrelate.js';
 
@@ -64,30 +63,6 @@ export class PlanSql extends Emitter {
     // What a SELECT reads x from: a join's FROM, a filter's WHERE, in the SELECT itself (not a
     // SELECT * around them).
     const body = x => {
-      if (x.k === 'join' && this.d.joinKeysOnly && x.on && x.kind !== 'cross') {
-        // An engine whose join condition is its keys only (Polars: one side's condition is taken
-        // for a key with a constant): an inner join's other conditions its WHERE, a left join's
-        // on its right alone the right's filter.
-        const L = new Set(x.left.cols), R = new Set(x.right.cols);
-        const within = (e, side) => [...refsOf(e)].every(c => side.has(c));
-        const isKey = c => c.k === 'pop' && (c.op === 'eq' || c.op === 'key') && refsOf(c.a[0]).size && refsOf(c.a[1]).size
-          && ((within(c.a[0], L) && within(c.a[1], R)) || (within(c.a[0], R) && within(c.a[1], L)));
-        const cs = [], flat = c => (c.k === 'pop' && c.op === 'and' ? c.a.forEach(flat) : cs.push(c));
-        flat(x.on);
-        const keys = cs.filter(isKey), rest = cs.filter(c => !isKey(c));
-        if (rest.length) {
-          const cond = xs => this.scalar(P.and(xs), EMPTY, true);
-          if (x.kind === 'inner') {
-            const l = from(x.left, 'l'), rt = from(x.right, 'r');
-            return { from: keys.length ? `${l} JOIN ${rt} ON ${cond(keys)}` : `${l} CROSS JOIN ${rt}`, where: [cond(rest)] };
-          }
-          const right = rest.filter(c => refsOf(c).size && within(c, R)), stay = rest.filter(c => !right.includes(c));
-          if (right.length && keys.length) {
-            const l = from(x.left, 'l'), rt = from(P.select(x.right, P.and(right)), 'r');
-            return { from: `${l} LEFT JOIN ${rt} ON ${cond([...keys, ...stay])}`, where: [] };
-          }
-        }
-      }
       if (x.k === 'join') {
         const l = from(x.left, 'l'), rt = from(x.right, 'r');
         return { from: x.kind === 'cross' ? `${l} CROSS JOIN ${rt}` : `${l} ${x.kind === 'left' ? 'LEFT JOIN' : 'JOIN'} ${rt} ON ${this.on(x)}`, where: [] };
@@ -261,11 +236,11 @@ export class PlanSql extends Emitter {
       }
     }
     switch (name) {
-      case 'strpos': return ts ? `CHARINDEX(${y}, ${x})` : d.strpos ? d.strpos(x, y) : pg ? `strpos(${x}, ${y})` : `instr(${x}, ${y})`;
+      case 'strpos': return ts ? `CHARINDEX(${y}, ${x})` : pg ? `strpos(${x}, ${y})` : `instr(${x}, ${y})`;
       case 'substring_from': return ts ? `SUBSTRING(${x}, ${y}, LEN(${x}))` : `substring(${x}, ${y})`;
       case 'regexp_replace': return `regexp_replace(${x}, ${y}, ${z}, 'g')`;
       case 'extract_dow': return ts ? `(DATEPART(weekday, ${x}) - 1)` : pg ? `CAST(EXTRACT(DOW FROM ${x}) AS BIGINT)` : `dayofweek(${x})`;
-      case 'make_date': return d.name === 'polars' ? d.fn('date', a, nodes) : ts ? `DATEFROMPARTS(${a.join(', ')})` : pg ? `make_date(${a.map(v => `CAST(${v} AS INTEGER)`).join(', ')})` : `make_date(${a.join(', ')})`;
+      case 'make_date': return ts ? `DATEFROMPARTS(${a.join(', ')})` : pg ? `make_date(${a.map(v => `CAST(${v} AS INTEGER)`).join(', ')})` : `make_date(${a.join(', ')})`;
       case 'ceil': return ts ? `CEILING(${x})` : `ceil(${x})`;
       case 'replace': return `replace(${x}, ${y}, ${z})`;
       // T-SQL: the n-th of STRING_SPLIT's parts by their ordinal (none past the last, as a blank).

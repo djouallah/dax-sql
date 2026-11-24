@@ -27,7 +27,7 @@ REPROS = [
     ("a deep expression (60 nested CASEs)", "SELECT " + "CASE WHEN a > 0 THEN " * 60 + "a" + " ELSE 0 END" * 60 + " AS x FROM t", "each relation a CTE"),
     ("TRY_CAST of an ambiguous date", "SELECT TRY_CAST('3/5/2024' AS DATE) AS x", "M/D/YYYY written as ISO first"),
     # --- what Polars SQL lacks ---
-    ("n * INTERVAL '1 month'", "SELECT d + a * INTERVAL '1 month' AS x FROM u", "months from a date's parts"),
+    ("n * INTERVAL '1 month'", "SELECT d + n * INTERVAL '1 month' AS x FROM (SELECT d, 2 AS n FROM u) AS w", "months from a date's parts"),
     ("a negative interval", "SELECT d + INTERVAL '-1 months' AS x FROM u", "d - INTERVAL '1 months'"),
     ("generate_series with a step of n days", "SELECT * FROM generate_series(TIMESTAMP '2024-01-01 00:00:00', TIMESTAMP '2024-01-05 00:00:00', 2 * INTERVAL '1 day') AS g(v)", "a series of days since 1970"),
     ("ROUND to a computed number of places", "SELECT ROUND(1.23456, a) AS x FROM t", "by powers of ten"),

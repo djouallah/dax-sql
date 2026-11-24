@@ -477,6 +477,8 @@ const D = {
   neg: e => ({ k: 'neg', e }),
   in: (e, items) => ({ k: 'in', e, set: { k: 'table', rows: items.map(x => [x]) } }),
   word: name => ({ k: 'name', name }),
+  // VAR name = e ... RETURN body (the parser's var node).
+  let: (defs, body) => ({ k: 'var', defs: defs.map(([name, e]) => ({ name, e })), body }),
 };
 const isAggCall = e => e.k === 'call' && (e.fn === 'AGG' || e.fn === 'MEASURE' || e.fn in AGGS);
 const isGrouping = e => e.k === 'call' && e.fn === 'GROUPING';
@@ -495,6 +497,7 @@ export function printDax(e) {
     case 'not': return `NOT(${printDax(e.e)})`;
     case 'in': return `(${printDax(e.e)} IN ${printDax(e.set)})`;
     case 'table': return `{${e.rows.map(r => r.length === 1 ? printDax(r[0]) : `(${r.map(printDax).join(', ')})`).join(', ')}}`;
+    case 'var': return `(${e.defs.map(d => `VAR ${d.name} = ${printDax(d.e)}`).join(' ')} RETURN ${printDax(e.body)})`;
   }
   throw new DaxError(`printDax: a ${e.k} node`);
 }
@@ -694,7 +697,12 @@ export class SqlTranslator {
         const sq = this.subquery(e.q);
         if (sq.names.length !== 1) throw sqlSemantic(`a scalar subquery has one column: ${e.src}`);
         if (e.q.groupBy || !sq.oneRow) throw sqlUnsupported(`a scalar subquery that can have several rows (${e.src})`);
-        return this.variable(D.call('MAXX', sq.table, D.ref(sq.names[0])));
+        const v = D.call('MAXX', sq.table, D.ref(sq.names[0]));
+        if (!sq.captures.length) return this.variable(v);
+        // Correlated: for each row around it, the columns it reads of that row as variables,
+        // its value in no filter of the query around it.
+        if (ctx.mode !== 'where') throw sqlUnsupported(`a correlated subquery outside WHERE (${e.src})`);
+        return D.let(sq.captures.map(x => [x.name, D.col(x.col)]), D.call('CALCULATE', v, D.call('REMOVEFILTERS')));
       }
       case 'insub': {
         if (this.sqlNulls) return this.inSubquery(e, ctx, true);
@@ -795,6 +803,8 @@ export class SqlTranslator {
   }
 
   nameDax(e, ctx) {
+    const o = this.outerColumn(e);
+    if (o) return D.word(o);
     if (ctx.mode === 'having' && e.parts.length === 1) {
       const a = ctx.aliases.get(lc(e.parts[0]));
       if (a) return a;
@@ -803,6 +813,22 @@ export class SqlTranslator {
     if (ctx.mode === 'agg') throw sqlUnsupported(`column ${e.src} in an expression with an aggregate`);
     if (ctx.mode === 'having' && !ctx.groups.includes(c)) throw sqlSemantic(`column ${e.src} must be in GROUP BY to be used in HAVING`);
     return D.col(c);
+  }
+
+  // A column of the query around a subquery (correlated: alias.column of a relation of its FROM
+  // that the subquery's own has not): a variable of that query's row, its name.
+  outerColumn(e) {
+    if (!this.outer?.scope || e.parts.length !== 2 || this.scope?.rels.has(lc(e.parts[0]))) return null;
+    const r = this.outer.scope.rels.get(lc(e.parts[0]));
+    if (!r) return null;
+    const c = r.table.colMap.get(lc(e.parts[1]));
+    if (!c) throw sqlSemantic(`${e.src}: ${r.alias} has no column ${e.parts[1]}`);
+    let v = this.outer.captures.find(x => x.col === c);
+    if (!v) {
+      this.base.outerVars = (this.base.outerVars ?? 0) + 1;
+      this.outer.captures.push(v = { col: c, name: `__o${this.base.outerVars}` });
+    }
+    return v.name;
   }
 
   aggDax(e, ctx) {
@@ -856,6 +882,8 @@ export class SqlTranslator {
     t.scope = null;
     t.ossie = null;
     t.distinctOk = distinct;
+    // The relations of the query around it, whose columns it can read (outerColumn).
+    t.outer = { scope: this.scope ?? null, captures: [] };
     const r = t.translateQuery(q);
     const [ev] = r.query.evaluates;
     let table = ev.e;
@@ -864,7 +892,7 @@ export class SqlTranslator {
       if (!ev.order.length) throw sqlUnsupported('LIMIT with no ORDER BY in a subquery');
       table = D.call('TOPN', D.num(r.limit), table, ...ev.order.flatMap(o => [o.e, D.word(o.desc ? 'DESC' : 'ASC')]));
     }
-    return { table, names: r.names, oneRow: r.oneRow };
+    return { table, names: r.names, oneRow: r.oneRow, captures: t.outer.captures };
   }
   // A variable of the query (DEFINE VAR): computed once, in no filter.
   variable(e) {
@@ -1394,6 +1422,14 @@ export class SqlTranslator {
           kids(x).forEach(walk);
         };
         walk(e);
+        // A correlated subquery's: a filter of the rows of the columns it and the condition read.
+        const lets = [], find = x => { if (x && typeof x === 'object') { if (x.k === 'var') lets.push(x); Object.values(x).forEach(v => (Array.isArray(v) ? v.forEach(find) : find(v))); } };
+        find(dax);
+        if (lets.length) {
+          const all = [...cols.map(D.col), ...lets.flatMap(l => l.defs.map(d => d.e))].filter((c, i, xs) => xs.findIndex(y => printDax(y) === printDax(c)) === i);
+          const tables = new Set(all.map(c => c.table));
+          return D.call('FILTER', tables.size === 1 ? D.call('ALL', ...all) : D.call('CROSSJOIN', ...all.map(c => D.call('ALL', c))), dax);
+        }
         // A condition on no column (WHERE FALSE), over datasets: on the rows of the root, all
         // of them or none.
         if (!cols.length && ossie) return D.call('FILTER', D.call('ALL', D.word(ossie.root.name)), dax);

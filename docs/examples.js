@@ -77,7 +77,8 @@ export const problem = [
 ];
 
 // The playground's examples: SQL over the model (a measure is AGG(name); the model knows the
-// joins). The playground takes DAX too.
+// joins), each shown beside as DAX and, where it has one, as Apache Ossie's wide table JSON
+// (Layer 3). The playground takes DAX too.
 export const playground = [
   ['Sales by year', `SELECT "Date".Year, AGG("Sales Amount") AS sales
 FROM contoso
@@ -132,4 +133,8 @@ FROM contoso
 GROUP BY ALL
 HAVING orders > 1
 ORDER BY sales DESC`],
+  ['Two facts, one dimension', `SELECT Category.Category, AGG("Sales Amount") AS sales, AGG(Returned) AS returned
+FROM contoso
+WHERE Product.Color <> 'Red'
+GROUP BY ALL`],
 ];

@@ -6,7 +6,7 @@ name: Pages
 on:
   push:
     branches: [main]
-    paths: ['docs/**', 'src/**', 'formats/tmsl.js', 'test/fixtures/contoso.js', 'conformance/tools/site-results.mjs', '.github/workflows/pages.yml']
+    paths: ['docs/**', 'src/**', 'formats/tmsl.js', 'formats/ossie.js', 'formats/ossie-sql.js', 'formats/ossie-wide.js', 'test/fixtures/contoso.js', 'conformance/tools/site-results.mjs', '.github/workflows/pages.yml']
   # The "Ossie compiler" tab: the engines' latest results, deployed again when one has new ones.
   workflow_run:
     workflows: [Conformance, T-SQL, PostgreSQL, Polars, DataFusion]
@@ -38,7 +38,7 @@ jobs:
           mkdir -p _site/formats _site/fixtures
           cp -r docs/. _site/
           cp -r src _site/src
-          cp formats/tmsl.js _site/formats/
+          cp formats/tmsl.js formats/ossie.js formats/ossie-sql.js formats/ossie-wide.js _site/formats/
           cp test/fixtures/contoso.js _site/fixtures/
           touch _site/.nojekyll
       # Each engine's latest report on main (the latest completed run that has the artifact), as
@@ -62,13 +62,21 @@ jobs:
           const { createCompiler } = await import(`${s}/src/index.js`);
           const { tmslToModel } = await import(`${s}/formats/tmsl.js`);
           const { bim } = await import(`${s}/fixtures/contoso.js`);
+          const { tmslToOssie } = await import(`${s}/formats/ossie.js`);
+          const { sqlToWide, compileWide } = await import(`${s}/formats/ossie-wide.js`);
           const ex = await import(`${s}/examples.js`);
           const all = [...ex.problem.filter(p => p.dax).map(p => p.dax), ...ex.playground.map(p => p[1])];
+          // Each SQL example as Ossie's wide table JSON (Layer 3), beside its DAX: at least one has
+          // that form, and each that has it compiles.
+          const doc = tmslToOssie(bim, 'contoso');
+          const wide = ex.playground.map(p => sqlToWide(doc, p[1]).query).filter(Boolean);
+          if (!wide.length) throw new Error('no playground example has a Layer 3 form');
+          for (const q of wide) compileWide(doc, q);
           for (const dialect of ['duckdb', 'tsql']) for (const optimize of [true, false]) {
             const c = createCompiler(tmslToModel(bim), { dialect, optimize });
             for (const q of all) c.compile(q);
           }
-          console.log(`${all.length} examples compile`);
+          console.log(`${all.length} examples compile, ${wide.length} with a Layer 3 form`);
           EOF
           node /tmp/check.mjs "$PWD/_site"
       - uses: actions/configure-pages@v5

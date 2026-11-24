@@ -2,6 +2,8 @@
 // to this page (src/, formats/), and the model is the tests' fixture (fixtures/contoso.js).
 import { createCompiler } from './src/index.js';
 import { tmslToModel } from './formats/tmsl.js';
+import { tmslToOssie } from './formats/ossie.js';
+import { sqlToWide } from './formats/ossie-wide.js';
 import { bim, setup } from './fixtures/contoso.js';
 import * as ex from './examples.js';
 import { formatSql, highlightDax, arrowRows, cell } from './code.js';
@@ -287,18 +289,42 @@ $('#pg-tabs').addEventListener('click', e => { const b = e.target.closest('butto
 let pgTab0 = 'model';
 try { pgTab0 = localStorage.getItem('pgTab') ?? 'model'; } catch { /* none */ }
 pgTab(pgTab0);
+// What the SQL stands for, beside it: its DAX, or the query of Apache Ossie's Wide Table Query
+// Interface (Layer 3, JSON) over the model read as Ossie, or why it has none.
+let ossieDoc = null;
+pg.sf = 'dax';
+try { pg.sf = localStorage.getItem('pgSf') ?? 'dax'; } catch { /* none */ }
+function pgStandFor() {
+  const el = $('#pg-dax'), s = pg.standFor;
+  if (!s) { el.innerHTML = ''; return; }
+  const tab = (k, label) => `<button type="button" role="tab" data-sf="${k}" aria-selected="${pg.sf === k}">${label}</button>`;
+  const body = pg.sf === 'wide'
+    ? (s.wide.query ? jsonBlock(JSON.stringify(s.wide.query, null, 2)) : `<p class="sfnote">No Layer 3 form: ${esc(s.wide.why)}</p>`)
+    : daxBlock(s.dax);
+  el.innerHTML = `<div class="sfhead"><h4>This SQL stands for</h4><div class="subtabs" id="pg-sf" role="tablist">${tab('dax', 'DAX')}${tab('wide', 'Ossie JSON')}</div></div>${body}`;
+}
+$('#pg-dax').addEventListener('click', e => {
+  const b = e.target.closest('button[data-sf]');
+  if (!b) return;
+  pg.sf = b.dataset.sf;
+  try { localStorage.setItem('pgSf', pg.sf); } catch { /* none */ }
+  pgStandFor();
+});
 function pgUpdate() {
   const text = pgIn.value;
   try { localStorage.setItem('pg', text); } catch { /* none */ }
   pg.compiled = compile(text);
   const isSql = /^\s*(?:--[^\n]*\n\s*)*(SELECT|WITH)\b/i.test(text);
-  const daxEl = $('#pg-dax');
+  pg.standFor = null;
   if (isSql) {
-    try {
-      const { dax } = compiler().sqlToDax(text);
-      daxEl.innerHTML = `<h4>The DAX this SQL stands for</h4>${daxBlock(dax)}`;
-    } catch { daxEl.innerHTML = ''; }
-  } else daxEl.innerHTML = '';
+    let dax = null;
+    try { ({ dax } = compiler().sqlToDax(text)); } catch { /* the SQL's own error shows */ }
+    if (dax) {
+      ossieDoc ??= tmslToOssie(bim, 'contoso');
+      pg.standFor = { dax, wide: sqlToWide(ossieDoc, text) };
+    }
+  }
+  pgStandFor();
   pg.dax = isSql ? null : text;
   if (isSql) { try { pg.dax = compiler().sqlToDax(text).dax; } catch { /* the SQL's own error shows */ } }
   pg.substrait = undefined;

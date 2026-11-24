@@ -553,7 +553,11 @@ A file is read into a model object by a reader in `formats/`, exported as `dax-s
   to the dataset it reads), one branch for each home dataset, joined along its one path (many to
   one, `LEFT JOIN`) to the dimensions' and the filter's datasets, the filter in each branch, and
   the branches' keys stitched with each missing component its value over no rows (`COUNT` 0). A
-  query with no metric is grouped from its anchor.
+  query with no metric is grouped from its anchor. `sqlToWide(doc, sql)` goes the other way, for a
+  SQL query over the model: `{ query }`, the Layer 3 JSON it stands for (its columns as
+  `dimensions`, its `AGG(measure)`s as `metrics`, its `WHERE` as `filter`), or `{ why }` it has
+  none (an `ORDER BY`, `HAVING`, `ROLLUP` or `FETCH`; a `WHERE` on two datasets; an expression
+  over measures; a query Section 8 rejects). The site's playground shows it beside the DAX.
 
 ### API
 

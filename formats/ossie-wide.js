@@ -346,6 +346,49 @@ export function wideToSql(doc, query) {
   return { sql, doc: out };
 }
 
+// The Layer 3 query a SQL query over the model stands for ({ query }), or why it has none
+// ({ why }): one SELECT of the model's columns and AGG(measure)s, its WHERE on one dataset,
+// GROUP BY ALL (or its columns), and the query valid as Section 8 has it.
+const NO_CLAUSES = 'Layer 3 has no ORDER BY, HAVING, ROLLUP or FETCH.';
+export function sqlToWide(doc, sql) {
+  const model = index(doc);
+  let q;
+  try { q = parseSql(sql); } catch (e) { return { why: `the SQL does not parse: ${e.message.split('\n')[0]}` }; }
+  if (q.with?.length || q.from?.kind !== 'name') return { why: 'Layer 3 is one query over the model: no WITH, no subquery, no join.' };
+  const rolled = Array.isArray(q.groupBy) && q.groupBy.some(g => g.k === 'call' && /^(ROLLUP|CUBE|GROUPING SETS)$/i.test(g.fn));
+  if (q.orderBy?.length || q.orderAll || q.having || rolled || q.limit != null || q.offset != null || q.ties != null) return { why: NO_CLAUSES };
+  const dimensions = [], metrics = [];
+  const dataset = name => model.datasets.get(lc(name))?.name ?? name;
+  for (const { e, alias } of q.select) {
+    if (e.k === 'name' && e.parts.length === 2) {
+      const d = model.datasets.get(lc(e.parts[0])), f = d?.fields.get(lc(e.parts[1]));
+      const field = `${dataset(e.parts[0])}.${f?.name ?? e.parts[1]}`;
+      dimensions.push(alias && lc(alias) !== lc(e.parts[1]) ? { field, alias } : field);
+    } else if (e.k === 'call' && String(e.fn).toUpperCase() === 'AGG' && e.args.length === 1 && e.args[0].k === 'name') {
+      const p = e.args[0].parts, name = p[p.length - 1];
+      let metric;
+      if (p.length === 2) metric = `${dataset(p[0])}.${name}`;
+      else {
+        const d = [...model.datasets.values()].find(x => x.metrics.has(lc(name)));
+        metric = d ? `${d.name}.${d.metrics.get(lc(name)).name}` : (model.metrics.get(lc(name))?.name ?? name);
+      }
+      metrics.push(alias && lc(alias) !== lc(name) ? { metric, alias } : metric);
+    } else return { why: 'Layer 3 takes columns and AGG(measure)s, not expressions over them.' };
+  }
+  const query = { ...(dimensions.length ? { dimensions } : {}), ...(metrics.length ? { metrics } : {}) };
+  if (q.where) {
+    const sets = [];
+    walk(q.where, n => { if (n.k === 'name' && n.parts.length === 2 && !sets.includes(lc(n.parts[0]))) sets.push(lc(n.parts[0])); });
+    if (sets.length > 1) {
+      const n = sets.length === 2 ? 'two' : String(sets.length);
+      return { why: `its WHERE reads ${n} datasets (${sets.map(dataset).join(', ')}); Layer 3 takes a filter on one.` };
+    }
+    query.filter = q.where.src;
+  }
+  try { wideToSql(doc, query); } catch (e) { return { why: e.message.split('\n')[0] }; }
+  return { query };
+}
+
 export function compileWide(doc, query, options = {}) {
   const { sql: layer2, doc: model } = wideToSql(doc, query);
   const compiler = createCompiler(ossieToModel(model), options);

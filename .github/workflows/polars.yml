@@ -57,6 +57,9 @@ jobs:
         run: |
           pip install -q duckdb
           python conformance/engines/dax-sql-polars/repros.py | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: The issue drafts' examples, as drafted
+        if: always()
+        run: python conformance/engines/dax-sql-polars/issues.py | tee -a "$GITHUB_STEP_SUMMARY"
       - name: The suite on Polars, through the unnested query plan
         env:
           PY: python

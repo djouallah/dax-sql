@@ -28,7 +28,7 @@ def load(model_dir, name):
             if c.get("type") not in (None, "data"):
                 continue
             dt = c["dataType"]
-            # Every date a date and time (a fact's times beside a calendar's dates: one type to join on).
+            # A DAX date is a date and time (dateTime), as Power BI types it.
             schema[c.get("sourceColumn", c["name"])] = pl.Datetime if dt == "dateTime" else TYPES.get(dt, pl.String)
         ctx.register(f"{name}__{source['entityName']}", pl.read_csv(path, schema_overrides=schema, infer_schema_length=10000))
     return ctx

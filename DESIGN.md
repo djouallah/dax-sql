@@ -1201,18 +1201,15 @@ derived table of a correlated subquery or a `LATERAL` (pola-rs/polars#31059, #31
 runs the correlated plan beside, as a measure.
 Where it differs from PostgreSQL's:
 
-- Each relation a SELECT reads is a CTE of its own (`flatSql`): Polars' parser nests subqueries
-  only so deep. No `MATERIALIZED`.
-- A value is written where it is read, not bound in a subquery's row (which reads the outer row).
-- A date is a `TIMESTAMP` at midnight, as the worker reads the data's dates: one type to compare,
-  join and union on. A difference of dates in days is the days since 1970 (a date less a date is
-  a duration).
+- No `MATERIALIZED`.
+- A value is written where it is read, not bound in a subquery's row: that row reads the outer
+  row by its columns' names alone, which Polars does not find (pola-rs/polars#31067).
+- A difference of dates in days is the days since 1970 (a date less a date is a duration).
 - An interval is of a fixed length: a constant number of months is `INTERVAL 'k months'`, any
   other number made of the date's parts.
 - A blank-safe key is `IS NOT DISTINCT FROM` (no `ARRAY = ARRAY`, no `ROW()::record`).
-- `strpos` reads its needle as a pattern: a text's position is the length before its first
-  occurrence. `ROUND`'s places are a constant. Whole numbers are 64 bits: Polars computes a
-  `CASE`'s branches no row takes.
+- `ROUND`'s places are a constant. Whole numbers are 64 bits: Polars computes a `CASE`'s
+  branches no row takes, and a failing cast there fails the query.
 
 `conformance/engines/dax-sql-polars/adapter.mjs` runs the suite on Polars over the CSVs
 (`worker.py`, one process for each model), against DuckDB's known lists (shared: a query it answers that

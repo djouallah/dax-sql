@@ -7,14 +7,11 @@
 // - WITH has no MATERIALIZED (a CTE is a lazy frame, computed once where it is read).
 // - A blank-safe key is IS NOT DISTINCT FROM (no ARRAY = ARRAY, no ROW()::record): a join on it
 //   as fast as one on = since pola-rs/polars#31049.
-// - A value is written where it is read, not bound in a subquery's row (which would read the
-//   outer row: a correlated subquery).
+// - A value is written where it is read, not bound in a subquery's row: that row reads the outer
+//   row by its columns' names alone, which Polars does not find (pola-rs/polars#31067).
 // - An interval is of a fixed length only (n * INTERVAL '1 day', no months): a date moved by
 //   months is made of its parts (the month's first day, the day, the month's last at most).
 // - ROUND's places a constant; log10 is log10; a sum in no order (SUM takes no ORDER BY).
-// - A date is a TIMESTAMP at midnight, as the data's dates are (worker.py reads each date column
-//   as a date and time): one type, so two dates are compared, joined and unioned as they are
-//   (Polars joins no DATE to a TIMESTAMP).
 // What each is for, on the Polars it runs on: conformance/engines/dax-sql-polars/repros.py.
 import { PostgresDialect } from './postgres.js';
 
@@ -25,7 +22,7 @@ const unit = u => UNITS[String(u).replace(/'/g, '').toLowerCase()] ?? String(u).
 const part = (f, x) => `CAST(EXTRACT(${f} FROM ${x}) AS BIGINT)`;
 // The first day of month number m (year * 12 + month - 1).
 // (|| keeps a blank blank: CONCAT reads it as '', which is no date.)
-const first = m => `CAST(CAST(LPAD(CAST(CAST(floor((${m}) / 12) AS BIGINT) AS VARCHAR), 4, '0') || '-' || LPAD(CAST(CAST((${m}) % 12 + 1 AS BIGINT) AS VARCHAR), 2, '0') || '-01' AS DATE) AS TIMESTAMP)`;
+const first = m => `CAST(LPAD(CAST(CAST(floor((${m}) / 12) AS BIGINT) AS VARCHAR), 4, '0') || '-' || LPAD(CAST(CAST((${m}) % 12 + 1 AS BIGINT) AS VARCHAR), 2, '0') || '-01' AS DATE)`;
 const monthOf = x => `(${part('YEAR', x)} * 12 + ${part('MONTH', x)} - 1)`;
 // A date k months on: its day in that month, or the month's last.
 const addMonths = (x, k) => {
@@ -39,7 +36,6 @@ const constInt = n => (n?.k === 'lit' && Number.isInteger(n.v) ? n.v
 // A constant number of months: an INTERVAL (of months it is, of the month's last day at most).
 const months = (x, k) => (k === 0 ? x : `(${x} ${k > 0 ? '+' : '-'} INTERVAL '${Math.abs(k)} months')`);
 
-const DATES = new Set(['start_of', 'end_of', 'today', 'utctoday']);
 
 export class PolarsDialect extends PostgresDialect {
   name = 'polars';
@@ -48,20 +44,12 @@ export class PolarsDialect extends PostgresDialect {
   session = [];
   materialized = '';
   subqueryInCase = true;
-  // Each relation a SELECT reads a CTE of its own: Polars' parser takes subqueries nested only
-  // so deep (a calculation group's plan is past it).
-  flatSql = true;
   // A CASE's branches no row takes are computed too: DAX's runtime errors are blanks.
   computesEveryBranch = true;
 
   // A blank-safe key (pola-rs/polars#31049 joins on it as fast as on =).
   isNotDistinct(a, b) { return `(${a} IS NOT DISTINCT FROM ${b})`; }
 
-  // A date: a TIMESTAMP (a cast to one at midnight), a constant one too.
-  type(t) { return t === 'date' ? 'TIMESTAMP' : super.type(t); }
-  cast(sql, t) { return t === 'date' ? `CAST(CAST(${sql} AS DATE) AS TIMESTAMP)` : super.cast(sql, t); }
-  datetime(v) { return /\d:\d/.test(v) ? `TIMESTAMP ${this.str(v)}` : `TIMESTAMP ${this.str(`${v} 00:00:00`)}`; }
-  blankOf(t) { return t === 'datetime' || t === 'date' ? "TIMESTAMP '1899-12-30 00:00:00'" : super.blankOf(t); }
   keysTogether = null;
   bind(vals, body) { return body(...vals); }
   sumOfGroups(v) { return `SUM(${v})`; }
@@ -72,12 +60,8 @@ export class PolarsDialect extends PostgresDialect {
     if (t === 'int') return `(SELECT * FROM generate_series(CAST(${start} AS BIGINT), CAST(${end} AS BIGINT), CAST(${step} AS BIGINT)) AS r(v))`;
     return super.series(start, end, step, t);
   }
-  // A series whose bounds are a row's: read off that row by scalar subqueries (no LATERAL).
-  seriesBoundsAsSubqueries = true;
 
   fn(name, a, nodes = []) {
-    // PostgreSQL's functions of a date that give a DATE: a TIMESTAMP.
-    if (DATES.has(name)) return `CAST(${super.fn(name, a, nodes)} AS TIMESTAMP)`;
     const [x, y, z] = a;
     switch (name) {
       case 'log10': return `log10(${x})`;

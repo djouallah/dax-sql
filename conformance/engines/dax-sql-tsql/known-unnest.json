@@ -1,0 +1,3 @@
+[
+  {"id":"patterns/segmentation/segmentation-bands-matrix-two-totals","reason":"slow: 22 s to 26 s on Fabric through the unnested plan alone, past its 30 s beside the other sessions at times: customers' sales by year read at each of its four rollup levels, which Fabric computes at each read (the compiled SQL 10 s)"}
+]

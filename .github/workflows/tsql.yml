@@ -84,7 +84,7 @@ jobs:
           TSQL_TIMES: ${{ runner.temp }}/tsql-unnest-times.json
         run: |
           node conformance/runner/run.mjs --adapter "node conformance/engines/dax-sql-tsql/adapter.mjs ." \
-            --known conformance/engines/dax-sql-tsql/known.json --known-shared conformance/engines/dax-sql/known-plan.json --report "$RUNNER_TEMP/tsql-unnest.json"
+            --known conformance/engines/dax-sql-tsql/known.json,conformance/engines/dax-sql-tsql/known-unnest.json --known-shared conformance/engines/dax-sql/known-plan.json --report "$RUNNER_TEMP/tsql-unnest.json"
       - name: The slowest through the unnested plan, beside the compiled SQL's
         if: always()
         run: |

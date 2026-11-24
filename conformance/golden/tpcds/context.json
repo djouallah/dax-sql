@@ -67,5 +67,90 @@
     ";;;;dresses;;;;fiction;;;pants;;;;"
    ]
   ]
+ },
+ "context-auto-exist-remove-keys": {
+  "hash": "be0dc70bb0be419426eb78c9f0a56dc68286e570",
+  "columns": [
+   "item[i_color]",
+   "item[i_current_price]",
+   "[how]",
+   "[noPrice]",
+   "[noColor]",
+   "[noBoth]"
+  ],
+  "rows": [
+   [
+    "olive",
+    51.38,
+    "color and price grouped",
+    "pants",
+    "pants",
+    "fiction,pants"
+   ],
+   [
+    "olive",
+    40.25,
+    "color and price grouped",
+    "fiction",
+    "fiction",
+    "fiction,pants"
+   ],
+   [
+    "-",
+    51.38,
+    "price grouped",
+    "fiction,pants",
+    "-",
+    "-"
+   ],
+   [
+    "-",
+    40.25,
+    "price grouped",
+    "fiction,pants",
+    "-",
+    "-"
+   ],
+   [
+    "blue",
+    79.06,
+    "class filter only",
+    "pants",
+    "pants",
+    "fiction,pants"
+   ],
+   [
+    "olive",
+    51.38,
+    "class filter only",
+    "fiction,pants",
+    "pants",
+    "fiction,pants"
+   ],
+   [
+    "almond",
+    61.94,
+    "class filter only",
+    "pants",
+    "pants",
+    "fiction,pants"
+   ],
+   [
+    "olive",
+    40.25,
+    "class filter only",
+    "fiction,pants",
+    "fiction",
+    "fiction,pants"
+   ],
+   [
+    "khaki",
+    6.91,
+    "class filter only",
+    "fiction",
+    "fiction",
+    "fiction,pants"
+   ]
+  ]
  }
 }

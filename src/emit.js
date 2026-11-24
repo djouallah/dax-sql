@@ -215,6 +215,10 @@ export class Emitter {
         const a = this.alias('s');
         return this.fromSql(`${name} AS ${a}`, x.cols, this.memo.get(name), a);
       }
+      case 'paths': {
+        const name = this.pathsSource(x), a = this.alias('h');
+        return this.fromSql(`${name} AS ${a}`, x.cols, ['key', 'path'], a);
+      }
       case 'sc': return this.summarizeColumns(x, scope);
       case 'window': return this.windowRows(x, scope);
       case 'prefix': {
@@ -306,6 +310,23 @@ export class Emitter {
     name = this.alias('ct');
     this.ctes.push(`${name} AS ${this.d.materialized}(SELECT ${sel.join(', ')} FROM (${b.render()}) AS ${a})`);
     this.memo.set(table, name);
+    return name;
+  }
+
+  // The paths of a parent-child hierarchy (PATH), as a CTE of (key, path): the table's rows
+  // as at refresh (no filter, no security), each key and its parent, joined level by level
+  // (the dialect's paths).
+  pathsSource(x) {
+    let name = this.memo.get(x);
+    if (name) return name;
+    const b = this.unsecured(() => this.isolated(() => {
+      const s = this.scanBlock(x.key.table, EMPTY, new Map());
+      s.setOut([{ name: 'k', lineage: null }, { name: 'p', lineage: null }], [s.res.meta(x.key), s.res.meta(x.parent)]);
+      return s;
+    }));
+    name = this.alias('pt');
+    this.ctes.push(`${name} AS ${this.d.materialized}(${this.d.paths(b.render(), x.key.type, name, ir.PATH_LEVELS)})`);
+    this.memo.set(x, name);
     return name;
   }
 

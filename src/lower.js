@@ -10,7 +10,7 @@
 // table's, in order, as references.
 import * as ir from './ir.js';
 import * as P from './plan.js';
-import { Ctx, narrow } from './context.js';
+import { Ctx, narrow, EMPTY_CTX } from './context.js';
 import { semantic, unsupported } from './errors.js';
 import { outputNames, daxName } from './emit.js';
 import { canon, text } from './passes/fuse.js';
@@ -188,6 +188,7 @@ export class Lowerer {
       case 'shared':
         if (ir.freeRows(x.src).size) return this.table(x.src, scope);
         return this.fromRel(this.shared(x, () => this.exact(this.table(x.src, new Map()).render())), x.cols);
+      case 'paths': return this.fromRel(this.paths(x), x.cols);
       case 'sc': return this.summarizeColumns(x, scope);
       case 'window': return this.windowRows(x, scope);
       case 'prefix': {
@@ -417,6 +418,37 @@ export class Lowerer {
   fromRel(rel, cols) {
     return this.fromList(rel, rel.cols.map((c, i) => ({ expr: P.ref(c), lineage: cols[i]?.lineage ?? c.lineage, name: c.name })), cols);
   }
+  // PATH's rows (ir.paths): each key of the table and its path, the keys from its root down
+  // joined by "|". No recursion: the table's (key, parent) rows (all of them, as at refresh),
+  // joined to themselves level by level, ir.PATH_LEVELS levels: e0 the row, e1 its parent, e2 that
+  // one's, ... A row has a path when one of them has a blank parent (its root); the path is the
+  // keys of those present, the deepest first.
+  paths(x) {
+    const edges = () => {
+      const r = this.unsecured(() => {
+        const s = this.scanBlock(x.key.table, EMPTY_CTX, new Map());
+        s.setOut([{ name: 'k', lineage: null }, { name: 'p', lineage: null }], [s.res.meta(x.key), s.res.meta(x.parent)]);
+        return this.exact(s.render());
+      });
+      return P.select(r, P.notNull(P.ref(r.cols[0])));
+    };
+    const e = Array.from({ length: ir.PATH_LEVELS }, edges);
+    const [k, p] = [i => P.ref(e[i].cols[0]), i => P.ref(e[i].cols[1])];
+    let rel = e[0];
+    for (let i = 1; i < ir.PATH_LEVELS; i++) rel = P.join('left', rel, e[i], P.eq(k(i), p(i - 1)));
+    const str = v => ({ k: 'lit', v, t: 'string', nn: true });
+    const text = i => (x.key.type === 'string' ? k(i) : { k: 'pop', op: 'cast', to: 'string', a: [k(i)], t: 'string', nn: false });
+    const cat = (a, b) => ({ k: 'pop', op: 'concat', a: [a, b], t: 'string', nn: true });
+    // Halves, so that neither the condition nor the path nests ir.PATH_LEVELS deep.
+    const tree = (xs, f) => (xs.length === 1 ? xs[0] : f(tree(xs.slice(0, xs.length >> 1), f), tree(xs.slice(xs.length >> 1), f)));
+    const root = i => (i ? P.and([P.notNull(k(i)), P.isNull(p(i))]) : P.isNull(p(0)));
+    const item = i => (i ? { k: 'case', w: [[P.notNull(k(i)), cat(text(i), str('|'))]], e: str(''), t: 'string', nn: true } : text(0));
+    const levels = Array.from({ length: ir.PATH_LEVELS }, (_, i) => i);
+    const valid = tree(levels.map(root), (a, b) => P.or([a, b]));
+    const path = tree(levels.reverse().map(item), cat);
+    return P.project(P.select(rel, valid), [{ name: 'key', expr: k(0), t: x.key.type }, { name: 'path', expr: path, t: 'string' }]);
+  }
+
   // A rendered block as a relation of exactly its columns, in order.
   exact(r) {
     if (r.rel.cols.length === r.list.length && r.list.every((o, i) => o.expr.k === 'ref' && o.expr.col === r.rel.cols[i])) return r.rel;

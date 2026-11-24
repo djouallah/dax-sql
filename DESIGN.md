@@ -142,10 +142,13 @@ filters on its expanded table's columns only.
   it does, and a secured table reaches the filtered table that way and another (it filters
   the table that filters it back), that is DAX's error that join paths must form a tree
   (`securityTree`, where the filter comes back: `conds`, and a fused group's keys).
-- **PATH** is not supported (`UNSUPPORTED`): walking a hierarchy of unknown depth is a
-  transitive closure, which relational algebra cannot express, so no query plan holds it. The
-  path is a column computed in the source, as Power BI requires in DirectQuery; the other path
-  functions (PATHITEM, PATHLENGTH, …) are functions of its text.
+- **PATH** walks at most 32 levels (`ir.PATH_LEVELS`), a limitation: a hierarchy of unknown
+  depth is a transitive closure, which relational algebra (and Substrait, which has no recursive
+  relation) cannot express, so the plan joins the table's (key, parent) rows to themselves level
+  by level, 32 levels, with no recursion (`Lowerer.paths`; the compiled SQL: `Dialect.paths`).
+  A row whose parents reach no blank parent within them (deeper, an orphan, a cycle: an error in
+  DAX) has a blank path. The other path functions (PATHITEM, PATHLENGTH, …) are functions of its
+  text.
 - **Field parameters** are calculated tables with `NAMEOF` cells, which are constants.
   `expandFieldParameter` reads the table's expression to list the fields a selection stands
   for.
@@ -874,8 +877,7 @@ and gives each aggregate the filters that reach its table.
 - **Values:** logic (`IF`, `SWITCH`, `COALESCE`, `DIVIDE`, …), math, text, dates, `CONVERT`,
   `NAMEOF`.
 - **Parent-child hierarchies:** `PATHLENGTH`, `PATHITEM`, `PATHITEMREVERSE` (`TEXT` or
-  `INTEGER`) and `PATHCONTAINS`, over a path column of the source. `PATH` is not (it needs
-  recursion).
+  `INTEGER`) and `PATHCONTAINS`, over `PATH` (32 levels at most) or a path column of the source.
 - **FORMAT** writes numbers and dates as DAX does in en-US:
   - the named formats: `General Number`, `Currency`, `Fixed`, `Standard`, `Percent`,
     `Scientific`, `Yes/No`, `True/False`, `On/Off`, `General Date`, `Long Date`, `Medium
@@ -1143,7 +1145,7 @@ What T-SQL has no function for is written with what it has:
   with different orders in one SELECT.
 
 `conformance/engines/dax-sql-tsql` runs the suite on a Fabric lakehouse's SQL endpoint, with its
-known list (DuckDB's that T-SQL shares, the PATH queries, infinity and an exact sum), over the suite's data as the
+known list (DuckDB's that T-SQL shares, infinity and an exact sum), over the suite's data as the
 lakehouse's own Delta tables (`lakehouse.py` writes them with delta-rs, in schema `daxconf`):
 the tables a model reads, run by Fabric's distributed engine. It has its own driver, so the
 package depends on nothing new. `tsql.yml` runs it on each push that changes the compiler or the

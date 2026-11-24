@@ -34,6 +34,8 @@
 //   onerow   { vals, cond }          one row of values when cond holds (VALUES of a column the
 //                                    context binds to one value), else none
 //   prefix   { vals, cond, src }     the rows of src after those values, when cond holds
+//   paths    { key, parent }         a row per row of a parent-child table, over all its rows:
+//                                    its key and PATH(key, parent), 32 levels at most
 
 import { semantic } from './errors.js';
 
@@ -236,6 +238,19 @@ export const oneRow = (vals, cond, lineages) => ({ k: 'onerow', vals, cond, base
 export const prefix = (vals, cond, lineages, src) => ({ k: 'prefix', vals, cond, src, base: null,
   cols: [...lineages.map(l => ({ name: l.name, lineage: l, t: l.type })), ...src.cols] });
 
+// The paths of a parent-child hierarchy (PATH): columns key and path, one table per pair of
+// columns, so that a query writes them once.
+// PATH's levels: a row deeper in its hierarchy than this has no path (README, DESIGN.md).
+export const PATH_LEVELS = 32;
+const _paths = new WeakMap();
+export function paths(key, parent) {
+  let m = _paths.get(key);
+  if (!m) _paths.set(key, m = new Map());
+  if (!m.has(parent)) m.set(parent, { k: 'paths', key, parent, base: null,
+    cols: [{ name: 'key', lineage: null, t: key.type }, { name: 'path', lineage: null, t: 'string' }] });
+  return m.get(parent);
+}
+
 export function dateLit(v) {
   const m = /^(\d{4})-(\d{1,2})-(\d{1,2})(?:[ T](\d{1,2}):(\d{2})(?::(\d{2}))?)?$/.exec(v.trim());
   if (!m) throw semantic(`"${v}" is not a date (expected dt"YYYY-MM-DD")`);
@@ -276,6 +291,7 @@ export function freeRows(x) {
     case 'cross': case 'union': case 'intersect': case 'except': x.srcs.forEach(add); break;
     case 'rows': x.rows.forEach(r => r.forEach(add)); break;
     case 'series': add(x.start); add(x.end); add(x.step); break;
+    case 'paths': break;
     case 'topn': add(x.src); add(x.n); x.order.forEach(o => add(o.expr)); bound.add(x.row.id); break;
     case 'topnskip': add(x.src); add(x.n); add(x.skip); x.order.forEach(o => add(o.expr)); bound.add(x.row.id); break;
     case 'join': add(x.left); add(x.right); break;

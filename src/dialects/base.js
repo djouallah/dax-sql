@@ -72,6 +72,24 @@ export class Dialect {
     return `CAST(${sql} AS VARCHAR)`;
   }
 
+  // PATH over a parent-child table: from `edges` (a SELECT of columns k, the key, of type t,
+  // and p, its parent), a row (key, path) per key whose chain of parents reaches a blank parent
+  // within `levels` rows, its path the keys from there down joined by "|". No recursion: the
+  // rows joined to themselves level by level (e0 the row, e1 its parent, ...). `name` prefixes
+  // the names it declares.
+  paths(edges, t, name, levels) {
+    const e = i => `${name}_${i}`, q = n => this.ident(n);
+    const rows = i => `(SELECT k, p FROM (${edges}) AS ${name}_x${i} WHERE k IS NOT NULL) AS ${e(i)}`;
+    const L = [...Array(levels).keys()];
+    // Halves, so that neither the condition nor the path nests `levels` deep.
+    const tree = (xs, f) => (xs.length === 1 ? xs[0] : f(tree(xs.slice(0, xs.length >> 1), f), tree(xs.slice(xs.length >> 1), f)));
+    const from = L.map(i => (i ? `LEFT JOIN ${rows(i)} ON ${e(i)}.k = ${e(i - 1)}.p` : rows(0))).join(' ');
+    const root = tree(L.map(i => (i ? `(${e(i)}.k IS NOT NULL AND ${e(i)}.p IS NULL)` : `${e(0)}.p IS NULL`)), (a, b) => `(${a} OR ${b})`);
+    const item = i => (i ? `CASE WHEN ${e(i)}.k IS NOT NULL THEN ${this.concat(this.text(`${e(i)}.k`, t), this.str('|'))} ELSE '' END` : this.text(`${e(0)}.k`, t));
+    const path = tree(L.reverse().map(item), (a, b) => this.concat(a, b));
+    return `SELECT ${e(0)}.k AS ${q('key')}, ${path} AS ${q('path')} FROM ${from} WHERE ${root}`;
+  }
+
   // Rows from start to end (inclusive) by step, as a FROM item with one column `name`.
   series() { throw new Error(`${this.name}: series is not implemented`); }
 

@@ -222,6 +222,9 @@ class Parser {
   primary() {
     const t = this.tok;
     if (!t) throw this.err('the expression ends too soon');
+    // VAR ... RETURN where an operand stands (1 + VAR v = 2 RETURN v * 3): its RETURN reads as
+    // far as an expression does, as Power BI reads it.
+    if (this.isKw('VAR')) return this.expr();
     const pos = t.at;
     this.i++;
     if (t.t === 'num') return { k: 'num', v: t.v, pos };

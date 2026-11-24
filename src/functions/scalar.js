@@ -107,9 +107,13 @@ function divide(c, args, env) {
 
 function isBlank(c, args, env) { return ir.fn('isblank', [s(c, args[0], env)], 'bool', { nn: true }); }
 
+// ROUND of a fixed decimal is one (Power BI: DIVIDE(ROUND([Sales Amount], 2), 7) has 4 places,
+// decimal-round-max-var-divided); the rest are doubles.
 function round(name) {
-  return (c, args, env) => ir.fn(name, [s(c, args[0], env), opt(c, args[1], env, ir.lit(0))],
-    'double', { strict: true });
+  return (c, args, env) => {
+    const x = s(c, args[0], env);
+    return ir.fn(name, [x, opt(c, args[1], env, ir.lit(0))], name === 'round' && x.t === 'decimal' ? 'decimal' : 'double', { strict: true });
+  };
 }
 
 function convert(c, args, env) {

@@ -618,9 +618,15 @@ export class Compiler {
     let ctx = this.transition(env);
     // 3. The modifiers: relationships first, then what is removed.
     for (const a of actions) if (a.kind === 'mods') ctx = ctx.withMods(a.change);
+    // What CALCULATE clears of the context outside (removed, or replaced by a filter not kept):
+    // a column grouped by is in scope no more there (ISINSCOPE).
+    const drops = [];
     for (const a of actions) {
-      if (a.kind === 'remove') ctx = a.all ? ctx.removeAll() : ctx.remove(a.drop(ctx));
-      else if (a.kind === 'selected') ctx = this.allSelected(ctx, env, a.cols, a.clear);
+      if (a.kind === 'remove') {
+        const drop = a.all ? () => true : a.drop(ctx);
+        drops.push(drop);
+        ctx = a.all ? ctx.removeAll() : ctx.remove(drop);
+      } else if (a.kind === 'selected') ctx = this.allSelected(ctx, env, a.cols, a.clear);
     }
     // 4. The filters: each replaces what the context says about its columns, unless kept.
     const filters = actions.filter(a => a.kind === 'filter');
@@ -637,7 +643,16 @@ export class Compiler {
     }
     if (replaced.size) ctx = ctx.remove(c => replaced.has(c));
     for (const { filter: f } of filters) ctx = ctx.add(f);
+    ctx.cleared = c => replaced.has(c) || drops.some(d => d(c));
     return ctx;
+  }
+
+  // The columns grouped by that are still in scope in ctx, which calculateCtx made: those it
+  // cleared are not.
+  scopeIn(grouped, ctx) {
+    if (!ctx.cleared || !grouped.size) return grouped;
+    const kept = new Set([...grouped].filter(c => !ctx.cleared(c)));
+    return kept.size === grouped.size ? grouped : kept;
   }
 
   // One filter argument -> actions: { kind:'filter', filter, keep } | { kind:'remove', drop } |

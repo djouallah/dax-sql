@@ -130,7 +130,7 @@ function calculate(c, args, env) {
   if (env.boolFilter) throw semantic('a True/False filter of CALCULATE cannot use CALCULATE: it has to be FILTER over a table');
   const ctx = c.calculateCtx(args.slice(1), env);
   // Inside CALCULATE the row contexts are filters now: no row context is left.
-  return c.scalar(args[0], { ...env, ctx, rows: [] });
+  return c.scalar(args[0], { ...env, ctx, rows: [], grouped: c.scopeIn(env.grouped, ctx) });
 }
 
 // A column or a table argument -> the model columns it names.

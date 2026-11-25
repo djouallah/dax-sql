@@ -943,9 +943,9 @@ export class SqlTranslator {
   //     rows those the root's reach. An INNER JOIN keeps the root's rows that have a match:
   //     the one side's key is not blank (its blank row holds the others). Other conditions
   //     of an INNER JOIN's ON are the WHERE's.
-  //   - o LEFT JOIN m, o the one side: o's rows are the groups', and every column outside an
-  //     AGG is o's; m's measures read the rows of m that match a row of o and that the ON's
-  //     other conditions keep.
+  //   - o LEFT JOIN m (LEFT JOIN m₂ …: a chasm), o the one side of each: o's rows are the groups',
+  //     and every column outside an AGG is o's; each m's measures read the rows of m that match
+  //     a row of o and that its ON's other conditions keep.
   // An aggregate of a column (SUM(x)) over a join is not such a query.
   star(rels, q) {
     const list = [...rels.values()];
@@ -1003,19 +1003,26 @@ export class SqlTranslator {
     };
     [...q.select.map(s => s.e), q.where, ...(Array.isArray(q.groupBy) ? q.groupBy : []), q.having, ...q.orderBy.map(o => o.e)].forEach(walk);
 
-    const [o, m] = list;
-    if (list.length === 2 && edges[0].type === 'left' && edges[0].many === m) {
-      // o LEFT JOIN m: groups of o; m's measures under the ON's other conditions, all on m.
-      const cond = extra.get(m);
-      const ofM = e => someExpr(e, x => x.k === 'name' && colRel(x.parts)?.r === m);
-      const ofO = e => someExpr(e, x => x.k === 'name' && colRel(x.parts)?.r === o);
-      if (outside.some(x => colRel(x.parts)?.r === m) || (cond && ofO(cond)) || (cond && !ofM(cond))) return null;
+    const [o] = list, ms = list.slice(1);
+    if (edges.every((e, i) => e.type === 'left' && e.many === ms[i] && e.one === o)) {
+      // o LEFT JOIN m₁ LEFT JOIN m₂ …, each m on a relationship to o (a chasm, for more than
+      // one): groups of o; each m's measures under its ON's other conditions, all on that m,
+      // over m's own rows (each once, however many rows of another m the join pairs it with).
+      const ofRel = (e, r) => someExpr(e, x => x.k === 'name' && colRel(x.parts)?.r === r);
+      for (const m of ms) {
+        const cond = extra.get(m);
+        if (outside.some(x => colRel(x.parts)?.r === m) || (cond && list.some(r => r !== m && ofRel(cond, r))) || (cond && !ofRel(cond, m))) return null;
+      }
       // m's rows are those that match a row of o: its key is not blank (a pet with no owner
       // is no row of emp LEFT JOIN pet). KEEPFILTERS: the group's own filter on that key stays.
-      const matched = D.call('KEEPFILTERS', D.not(D.call('ISBLANK', D.col(edges[0].rel.to))));
+      const matched = m => D.call('KEEPFILTERS', D.not(D.call('ISBLANK', D.col(edges[ms.indexOf(m)].rel.to))));
       return {
         root: o, where, filters: [],
-        measure: (r, d, t) => (r === m ? D.call('CALCULATE', d, matched, ...(cond ? [D.call('KEEPFILTERS', t.dax(cond, { mode: 'where' }))] : [])) : d),
+        measure: (r, d, t) => {
+          if (!ms.includes(r)) return d;
+          const cond = extra.get(r);
+          return D.call('CALCULATE', d, matched(r), ...(cond ? [D.call('KEEPFILTERS', t.dax(cond, { mode: 'where' }))] : []));
+        },
       };
     }
     // A star: a LEFT JOIN adds a one side, and no ON says more than its relationship's columns.

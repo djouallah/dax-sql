@@ -43,6 +43,7 @@ import { toSubstrait } from './substrait.js';
 import { readSubstrait } from './substrait-read.js';
 import { standard } from './passes/standard.js';
 import { fuseApplies } from './passes/fuse-applies.js';
+import { semijoins } from './passes/semijoins.js';
 import { share } from './passes/share.js';
 import { inline } from './passes/inline.js';
 import { prune } from './passes/prune.js';
@@ -70,7 +71,7 @@ function planSize(root) {
   for (const d of root.defs ?? []) R(d.rel);
   return n;
 }
-const correlated = pipe([['fuseApplies', fuseApplies], ['standard', standard], ['exact', exact], ['share', share], ['inline', inline], ['renames', renames], ['prune', prune]]);
+const correlated = pipe([['fuseApplies', fuseApplies], ['standard', standard], ['exact', exact], ['semijoins', semijoins], ['share', share], ['inline', inline], ['renames', renames], ['prune', prune]]);
 // The correlated plan unnested (passes/unnest.js), for an engine that does not unnest: no apply,
 // no correlated EXISTS; the σ over × it leaves joins, the measures over the same rows one grouping.
 const unnested = pipe([['fuseApplies', fuseApplies], ['standard', standard], ['exact', exact], ['unnest', unnest], ['joins', joins], ['fuse', fuse], ['outer', outer], ['share', share], ['inline', inline], ['renames', renames], ['prune', prune]]);

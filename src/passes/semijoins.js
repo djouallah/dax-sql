@@ -3,7 +3,7 @@
 //
 //   σ_{EXISTS(σ x₁ ≡ a₁ ∧ … ∧ xₙ ≡ aₙ ∧ q (R))}(S)  →  S ⋈ δ(π_{a₁…aₙ} σ_q R) on x₁ ≡ a₁ ∧ … ∧ xₙ ≡ aₙ
 //
-// x the rows' columns (S's), a of R's alone, q reading none of S's (a column of the rows around S,
+// for n ≥ 2 (a row matched by its identity: the TREATAS of a table's columns), x the rows' columns (S's), a of R's alone, q reading none of S's (a column of the rows around S,
 // it may: the join is then over the values of those rows). The distinct rows of R's values keep
 // each row of S once. Unnested by an engine, the EXISTS is a semi join of S's rows for each value
 // of the rows around them, every one of S's rows crossed with those values first: on rows that a
@@ -49,7 +49,9 @@ function semi(src, c) {
     if (pair) keys.push({ x: pair[0], a: pair[1], m });
     else rest.push(e);
   }
-  if (!keys.length) return null;
+  // One column DuckDB matches as it is (a mark join on it, for each value of the rows around);
+  // several (a row's identity: TREATAS of a table's columns), it crosses the rows with those values.
+  if (keys.length < 2) return null;
   const inner = rest.length ? P.select(R, P.and(rest)) : R;
   if ([...free(inner)].some(col => mine.has(col))) return null;
   const vals = P.distinct(P.project(inner, keys.map((k, i) => ({ name: `${k.x.col.name}_${i}`, expr: k.a, t: k.x.col.t }))));

@@ -2133,43 +2133,13 @@
   ]
  },
  "grid-0083": {
-  "hash": "38a0c0ff98c26c85cbcd1cc75d328001718e3016",
+  "hash": "2359a5597358885f1992e54d6eeac5a0a6317ce5",
   "columns": [
    "[Month]",
    "[x]",
    "[y]"
   ],
   "rows": [
-   [
-    7,
-    null,
-    2
-   ],
-   [
-    8,
-    null,
-    null
-   ],
-   [
-    9,
-    null,
-    null
-   ],
-   [
-    10,
-    null,
-    null
-   ],
-   [
-    11,
-    null,
-    null
-   ],
-   [
-    12,
-    null,
-    null
-   ],
    [
     1,
     null,
@@ -2199,6 +2169,36 @@
     6,
     null,
     1
+   ],
+   [
+    7,
+    null,
+    2
+   ],
+   [
+    8,
+    null,
+    null
+   ],
+   [
+    9,
+    null,
+    null
+   ],
+   [
+    10,
+    null,
+    null
+   ],
+   [
+    11,
+    null,
+    null
+   ],
+   [
+    12,
+    null,
+    null
    ]
   ]
  },

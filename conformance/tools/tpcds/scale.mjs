@@ -1,18 +1,22 @@
 // The tpcds model's tables at a TPC-DS scale factor, in a DuckDB file: DuckDB's dsdgen, each table
 // as the model reads it (models/tpcds/model.bim), for timing the suite's tpcds queries on real
 // volumes (tools/tpcds/scale-run.mjs). SF1: 2.9 million store sales, 1.4 million catalog sales.
-//   node tools/tpcds/scale.mjs <sf> <out.duckdb>
+//   node tools/tpcds/scale.mjs <sf> <out.duckdb> [--model-dir <dir>]
+// --model-dir: the tables also as a model folder, <dir>/model.bim and <dir>/data/<table>.csv, as the
+// other engines' adapters read a model (tools/tpcds/scale-engine.mjs).
 // What differs from dsdgen's rows:
 //   - the dates are 24 years later (sales 1998-2002 become 2022-2026, the years the paper's report
 //     filters; 24 keeps every leap day one), and date_dim holds 2022-2027 only (contiguous);
 //     d_dow and d_quarter_name are those of the later date;
 //   - cache_buster, which TPC-DS lacks, is the ticket's (the order's) number mod 4;
 //   - stg_tpcds_archive_log, not a TPC-DS table, is the sample's (models/tpcds/data).
-import { existsSync, rmSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, rmSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 
-const [sf, out] = process.argv.slice(2);
+const args = process.argv.slice(2);
+const md = args.indexOf('--model-dir'), modelDir = md >= 0 ? args.splice(md, 2)[1] : null;
+const [sf, out] = args;
 if (!sf || !out) throw new Error('usage: scale.mjs <sf> <out.duckdb>');
 const require = createRequire(new URL('../../../package.json', import.meta.url));
 const { DuckDBInstance } = require('@duckdb/node-api');
@@ -51,4 +55,13 @@ for (const [name, sql] of Object.entries(tables)) {
 }
 await con.run(`CREATE TABLE "${db}".main.stg_tpcds_archive_log AS SELECT * FROM read_csv('${log.replace(/\\/g, '/')}', header = true)`);
 await con.run(`USE "${db}"; DETACH gen; CHECKPOINT`);
+if (modelDir) {
+  mkdirSync(`${modelDir}/data`, { recursive: true });
+  copyFileSync(fileURLToPath(new URL('../../models/tpcds/model.bim', import.meta.url)), `${modelDir}/model.bim`);
+  for (const name of [...Object.keys(tables), 'stg_tpcds_archive_log']) {
+    const path = `${modelDir}/data/${name}.csv`.split('\\').join('/');
+    await con.run(`COPY "${name}" TO '${path}' (HEADER, DELIMITER ',', TIMESTAMPFORMAT '%Y-%m-%d %H:%M:%S')`);
+  }
+  console.log(`${modelDir}: model.bim and data/*.csv`);
+}
 console.log(`${out}: ${((Date.now() - t0) / 1000).toFixed(0)} s`);

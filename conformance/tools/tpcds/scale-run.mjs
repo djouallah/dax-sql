@@ -3,11 +3,15 @@
 // answer held to the same query through the plan unnested (passes/unnest.js: no correlated
 // subquery left), a second SQL of the same plan that DuckDB runs another way.
 //   node tools/tpcds/scale-run.mjs <sf.duckdb> [--timeout 120] [--grep regex] [--no-agree] [--report out.json] [--gate]
+//   [--answers out.json]
+// --answers: each query's answer as a count of rows and a hash of them (as norm() writes them), for
+// another engine's to be held to (tools/tpcds/scale-engine.mjs).
 // --gate (.github/workflows/scale.yml, a release gate): fails when a query fails or times out on
 // DuckDB, or the compiler refuses one that Power BI answers (golden/tpcds).
 // A query past the timeout is interrupted. The report lists the slowest queries, those that
 // error, and those whose two answers differ.
 import { appendFileSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { join } from 'node:path';
 import { loadQueries, loadGoldens, modelDir } from '../suite.mjs';
@@ -21,6 +25,8 @@ const grep = opt('--grep', null);
 const report = opt('--report', null);
 const agree = !flag('--no-agree');
 const gate = flag('--gate');
+const answersFile = opt('--answers', null);
+const answers = {};
 const [file] = args;
 if (!file) throw new Error('usage: scale-run.mjs <sf.duckdb> [--timeout 120] [--grep regex] [--no-agree] [--report out.json]');
 
@@ -64,6 +70,7 @@ for (const q of queries) {
   r.ms = Math.round(a.ms); r.bytes = sql.length;
   if (a.error) { r.error = a.error; console.log(`error ${r.id}: ${a.error}`); continue; }
   r.rows = a.rows.length;
+  if (answersFile) answers[r.id] = { rows: a.rows.length, hash: createHash('sha1').update(norm(a.rows).join('\n')).digest('hex') };
   if (r.ms > 2000) console.log(`slow ${r.id}: ${r.ms} ms`);
   if (agree) {
     const b = await run(compiler(q.roles).planSql(q.dax, { unnest: true }).sql);
@@ -91,6 +98,7 @@ const summary = [
 console.log(summary);
 if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${summary}\n`);
 if (report) writeFileSync(report, JSON.stringify(results, null, 1));
+if (answersFile) writeFileSync(answersFile, JSON.stringify(answers));
 if (gate) {
   const goldens = new Map();
   const golden = id => { const [family, q] = id.split('/'); if (!goldens.has(family)) goldens.set(family, loadGoldens('tpcds', family)); return goldens.get(family)[q]; };

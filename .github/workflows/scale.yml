@@ -5,6 +5,8 @@ name: Scale
 # and run on DuckDB (conformance/tools/tpcds/scale-run.mjs): the SQL as it behaves on real
 # volumes, which the suite's small data never shows. It fails when a query fails or takes more
 # than the timeout, or the compiler refuses one Power BI answers. A release gate (publish.yml).
+# Polars and DataFusion run the same queries on the same data, each answer held to DuckDB's at SF1
+# (tools/tpcds/scale-engine.mjs): a measure, not a gate.
 
 on:
   push:
@@ -42,9 +44,63 @@ jobs:
       - name: The tpcds queries at SF1
         run: |
           node conformance/tools/tpcds/scale-run.mjs "$RUNNER_TEMP/sf1.duckdb" --no-agree --timeout 120 \
-            --gate --report "$RUNNER_TEMP/sf1.json"
+            --gate --report "$RUNNER_TEMP/sf1.json" --answers "$RUNNER_TEMP/answers.json"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: sf1
-          path: ${{ runner.temp }}/sf1.json
+          path: |
+            ${{ runner.temp }}/sf1.json
+            ${{ runner.temp }}/answers.json
+
+  # Polars and DataFusion: the SF1 tables again (dsdgen is deterministic) as a model folder, each
+  # engine's adapter as the suite's, DuckDB's answers from the job above.
+  engines:
+    needs: sf1
+    if: always()
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - engine: Polars
+            install: pip install -q "polars==2.2.0"
+            adapter: node conformance/engines/dax-sql-polars/adapter.mjs .
+          - engine: DataFusion
+            install: pip install -q -r conformance/engines/dax-sql-datafusion/requirements.txt
+            adapter: node conformance/engines/dax-sql-datafusion/adapter.mjs .
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: djouallah/dax-sql
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: ${{ matrix.install }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: sf1
+          path: ${{ runner.temp }}/duck
+      - name: TPC-DS at SF1, as a model folder
+        run: node conformance/tools/tpcds/scale.mjs 1 "$RUNNER_TEMP/sf1.duckdb" --model-dir "$RUNNER_TEMP/sf1"
+      - name: The tpcds queries at SF1 on ${{ matrix.engine }}
+        env:
+          PY: python
+          DATAFUSION_PYTHON: python
+          POLARS_TIMEOUT_MS: "120000"
+          DATAFUSION_TIMEOUT: "120"
+          NODE_OPTIONS: --max-old-space-size=6144
+        run: |
+          node conformance/tools/tpcds/scale-engine.mjs --adapter "${{ matrix.adapter }}" --label "${{ matrix.engine }}"             --model-dir "$RUNNER_TEMP/sf1" --answers "$RUNNER_TEMP/duck/answers.json" --report "$RUNNER_TEMP/${{ matrix.engine }}.json"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sf1-${{ matrix.engine }}
+          path: ${{ runner.temp }}/${{ matrix.engine }}.json

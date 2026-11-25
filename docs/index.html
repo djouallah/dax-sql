@@ -296,7 +296,7 @@ kbd { font: 11px var(--mono); border: 1px solid var(--line-2); border-bottom-wid
       <li><b>Text is case-sensitive.</b> <code>"Red"</code> and <code>"red"</code> are two different values. Power BI treats them as one.</li>
       <li><b>Text sorts by the engine's rules.</b> On DuckDB that is character code order, not Power BI's language-aware order.</li>
       <li><b>Trailing spaces count.</b> <code>"a "</code> and <code>"a"</code> are two different values. Power BI removes trailing spaces when it loads data.</li>
-      <li><b>There is no blank row.</b> Every key in a fact table must exist in its dimension. A sale whose key is missing from the dimension still counts in the total, but appears under no value of that dimension.</li>
+      <li><b>The blank row only next to a fact's measures.</b> Sales whose key is missing from a dimension show as a blank group when sales are measured by that dimension's columns. A list of the dimension's values (<code>VALUES</code>, <code>ALL</code>) has no blank row.</li>
       <li><b>A column that mixes numbers and text comes back as text.</b></li>
       <li><b><code>IFERROR</code> returns its first argument.</b> SQL has no error values.</li>
       <li><b><code>PATH</code> walks at most 32 levels.</b> A row deeper in its hierarchy gets a blank path. SQL plans have no recursion, so the levels are fixed.</li>

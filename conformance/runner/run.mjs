@@ -18,6 +18,7 @@ import { mkdtempSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { loadQueries, loadGoldens, modelDir } from '../tools/suite.mjs';
+import { sameRows, ordered } from '../tools/rows.mjs';
 
 const args = process.argv.slice(2);
 const opt = name => { const i = args.indexOf(`--${name}`); return i >= 0 ? args[i + 1] : undefined; };
@@ -89,21 +90,7 @@ const { map: answers, code: adapterCode } = await new Promise((done, fail) => {
 
 // --- comparing ---
 
-const close = (a, b) => {
-  if (a === b) return true;
-  if (typeof a === 'number' && typeof b === 'number') return Math.abs(a - b) <= 1e-9 * Math.max(1, Math.abs(a), Math.abs(b));
-  return false;
-};
-const sortRows = rows => {
-  const key = r => JSON.stringify(r.map(v => (v === null ? '' : typeof v === 'number' ? Number(v.toPrecision(12)) : v)));
-  return rows.map(r => [key(r), r]).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)).map(([, r]) => r);
-};
-const sameRows = (got, want, ordered) => {
-  if (got.length !== want.length) return false;
-  const g = ordered ? got : sortRows(got), w = ordered ? want : sortRows(want);
-  return g.every((r, i) => r.length === w[i].length && r.every((v, j) => close(v, w[i][j])));
-};
-const ordered = dax => /\bORDER\s+BY\b/i.test(dax.replace(/\/\/.*$/gm, ''));
+// (tools/rows.mjs: as a multiset unless the query has an ORDER BY, numbers within 1e-9.)
 
 function outcome(q) {
   const g = golden(q), a = answers.get(q.key) ?? { error: 'no answer from the adapter' };

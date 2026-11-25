@@ -17,6 +17,7 @@
 //   hours: "`nanosecond` operation not supported for dtype `date`").
 // What each is for, on the Polars it runs on: conformance/engines/dax-sql-polars/repros.py.
 import { PostgresDialect } from './postgres.js';
+import { unsupported } from '../errors.js';
 
 // A whole number (64 bits: Polars computes a CASE's branches no row takes too).
 const int = v => `CAST(round(CAST(${v} AS NUMERIC)) AS BIGINT)`;
@@ -78,6 +79,8 @@ export class PolarsDialect extends PostgresDialect {
   seriesBoundsAsSubqueries = true;
 
   fn(name, a, nodes = []) {
+    // What Polars SQL has no function for: a factorial, the time in a zone (timezone()).
+    if (name === 'fact' || name === 'utcnow' || name === 'utctoday') throw unsupported(`${name.toUpperCase()} on Polars (no function of it in its SQL)`);
     // PostgreSQL's functions of a date that give a DATE: a TIMESTAMP.
     if (DATES.has(name)) return `CAST(${super.fn(name, a, nodes)} AS TIMESTAMP)`;
     const [x, y, z] = a;

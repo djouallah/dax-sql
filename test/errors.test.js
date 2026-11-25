@@ -109,7 +109,8 @@ test('what Substrait has nothing for is refused by name; what it has compiles, o
     }
   }
   for (const f of ['TODAY()', 'NOW()', 'UTCTODAY()', 'UTCNOW()', 'REPT("a", 3)', 'EVEN(3)', 'ODD(2)', 'WEEKNUM(DATE(2024, 3, 1), 21)', 'REPLACE("abc", 1, 1, "x")', 'ERROR("x")']) {
-    for (const d of DIALECTS) assert.equal(outcome(compilers[d], `EVALUATE ROW("x", ${f})`), 'sql', `${d} ${f}`);
+    // (Polars SQL has no time in a zone: UTCNOW and UTCTODAY are its dialect's UNSUPPORTED.)
+    for (const d of DIALECTS) assert.equal(outcome(compilers[d], `EVALUATE ROW("x", ${f})`), d === 'polars' && /^UTC/.test(f) ? 'UNSUPPORTED' : 'sql', `${d} ${f}`);
   }
   assert.equal(outcome(compilers.duckdb, 'EVALUATE ROW("x", FACT(4))'), 'sql');
   assert.equal(outcome(compilers.duckdb, 'EVALUATE ROW("x", AND(1, "a"))'), 'SEMANTIC');

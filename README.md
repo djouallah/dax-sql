@@ -9,7 +9,7 @@ Compiles a DAX or SQL query over a semantic model to one SQL `SELECT`. No depend
 | Semantic model | `.bim`, TMDL, Ossie YAML |
 | Measure dialect | DAX, Ossie SQL |
 | Query | DAX `SUMMARIZECOLUMNS(…)`, SQL `SELECT dim, AGG(measure) FROM model`, Ossie wide table JSON |
-| Target | DuckDB |
+| Target | DuckDB, Polars, DataFusion, T-SQL (Fabric SQL endpoint and Warehouse) |
 
 DAX is tested against Power BI's answers ([conformance/](conformance/README.md)), SQL against Apache Ossie's compliance cases; blanks are DAX's in SQL too (`NULL + 1` is 1, a NULL key meets a NULL key), as Power BI answers. Errors: `SYNTAX`, `SEMANTIC`, `UNSUPPORTED`; `CATALOG` for semantic views.
 

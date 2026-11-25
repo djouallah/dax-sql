@@ -3,7 +3,8 @@ name: Publish
 # Publishes dax-sql to npm when a v* tag is pushed: git tag v<version> && git push origin v<version>.
 # The tag must name the version in package.json, and these must pass first: the suite against
 # Power BI's answers, DAX and SQL, Apache Ossie's queries among it (conformance.yml); Ossie's wide
-# table cases that raise an error (ossie-query.yml); the Ossie dax-sql writes (ossie.yml); the tests.
+# table cases that raise an error (ossie-query.yml); the Ossie dax-sql writes (ossie.yml); the
+# tpcds queries at TPC-DS SF1, none failing or past its timeout (scale.yml); the tests.
 #
 # NO TOKEN: npm's trusted publishing trades this job's GitHub OIDC token (id-token: write) for a
 # one-time publish credential, and --provenance (publishConfig) signs "built from
@@ -31,8 +32,11 @@ jobs:
   conformance:
     uses: ./.github/workflows/conformance.yml
 
+  scale:
+    uses: ./.github/workflows/scale.yml
+
   publish:
-    needs: [ossie, queries, conformance]
+    needs: [ossie, queries, conformance, scale]
     runs-on: ubuntu-latest
     permissions:
       contents: read

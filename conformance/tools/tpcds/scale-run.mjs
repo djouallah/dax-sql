@@ -2,13 +2,15 @@
 // tools/tpcds/scale.mjs writes): each compiled by this checkout and run on DuckDB, timed, and its
 // answer held to the same query through the plan unnested (passes/unnest.js: no correlated
 // subquery left), a second SQL of the same plan that DuckDB runs another way.
-//   node tools/tpcds/scale-run.mjs <sf.duckdb> [--timeout 120] [--grep regex] [--no-agree] [--report out.json]
+//   node tools/tpcds/scale-run.mjs <sf.duckdb> [--timeout 120] [--grep regex] [--no-agree] [--report out.json] [--gate]
+// --gate (.github/workflows/scale.yml, a release gate): fails when a query fails or times out on
+// DuckDB, or the compiler refuses one that Power BI answers (golden/tpcds).
 // A query past the timeout is interrupted. The report lists the slowest queries, those that
 // error, and those whose two answers differ.
 import { appendFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { join } from 'node:path';
-import { loadQueries, modelDir } from '../suite.mjs';
+import { loadQueries, loadGoldens, modelDir } from '../suite.mjs';
 import { engine, value } from '../../engines/dax-sql/db.mjs';
 
 const args = process.argv.slice(2);
@@ -18,6 +20,7 @@ const timeout = Number(opt('--timeout', 120)) * 1000;
 const grep = opt('--grep', null);
 const report = opt('--report', null);
 const agree = !flag('--no-agree');
+const gate = flag('--gate');
 const [file] = args;
 if (!file) throw new Error('usage: scale-run.mjs <sf.duckdb> [--timeout 120] [--grep regex] [--no-agree] [--report out.json]');
 
@@ -88,3 +91,10 @@ const summary = [
 console.log(summary);
 if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${summary}\n`);
 if (report) writeFileSync(report, JSON.stringify(results, null, 1));
+if (gate) {
+  const goldens = new Map();
+  const golden = id => { const [family, q] = id.split('/'); if (!goldens.has(family)) goldens.set(family, loadGoldens('tpcds', family)); return goldens.get(family)[q]; };
+  const failed = results.filter(r => r.error || r.unnestError || r.differs || (r.compileError && !golden(r.id)?.error));
+  for (const r of failed) console.log(`::error::${r.id}: ${r.error ?? r.unnestError ?? (r.differs ? 'the two answers differ' : `refused, Power BI answers it: ${r.compileError}`)}`);
+  process.exit(failed.length ? 1 : 0);
+}

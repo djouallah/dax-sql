@@ -1,0 +1,50 @@
+name: Scale
+
+# The tpcds queries of the suite on TPC-DS at SF1 (2.9 million store sales, 1.4 million catalog
+# sales: conformance/tools/tpcds/scale.mjs, DuckDB's dsdgen in the model's shape), each compiled
+# and run on DuckDB (conformance/tools/tpcds/scale-run.mjs): the SQL as it behaves on real
+# volumes, which the suite's small data never shows. It fails when a query fails or takes more
+# than the timeout, or the compiler refuses one Power BI answers. A release gate (publish.yml).
+
+on:
+  push:
+    paths:
+      - "src/**"
+      - "formats/**"
+      - "conformance/queries/tpcds/**"
+      - "conformance/tools/tpcds/**"
+      - ".github/workflows/scale.yml"
+  workflow_dispatch:
+  workflow_call:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  contents: read
+
+jobs:
+  sf1:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      # Named, so that called from another workflow it still checks out this repository.
+      - uses: actions/checkout@v4
+        with:
+          repository: djouallah/dax-sql
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: TPC-DS at SF1
+        run: node conformance/tools/tpcds/scale.mjs 1 "$RUNNER_TEMP/sf1.duckdb"
+      - name: The tpcds queries at SF1
+        run: |
+          node conformance/tools/tpcds/scale-run.mjs "$RUNNER_TEMP/sf1.duckdb" --no-agree --timeout 120 \
+            --gate --report "$RUNNER_TEMP/sf1.json"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sf1
+          path: ${{ runner.temp }}/sf1.json

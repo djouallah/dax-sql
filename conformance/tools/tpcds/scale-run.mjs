@@ -80,7 +80,7 @@ for (const q of queries) {
   r.ms = Math.round(a.ms); r.bytes = sql.length;
   // DAX's own run-time error, raised by the SQL (a fixed decimal past its range at SF10): the
   // query's answer, as DAX's; any other error the engine's.
-  if (a.error && /DAX: /.test(a.error)) { r.daxError = a.error.replace(/^.*?DAX: /, ''); console.log(`DAX error ${r.id}: ${r.daxError}`); continue; }
+  if (a.error && /DAX: /.test(a.error)) { r.daxError = a.error.replace(/^.*?DAX: /, ''); console.log(`DAX error ${r.id}: ${r.daxError}`); continue; }
   if (a.error) { r.error = a.error; console.log(`error ${r.id}: ${a.error}`); continue; }
   r.rows = a.n;
   if (answersFile && a.rows) answers[r.id] = { rows: a.n, hash: createHash('sha1').update(norm(a.rows).join('\n')).digest('hex') };

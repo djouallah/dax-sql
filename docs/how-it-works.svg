@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1300 500" width="1300" height="500" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif">
-  <title>How dax-sql works: a model and a query in, one SQL SELECT out, tested against Power BI</title>
+  <title>How dax-sql works: a model and a query in, one DuckDB SQL SELECT out, tested against Power BI</title>
   <style>
     .bg { fill: #ffffff; }
     .label { fill: #6b7280; font-size: 12px; font-weight: 600; letter-spacing: .08em; }
@@ -89,28 +89,18 @@
   <rect class="box" x="950" y="191" width="150" height="80" rx="12"/>
   <text class="t" x="1025" y="222" text-anchor="middle">SQL writer</text>
   <text class="s" x="1025" y="244" text-anchor="middle">reads the plan back,</text>
-  <text class="s" x="1025" y="259" text-anchor="middle">one dialect's SQL</text>
+  <text class="s" x="1025" y="259" text-anchor="middle">DuckDB's SQL</text>
   <path class="edge" d="M910 231 L948 231" marker-end="url(#a)"/>
 
-  <!-- the engines -->
-  <text class="label" x="1140" y="40">ONE SQL SELECT FOR</text>
-  <rect class="eng" x="1140" y="54" width="140" height="40" rx="10"/><text class="eng-t" x="1210" y="79" text-anchor="middle">DuckDB ★</text>
-  <rect class="eng" x="1140" y="106" width="140" height="40" rx="10"/><text class="eng-t" x="1210" y="131" text-anchor="middle">Polars</text>
-  <rect class="eng" x="1140" y="158" width="140" height="40" rx="10"/><text class="eng-t" x="1210" y="183" text-anchor="middle">DataFusion</text>
-  <rect class="eng" x="1140" y="210" width="140" height="40" rx="10"/><text class="eng-t" x="1210" y="229" text-anchor="middle">T-SQL</text>
-  <text class="s" x="1210" y="244" text-anchor="middle" style="font-size:10.5px">Fabric SQL endpoint</text>
-  <path class="edge" d="M1100 220 C1120 220 1112 76 1138 74" marker-end="url(#a)"/>
-  <path class="edge" d="M1100 226 C1120 226 1114 128 1138 126" marker-end="url(#a)"/>
-  <path class="edge" d="M1100 231 C1120 231 1116 180 1138 178" marker-end="url(#a)"/>
-  <path class="edge" d="M1100 236 L1138 230" marker-end="url(#a)"/>
+  <!-- the engine -->
+  <text class="label" x="1140" y="200">ONE SQL SELECT</text>
+  <rect class="eng" x="1140" y="211" width="140" height="40" rx="10"/><text class="eng-t" x="1210" y="236" text-anchor="middle">DuckDB</text>
+  <path class="edge" d="M1100 231 L1138 231" marker-end="url(#a)"/>
 
   <!-- the reference -->
   <rect class="ref" x="262" y="396" width="1018" height="54" rx="12"/>
   <text class="ref-t" x="286" y="420">Tested against Power BI, not guaranteed to match it</text>
   <text class="ref-s" x="286" y="439">Each engine's answers are compared with Power BI's; every known difference is listed, a departure by design or a bug not fixed yet.</text>
-  <text class="s" x="1210" y="272" text-anchor="middle" style="font-size:11px">★ works best: it unnests the</text>
-  <text class="s" x="1210" y="287" text-anchor="middle" style="font-size:11px">plan's correlated subqueries;</text>
-  <text class="s" x="1210" y="302" text-anchor="middle" style="font-size:11px">others can be slower or refuse</text>
-  <path class="edge-ref" d="M1210 312 L1210 394" marker-end="url(#ar)"/>
-  <text class="s" x="28" y="482"><tspan style="font-weight:600">Why SQL and not the Substrait plan itself?</tspan> The plan follows Substrait's main branch, its newest spec, which no engine reads yet: dax-sql reads it back and writes each engine's SQL.</text>
+  <path class="edge-ref" d="M1210 253 L1210 394" marker-end="url(#ar)"/>
+  <text class="s" x="28" y="482"><tspan style="font-weight:600">Why SQL and not the Substrait plan itself?</tspan> The plan follows Substrait's main branch, its newest spec, which no engine reads yet: dax-sql reads it back and writes DuckDB's SQL.</text>
 </svg>

@@ -6,16 +6,7 @@ name: DataFusion
 # gate: the counts, the most common errors and the slowest queries go to the job summary.
 
 on:
-  push:
-    paths:
-      - "src/**"
-      - "formats/**"
-      - "conformance/queries/**"
-      - "conformance/golden/**"
-      - "conformance/runner/**"
-      - "conformance/engines/dax-sql/db.mjs"
-      - "conformance/engines/dax-sql-datafusion/**"
-      - ".github/workflows/datafusion.yml"
+  # Manual only: CI runs DuckDB alone (conformance.yml) while the compiler is worked on.
   workflow_dispatch:
 
 env:

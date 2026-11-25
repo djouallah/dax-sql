@@ -9,16 +9,7 @@ name: Polars
 # apart: Polars has none) and time.
 
 on:
-  push:
-    paths:
-      - "src/**"
-      - "formats/**"
-      - "conformance/queries/**"
-      - "conformance/golden/**"
-      - "conformance/runner/**"
-      - "conformance/engines/dax-sql/known*.json"
-      - "conformance/engines/dax-sql-polars/**"
-      - ".github/workflows/polars.yml"
+  # Manual only: CI runs DuckDB alone (conformance.yml) while the compiler is worked on.
   workflow_dispatch:
 
 env:

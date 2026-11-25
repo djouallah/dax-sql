@@ -2,9 +2,9 @@
 
 Initially written by [N.S. Devaraj](https://github.com/nsdevaraj).
 
-Compiles a DAX or SQL query over a semantic model to one SQL `SELECT`. No dependencies. `npm install dax-sql`; API, example and everything it does in [DESIGN.md](DESIGN.md); anything not there is not implemented.
+Compiles a DAX or SQL query over a semantic model to one DuckDB SQL `SELECT`. No dependencies. `npm install dax-sql`; API, example and everything it does in [DESIGN.md](DESIGN.md); anything not there is not implemented.
 
-![How dax-sql works: .bim, TMDL or Ossie YAML and a DAX, SQL or Ossie query in; the DAX compiler; a Substrait plan; one SQL SELECT for DuckDB, Polars, DataFusion or T-SQL; answers tested against Power BI's](docs/how-it-works.svg)
+![How dax-sql works: .bim, TMDL or Ossie YAML and a DAX, SQL or Ossie query in; the DAX compiler; a Substrait plan; one SQL SELECT for DuckDB; answers tested against Power BI's](docs/how-it-works.svg)
 
 DAX is tested against Power BI's answers ([conformance/](conformance/README.md)), SQL too, Apache Ossie's compliance cases among it; blanks are DAX's in SQL too (`NULL + 1` is 1, a NULL key meets a NULL key), as Power BI answers. Errors: `SYNTAX`, `SEMANTIC`, `UNSUPPORTED`; `CATALOG` for semantic views.
 

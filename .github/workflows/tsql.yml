@@ -7,19 +7,10 @@ name: T-SQL
 #
 # The identity is the Oracle's OIDC federated login (repository variables AZURE_CLIENT_ID,
 # AZURE_TENANT_ID); the endpoint is TSQL_HOST and its database TSQL_DB. It costs the capacity's
-# CU: on a push that changes the compiler or the suite, and by hand.
+# CU: by hand.
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - "src/**"
-      - "formats/**"
-      - "conformance/queries/**"
-      - "conformance/golden/**"
-      - "conformance/runner/**"
-      - "conformance/engines/dax-sql-tsql/**"
-      - ".github/workflows/tsql.yml"
+  # Manual only: CI runs DuckDB alone (conformance.yml) while the compiler is worked on.
   workflow_dispatch:
 
 env:

@@ -52,7 +52,15 @@ function R(r) {
   try {
     if (r.k === 'select') out = { ...r, pred: L(r.pred, true) };
     else if (r.k === 'join' && r.on) out = { ...r, on: L(r.on, true) };
-    else out = mapScalars(r, x => L(x, false));
+    // A value of two kinds is text, as DAX writes it (2000, not the engine's 2000.0): a column of
+    // one given a number or a date (a calculation group's level whose item is a number, beside one
+    // whose item is a text) holds it as text.
+    else if (r.k === 'project') {
+      out = { ...r, items: r.items.map(i => {
+        const e = L(i.expr, false);
+        return { ...i, expr: i.col.t === 'variant' && !['variant', 'string', 'blank'].includes(e.t) ? asText(e) : e };
+      }) };
+    } else out = mapScalars(r, x => L(x, false));
     if (lets?.length) out = hoist(r, out, lets);
   } finally { lets = outer; }
   return out.k === 'aggregate' ? aggregates(out) : out;
@@ -274,7 +282,14 @@ function op(x, pred) {
 }
 
 // DAX compares a blank as the other side's default (0, "", FALSE); a comparison is never blank.
+// The kinds of value DAX does not compare a text with (Power BI's names for them).
+const KIND = { string: 'Text', int: 'Integer', double: 'Number', decimal: 'Currency', datetime: 'Date', date: 'Date' };
 function compare(o, l, r, pred) {
+  // A text and a number or a date: DAX's error (a value of two kinds, or a blank, is compared as
+  // it is: its kind is known only row by row).
+  if ((l.t === 'string') !== (r.t === 'string') && KIND[l.t] && KIND[r.t]) {
+    throw semantic(`comparison operations do not support comparing values of type ${KIND[l.t]} with values of type ${KIND[r.t]}. Consider using the VALUE or FORMAT function to convert one of the values.`);
+  }
   const t = [l.t, r.t].find(y => y !== 'blank' && y !== 'variant') ?? 'int';
   if (l.nn && r.nn) return cond(o, [l, r]);
   const constant = (v, side) => (v.k === 'lit' && v.v !== null ? side : null);

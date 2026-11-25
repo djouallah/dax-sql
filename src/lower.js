@@ -132,7 +132,9 @@ export class Lowerer {
       case 'topn': {
         const b = this.open(this.table(x.src, scope));
         const s2 = withRow(scope, x.row, b.res);
-        const order = x.order.map(o => ({ expr: this.scalar(o.expr, s2, b), desc: o.desc, mode: 'dax' }));
+        // TOPN ranks a blank number as 0 (above a negative one), as Power BI does
+        // (edges/filters-topn-blank-ranks-against-negative); a blank text first ascending.
+        const order = x.order.map(o => { const expr = this.scalar(o.expr, s2, b); return { expr, desc: o.desc, mode: 'term', t: expr.t }; });
         b.qualify = { order, n: this.scalar(x.n, scope, b) };
         b.open = false;
         return b;

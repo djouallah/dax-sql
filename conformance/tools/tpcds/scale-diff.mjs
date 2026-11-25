@@ -58,6 +58,19 @@ for (const q of queries) {
   const od = only(cd, ca), oa = only(ca, cd);
   if (!od.length && !oa.length) { md.push('the same rows', ''); continue; }
   md.push('', `only DuckDB's (${od.length}):`, '```', ...od.slice(0, shown), '```', `only ${dialect}'s (${oa.length}):`, '```', ...oa.slice(0, shown), '```', '');
+  // The same groups' two rows: the longest prefix of columns (the keys) on which the rows one has
+  // and the other not are the same groups.
+  const P = od.map(JSON.parse), Q = oa.map(JSON.parse), n = P[0]?.length ?? 0;
+  const pre = (r, k) => JSON.stringify(r.slice(0, k));
+  let k = 0;
+  for (let j = n - 1; j > 0 && !k; j--) {
+    const a = new Set(P.map(r => pre(r, j))), b = new Set(Q.map(r => pre(r, j)));
+    if (a.size === P.length && a.size === b.size && [...a].every(x => b.has(x))) k = j;
+  }
+  if (k) {
+    const byKey = new Map(Q.map(r => [pre(r, k), r]));
+    md.push(`the same groups (keys: the first ${k} columns), DuckDB's | ${dialect}'s:`, '```', ...P.slice(0, shown).map(r => `${JSON.stringify(r.slice(k))} | ${JSON.stringify(byKey.get(pre(r, k)).slice(k))}   ${pre(r, k)}`), '```', '');
+  } else md.push('(not the same groups)', '');
 }
 const text = md.join('\n');
 console.log(text);

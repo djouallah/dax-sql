@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), two metrics: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t."date", AGG(t."Regional wind curtailed MWh") AS a, AGG(t."Regional wind available MWh") AS b FROM aac.fct_region AS t GROUP BY t."date"
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('fct_region'[date], "__rows", COUNTROWS(fct_region), "a", 'fct_region'[Regional wind curtailed MWh], "b", 'fct_region'[Regional wind available MWh]), "date", 'fct_region'[date], "a", [a], "b", [b])

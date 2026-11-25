@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), where total: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT AGG(t."Customers No Blank") AS v FROM "dax-conformance-edges".Sales AS t WHERE t."Line Number" BETWEEN 1 AND 1
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(ROW("v", 'Sales'[Customers No Blank]), (('Sales'[Line Number] >= 1) && ('Sales'[Line Number] <= 1))), "v", [v])

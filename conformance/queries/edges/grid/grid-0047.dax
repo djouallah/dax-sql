@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), having: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.StoreKey, AGG(t."Customers No Blank") AS v FROM "dax-conformance-edges".Sales AS t GROUP BY t.StoreKey HAVING AGG(t.Lines) > 0
+EVALUATE SELECTCOLUMNS(FILTER(SUMMARIZECOLUMNS('Sales'[StoreKey], "__rows", COUNTROWS(Sales), "v", 'Sales'[Customers No Blank]), ('Sales'[Lines] > 0)), "StoreKey", 'Sales'[StoreKey], "v", [v])

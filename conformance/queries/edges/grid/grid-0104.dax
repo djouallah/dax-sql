@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), derived table: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT s.Quantity, s.v FROM (SELECT t.Quantity, AGG(t."Customers No Blank") AS v FROM "dax-conformance-edges".Sales AS t GROUP BY t.Quantity) AS s WHERE s.v IS NOT NULL
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('Sales'[Quantity], "__rows", COUNTROWS(Sales), "v", 'Sales'[Customers No Blank]), "Quantity", 'Sales'[Quantity], "v", [v])

@@ -476,9 +476,12 @@ What says the SQL is right is the answers, not the SQL's text:
   its rows compared with Power BI's. A query that differs is on the engine's known list with
   its reason, a departure by design or a Power BI quirk not copied; one off the list fails the
   run, and so does one on it that matches.
-- **SQL over the datasets is held to Apache Ossie** (`ossie-query.yml`): its query compliance
-  cases, its wide table cases (Layer 3 JSON, and Layer 2), and a grid of about 2,500 queries each answered by Ossie's view
-  expander and by dax-sql on one DuckDB.
+- **SQL over the datasets is held to Power BI too**: Apache Ossie's query compliance cases, its
+  wide table cases that answer rows, and the view expander's grid of about 2,700 queries, each
+  as the DAX the SQL front end writes, are queries of the suite (models `scott`, `retail`,
+  `stores`; `conformance/tools/ossie/build.mjs`). Ossie's YAML is a model format dax-sql reads;
+  Power BI is the reference. The wide table cases that raise an error are held to Ossie's codes
+  (`ossie-query.yml`).
 - **Each commit is held to the speed of the one before** (`bench.mjs`, `perf.yml`).
 - **Unit tests** hold the SQL's shape, the errors, the parser, the T-SQL dialect's text and the
   SQL front end (`npm test`).
@@ -1038,7 +1041,7 @@ spec's reference strategy (Section 9), in DAX: the joined rows are a variable of
 `alias.column`), the groups their distinct values, and each measure a `CALCULATE` of it under
 `TREATAS` of its table's primary key, as the group's rows hold it. A table in a join needs a
 key: its dataset's `primary_key`. Apache Ossie's query compliance cases (`compliance/query`)
-run against this in `.github/workflows/ossie-query.yml`.
+are queries of the suite in this DAX (`queries/scott/ossie`), answered by Power BI.
 
 **In a statement of the engine's SQL** (`compileStatement`), a `SELECT` over the model is a
 relation: in parentheses, wherever the engine takes a subquery (a `WITH`'s query, `FROM`, an
@@ -1267,16 +1270,12 @@ In CI:
 - `perf.yml` (`conformance/engines/dax-sql/bench.mjs`): every query timed by the commit and by
   the one before, on one runner, the fastest of three rounds each: more than 10% slower in all,
   or a query 1.5 times as slow and 50 ms more, fails.
-- `ossie-query.yml` (Python and Ossie's main): Ossie SQL held to Ossie as DAX is to Power BI.
-  Ossie's query cases (`formats/test/ossie-query.mjs`), the wide table cases (`ossie-wide.mjs`:
-  each one's Layer 3 JSON through `formats/ossie-wide.js`, its rows or its error's code, and its
-  Layer 2 query where it gives one), and Ossie's view expander as an oracle (`ossie-expand.mjs`): a grid of
-  about 2,500 queries over SCOTT, Ossie's retail and stores, and every model in
-  `conformance/models` written as Ossie (totals, groups, `WHERE`, `HAVING`, `ROLLUP`, CTEs,
-  scalar operators over `AGG`, stars, fan-outs, chasm traps, snowflakes), each answered by the
-  expander's SQL and by dax-sql's on one DuckDB. Values come from the data, with a fixed seed.
-  A different answer fails the run; one that is only the blank row this package does not have
-  is counted apart. A release waits for it.
+- `ossie-query.yml` (Ossie's main): the wide table cases that raise an error, each one's Layer 3
+  JSON through `formats/ossie-wide.js`, must raise its code (`formats/test/ossie-wide.mjs`). A
+  release waits for it. Ossie's cases that answer rows, and the view expander's grid (totals,
+  groups, `WHERE`, `HAVING`, `ROLLUP`, CTEs, scalar operators over `AGG`, stars, fan-outs, chasm
+  traps, snowflakes over every model, values from the data with a fixed seed), are the suite's,
+  answered by Power BI (`conformance/tools/ossie/`).
 - `ossie.yml` (Ossie's main, every morning too): what `formats/ossie.js` writes for every model
   here passes Ossie's own validator (`validation/validate.py`), and Ossie's portability ladder
   (`compliance/portability`) comes back from dax-sql PORTABLE, every element, as its grader

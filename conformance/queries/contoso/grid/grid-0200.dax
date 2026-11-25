@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), ratio: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.ShipDate, CAST(AGG(t.Customers) AS DOUBLE) / NULLIF(AGG(t."Line Value Column"), 0) AS r FROM contoso.Sales AS t GROUP BY t.ShipDate
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('Sales'[ShipDate], "__rows", COUNTROWS(Sales), "r", IF(ISBLANK(COUNTROWS(Sales)), BLANK(), (CONVERT('Sales'[Customers], DOUBLE) / IF(('Sales'[Line Value Column] == 0), BLANK(), 'Sales'[Line Value Column])))), "ShipDate", 'Sales'[ShipDate], "r", [r])

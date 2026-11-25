@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), derived table: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT s.CurrencyCode, s.v FROM (SELECT t.CurrencyCode, AGG(t.Orders) AS v FROM "dax-sql-patterns".Sales AS t GROUP BY t.CurrencyCode) AS s WHERE s.v IS NOT NULL
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('Sales'[CurrencyCode], "__rows", COUNTROWS(Sales), "v", 'Sales'[Orders]), "CurrencyCode", 'Sales'[CurrencyCode], "v", [v])

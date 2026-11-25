@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), where total: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT AGG(t."Avg Price") AS v FROM contoso.Product AS t WHERE NOT (t.Color = 'Blue')
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(ROW("v", 'Product'[Avg Price]), NOT(('Product'[Color] = "Blue"))), "v", [v])

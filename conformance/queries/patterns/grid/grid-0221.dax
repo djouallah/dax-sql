@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), star two sides: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT o.Title, f."Line Number", AGG(f."Order Lines") AS v FROM "dax-sql-patterns".Sales AS f LEFT JOIN "dax-sql-patterns".Employee AS o ON f.EmployeeKey = o.EmployeeKey GROUP BY o.Title, f."Line Number"
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('Employee'[Title], 'Sales'[Line Number], "__rows", COUNTROWS(Sales), "v", 'Sales'[Order Lines]), "Title", 'Employee'[Title], "Line Number", 'Sales'[Line Number], "v", [v])

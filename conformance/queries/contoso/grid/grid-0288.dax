@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), scalar ops: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.City, AGG(t."Target Total") * 2 AS a, AGG(t."Target Total") + 1 AS b, COALESCE(AGG(t."Target Total"), 0) AS c FROM contoso.CityTarget AS t GROUP BY t.City
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('CityTarget'[City], "__rows", COUNTROWS(CityTarget), "a", ('CityTarget'[Target Total] * 2), "b", ('CityTarget'[Target Total] + 1), "c", IF(ISBLANK(COUNTROWS(CityTarget)), BLANK(), COALESCE('CityTarget'[Target Total], 0))), "City", 'CityTarget'[City], "a", [a], "b", [b], "c", [c])

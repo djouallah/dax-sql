@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), star where many: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT o.Name, AGG(f."Line Value Column") AS v FROM contoso.Sales AS f JOIN contoso.Product AS o ON f.ProductKey = o.ProductKey WHERE f.Amount IN (20, 60) GROUP BY o.Name
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Product'[Name], "__rows", COUNTROWS(Sales), "v", 'Sales'[Line Value Column]), ('Sales'[Amount] IN {20, 60}), NOT(ISBLANK('Product'[ProductKey]))), "Name", 'Product'[Name], "v", [v])

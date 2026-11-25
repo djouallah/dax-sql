@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), scalar ops: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.cs_bill_cdemo_sk, AGG(t."Catalog Net Profit") * 2 AS a, AGG(t."Catalog Net Profit") + 1 AS b, COALESCE(AGG(t."Catalog Net Profit"), 0) AS c FROM tpcds.catalog_sales AS t GROUP BY t.cs_bill_cdemo_sk
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('catalog_sales'[cs_bill_cdemo_sk], "__rows", COUNTROWS(catalog_sales), "a", ('catalog_sales'[Catalog Net Profit] * 2), "b", ('catalog_sales'[Catalog Net Profit] + 1), "c", IF(ISBLANK(COUNTROWS(catalog_sales)), BLANK(), COALESCE('catalog_sales'[Catalog Net Profit], 0))), "cs_bill_cdemo_sk", 'catalog_sales'[cs_bill_cdemo_sk], "a", [a], "b", [b], "c", [c])

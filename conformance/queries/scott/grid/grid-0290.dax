@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), total: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT AGG(sum_bonus) AS v FROM scott_model.bonus
+EVALUATE SELECTCOLUMNS(ROW("v", 'bonus'[sum_bonus]), "v", [v])

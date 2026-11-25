@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), star where one: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT o.YearMonth, AGG(f.Customers) AS v FROM "dax-conformance-edges".Sales AS f LEFT JOIN "dax-conformance-edges"."Date" AS o ON f."Order Date" = o."Date" WHERE o."Year" >= 2024 GROUP BY o.YearMonth
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Date'[YearMonth], "__rows", COUNTROWS(Sales), "v", 'Sales'[Customers]), ('Date'[Year] >= 2024)), "YearMonth", 'Date'[YearMonth], "v", [v])

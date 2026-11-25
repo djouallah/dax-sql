@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), where or: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.empno, AGG(t.sum_sal) AS v FROM scott_model.emp AS t WHERE t.sal BETWEEN 800 AND 1500 OR t.mgr <> 7788 GROUP BY t.empno
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('emp'[empno], "__rows", COUNTROWS(emp), "v", 'emp'[sum_sal]), ((('emp'[sal] >= 800) && ('emp'[sal] <= 1500)) || ('emp'[mgr] <> 7788))), "empno", 'emp'[empno], "v", [v])

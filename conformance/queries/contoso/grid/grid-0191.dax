@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), where or: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.ShipDate, AGG(t.Quantity) AS v FROM contoso.Sales AS t WHERE NOT (t.CustomerKey = 1) OR t.Qty IS NOT NULL GROUP BY t.ShipDate
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Sales'[ShipDate], "__rows", COUNTROWS(Sales), "v", 'Sales'[Quantity]), (NOT(('Sales'[CustomerKey] = 1)) || NOT(ISBLANK('Sales'[Qty])))), "ShipDate", 'Sales'[ShipDate], "v", [v])

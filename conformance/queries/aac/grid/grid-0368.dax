@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), group by all: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t."time", AGG(t."Regional wind curtailed MWh") AS v FROM aac.fct_region AS t GROUP BY ALL
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('fct_region'[time], "__rows", COUNTROWS(fct_region), "v", 'fct_region'[Regional wind curtailed MWh]), "time", 'fct_region'[time], "v", [v])

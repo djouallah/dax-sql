@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), where total: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT AGG(t."Total Quantity") AS v FROM "dax-sql-patterns".Sales AS t WHERE t."Delivery Date" < DATE '2024-06-10'
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(ROW("v", 'Sales'[Total Quantity]), ('Sales'[Delivery Date] < DATE(2024, 6, 10))), "v", [v])

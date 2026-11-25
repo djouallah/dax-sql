@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), cte: its SQL as dax-sql's SQL front end writes it in DAX:
+// WITH s AS (SELECT ss_store_sk, "Store Revenue" AS mm FROM tpcds.store_sales WHERE ss_ext_list_price = 996.5) SELECT ss_store_sk, AGG(mm) AS v FROM s GROUP BY ss_store_sk
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('store_sales'[ss_store_sk], "__rows", COUNTROWS(store_sales), "v", 'store_sales'[Store Revenue]), ('store_sales'[ss_ext_list_price] = 996.5)), "ss_store_sk", 'store_sales'[ss_store_sk], "v", [v])

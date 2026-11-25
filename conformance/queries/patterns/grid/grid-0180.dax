@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), star where many: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT o.City, AGG(f."Total Cost") AS v FROM "dax-sql-patterns".Sales AS f JOIN "dax-sql-patterns".Customer AS o ON f.CustomerKey = o.CustomerKey WHERE f.Quantity IS NOT NULL GROUP BY o.City
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Customer'[City], "__rows", COUNTROWS(Sales), "v", 'Sales'[Total Cost]), NOT(ISBLANK('Sales'[Quantity])), NOT(ISBLANK('Customer'[CustomerKey]))), "City", 'Customer'[City], "v", [v])

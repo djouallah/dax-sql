@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), scalar ops: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.customer_id, AGG(t.total_sales) * 2 AS a, AGG(t.total_sales) + 1 AS b, COALESCE(AGG(t.total_sales), 0) AS c FROM stores_model.store_sales AS t GROUP BY t.customer_id
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('store_sales'[customer_id], "__rows", COUNTROWS(store_sales), "a", ('store_sales'[total_sales] * 2), "b", ('store_sales'[total_sales] + 1), "c", IF(ISBLANK(COUNTROWS(store_sales)), BLANK(), COALESCE('store_sales'[total_sales], 0))), "customer_id", 'store_sales'[customer_id], "a", [a], "b", [b], "c", [c])

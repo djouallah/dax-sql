@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), cte: its SQL as dax-sql's SQL front end writes it in DAX:
+// WITH s AS (SELECT EmployeeKey, "Customer Distinct Products" AS mm FROM "dax-sql-patterns".Sales WHERE "Unit Cost" >= 22.98) SELECT EmployeeKey, AGG(mm) AS v FROM s GROUP BY EmployeeKey
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Sales'[EmployeeKey], "__rows", COUNTROWS(Sales), "v", 'Sales'[Customer Distinct Products]), ('Sales'[Unit Cost] >= 22.98)), "EmployeeKey", 'Sales'[EmployeeKey], "v", [v])

@@ -1,0 +1,6 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), star two sides: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT o.comm, f.sal, AGG(f.sum_sal) AS v FROM scott_model.emp AS f LEFT JOIN scott_model.emp AS o ON f.mgr = o.empno GROUP BY o.comm, f.sal
+DEFINE
+VAR __v1 = GENERATEALL(SELECTCOLUMNS(emp, "f.empno", 'emp'[empno], "f.sal", 'emp'[sal], "f.mgr", 'emp'[mgr]), FILTER(SELECTCOLUMNS(emp, "o.empno", 'emp'[empno], "o.comm", 'emp'[comm]), ([f.mgr] = [o.empno])))
+VAR __v2 = DISTINCT(SELECTCOLUMNS(__v1, "comm", [o.comm], "sal", [f.sal]))
+EVALUATE SELECTCOLUMNS(ADDCOLUMNS(__v2, "__m1", CALCULATE('emp'[sum_sal], REMOVEFILTERS(), TREATAS(SELECTCOLUMNS(FILTER(__v1, ((NOT(ISBLANK([f.empno])) && ([o.comm] == [comm])) && ([f.sal] == [sal]))), "__k1", [f.empno]), 'emp'[empno]))), "comm", [comm], "sal", [sal], "v", [__m1])

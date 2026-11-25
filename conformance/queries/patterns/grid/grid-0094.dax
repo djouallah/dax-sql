@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), where and: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t."Line Number", AGG(t."Customer Distinct Products") AS v FROM "dax-sql-patterns".Sales AS t WHERE t."Delivery Date" = DATE '2024-06-27' AND t."Order Number" < 132 GROUP BY t."Line Number"
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Sales'[Line Number], "__rows", COUNTROWS(Sales), "v", 'Sales'[Customer Distinct Products]), ('Sales'[Delivery Date] = DATE(2024, 6, 27)), ('Sales'[Order Number] < 132)), "Line Number", 'Sales'[Line Number], "v", [v])

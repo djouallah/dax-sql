@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), total: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT AGG("Avg Order Value") AS v FROM "dax-sql-patterns".Sales
+EVALUATE SELECTCOLUMNS(ROW("v", 'Sales'[Avg Order Value]), "v", [v])

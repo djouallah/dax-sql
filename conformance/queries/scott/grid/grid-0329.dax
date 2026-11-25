@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), ratio: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.comm, CAST(AGG(t.sum_bonus) AS DOUBLE) / NULLIF(AGG(t.bonus_count), 0) AS r FROM scott_model.bonus AS t GROUP BY t.comm
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('bonus'[comm], "__rows", COUNTROWS(bonus), "r", IF(ISBLANK(COUNTROWS(bonus)), BLANK(), (CONVERT('bonus'[sum_bonus], DOUBLE) / IF((COALESCE('bonus'[bonus_count], 0) == 0), BLANK(), COALESCE('bonus'[bonus_count], 0))))), "comm", 'bonus'[comm], "r", [r])

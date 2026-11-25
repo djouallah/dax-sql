@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), one to many: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT o.DUID, AGG(o."Registered units") AS a, AGG(f."Average MWh a day") AS b FROM aac.dim_duid AS o LEFT JOIN aac.fct_summary_daily AS f ON f.DUID = o.DUID GROUP BY o.DUID
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('dim_duid'[DUID], "__rows", COUNTROWS(dim_duid), "a", 'dim_duid'[Registered units], "b", CALCULATE('fct_summary_daily'[Average MWh a day], KEEPFILTERS(NOT(ISBLANK('dim_duid'[DUID]))))), "DUID", 'dim_duid'[DUID], "a", [a], "b", [b])

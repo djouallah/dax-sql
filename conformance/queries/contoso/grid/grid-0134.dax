@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), one side counted once: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT o.Color, AGG(f.Returned) AS a, AGG(o."Product Count") AS b FROM contoso.Returns AS f LEFT JOIN contoso.Product AS o ON f.ProductKey = o.ProductKey GROUP BY o.Color
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('Product'[Color], "__rows", COUNTROWS(Returns), "a", 'Returns'[Returned], "b", CALCULATE('Product'[Product Count], Returns)), "Color", 'Product'[Color], "a", [a], "b", [b])

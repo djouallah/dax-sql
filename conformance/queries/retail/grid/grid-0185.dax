@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), having null: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.return_id, AGG(t.total_returns) AS v FROM retail_model.returns AS t GROUP BY t.return_id HAVING AGG(t.total_returns) IS NOT NULL
+EVALUATE SELECTCOLUMNS(FILTER(SUMMARIZECOLUMNS('returns'[return_id], "__rows", COUNTROWS(returns), "v", 'returns'[total_returns]), NOT(ISBLANK([v]))), "return_id", 'returns'[return_id], "v", [v])

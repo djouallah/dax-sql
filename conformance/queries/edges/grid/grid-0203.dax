@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), star total: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT AGG(f."Total Cost") AS v FROM "dax-conformance-edges".Sales AS f LEFT JOIN "dax-conformance-edges".Store AS o ON f.StoreKey = o.StoreKey
+EVALUATE SELECTCOLUMNS(ROW("v", 'Sales'[Total Cost]), "v", [v])

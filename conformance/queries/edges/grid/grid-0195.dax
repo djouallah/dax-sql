@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), star where one: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT o.CountryKey, AGG(f."Total Cost") AS v FROM "dax-conformance-edges".Sales AS f JOIN "dax-conformance-edges".Store AS o ON f.StoreKey = o.StoreKey WHERE o.CountryKey >= 5 GROUP BY o.CountryKey
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Store'[CountryKey], "__rows", COUNTROWS(Sales), "v", 'Sales'[Total Cost]), ('Store'[CountryKey] >= 5), NOT(ISBLANK('Store'[StoreKey]))), "CountryKey", 'Store'[CountryKey], "v", [v])

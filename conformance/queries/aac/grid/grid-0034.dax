@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), where and: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.FuelSourceDescriptor, AGG(t."Registered units") AS v FROM aac.dim_duid AS t WHERE t.CO2eFactor IS NOT NULL AND NOT (t.Plant = 'White Rock Solar Farm') GROUP BY t.FuelSourceDescriptor
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('dim_duid'[FuelSourceDescriptor], "__rows", COUNTROWS(dim_duid), "v", 'dim_duid'[Registered units]), NOT(ISBLANK('dim_duid'[CO2eFactor])), NOT(('dim_duid'[Plant] = "White Rock Solar Farm"))), "FuelSourceDescriptor", 'dim_duid'[FuelSourceDescriptor], "v", [v])

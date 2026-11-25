@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), star where many: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT o.deptno, AGG(f.sum_bonus) AS v FROM scott_model.bonus AS f LEFT JOIN scott_model.emp AS o ON f.ename = o.ename WHERE f.sal >= 5000 GROUP BY o.deptno
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('emp'[deptno], "__rows", COUNTROWS(bonus), "v", 'bonus'[sum_bonus]), ('bonus'[sal] >= 5000)), "deptno", 'emp'[deptno], "v", [v])

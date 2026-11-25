@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), star where one: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT o."Square Meters", AGG(f.Customers) AS v FROM "dax-conformance-edges".Sales AS f LEFT JOIN "dax-conformance-edges".Store AS o ON f.StoreKey = o.StoreKey WHERE NOT (o.Store = 'Tōkyō Ginza') GROUP BY o."Square Meters"
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Store'[Square Meters], "__rows", COUNTROWS(Sales), "v", 'Sales'[Customers]), NOT(('Store'[Store] = "Tōkyō Ginza"))), "Square Meters", 'Store'[Square Meters], "v", [v])

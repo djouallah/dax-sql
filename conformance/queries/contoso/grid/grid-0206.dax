@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), star two sides: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT o.Customer, f.ShipDate, AGG(f."Sales Amount") AS v FROM contoso.Sales AS f JOIN contoso.Customer AS o ON f.CustomerKey = o.CustomerKey GROUP BY o.Customer, f.ShipDate
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Customer'[Customer], 'Sales'[ShipDate], "__rows", COUNTROWS(Sales), "v", 'Sales'[Sales Amount]), NOT(ISBLANK('Customer'[CustomerKey]))), "Customer", 'Customer'[Customer], "ShipDate", 'Sales'[ShipDate], "v", [v])

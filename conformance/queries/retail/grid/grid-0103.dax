@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), where total: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT AGG(t.total_revenue) AS v FROM retail_model.orders AS t WHERE t.amount >= 50
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(ROW("v", 'orders'[total_revenue]), ('orders'[amount] >= 50)), "v", [v])

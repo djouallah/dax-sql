@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), star where many: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT o.Color, AGG(f.Returned) AS v FROM contoso.Returns AS f LEFT JOIN contoso.Product AS o ON f.ProductKey = o.ProductKey WHERE NOT (f.ReturnQty = 1) GROUP BY o.Color
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Product'[Color], "__rows", COUNTROWS(Returns), "v", 'Returns'[Returned]), NOT(('Returns'[ReturnQty] = 1))), "Color", 'Product'[Color], "v", [v])

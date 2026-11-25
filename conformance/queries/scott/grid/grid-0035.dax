@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), where or: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.comm, AGG(t.avg_sal) AS v FROM scott_model.emp AS t WHERE t.comm IS NOT NULL OR NOT (t.empno = 7839) GROUP BY t.comm
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('emp'[comm], "__rows", COUNTROWS(emp), "v", 'emp'[avg_sal]), (NOT(ISBLANK('emp'[comm])) || NOT(('emp'[empno] = 7839)))), "comm", 'emp'[comm], "v", [v])

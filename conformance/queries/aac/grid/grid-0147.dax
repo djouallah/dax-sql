@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), where total: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT AGG(t."Registered MW") AS v FROM aac.dim_duid AS t WHERE NOT (t.longitude = 138.5283)
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(ROW("v", 'dim_duid'[Registered MW]), NOT(('dim_duid'[longitude] = 138.5283))), "v", [v])

@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), two metrics: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t."Line Number", AGG(t.Lines) AS a, AGG(t.Customers) AS b FROM "dax-conformance-edges".Sales AS t GROUP BY t."Line Number"
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('Sales'[Line Number], "__rows", COUNTROWS(Sales), "a", 'Sales'[Lines], "b", 'Sales'[Customers]), "Line Number", 'Sales'[Line Number], "a", [a], "b", [b])

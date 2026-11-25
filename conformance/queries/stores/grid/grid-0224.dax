@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), fan-out: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT f.store_id, AGG(o.customer_count) AS v FROM stores_model.store_sales AS f LEFT JOIN stores_model.customers AS o ON f.customer_id = o.customer_id GROUP BY f.store_id
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('store_sales'[store_id], "__rows", COUNTROWS(store_sales), "v", CALCULATE('customers'[customer_count], store_sales)), "store_id", 'store_sales'[store_id], "v", COALESCE([v], 0))

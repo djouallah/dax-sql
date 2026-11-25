@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), where total: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT AGG(t."Store Revenue") AS v FROM tpcds.store_sales AS t WHERE t.ss_list_price BETWEEN 1.49 AND 113.38
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(ROW("v", 'store_sales'[Store Revenue]), (('store_sales'[ss_list_price] >= 1.49) && ('store_sales'[ss_list_price] <= 113.38))), "v", [v])

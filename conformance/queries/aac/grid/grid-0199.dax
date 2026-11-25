@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), where and: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t."time", AGG(t."Price seen") AS v FROM aac.fct_summary AS t WHERE NOT (t.DUID = 'QLDLOAD1') AND t.mw BETWEEN -147.42 AND 614.744 GROUP BY t."time"
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('fct_summary'[time], "__rows", COUNTROWS(fct_summary), "v", 'fct_summary'[Price seen]), NOT(('fct_summary'[DUID] = "QLDLOAD1")), (('fct_summary'[mw] >= (-147.42)) && ('fct_summary'[mw] <= 614.744))), "time", 'fct_summary'[time], "v", [v])

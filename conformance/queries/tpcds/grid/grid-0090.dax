@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), ratio: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.ss_store_sk, CAST(AGG(t."Store Distinct Customers") AS DOUBLE) / NULLIF(AGG(t."Store Net Profit"), 0) AS r FROM tpcds.store_sales AS t GROUP BY t.ss_store_sk
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('store_sales'[ss_store_sk], "__rows", COUNTROWS(store_sales), "r", IF(ISBLANK(COUNTROWS(store_sales)), BLANK(), (CONVERT('store_sales'[Store Distinct Customers], DOUBLE) / IF(('store_sales'[Store Net Profit] == 0), BLANK(), 'store_sales'[Store Net Profit])))), "ss_store_sk", 'store_sales'[ss_store_sk], "r", [r])

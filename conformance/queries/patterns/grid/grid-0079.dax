@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), where or: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.EmployeeKey, AGG(t.Customers) AS v FROM "dax-sql-patterns".Sales AS t WHERE t.ProductKey <> 16 OR t.ProductKey = 37 GROUP BY t.EmployeeKey
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Sales'[EmployeeKey], "__rows", COUNTROWS(Sales), "v", 'Sales'[Customers]), (('Sales'[ProductKey] <> 16) || ('Sales'[ProductKey] = 37))), "EmployeeKey", 'Sales'[EmployeeKey], "v", [v])

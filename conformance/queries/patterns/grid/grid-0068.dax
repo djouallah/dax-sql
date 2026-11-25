@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), order by measure: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.CurrencyCode, AGG(t.Orders) AS v FROM "dax-sql-patterns".Sales AS t GROUP BY t.CurrencyCode ORDER BY v DESC NULLS LAST, t.CurrencyCode NULLS FIRST
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('Sales'[CurrencyCode], "__rows", COUNTROWS(Sales), "v", 'Sales'[Orders]), "CurrencyCode", 'Sales'[CurrencyCode], "v", [v]) ORDER BY [v] DESC, [CurrencyCode]

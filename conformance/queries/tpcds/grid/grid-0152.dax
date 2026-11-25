@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), where and: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.cs_catalog_page_sk, AGG(t."Catalog Sales Quantity") AS v FROM tpcds.catalog_sales AS t WHERE t.cs_catalog_page_sk <> 3 AND t.cs_promo_sk IS NOT NULL GROUP BY t.cs_catalog_page_sk
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('catalog_sales'[cs_catalog_page_sk], "__rows", COUNTROWS(catalog_sales), "v", 'catalog_sales'[Catalog Sales Quantity]), ('catalog_sales'[cs_catalog_page_sk] <> 3), NOT(ISBLANK('catalog_sales'[cs_promo_sk]))), "cs_catalog_page_sk", 'catalog_sales'[cs_catalog_page_sk], "v", [v])

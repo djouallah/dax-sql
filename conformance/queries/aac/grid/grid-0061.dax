@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), where: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.Storage, AGG(t."Registered MW") AS v FROM aac.dim_duid AS t WHERE t.State <> 'Tasmania' GROUP BY t.Storage
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('dim_duid'[Storage], "__rows", COUNTROWS(dim_duid), "v", 'dim_duid'[Registered MW]), ('dim_duid'[State] <> "Tasmania")), "Storage", 'dim_duid'[Storage], "v", [v])

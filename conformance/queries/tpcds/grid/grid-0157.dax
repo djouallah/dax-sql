@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), order limit: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.cs_bill_cdemo_sk, AGG(t."Catalog Revenue") AS v FROM tpcds.catalog_sales AS t GROUP BY t.cs_bill_cdemo_sk ORDER BY t.cs_bill_cdemo_sk NULLS FIRST LIMIT 3
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('catalog_sales'[cs_bill_cdemo_sk], "__rows", COUNTROWS(catalog_sales), "v", 'catalog_sales'[Catalog Revenue]), "cs_bill_cdemo_sk", 'catalog_sales'[cs_bill_cdemo_sk], "v", [v]) ORDER BY [cs_bill_cdemo_sk]

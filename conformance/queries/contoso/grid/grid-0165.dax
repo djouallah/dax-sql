@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), two groups: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.CustomerKey, t.Qty, AGG(t.Orders) AS v FROM contoso.Sales AS t GROUP BY t.CustomerKey, t.Qty
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('Sales'[CustomerKey], 'Sales'[Qty], "__rows", COUNTROWS(Sales), "v", 'Sales'[Orders]), "CustomerKey", 'Sales'[CustomerKey], "Qty", 'Sales'[Qty], "v", [v])

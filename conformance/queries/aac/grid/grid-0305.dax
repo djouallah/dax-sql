@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), two groups: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.REGIONID, t."date", AGG(t."Regional wind available MWh") AS v FROM aac.fct_region AS t GROUP BY t.REGIONID, t."date"
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('fct_region'[REGIONID], 'fct_region'[date], "__rows", COUNTROWS(fct_region), "v", 'fct_region'[Regional wind available MWh]), "REGIONID", 'fct_region'[REGIONID], "date", 'fct_region'[date], "v", [v])

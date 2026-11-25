@@ -1,0 +1,5 @@
+"order_id","customer_id","amount"
+"O1","C1",100
+"O2","C1",200
+"O3","C2",50
+"O4","C3",300

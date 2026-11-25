@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), ratio: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t."date", CAST(AGG(t."Regional solar curtailed MWh") AS DOUBLE) / NULLIF(AGG(t."Regional wind available MWh"), 0) AS r FROM aac.fct_region AS t GROUP BY t."date"
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('fct_region'[date], "__rows", COUNTROWS(fct_region), "r", IF(ISBLANK(COUNTROWS(fct_region)), BLANK(), (CONVERT('fct_region'[Regional solar curtailed MWh], DOUBLE) / IF(('fct_region'[Regional wind available MWh] == 0), BLANK(), 'fct_region'[Regional wind available MWh])))), "date", 'fct_region'[date], "r", [r])

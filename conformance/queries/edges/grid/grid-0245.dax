@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), star where one: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT o."Day Name", AGG(f."Target Amount") AS v FROM "dax-conformance-edges".Target AS f LEFT JOIN "dax-conformance-edges"."Date" AS o ON f."Date" = o."Date" WHERE o."Month Name" <> 'November' GROUP BY o."Day Name"
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Date'[Day Name], "__rows", COUNTROWS(Target), "v", 'Target'[Target Amount]), ('Date'[Month Name] <> "November")), "Day Name", 'Date'[Day Name], "v", [v])

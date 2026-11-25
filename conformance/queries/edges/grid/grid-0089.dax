@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), two metrics: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.Quantity, AGG(t."Sales Amount") AS a, AGG(t."Total Cost") AS b FROM "dax-conformance-edges".Sales AS t GROUP BY t.Quantity
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('Sales'[Quantity], "__rows", COUNTROWS(Sales), "a", 'Sales'[Sales Amount], "b", 'Sales'[Total Cost]), "Quantity", 'Sales'[Quantity], "a", [a], "b", [b])

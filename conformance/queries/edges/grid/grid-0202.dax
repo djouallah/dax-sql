@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), star two sides: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT o."Square Meters", f.ProductKey, AGG(f."Total Quantity") AS v FROM "dax-conformance-edges".Sales AS f LEFT JOIN "dax-conformance-edges".Store AS o ON f.StoreKey = o.StoreKey GROUP BY o."Square Meters", f.ProductKey
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('Store'[Square Meters], 'Sales'[ProductKey], "__rows", COUNTROWS(Sales), "v", 'Sales'[Total Quantity]), "Square Meters", 'Store'[Square Meters], "ProductKey", 'Sales'[ProductKey], "v", [v])

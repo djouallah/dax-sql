@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), cte: its SQL as dax-sql's SQL front end writes it in DAX:
+// WITH s AS (SELECT "Line Number", "Total Cost" AS mm FROM "dax-sql-patterns".Sales WHERE CurrencyCode IN ('EUR', 'USD')) SELECT "Line Number", AGG(mm) AS v FROM s GROUP BY "Line Number"
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Sales'[Line Number], "__rows", COUNTROWS(Sales), "v", 'Sales'[Total Cost]), ('Sales'[CurrencyCode] IN {"EUR", "USD"})), "Line Number", 'Sales'[Line Number], "v", [v])

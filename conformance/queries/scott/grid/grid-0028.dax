@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), snowflake: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT c.dname, AGG(f.sum_age) AS v FROM scott_model.pet AS f JOIN scott_model.emp AS b ON f.empno = b.empno JOIN scott_model.dept AS c ON b.deptno = c.deptno GROUP BY c.dname
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('dept'[dname], "__rows", COUNTROWS(pet), "v", 'pet'[sum_age]), NOT(ISBLANK('emp'[empno])), NOT(ISBLANK('dept'[deptno]))), "dname", 'dept'[dname], "v", [v])

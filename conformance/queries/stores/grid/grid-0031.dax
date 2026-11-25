@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), cte: its SQL as dax-sql's SQL front end writes it in DAX:
+// WITH s AS (SELECT region, customer_count AS mm FROM stores_model.customers WHERE NOT (customer_id = 'C3')) SELECT region, AGG(mm) AS v FROM s GROUP BY region
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('customers'[region], "__rows", COUNTROWS(customers), "v", 'customers'[customer_count]), NOT(('customers'[customer_id] = "C3"))), "region", 'customers'[region], "v", COALESCE([v], 0))

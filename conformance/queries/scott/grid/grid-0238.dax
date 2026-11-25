@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), one to many: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT o.job, AGG(o.emp_count) AS a, AGG(f.sum_age) AS b FROM scott_model.emp AS o LEFT JOIN scott_model.pet AS f ON f.empno = o.empno GROUP BY o.job
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('emp'[job], "__rows", COUNTROWS(emp), "a", 'emp'[emp_count], "b", CALCULATE('pet'[sum_age], KEEPFILTERS(NOT(ISBLANK('emp'[empno]))))), "job", 'emp'[job], "a", COALESCE([a], 0), "b", [b])

@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), where: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.empno, AGG(t.pet_count) AS v FROM scott_model.pet AS t WHERE t.age < 3 GROUP BY t.empno
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('pet'[empno], "__rows", COUNTROWS(pet), "v", 'pet'[pet_count]), ('pet'[age] < 3)), "empno", 'pet'[empno], "v", COALESCE([v], 0))

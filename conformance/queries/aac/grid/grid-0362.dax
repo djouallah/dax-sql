@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), where or: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t."date", AGG(t."Regional solar curtailed MWh") AS v FROM aac.fct_region AS t WHERE t."time" <> 1200 OR t.net_interchange BETWEEN -797.78 AND -189.49 GROUP BY t."date"
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('fct_region'[date], "__rows", COUNTROWS(fct_region), "v", 'fct_region'[Regional solar curtailed MWh]), (('fct_region'[time] <> 1200) || (('fct_region'[net_interchange] >= (-797.78)) && ('fct_region'[net_interchange] <= (-189.49))))), "date", 'fct_region'[date], "v", [v])

@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), star where many: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT o.Weekday, AGG(f."Target Amount") AS v FROM "dax-conformance-edges".Target AS f LEFT JOIN "dax-conformance-edges"."Date" AS o ON f."Date" = o."Date" WHERE f.Target = 523.6093 GROUP BY o.Weekday
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Date'[Weekday], "__rows", COUNTROWS(Target), "v", 'Target'[Target Amount]), ('Target'[Target] = 523.6093)), "Weekday", 'Date'[Weekday], "v", [v])

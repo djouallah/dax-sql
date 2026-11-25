@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), star total: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT AGG(f.total_returns) AS v FROM stores_model.store_returns AS f LEFT JOIN stores_model.date_dim AS o ON f.return_date_id = o.date_id
+EVALUATE SELECTCOLUMNS(ROW("v", 'store_returns'[total_returns]), "v", [v])

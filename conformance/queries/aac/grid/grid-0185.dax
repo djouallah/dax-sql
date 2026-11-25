@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), star: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT o.Region, AGG(f."Registered units") AS v FROM aac.dim_duid AS f LEFT JOIN aac.dim_region AS o ON f.Region = o.Region GROUP BY o.Region
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('dim_region'[Region], "__rows", COUNTROWS(dim_duid), "v", 'dim_duid'[Registered units]), "Region", 'dim_region'[Region], "v", [v])

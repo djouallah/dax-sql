@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), group: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.ReturnQty, AGG(t.Returned) AS v FROM contoso.Returns AS t GROUP BY t.ReturnQty
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('Returns'[ReturnQty], "__rows", COUNTROWS(Returns), "v", 'Returns'[Returned]), "ReturnQty", 'Returns'[ReturnQty], "v", [v])

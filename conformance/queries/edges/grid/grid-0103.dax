@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), cte: its SQL as dax-sql's SQL front end writes it in DAX:
+// WITH s AS (SELECT Quantity, "Total Quantity" AS mm FROM "dax-conformance-edges".Sales WHERE Promo <> TRUE) SELECT Quantity, AGG(mm) AS v FROM s GROUP BY Quantity
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Sales'[Quantity], "__rows", COUNTROWS(Sales), "v", 'Sales'[Total Quantity]), ('Sales'[Promo] <> TRUE())), "Quantity", 'Sales'[Quantity], "v", [v])

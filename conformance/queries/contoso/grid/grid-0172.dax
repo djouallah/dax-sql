@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), order limit: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.ShipDate, AGG(t."Sales Amount") AS v FROM contoso.Sales AS t GROUP BY t.ShipDate ORDER BY t.ShipDate NULLS FIRST LIMIT 3
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('Sales'[ShipDate], "__rows", COUNTROWS(Sales), "v", 'Sales'[Sales Amount]), "ShipDate", 'Sales'[ShipDate], "v", [v]) ORDER BY [ShipDate]

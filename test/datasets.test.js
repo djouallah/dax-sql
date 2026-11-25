@@ -3,9 +3,9 @@
 // compares as 0 or "", IN matches a blank with a blank only). Each query here is checked against
 // plain SQL over the same tables, written by hand as spec Section 9 says it means; where a blank
 // makes DAX's answer differ from SQL's, `differs` checks DAX's (the blanks written out in the SQL)
-// and that SQL's is another. CI checks far more against Ossie's view expander
-// (formats/test/ossie-expand.mjs); these are the cases it found, kept here so that `npm test`
-// holds them without Python or an Ossie checkout:
+// and that SQL's is another. The suite holds far more against Power BI (the view expander's grid,
+// conformance/tools/ossie/); these are cases it found, kept here so that `npm test` holds them
+// without Power BI:
 //   - where dax-sql differs from SQL: a blank compared, added, in IN, LIKE and ||; NULLIF; WHERE FALSE;
 //   - a COUNT metric is 0 over no rows inside an expression and in HAVING, NULLIF(COUNT(..), 0)
 //     is not, and an expression makes no group of its own;

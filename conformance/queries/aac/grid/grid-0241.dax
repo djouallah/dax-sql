@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), star where many: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT o.Region, AGG(f."Storage MWh") AS v FROM aac.dim_duid AS f JOIN aac.dim_region AS o ON f.Region = o.Region WHERE NOT (f.latitude = -32.3714) GROUP BY o.Region
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('dim_region'[Region], "__rows", COUNTROWS(dim_duid), "v", 'dim_duid'[Storage MWh]), NOT(('dim_duid'[latitude] = (-32.3714))), NOT(ISBLANK('dim_region'[Region]))), "Region", 'dim_region'[Region], "v", [v])

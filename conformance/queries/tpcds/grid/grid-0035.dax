@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), having null: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.ss_cdemo_sk, AGG(t."Store Net Profit") AS v FROM tpcds.store_sales AS t GROUP BY t.ss_cdemo_sk HAVING AGG(t."Store Net Profit") IS NOT NULL
+EVALUATE SELECTCOLUMNS(FILTER(SUMMARIZECOLUMNS('store_sales'[ss_cdemo_sk], "__rows", COUNTROWS(store_sales), "v", 'store_sales'[Store Net Profit]), NOT(ISBLANK([v]))), "ss_cdemo_sk", 'store_sales'[ss_cdemo_sk], "v", [v])

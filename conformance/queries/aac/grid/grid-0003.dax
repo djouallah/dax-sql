@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), two metrics: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.Participant, AGG(t."Storage MWh") AS a, AGG(t."Storage MWh") AS b FROM aac.dim_duid AS t GROUP BY t.Participant
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('dim_duid'[Participant], "__rows", COUNTROWS(dim_duid), "a", 'dim_duid'[Storage MWh], "b", 'dim_duid'[Storage MWh]), "Participant", 'dim_duid'[Participant], "a", [a], "b", [b])

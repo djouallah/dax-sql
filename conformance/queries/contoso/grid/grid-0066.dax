@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), having null: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.ProductKey, AGG(t."Product Count") AS v FROM contoso.Product AS t GROUP BY t.ProductKey HAVING AGG(t."Product Count") IS NOT NULL
+EVALUATE SELECTCOLUMNS(FILTER(SUMMARIZECOLUMNS('Product'[ProductKey], "__rows", COUNTROWS(Product), "v", 'Product'[Product Count]), NOT(ISBLANK([v]))), "ProductKey", 'Product'[ProductKey], "v", [v])

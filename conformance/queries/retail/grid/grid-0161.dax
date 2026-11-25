@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), cte: its SQL as dax-sql's SQL front end writes it in DAX:
+// WITH s AS (SELECT amount, return_count AS mm FROM retail_model.returns WHERE amount IN (10, 10)) SELECT amount, AGG(mm) AS v FROM s GROUP BY amount
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('returns'[amount], "__rows", COUNTROWS(returns), "v", 'returns'[return_count]), ('returns'[amount] IN {10, 10})), "amount", 'returns'[amount], "v", COALESCE([v], 0))

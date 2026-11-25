@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), order by measure: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.hisal, AGG(t.grade_count) AS v FROM scott_model.salgrade AS t GROUP BY t.hisal ORDER BY v DESC NULLS LAST, t.hisal NULLS FIRST
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('salgrade'[hisal], "__rows", COUNTROWS(salgrade), "v", 'salgrade'[grade_count]), "hisal", 'salgrade'[hisal], "v", COALESCE([v], 0)) ORDER BY [v] DESC, [hisal]

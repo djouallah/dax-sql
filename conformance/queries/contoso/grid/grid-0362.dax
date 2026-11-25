@@ -1,0 +1,6 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), star total: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT AGG(f."Target Total") AS v FROM contoso.CityTarget AS f LEFT JOIN contoso.Customer AS o ON f.City = o.City
+DEFINE
+VAR __v1 = GENERATEALL(SELECTCOLUMNS(CityTarget, "f.City", 'CityTarget'[City], "f.Target", 'CityTarget'[Target]), FILTER(SELECTCOLUMNS(Customer, "o.CustomerKey", 'Customer'[CustomerKey], "o.City", 'Customer'[City]), ([f.City] = [o.City])))
+VAR __v2 = ROW("__all", 1)
+EVALUATE SELECTCOLUMNS(ADDCOLUMNS(__v2, "__m1", CALCULATE('CityTarget'[Target Total], REMOVEFILTERS(), TREATAS(SELECTCOLUMNS(FILTER(__v1, NOT((ISBLANK([f.City]) && ISBLANK([f.Target])))), "__k1", [f.City], "__k2", [f.Target]), 'CityTarget'[City], 'CityTarget'[Target]))), "v", [__m1])

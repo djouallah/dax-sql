@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), having null: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.row_count, AGG(t."Archive Files") AS v FROM tpcds.stg_tpcds_archive_log AS t GROUP BY t.row_count HAVING AGG(t."Archive Files") IS NOT NULL
+EVALUATE SELECTCOLUMNS(FILTER(SUMMARIZECOLUMNS('stg_tpcds_archive_log'[row_count], "__rows", COUNTROWS(stg_tpcds_archive_log), "v", 'stg_tpcds_archive_log'[Archive Files]), NOT(ISBLANK([v]))), "row_count", 'stg_tpcds_archive_log'[row_count], "v", [v])

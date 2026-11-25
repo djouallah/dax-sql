@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), where or: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.YearMonth, AGG(t."Budget Amount") AS v FROM "dax-sql-patterns".Budget AS t WHERE t.YearMonth <> 202311 OR t.CategoryKey = 1 GROUP BY t.YearMonth
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Budget'[YearMonth], "__rows", COUNTROWS(Budget), "v", 'Budget'[Budget Amount]), (('Budget'[YearMonth] <> 202311) || ('Budget'[CategoryKey] = 1))), "YearMonth", 'Budget'[YearMonth], "v", [v])

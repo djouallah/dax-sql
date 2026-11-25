@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), where or: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.CategoryKey, AGG(t."Avg Price") AS v FROM contoso.Product AS t WHERE t.ProductKey BETWEEN 1 AND 4 OR t.Color = 'Black' GROUP BY t.CategoryKey
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Product'[CategoryKey], "__rows", COUNTROWS(Product), "v", 'Product'[Avg Price]), ((('Product'[ProductKey] >= 1) && ('Product'[ProductKey] <= 4)) || ('Product'[Color] = "Black"))), "CategoryKey", 'Product'[CategoryKey], "v", [v])

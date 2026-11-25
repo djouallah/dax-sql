@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), star two sides: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT o.s_store_name, f.ss_addr_sk, AGG(f."Store Distinct Customers") AS v FROM tpcds.store_sales AS f JOIN tpcds.store AS o ON f.ss_store_sk = o.s_store_sk GROUP BY o.s_store_name, f.ss_addr_sk
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('store'[s_store_name], 'store_sales'[ss_addr_sk], "__rows", COUNTROWS(store_sales), "v", 'store_sales'[Store Distinct Customers]), NOT(ISBLANK('store'[s_store_sk]))), "s_store_name", 'store'[s_store_name], "ss_addr_sk", 'store_sales'[ss_addr_sk], "v", [v])

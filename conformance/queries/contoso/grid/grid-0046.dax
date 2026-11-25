@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), derived table: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT s.CategoryKey, s.v FROM (SELECT t.CategoryKey, AGG(t."Avg Price") AS v FROM contoso.Product AS t GROUP BY t.CategoryKey) AS s WHERE s.v IS NOT NULL
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('Product'[CategoryKey], "__rows", COUNTROWS(Product), "v", 'Product'[Avg Price]), "CategoryKey", 'Product'[CategoryKey], "v", [v])

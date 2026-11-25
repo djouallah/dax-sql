@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), ratio: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.empno, CAST(AGG(t.sum_sal) AS DOUBLE) / NULLIF(AGG(t.avg_sal), 0) AS r FROM scott_model.emp AS t GROUP BY t.empno
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('emp'[empno], "__rows", COUNTROWS(emp), "r", IF(ISBLANK(COUNTROWS(emp)), BLANK(), (CONVERT('emp'[sum_sal], DOUBLE) / IF(('emp'[avg_sal] == 0), BLANK(), 'emp'[avg_sal])))), "empno", 'emp'[empno], "r", [r])

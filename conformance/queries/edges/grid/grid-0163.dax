@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), where total: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT AGG(t."Target Amount") AS v FROM "dax-conformance-edges".Target AS t WHERE NOT (t.Brand = 'Ünïcorn')
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(ROW("v", 'Target'[Target Amount]), NOT(('Target'[Brand] = "Ünïcorn"))), "v", [v])

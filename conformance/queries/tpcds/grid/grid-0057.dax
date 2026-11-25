@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), where or: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.ss_cdemo_sk, AGG(t."Store Net Profit") AS v FROM tpcds.store_sales AS t WHERE t.ss_promo_sk < 4 OR t.ss_customer_sk >= 15 GROUP BY t.ss_cdemo_sk
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('store_sales'[ss_cdemo_sk], "__rows", COUNTROWS(store_sales), "v", 'store_sales'[Store Net Profit]), (('store_sales'[ss_promo_sk] < 4) || ('store_sales'[ss_customer_sk] >= 15))), "ss_cdemo_sk", 'store_sales'[ss_cdemo_sk], "v", [v])

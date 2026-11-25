@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), where or: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.CustomerKey, AGG(t.Lines) AS v FROM "dax-conformance-edges".Sales AS t WHERE t.CustomerKey IS NULL OR t."Unit Price" IN (5, 0.2) GROUP BY t.CustomerKey
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Sales'[CustomerKey], "__rows", COUNTROWS(Sales), "v", 'Sales'[Lines]), (ISBLANK('Sales'[CustomerKey]) || ('Sales'[Unit Price] IN {5, 0.2}))), "CustomerKey", 'Sales'[CustomerKey], "v", [v])

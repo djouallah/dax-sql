@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), two groups: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.Name, t.Color, AGG(t."Avg Price") AS v FROM contoso.Product AS t GROUP BY t.Name, t.Color
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('Product'[Name], 'Product'[Color], "__rows", COUNTROWS(Product), "v", 'Product'[Avg Price]), "Name", 'Product'[Name], "Color", 'Product'[Color], "v", [v])

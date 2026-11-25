@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), cte: its SQL as dax-sql's SQL front end writes it in DAX:
+// WITH s AS (SELECT amount, total_revenue AS mm FROM retail_model.orders WHERE order_id <> 'O3') SELECT amount, AGG(mm) AS v FROM s GROUP BY amount
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('orders'[amount], "__rows", COUNTROWS(orders), "v", 'orders'[total_revenue]), ('orders'[order_id] <> "O3")), "amount", 'orders'[amount], "v", [v])

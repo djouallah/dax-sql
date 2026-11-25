@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), order limit: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.amount, AGG(t.return_count) AS v FROM retail_model.returns AS t GROUP BY t.amount ORDER BY t.amount NULLS FIRST LIMIT 3
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('returns'[amount], "__rows", COUNTROWS(returns), "v", 'returns'[return_count]), "amount", 'returns'[amount], "v", COALESCE([v], 0)) ORDER BY [amount]

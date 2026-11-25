@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), star where many: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT o.ParentEmployeeKey, AGG(f."Avg Order Value") AS v FROM "dax-sql-patterns".Sales AS f LEFT JOIN "dax-sql-patterns".Employee AS o ON f.EmployeeKey = o.EmployeeKey WHERE f."Line Number" < 1 GROUP BY o.ParentEmployeeKey
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Employee'[ParentEmployeeKey], "__rows", COUNTROWS(Sales), "v", 'Sales'[Avg Order Value]), ('Sales'[Line Number] < 1)), "ParentEmployeeKey", 'Employee'[ParentEmployeeKey], "v", [v])

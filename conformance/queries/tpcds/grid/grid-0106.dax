@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), where total: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT AGG(t."Store Net Profit") AS v FROM tpcds.store_sales AS t WHERE t.ss_promo_sk IS NOT NULL
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(ROW("v", 'store_sales'[Store Net Profit]), NOT(ISBLANK('store_sales'[ss_promo_sk]))), "v", [v])

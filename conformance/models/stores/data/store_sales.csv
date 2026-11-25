@@ -1,0 +1,6 @@
+"sale_id","item_id","sale_date_id","store_id","customer_id","sales_amount"
+"SS1","I1","D2023","S1","C1",100
+"SS2","I1","D2024a","S1","C2",200
+"SS3","I2","D2024a","S2","C1",50
+"SS4","I1","D2023","S1",,25
+"SS5","I2","D2024a","S2","C3",40

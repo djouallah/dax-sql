@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), where total: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT AGG(t.avg_sal) AS v FROM scott_model.emp AS t WHERE t.hiredate IS NOT NULL
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(ROW("v", 'emp'[avg_sal]), NOT(ISBLANK('emp'[hiredate]))), "v", [v])

@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), fan-out: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT f.ShipDate, AGG(o."Avg Price") AS v FROM contoso.Sales AS f JOIN contoso.Product AS o ON f.ProductKey = o.ProductKey GROUP BY f.ShipDate
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Sales'[ShipDate], "__rows", COUNTROWS(Sales), "v", CALCULATE('Product'[Avg Price], Sales)), NOT(ISBLANK('Product'[ProductKey]))), "ShipDate", 'Sales'[ShipDate], "v", [v])

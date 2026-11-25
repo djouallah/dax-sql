@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), cte: its SQL as dax-sql's SQL front end writes it in DAX:
+// WITH s AS (SELECT ss_quantity, "Store Distinct Customers" AS mm FROM tpcds.store_sales WHERE cache_buster IS NOT NULL) SELECT ss_quantity, AGG(mm) AS v FROM s GROUP BY ss_quantity
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('store_sales'[ss_quantity], "__rows", COUNTROWS(store_sales), "v", 'store_sales'[Store Distinct Customers]), NOT(ISBLANK('store_sales'[cache_buster]))), "ss_quantity", 'store_sales'[ss_quantity], "v", [v])

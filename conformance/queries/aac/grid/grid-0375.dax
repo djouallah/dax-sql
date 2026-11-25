@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), star where one: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT o."month", AGG(f."Regional wind curtailed MWh") AS v FROM aac.fct_region AS f JOIN aac.dim_calendar AS o ON f."date" = o."date" WHERE o."date" < DATE '2026-12-13' GROUP BY o."month"
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('dim_calendar'[month], "__rows", COUNTROWS(fct_region), "v", 'fct_region'[Regional wind curtailed MWh]), ('dim_calendar'[date] < DATE(2026, 12, 13)), NOT(ISBLANK('dim_calendar'[date]))), "month", 'dim_calendar'[month], "v", [v])

@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), where total: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT AGG(t.Customers) AS v FROM "dax-sql-patterns".Sales AS t WHERE t."Line Number" >= 1
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(ROW("v", 'Sales'[Customers]), ('Sales'[Line Number] >= 1)), "v", [v])

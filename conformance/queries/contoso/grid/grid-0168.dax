@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), where or: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.CustomerKey, AGG(t."Sales Amount") AS v FROM contoso.Sales AS t WHERE t.Amount = 20 OR t.ShipDate BETWEEN DATE '2023-01-20' AND DATE '2024-07-02' GROUP BY t.CustomerKey
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Sales'[CustomerKey], "__rows", COUNTROWS(Sales), "v", 'Sales'[Sales Amount]), (('Sales'[Amount] = 20) || (('Sales'[ShipDate] >= DATE(2023, 1, 20)) && ('Sales'[ShipDate] <= DATE(2024, 7, 2))))), "CustomerKey", 'Sales'[CustomerKey], "v", [v])

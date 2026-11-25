@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), rollup: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.YearMonth, AGG(t."Budget Amount") AS v FROM "dax-sql-patterns".Budget AS t GROUP BY ROLLUP (t.YearMonth) ORDER BY t.YearMonth NULLS LAST
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS(ROLLUPADDISSUBTOTAL('Budget'[YearMonth], "__level1_YearMonth"), "__rows", COUNTROWS(Budget), "v", 'Budget'[Budget Amount]), "YearMonth", 'Budget'[YearMonth], "v", [v]) ORDER BY ISBLANK([YearMonth]), [YearMonth]

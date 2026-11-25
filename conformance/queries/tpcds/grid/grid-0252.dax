@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), ratio: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.cs_bill_cdemo_sk, CAST(AGG(t."Catalog Net Profit") AS DOUBLE) / NULLIF(AGG(t."Catalog Revenue"), 0) AS r FROM tpcds.catalog_sales AS t GROUP BY t.cs_bill_cdemo_sk
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('catalog_sales'[cs_bill_cdemo_sk], "__rows", COUNTROWS(catalog_sales), "r", IF(ISBLANK(COUNTROWS(catalog_sales)), BLANK(), (CONVERT('catalog_sales'[Catalog Net Profit], DOUBLE) / IF(('catalog_sales'[Catalog Revenue] == 0), BLANK(), 'catalog_sales'[Catalog Revenue])))), "cs_bill_cdemo_sk", 'catalog_sales'[cs_bill_cdemo_sk], "r", [r])

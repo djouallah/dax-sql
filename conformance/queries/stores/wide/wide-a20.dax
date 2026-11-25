@@ -1,0 +1,3 @@
+// note: Apache Ossie wide table compliance A20 (a20_filter_on_sale_year.ost):  Its Layer 3 query {"metrics":["store_sales.total_sales"],"filter":"date_dim.year = 2024"}, lowered to Layer 2 SQL, as dax-sql's SQL front end writes it in DAX:
+// SELECT AGG(store_sales.total_sales) AS total_sales FROM stores_model.store_sales LEFT JOIN stores_model.date_dim ON store_sales.sale_date_id = date_dim.date_id WHERE date_dim.year = 2024
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(ROW("total_sales", 'store_sales'[total_sales]), ('date_dim'[year] = 2024)), "total_sales", [total_sales])

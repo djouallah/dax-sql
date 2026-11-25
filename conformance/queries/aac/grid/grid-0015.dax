@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), scalar ops: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.Participant, AGG(t."Registered MW") * 2 AS a, AGG(t."Registered MW") + 1 AS b, COALESCE(AGG(t."Registered MW"), 0) AS c FROM aac.dim_duid AS t GROUP BY t.Participant
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('dim_duid'[Participant], "__rows", COUNTROWS(dim_duid), "a", ('dim_duid'[Registered MW] * 2), "b", ('dim_duid'[Registered MW] + 1), "c", IF(ISBLANK(COUNTROWS(dim_duid)), BLANK(), COALESCE('dim_duid'[Registered MW], 0))), "Participant", 'dim_duid'[Participant], "a", [a], "b", [b], "c", [c])

@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), star where many: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT o."Month Name", AGG(f.Lines) AS v FROM "dax-conformance-edges".Sales AS f LEFT JOIN "dax-conformance-edges"."Date" AS o ON f."Order Date" = o."Date" WHERE f.CustomerKey BETWEEN 1 AND 24 GROUP BY o."Month Name"
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Date'[Month Name], "__rows", COUNTROWS(Sales), "v", 'Sales'[Lines]), (('Sales'[CustomerKey] >= 1) && ('Sales'[CustomerKey] <= 24))), "Month Name", 'Date'[Month Name], "v", [v])

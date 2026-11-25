@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), where: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.ReturnQty, AGG(t.Returned) AS v FROM contoso.Returns AS t WHERE t."Date" IS NOT NULL GROUP BY t.ReturnQty
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Returns'[ReturnQty], "__rows", COUNTROWS(Returns), "v", 'Returns'[Returned]), NOT(ISBLANK('Returns'[Date]))), "ReturnQty", 'Returns'[ReturnQty], "v", [v])

@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), one to many: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT o.Plant, AGG(o."Storage MWh") AS a, AGG(f."Average MW") AS b FROM aac.dim_duid AS o LEFT JOIN aac.fct_summary AS f ON f.DUID = o.DUID GROUP BY o.Plant
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('dim_duid'[Plant], "__rows", COUNTROWS(dim_duid), "a", 'dim_duid'[Storage MWh], "b", CALCULATE('fct_summary'[Average MW], KEEPFILTERS(NOT(ISBLANK('dim_duid'[DUID]))))), "Plant", 'dim_duid'[Plant], "a", [a], "b", [b])

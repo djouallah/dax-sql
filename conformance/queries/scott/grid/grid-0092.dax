@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), having: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.empno, AGG(t.emp_count) AS v FROM scott_model.emp AS t GROUP BY t.empno HAVING AGG(t.avg_comm) > 0
+EVALUATE SELECTCOLUMNS(FILTER(SUMMARIZECOLUMNS('emp'[empno], "__rows", COUNTROWS(emp), "v", 'emp'[emp_count]), ('emp'[avg_comm] > 0)), "empno", 'emp'[empno], "v", COALESCE([v], 0))

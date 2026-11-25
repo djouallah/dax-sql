@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), star total: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT AGG(f.emp_count) AS v FROM scott_model.emp AS f JOIN scott_model.dept AS o ON f.deptno = o.deptno
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(ROW("v", 'emp'[emp_count]), NOT(ISBLANK('dept'[deptno]))), "v", COALESCE([v], 0))

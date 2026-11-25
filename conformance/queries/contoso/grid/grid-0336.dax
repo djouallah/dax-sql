@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), cte: its SQL as dax-sql's SQL front end writes it in DAX:
+// WITH s AS (SELECT ProductKey, Returned AS mm FROM contoso.Returns WHERE ReturnQty = 1) SELECT ProductKey, AGG(mm) AS v FROM s GROUP BY ProductKey
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Returns'[ProductKey], "__rows", COUNTROWS(Returns), "v", 'Returns'[Returned]), ('Returns'[ReturnQty] = 1)), "ProductKey", 'Returns'[ProductKey], "v", [v])

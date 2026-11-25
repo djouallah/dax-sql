@@ -1,0 +1,6 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), star two sides: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT o.CustomerKey, f.Target, AGG(f."Target Total") AS v FROM contoso.CityTarget AS f LEFT JOIN contoso.Customer AS o ON f.City = o.City GROUP BY o.CustomerKey, f.Target
+DEFINE
+VAR __v1 = GENERATEALL(SELECTCOLUMNS(CityTarget, "f.City", 'CityTarget'[City], "f.Target", 'CityTarget'[Target]), FILTER(SELECTCOLUMNS(Customer, "o.CustomerKey", 'Customer'[CustomerKey], "o.City", 'Customer'[City]), ([f.City] = [o.City])))
+VAR __v2 = DISTINCT(SELECTCOLUMNS(__v1, "CustomerKey", [o.CustomerKey], "Target", [f.Target]))
+EVALUATE SELECTCOLUMNS(ADDCOLUMNS(__v2, "__m1", CALCULATE('CityTarget'[Target Total], REMOVEFILTERS(), TREATAS(SELECTCOLUMNS(FILTER(__v1, ((NOT((ISBLANK([f.City]) && ISBLANK([f.Target]))) && ([o.CustomerKey] == [CustomerKey])) && ([f.Target] == [Target]))), "__k1", [f.City], "__k2", [f.Target]), 'CityTarget'[City], 'CityTarget'[Target]))), "CustomerKey", [CustomerKey], "Target", [Target], "v", [__m1])

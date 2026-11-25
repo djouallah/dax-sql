@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), where and: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.ss_store_sk, AGG(t."Store Revenue") AS v FROM tpcds.store_sales AS t WHERE t.cache_buster IS NOT NULL AND t.ss_addr_sk = 2 GROUP BY t.ss_store_sk
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('store_sales'[ss_store_sk], "__rows", COUNTROWS(store_sales), "v", 'store_sales'[Store Revenue]), NOT(ISBLANK('store_sales'[cache_buster])), ('store_sales'[ss_addr_sk] = 2)), "ss_store_sk", 'store_sales'[ss_store_sk], "v", [v])

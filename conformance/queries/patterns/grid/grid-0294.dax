@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), snowflake: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT c.SubcategoryKey, AGG(f."Avg Order Value") AS v FROM "dax-sql-patterns".Sales AS f JOIN "dax-sql-patterns".Product AS b ON f.ProductKey = b.ProductKey JOIN "dax-sql-patterns".Subcategory AS c ON b.SubcategoryKey = c.SubcategoryKey GROUP BY c.SubcategoryKey
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Subcategory'[SubcategoryKey], "__rows", COUNTROWS(Sales), "v", 'Sales'[Avg Order Value]), NOT(ISBLANK('Product'[ProductKey])), NOT(ISBLANK('Subcategory'[SubcategoryKey]))), "SubcategoryKey", 'Subcategory'[SubcategoryKey], "v", [v])

@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), one side counted once: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT o.days, AGG(f."Output MWh hourly") AS a, AGG(o."Month days") AS b FROM aac.fct_summary_hourly AS f LEFT JOIN aac.dim_month AS o ON f."month" = o."month" GROUP BY o.days
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('dim_month'[days], "__rows", COUNTROWS(fct_summary_hourly), "a", 'fct_summary_hourly'[Output MWh hourly], "b", CALCULATE('dim_month'[Month days], fct_summary_hourly)), "days", 'dim_month'[days], "a", [a], "b", [b])

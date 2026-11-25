@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), star two sides: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT o.SubcategoryKey, f.EmployeeKey, AGG(f."Avg Order Value") AS v FROM "dax-sql-patterns".Sales AS f LEFT JOIN "dax-sql-patterns".Product AS o ON f.ProductKey = o.ProductKey GROUP BY o.SubcategoryKey, f.EmployeeKey
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('Product'[SubcategoryKey], 'Sales'[EmployeeKey], "__rows", COUNTROWS(Sales), "v", 'Sales'[Avg Order Value]), "SubcategoryKey", 'Product'[SubcategoryKey], "EmployeeKey", 'Sales'[EmployeeKey], "v", [v])

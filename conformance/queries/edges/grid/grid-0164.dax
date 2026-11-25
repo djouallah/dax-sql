@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), cte: its SQL as dax-sql's SQL front end writes it in DAX:
+// WITH s AS (SELECT "Date", "Target Amount" AS mm FROM "dax-conformance-edges".Target WHERE Target IS NOT NULL) SELECT "Date", AGG(mm) AS v FROM s GROUP BY "Date"
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Target'[Date], "__rows", COUNTROWS(Target), "v", 'Target'[Target Amount]), NOT(ISBLANK('Target'[Target]))), "Date", 'Target'[Date], "v", [v])

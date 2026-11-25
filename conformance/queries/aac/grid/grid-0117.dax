@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), where: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.DUID, AGG(t."Registered MW") AS v FROM aac.dim_duid AS t WHERE t.Participant IS NULL GROUP BY t.DUID
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('dim_duid'[DUID], "__rows", COUNTROWS(dim_duid), "v", 'dim_duid'[Registered MW]), ISBLANK('dim_duid'[Participant])), "DUID", 'dim_duid'[DUID], "v", [v])

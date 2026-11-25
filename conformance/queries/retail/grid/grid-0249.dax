@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), total: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT AGG(ticket_count) AS v FROM retail_model.tickets
+EVALUATE SELECTCOLUMNS(ROW("v", 'tickets'[ticket_count]), "v", COALESCE([v], 0))

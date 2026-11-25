@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), star where one: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT o."Year", AGG(f.Returned) AS v FROM contoso.Returns AS f JOIN contoso."Date" AS o ON f."Date" = o."Date" WHERE o."Date" = DATE '2023-03-22' GROUP BY o."Year"
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Date'[Year], "__rows", COUNTROWS(Returns), "v", 'Returns'[Returned]), ('Date'[Date] = DATE(2023, 3, 22)), NOT(ISBLANK('Date'[Date]))), "Year", 'Date'[Year], "v", [v])

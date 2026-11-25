@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), ratio: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.Name, CAST(AGG(t."Avg Price") AS DOUBLE) / NULLIF(AGG(t."Product Count"), 0) AS r FROM contoso.Product AS t GROUP BY t.Name
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('Product'[Name], "__rows", COUNTROWS(Product), "r", IF(ISBLANK(COUNTROWS(Product)), BLANK(), (CONVERT('Product'[Avg Price], DOUBLE) / IF(('Product'[Product Count] == 0), BLANK(), 'Product'[Product Count])))), "Name", 'Product'[Name], "r", [r])

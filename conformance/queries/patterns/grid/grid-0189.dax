@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), star where one: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT o.Weekday, AGG(f.Orders) AS v FROM "dax-sql-patterns".Sales AS f JOIN "dax-sql-patterns"."Date" AS o ON f."Order Date" = o."Date" WHERE o.Quarter BETWEEN 1 AND 1 GROUP BY o.Weekday
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Date'[Weekday], "__rows", COUNTROWS(Sales), "v", 'Sales'[Orders]), (('Date'[Quarter] >= 1) && ('Date'[Quarter] <= 1)), NOT(ISBLANK('Date'[Date]))), "Weekday", 'Date'[Weekday], "v", [v])

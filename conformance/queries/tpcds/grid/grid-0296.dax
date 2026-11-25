@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), ratio: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.etag, CAST(AGG(t."Archive Files") AS DOUBLE) / NULLIF(AGG(t."Archive Source Rows"), 0) AS r FROM tpcds.stg_tpcds_archive_log AS t GROUP BY t.etag
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('stg_tpcds_archive_log'[etag], "__rows", COUNTROWS(stg_tpcds_archive_log), "r", IF(ISBLANK(COUNTROWS(stg_tpcds_archive_log)), BLANK(), (CONVERT('stg_tpcds_archive_log'[Archive Files], DOUBLE) / IF(('stg_tpcds_archive_log'[Archive Source Rows] == 0), BLANK(), 'stg_tpcds_archive_log'[Archive Source Rows])))), "etag", 'stg_tpcds_archive_log'[etag], "r", [r])

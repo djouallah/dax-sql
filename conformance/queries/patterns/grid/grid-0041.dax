@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), cte: its SQL as dax-sql's SQL front end writes it in DAX:
+// WITH s AS (SELECT Quantity, "Order Lines" AS mm FROM "dax-sql-patterns".Sales WHERE NOT (Quantity = 5)) SELECT Quantity, AGG(mm) AS v FROM s GROUP BY Quantity
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Sales'[Quantity], "__rows", COUNTROWS(Sales), "v", 'Sales'[Order Lines]), NOT(('Sales'[Quantity] = 5))), "Quantity", 'Sales'[Quantity], "v", [v])

@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), star two sides: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT o.mgr, f.job, AGG(f.bonus_count) AS v FROM scott_model.bonus AS f LEFT JOIN scott_model.emp AS o ON f.ename = o.ename GROUP BY o.mgr, f.job
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('emp'[mgr], 'bonus'[job], "__rows", COUNTROWS(bonus), "v", 'bonus'[bonus_count]), "mgr", 'emp'[mgr], "job", 'bonus'[job], "v", COALESCE([v], 0))

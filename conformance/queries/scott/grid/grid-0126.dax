@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), cte: its SQL as dax-sql's SQL front end writes it in DAX:
+// WITH s AS (SELECT comm, sum_sal AS mm FROM scott_model.emp WHERE NOT (empno = 7876)) SELECT comm, AGG(mm) AS v FROM s GROUP BY comm
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('emp'[comm], "__rows", COUNTROWS(emp), "v", 'emp'[sum_sal]), NOT(('emp'[empno] = 7876))), "comm", 'emp'[comm], "v", [v])

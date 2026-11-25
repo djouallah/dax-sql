@@ -1,0 +1,3 @@
+// note: Apache Ossie wide table compliance A08 (a08_model_metric_components.ost):  Its Layer 3 query {"metrics":["revenue_per_customer"]}, lowered to Layer 2 SQL, model query 1 of 2, as dax-sql's SQL front end writes it in DAX:
+// WITH b_orders AS ( SELECT AGG(orders.__c1) AS c1 FROM retail_model.orders ), b_customers AS ( SELECT AGG(customers.__c2) AS c1 FROM retail_model.customers ) SELECT CAST(b_orders.c1 AS DOUBLE) / b_customers.c1 AS revenue_per_customer FROM b_orders CROSS JOIN b_customers
+EVALUATE SELECTCOLUMNS(ROW("c1", 'orders'[__c1]), "c1", [c1])

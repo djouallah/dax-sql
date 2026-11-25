@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), star two sides: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT o.p_cost, f.ss_quantity, AGG(f."Store Net Profit") AS v FROM tpcds.store_sales AS f LEFT JOIN tpcds.promotion AS o ON f.ss_promo_sk = o.p_promo_sk GROUP BY o.p_cost, f.ss_quantity
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('promotion'[p_cost], 'store_sales'[ss_quantity], "__rows", COUNTROWS(store_sales), "v", 'store_sales'[Store Net Profit]), "p_cost", 'promotion'[p_cost], "ss_quantity", 'store_sales'[ss_quantity], "v", [v])

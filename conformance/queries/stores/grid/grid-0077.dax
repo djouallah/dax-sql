@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), derived table: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT s.customer_id, s.v FROM (SELECT t.customer_id, AGG(t.total_sales) AS v FROM stores_model.store_sales AS t GROUP BY t.customer_id) AS s WHERE s.v IS NOT NULL
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('store_sales'[customer_id], "__rows", COUNTROWS(store_sales), "v", 'store_sales'[total_sales]), "customer_id", 'store_sales'[customer_id], "v", [v])

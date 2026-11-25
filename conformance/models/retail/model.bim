@@ -1,0 +1,293 @@
+{
+  "name": "dax-conformance-retail",
+  "compatibilityLevel": 1604,
+  "model": {
+    "culture": "en-US",
+    "defaultPowerBIDataSourceVersion": "powerBI_V3",
+    "description": "Customers with orders, returns, and visits, and unrelated tickets",
+    "tables": [
+      {
+        "name": "customers",
+        "columns": [
+          {
+            "name": "customer_id",
+            "dataType": "string",
+            "sourceColumn": "customer_id",
+            "isKey": true
+          },
+          {
+            "name": "region",
+            "dataType": "string",
+            "sourceColumn": "region"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "customers",
+            "source": {
+              "type": "entity",
+              "entityName": "customers"
+            }
+          }
+        ],
+        "measures": [
+          {
+            "name": "customer_count",
+            "description": "Number of customers",
+            "expression": "COUNTROWS('customers')",
+            "annotations": [
+              {
+                "name": "Ossie",
+                "value": "{\"dataset\":\"customers\",\"home\":\"customers\",\"expression\":{\"sql\":\"COUNT(*)\"},\"dax\":\"COUNTROWS('customers')\",\"datatype\":\"Integer\"}"
+              }
+            ]
+          },
+          {
+            "name": "__c2",
+            "expression": "DISTINCTCOUNTNOBLANK('customers'[customer_id])",
+            "annotations": [
+              {
+                "name": "Ossie",
+                "value": "{\"dataset\":\"customers\",\"home\":\"customers\",\"expression\":{\"sql\":\"COUNT(DISTINCT customer_id)\"},\"dax\":\"DISTINCTCOUNTNOBLANK('customers'[customer_id])\"}"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "orders",
+        "columns": [
+          {
+            "name": "order_id",
+            "dataType": "string",
+            "sourceColumn": "order_id",
+            "isKey": true
+          },
+          {
+            "name": "customer_id",
+            "dataType": "string",
+            "sourceColumn": "customer_id"
+          },
+          {
+            "name": "amount",
+            "dataType": "int64",
+            "sourceColumn": "amount"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "orders",
+            "source": {
+              "type": "entity",
+              "entityName": "orders"
+            }
+          }
+        ],
+        "measures": [
+          {
+            "name": "total_revenue",
+            "description": "Total order amount",
+            "expression": "SUM('orders'[amount])",
+            "annotations": [
+              {
+                "name": "Ossie",
+                "value": "{\"dataset\":\"orders\",\"home\":\"orders\",\"expression\":{\"sql\":\"SUM(amount)\"},\"dax\":\"SUM('orders'[amount])\",\"datatype\":\"Integer\"}"
+              }
+            ]
+          },
+          {
+            "name": "__c1",
+            "expression": "SUM('orders'[amount])",
+            "annotations": [
+              {
+                "name": "Ossie",
+                "value": "{\"dataset\":\"orders\",\"home\":\"orders\",\"expression\":{\"sql\":\"SUM(amount)\"},\"dax\":\"SUM('orders'[amount])\"}"
+              }
+            ]
+          },
+          {
+            "name": "revenue_per_customer",
+            "description": "Order amount per customer, counting customers without orders",
+            "expression": "DIVIDE(SUM('orders'[amount]), DISTINCTCOUNTNOBLANK('customers'[customer_id]))",
+            "annotations": [
+              {
+                "name": "Ossie",
+                "value": "{\"dataset\":null,\"home\":\"orders\",\"expression\":{\"sql\":\"CAST(SUM(orders.amount) AS DOUBLE) / COUNT(DISTINCT customers.customer_id)\"},\"dax\":\"DIVIDE(SUM('orders'[amount]), DISTINCTCOUNTNOBLANK('customers'[customer_id]))\",\"datatype\":\"Float\"}"
+              }
+            ]
+          },
+          {
+            "name": "amount_less_order",
+            "description": "Rejected, a field outside every aggregate",
+            "expression": "SUM('orders'[amount]) - 'orders'[amount]",
+            "annotations": [
+              {
+                "name": "Ossie",
+                "value": "{\"dataset\":null,\"home\":\"orders\",\"expression\":{\"sql\":\"SUM(orders.amount) - orders.amount\"},\"dax\":\"SUM('orders'[amount]) - 'orders'[amount]\",\"datatype\":\"Integer\"}"
+              }
+            ]
+          },
+          {
+            "name": "order_less_return",
+            "description": "Rejected, an aggregate whose arguments read two datasets",
+            "expression": "SUMX('orders', 'orders'[amount] - 'returns'[amount])",
+            "annotations": [
+              {
+                "name": "Ossie",
+                "value": "{\"dataset\":null,\"home\":\"orders\",\"expression\":{\"sql\":\"SUM(orders.amount - returns.amount)\"},\"dax\":\"SUMX('orders', 'orders'[amount] - 'returns'[amount])\",\"datatype\":\"Integer\"}"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "returns",
+        "columns": [
+          {
+            "name": "return_id",
+            "dataType": "string",
+            "sourceColumn": "return_id",
+            "isKey": true
+          },
+          {
+            "name": "customer_id",
+            "dataType": "string",
+            "sourceColumn": "customer_id"
+          },
+          {
+            "name": "amount",
+            "dataType": "int64",
+            "sourceColumn": "amount"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "returns",
+            "source": {
+              "type": "entity",
+              "entityName": "returns"
+            }
+          }
+        ],
+        "measures": [
+          {
+            "name": "total_returns",
+            "description": "Total return amount",
+            "expression": "SUM('returns'[amount])",
+            "annotations": [
+              {
+                "name": "Ossie",
+                "value": "{\"dataset\":\"returns\",\"home\":\"returns\",\"expression\":{\"sql\":\"SUM(amount)\"},\"dax\":\"SUM('returns'[amount])\",\"datatype\":\"Integer\"}"
+              }
+            ]
+          },
+          {
+            "name": "return_count",
+            "description": "Number of returns",
+            "expression": "COUNTROWS('returns')",
+            "annotations": [
+              {
+                "name": "Ossie",
+                "value": "{\"dataset\":\"returns\",\"home\":\"returns\",\"expression\":{\"sql\":\"COUNT(*)\"},\"dax\":\"COUNTROWS('returns')\",\"datatype\":\"Integer\"}"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "visits",
+        "columns": [
+          {
+            "name": "visit_id",
+            "dataType": "string",
+            "sourceColumn": "visit_id",
+            "isKey": true
+          },
+          {
+            "name": "customer_id",
+            "dataType": "string",
+            "sourceColumn": "customer_id"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "visits",
+            "source": {
+              "type": "entity",
+              "entityName": "visits"
+            }
+          }
+        ],
+        "measures": [
+          {
+            "name": "visit_count",
+            "description": "Number of visits",
+            "expression": "COUNTROWS('visits')",
+            "annotations": [
+              {
+                "name": "Ossie",
+                "value": "{\"dataset\":\"visits\",\"home\":\"visits\",\"expression\":{\"sql\":\"COUNT(*)\"},\"dax\":\"COUNTROWS('visits')\",\"datatype\":\"Integer\"}"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "tickets",
+        "columns": [
+          {
+            "name": "ticket_id",
+            "dataType": "string",
+            "sourceColumn": "ticket_id",
+            "isKey": true
+          }
+        ],
+        "partitions": [
+          {
+            "name": "tickets",
+            "source": {
+              "type": "entity",
+              "entityName": "tickets"
+            }
+          }
+        ],
+        "measures": [
+          {
+            "name": "ticket_count",
+            "description": "Number of tickets",
+            "expression": "COUNTROWS('tickets')",
+            "annotations": [
+              {
+                "name": "Ossie",
+                "value": "{\"dataset\":\"tickets\",\"home\":\"tickets\",\"expression\":{\"sql\":\"COUNT(*)\"},\"dax\":\"COUNTROWS('tickets')\",\"datatype\":\"Integer\"}"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "name": "orders_to_customers",
+        "fromTable": "orders",
+        "fromColumn": "customer_id",
+        "toTable": "customers",
+        "toColumn": "customer_id"
+      },
+      {
+        "name": "returns_to_customers",
+        "fromTable": "returns",
+        "fromColumn": "customer_id",
+        "toTable": "customers",
+        "toColumn": "customer_id"
+      },
+      {
+        "name": "visits_to_customers",
+        "fromTable": "visits",
+        "fromColumn": "customer_id",
+        "toTable": "customers",
+        "toColumn": "customer_id"
+      }
+    ]
+  }
+}

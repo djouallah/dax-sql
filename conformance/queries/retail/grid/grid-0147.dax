@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), two metrics: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.amount, AGG(t.total_returns) AS a, AGG(t.total_returns) AS b FROM retail_model.returns AS t GROUP BY t.amount
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('returns'[amount], "__rows", COUNTROWS(returns), "a", 'returns'[total_returns], "b", 'returns'[total_returns]), "amount", 'returns'[amount], "a", [a], "b", [b])

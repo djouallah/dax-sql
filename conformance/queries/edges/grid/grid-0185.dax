@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), star where one: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT o.Segment, AGG(f.Customers) AS v FROM "dax-conformance-edges".Sales AS f JOIN "dax-conformance-edges".Customer AS o ON f.CustomerKey = o.CustomerKey WHERE o.Segment IN ('', '') GROUP BY o.Segment
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Customer'[Segment], "__rows", COUNTROWS(Sales), "v", 'Sales'[Customers]), ('Customer'[Segment] IN {"", ""}), NOT(ISBLANK('Customer'[CustomerKey]))), "Segment", 'Customer'[Segment], "v", [v])

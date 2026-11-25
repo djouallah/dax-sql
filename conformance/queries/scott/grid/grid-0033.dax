@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), where: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.comm, AGG(t.sum_sal) AS v FROM scott_model.emp AS t WHERE t.hiredate < DATE '1981-09-08' GROUP BY t.comm
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('emp'[comm], "__rows", COUNTROWS(emp), "v", 'emp'[sum_sal]), ('emp'[hiredate] < DATE(1981, 9, 8))), "comm", 'emp'[comm], "v", [v])

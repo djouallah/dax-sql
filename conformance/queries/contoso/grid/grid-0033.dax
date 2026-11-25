@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), where: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.CategoryKey, AGG(t."Product Count") AS v FROM contoso.Product AS t WHERE t.CategoryKey >= 1 GROUP BY t.CategoryKey
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Product'[CategoryKey], "__rows", COUNTROWS(Product), "v", 'Product'[Product Count]), ('Product'[CategoryKey] >= 1)), "CategoryKey", 'Product'[CategoryKey], "v", [v])

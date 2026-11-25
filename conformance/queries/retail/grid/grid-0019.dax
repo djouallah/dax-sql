@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), where total: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT AGG(t.customer_count) AS v FROM retail_model.customers AS t WHERE t.customer_id = 'C2'
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(ROW("v", 'customers'[customer_count]), ('customers'[customer_id] = "C2")), "v", COALESCE([v], 0))

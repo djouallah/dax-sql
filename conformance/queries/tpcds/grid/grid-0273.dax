@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), scalar ops: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.etag, AGG(t."Archive Source Rows") * 2 AS a, AGG(t."Archive Source Rows") + 1 AS b, COALESCE(AGG(t."Archive Source Rows"), 0) AS c FROM tpcds.stg_tpcds_archive_log AS t GROUP BY t.etag
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('stg_tpcds_archive_log'[etag], "__rows", COUNTROWS(stg_tpcds_archive_log), "a", ('stg_tpcds_archive_log'[Archive Source Rows] * 2), "b", ('stg_tpcds_archive_log'[Archive Source Rows] + 1), "c", IF(ISBLANK(COUNTROWS(stg_tpcds_archive_log)), BLANK(), COALESCE('stg_tpcds_archive_log'[Archive Source Rows], 0))), "etag", 'stg_tpcds_archive_log'[etag], "a", [a], "b", [b], "c", [c])

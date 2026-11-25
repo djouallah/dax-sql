@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), having: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.Name, AGG(t."Product Count") AS v FROM contoso.Product AS t GROUP BY t.Name HAVING AGG(t."Avg Price") > 0
+EVALUATE SELECTCOLUMNS(FILTER(SUMMARIZECOLUMNS('Product'[Name], "__rows", COUNTROWS(Product), "v", 'Product'[Product Count]), ('Product'[Avg Price] > 0)), "Name", 'Product'[Name], "v", [v])

@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), total: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT AGG("Store Revenue") AS v FROM tpcds.store_sales
+EVALUATE SELECTCOLUMNS(ROW("v", 'store_sales'[Store Revenue]), "v", [v])

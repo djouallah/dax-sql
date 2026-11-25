@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), star total: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT AGG(f."Budget Amount") AS v FROM "dax-sql-patterns".Budget AS f JOIN "dax-sql-patterns".Category AS o ON f.CategoryKey = o.CategoryKey
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(ROW("v", 'Budget'[Budget Amount]), NOT(ISBLANK('Category'[CategoryKey]))), "v", [v])

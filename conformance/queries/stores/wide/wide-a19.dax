@@ -1,0 +1,3 @@
+// note: Apache Ossie wide table compliance A19 (a19_sales_by_year.ost):  Its Layer 3 query {"dimensions":["date_dim.year"],"metrics":["store_sales.total_sales"]}, lowered to Layer 2 SQL, as dax-sql's SQL front end writes it in DAX:
+// SELECT date_dim."year" AS "year", AGG(store_sales.total_sales) AS total_sales FROM stores_model.store_sales LEFT JOIN stores_model.date_dim ON store_sales.sale_date_id = date_dim.date_id GROUP BY date_dim."year"
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('date_dim'[year], "__rows", COUNTROWS(store_sales), "total_sales", 'store_sales'[total_sales]), "year", 'date_dim'[year], "total_sales", [total_sales])

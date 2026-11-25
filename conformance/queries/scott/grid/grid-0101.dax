@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), derived table: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT s.empno, s.v FROM (SELECT t.empno, AGG(t.sum_comm) AS v FROM scott_model.emp AS t GROUP BY t.empno) AS s WHERE s.v IS NOT NULL
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('emp'[empno], "__rows", COUNTROWS(emp), "v", 'emp'[sum_comm]), "empno", 'emp'[empno], "v", [v])

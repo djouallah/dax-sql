@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), where total: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT AGG(t."Target Amount") AS v FROM "dax-conformance-edges".Target AS t WHERE t."Date" <> DATE '2024-10-01'
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(ROW("v", 'Target'[Target Amount]), ('Target'[Date] <> DATE(2024, 10, 1))), "v", [v])

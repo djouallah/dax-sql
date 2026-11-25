@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), where: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.ename, AGG(t.comm_count) AS v FROM scott_model.emp AS t WHERE t.deptno BETWEEN 10 AND 10 GROUP BY t.ename
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('emp'[ename], "__rows", COUNTROWS(emp), "v", 'emp'[comm_count]), (('emp'[deptno] >= 10) && ('emp'[deptno] <= 10))), "ename", 'emp'[ename], "v", COALESCE([v], 0))

@@ -1,0 +1,3 @@
+// note: Apache Ossie wide table compliance A14 (a14_filter_false_without_dimension.ost):  Its Layer 3 query {"metrics":["orders.total_revenue"],"filter":"FALSE"}, lowered to Layer 2 SQL, as dax-sql's SQL front end writes it in DAX:
+// SELECT AGG(orders.total_revenue) AS total_revenue FROM retail_model.orders WHERE FALSE
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(ROW("total_revenue", 'orders'[total_revenue]), FILTER(ALL(orders), FALSE())), "total_revenue", [total_revenue])

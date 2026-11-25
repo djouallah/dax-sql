@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), cte: its SQL as dax-sql's SQL front end writes it in DAX:
+// WITH s AS (SELECT grade, grade_count AS mm FROM scott_model.salgrade WHERE losal IS NOT NULL) SELECT grade, AGG(mm) AS v FROM s GROUP BY grade
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('salgrade'[grade], "__rows", COUNTROWS(salgrade), "v", 'salgrade'[grade_count]), NOT(ISBLANK('salgrade'[losal]))), "grade", 'salgrade'[grade], "v", COALESCE([v], 0))

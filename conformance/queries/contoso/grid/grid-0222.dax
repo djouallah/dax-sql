@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), scalar ops: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.ProductKey, AGG(t.Returned) * 2 AS a, AGG(t.Returned) + 1 AS b, COALESCE(AGG(t.Returned), 0) AS c FROM contoso.Returns AS t GROUP BY t.ProductKey
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('Returns'[ProductKey], "__rows", COUNTROWS(Returns), "a", ('Returns'[Returned] * 2), "b", ('Returns'[Returned] + 1), "c", IF(ISBLANK(COUNTROWS(Returns)), BLANK(), COALESCE('Returns'[Returned], 0))), "ProductKey", 'Returns'[ProductKey], "a", [a], "b", [b], "c", [c])

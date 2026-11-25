@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), star where many: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT o.comm, AGG(f.sum_age) AS v FROM scott_model.pet AS f JOIN scott_model.emp AS o ON f.empno = o.empno WHERE f.empno = 7876 GROUP BY o.comm
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('emp'[comm], "__rows", COUNTROWS(pet), "v", 'pet'[sum_age]), ('pet'[empno] = 7876), NOT(ISBLANK('emp'[empno]))), "comm", 'emp'[comm], "v", [v])

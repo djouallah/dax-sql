@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), scalar ops: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.Quantity, AGG(t."Avg Order Value") * 2 AS a, AGG(t."Avg Order Value") + 1 AS b, COALESCE(AGG(t."Avg Order Value"), 0) AS c FROM "dax-sql-patterns".Sales AS t GROUP BY t.Quantity
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('Sales'[Quantity], "__rows", COUNTROWS(Sales), "a", ('Sales'[Avg Order Value] * 2), "b", ('Sales'[Avg Order Value] + 1), "c", IF(ISBLANK(COUNTROWS(Sales)), BLANK(), COALESCE('Sales'[Avg Order Value], 0))), "Quantity", 'Sales'[Quantity], "a", [a], "b", [b], "c", [c])

@@ -1,0 +1,6 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), one to many: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT o.ename, AGG(o.emp_count) AS a, AGG(f.avg_comm) AS b FROM scott_model.emp AS o LEFT JOIN scott_model.emp AS f ON f.mgr = o.empno GROUP BY o.ename
+DEFINE
+VAR __v1 = GENERATEALL(SELECTCOLUMNS(emp, "o.empno", 'emp'[empno], "o.ename", 'emp'[ename]), FILTER(SELECTCOLUMNS(emp, "f.empno", 'emp'[empno], "f.mgr", 'emp'[mgr]), ([f.mgr] = [o.empno])))
+VAR __v2 = DISTINCT(SELECTCOLUMNS(__v1, "ename", [o.ename]))
+EVALUATE SELECTCOLUMNS(ADDCOLUMNS(__v2, "__m1", COALESCE(CALCULATE('emp'[emp_count], REMOVEFILTERS(), TREATAS(SELECTCOLUMNS(FILTER(__v1, (NOT(ISBLANK([o.empno])) && ([o.ename] == [ename]))), "__k1", [o.empno]), 'emp'[empno])), 0), "__m2", CALCULATE('emp'[avg_comm], REMOVEFILTERS(), TREATAS(SELECTCOLUMNS(FILTER(__v1, (NOT(ISBLANK([f.empno])) && ([o.ename] == [ename]))), "__k1", [f.empno]), 'emp'[empno]))), "ename", [ename], "a", [__m1], "b", [__m2])

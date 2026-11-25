@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), cte: its SQL as dax-sql's SQL front end writes it in DAX:
+// WITH s AS (SELECT dname, dept_count AS mm FROM scott_model.dept WHERE deptno IS NOT NULL) SELECT dname, AGG(mm) AS v FROM s GROUP BY dname
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('dept'[dname], "__rows", COUNTROWS(dept), "v", 'dept'[dept_count]), NOT(ISBLANK('dept'[deptno]))), "dname", 'dept'[dname], "v", COALESCE([v], 0))

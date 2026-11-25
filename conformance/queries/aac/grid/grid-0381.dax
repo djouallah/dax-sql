@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), fan-out: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT f.intervals, AGG(o."Month days") AS v FROM aac.fct_region_hourly AS f JOIN aac.dim_month AS o ON f."month" = o."month" GROUP BY f.intervals
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('fct_region_hourly'[intervals], "__rows", COUNTROWS(fct_region_hourly), "v", CALCULATE('dim_month'[Month days], fct_region_hourly)), NOT(ISBLANK('dim_month'[month]))), "intervals", 'fct_region_hourly'[intervals], "v", [v])

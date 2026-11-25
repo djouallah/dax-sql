@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), star where one: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT o.SubcategoryKey, AGG(f.Customers) AS v FROM "dax-sql-patterns".Sales AS f LEFT JOIN "dax-sql-patterns".Product AS o ON f.ProductKey = o.ProductKey WHERE NOT (o.ProductKey = 37) GROUP BY o.SubcategoryKey
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Product'[SubcategoryKey], "__rows", COUNTROWS(Sales), "v", 'Sales'[Customers]), NOT(('Product'[ProductKey] = 37))), "SubcategoryKey", 'Product'[SubcategoryKey], "v", [v])

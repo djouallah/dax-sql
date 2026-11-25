@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), where and: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.Renewable, AGG(t."Registered units") AS v FROM aac.dim_duid AS t WHERE NOT (t.DUID = 'LYA1') AND t.RegCapMW = 365 GROUP BY t.Renewable
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('dim_duid'[Renewable], "__rows", COUNTROWS(dim_duid), "v", 'dim_duid'[Registered units]), NOT(('dim_duid'[DUID] = "LYA1")), ('dim_duid'[RegCapMW] = 365)), "Renewable", 'dim_duid'[Renewable], "v", [v])

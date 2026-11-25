@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), where or: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.Quantity, AGG(t."Sales Amount") AS v FROM "dax-sql-patterns".Sales AS t WHERE t.CustomerKey = 20 OR t."Unit Cost" >= 19.9 GROUP BY t.Quantity
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Sales'[Quantity], "__rows", COUNTROWS(Sales), "v", 'Sales'[Sales Amount]), (('Sales'[CustomerKey] = 20) || ('Sales'[Unit Cost] >= 19.9))), "Quantity", 'Sales'[Quantity], "v", [v])

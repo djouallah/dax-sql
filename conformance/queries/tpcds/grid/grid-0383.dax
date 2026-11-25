@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), star two sides: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT o.d_qoy, f.cache_buster, AGG(f."Catalog Net Profit") AS v FROM tpcds.catalog_sales AS f LEFT JOIN tpcds.date_dim AS o ON f.cs_sold_date_sk = o.d_date_sk_1 GROUP BY o.d_qoy, f.cache_buster
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('date_dim'[d_qoy], 'catalog_sales'[cache_buster], "__rows", COUNTROWS(catalog_sales), "v", 'catalog_sales'[Catalog Net Profit]), "d_qoy", 'date_dim'[d_qoy], "cache_buster", 'catalog_sales'[cache_buster], "v", [v])

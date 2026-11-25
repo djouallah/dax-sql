@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), cte: its SQL as dax-sql's SQL front end writes it in DAX:
+// WITH s AS (SELECT loc, dept_count AS mm FROM scott_model.dept WHERE loc IN ('NEW YORK', 'NEW YORK')) SELECT loc, AGG(mm) AS v FROM s GROUP BY loc
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('dept'[loc], "__rows", COUNTROWS(dept), "v", 'dept'[dept_count]), ('dept'[loc] IN {"NEW YORK", "NEW YORK"})), "loc", 'dept'[loc], "v", COALESCE([v], 0))

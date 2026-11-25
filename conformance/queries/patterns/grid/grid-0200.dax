@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), star where many: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT o."Day Name", AGG(f."Customer Distinct Products") AS v FROM "dax-sql-patterns".Sales AS f LEFT JOIN "dax-sql-patterns"."Date" AS o ON f."Order Date" = o."Date" WHERE f.CustomerKey <> 38 GROUP BY o."Day Name"
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Date'[Day Name], "__rows", COUNTROWS(Sales), "v", 'Sales'[Customer Distinct Products]), ('Sales'[CustomerKey] <> 38)), "Day Name", 'Date'[Day Name], "v", [v])

@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), star two sides: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT o."Year", f.ShipDate, AGG(f.Orders) AS v FROM contoso.Sales AS f JOIN contoso."Date" AS o ON f.OrderDate = o."Date" GROUP BY o."Year", f.ShipDate
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Date'[Year], 'Sales'[ShipDate], "__rows", COUNTROWS(Sales), "v", 'Sales'[Orders]), NOT(ISBLANK('Date'[Date]))), "Year", 'Date'[Year], "ShipDate", 'Sales'[ShipDate], "v", [v])

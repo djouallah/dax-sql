@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), star where one: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT o.Opened, AGG(f."Target Amount") AS v FROM "dax-conformance-edges".Target AS f LEFT JOIN "dax-conformance-edges".Store AS o ON f.StoreKey = o.StoreKey WHERE o.Opened <> DATE '2024-12-01' GROUP BY o.Opened
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Store'[Opened], "__rows", COUNTROWS(Target), "v", 'Target'[Target Amount]), ('Store'[Opened] <> DATE(2024, 12, 1))), "Opened", 'Store'[Opened], "v", [v])

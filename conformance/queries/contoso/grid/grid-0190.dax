@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), where and: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.ShipDate, AGG(t.Quantity) AS v FROM contoso.Sales AS t WHERE t.Qty BETWEEN 1 AND 2 AND t.ShipDate >= DATE '2023-01-20' GROUP BY t.ShipDate
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Sales'[ShipDate], "__rows", COUNTROWS(Sales), "v", 'Sales'[Quantity]), (('Sales'[Qty] >= 1) && ('Sales'[Qty] <= 2)), ('Sales'[ShipDate] >= DATE(2023, 1, 20))), "ShipDate", 'Sales'[ShipDate], "v", [v])

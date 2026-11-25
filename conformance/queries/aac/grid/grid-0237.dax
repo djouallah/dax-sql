@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), cte: its SQL as dax-sql's SQL front end writes it in DAX:
+// WITH s AS (SELECT "time", "Days with output" AS mm FROM aac.fct_summary WHERE NOT ("date" = DATE '2026-08-10')) SELECT "time", AGG(mm) AS v FROM s GROUP BY "time"
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('fct_summary'[time], "__rows", COUNTROWS(fct_summary), "v", 'fct_summary'[Days with output]), NOT(('fct_summary'[date] = DATE(2026, 8, 10)))), "time", 'fct_summary'[time], "v", [v])

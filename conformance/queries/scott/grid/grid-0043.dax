@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), scalar ops: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.comm, AGG(t.avg_sal) * 2 AS a, AGG(t.avg_sal) + 1 AS b, COALESCE(AGG(t.avg_sal), 0) AS c FROM scott_model.emp AS t GROUP BY t.comm
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('emp'[comm], "__rows", COUNTROWS(emp), "a", ('emp'[avg_sal] * 2), "b", ('emp'[avg_sal] + 1), "c", IF(ISBLANK(COUNTROWS(emp)), BLANK(), COALESCE('emp'[avg_sal], 0))), "comm", 'emp'[comm], "a", [a], "b", [b], "c", [c])

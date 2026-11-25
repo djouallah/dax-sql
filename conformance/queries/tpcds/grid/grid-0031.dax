@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), where and: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.ss_cdemo_sk, AGG(t."Store Distinct Customers") AS v FROM tpcds.store_sales AS t WHERE NOT (t.ss_store_sk = 1) AND t.ss_store_sk IS NOT NULL GROUP BY t.ss_cdemo_sk
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('store_sales'[ss_cdemo_sk], "__rows", COUNTROWS(store_sales), "v", 'store_sales'[Store Distinct Customers]), NOT(('store_sales'[ss_store_sk] = 1)), NOT(ISBLANK('store_sales'[ss_store_sk]))), "ss_cdemo_sk", 'store_sales'[ss_cdemo_sk], "v", [v])

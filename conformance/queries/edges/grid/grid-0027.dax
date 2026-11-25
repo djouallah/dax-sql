@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), where and: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.CustomerKey, AGG(t."Sales Amount") AS v FROM "dax-conformance-edges".Sales AS t WHERE t.CustomerKey <> 1 AND t."Ship Date" = DATE '2023-09-21' GROUP BY t.CustomerKey
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Sales'[CustomerKey], "__rows", COUNTROWS(Sales), "v", 'Sales'[Sales Amount]), ('Sales'[CustomerKey] <> 1), ('Sales'[Ship Date] = DATE(2023, 9, 21))), "CustomerKey", 'Sales'[CustomerKey], "v", [v])

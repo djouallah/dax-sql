@@ -1,0 +1,7 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), star where many: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT o.Quarter, AGG(f.Quantity) AS v FROM contoso.Sales AS f JOIN contoso."Date" AS o ON f.ShipDate = o."Date" WHERE f.Qty IS NOT NULL GROUP BY o.Quarter
+DEFINE
+VAR __v1 = GENERATE(SELECTCOLUMNS(Sales, "f.OrderDate", 'Sales'[OrderDate], "f.ShipDate", 'Sales'[ShipDate], "f.ProductKey", 'Sales'[ProductKey], "f.CustomerKey", 'Sales'[CustomerKey], "f.Qty", 'Sales'[Qty], "f.Amount", 'Sales'[Amount]), FILTER(SELECTCOLUMNS(Date, "o.Date", 'Date'[Date], "o.Quarter", 'Date'[Quarter]), ([f.ShipDate] = [o.Date])))
+VAR __v2 = FILTER(__v1, NOT(ISBLANK([f.Qty])))
+VAR __v3 = DISTINCT(SELECTCOLUMNS(__v2, "Quarter", [o.Quarter]))
+EVALUATE SELECTCOLUMNS(ADDCOLUMNS(__v3, "__m1", CALCULATE('Sales'[Quantity], REMOVEFILTERS(), TREATAS(SELECTCOLUMNS(FILTER(__v2, (NOT((((((ISBLANK([f.OrderDate]) && ISBLANK([f.ShipDate])) && ISBLANK([f.ProductKey])) && ISBLANK([f.CustomerKey])) && ISBLANK([f.Qty])) && ISBLANK([f.Amount]))) && ([o.Quarter] == [Quarter]))), "__k1", [f.OrderDate], "__k2", [f.ShipDate], "__k3", [f.ProductKey], "__k4", [f.CustomerKey], "__k5", [f.Qty], "__k6", [f.Amount]), 'Sales'[OrderDate], 'Sales'[ShipDate], 'Sales'[ProductKey], 'Sales'[CustomerKey], 'Sales'[Qty], 'Sales'[Amount]))), "Quarter", [Quarter], "v", [__m1])

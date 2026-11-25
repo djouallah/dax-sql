@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), where or: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.StoreKey, AGG(t."Total Quantity") AS v FROM "dax-conformance-edges".Sales AS t WHERE t."Order Date" IN (DATE '2023-05-25', DATE '2023-10-14') OR t.ProductKey IS NULL GROUP BY t.StoreKey
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Sales'[StoreKey], "__rows", COUNTROWS(Sales), "v", 'Sales'[Total Quantity]), (('Sales'[Order Date] IN {DATE(2023, 5, 25), DATE(2023, 10, 14)}) || ISBLANK('Sales'[ProductKey]))), "StoreKey", 'Sales'[StoreKey], "v", [v])

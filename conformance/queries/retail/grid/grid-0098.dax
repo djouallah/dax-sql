@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), rollup: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.order_id, AGG(t.total_revenue) AS v FROM retail_model.orders AS t GROUP BY ROLLUP (t.order_id) ORDER BY t.order_id NULLS LAST
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS(ROLLUPADDISSUBTOTAL('orders'[order_id], "__level1_order_id"), "__rows", COUNTROWS(orders), "v", 'orders'[total_revenue]), "order_id", 'orders'[order_id], "v", [v]) ORDER BY ISBLANK([order_id]), [order_id]

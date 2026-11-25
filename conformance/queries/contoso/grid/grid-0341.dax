@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), star total: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT AGG(f.Returned) AS v FROM contoso.Returns AS f JOIN contoso."Date" AS o ON f."Date" = o."Date"
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(ROW("v", 'Returns'[Returned]), NOT(ISBLANK('Date'[Date]))), "v", [v])

@@ -1,0 +1,279 @@
+{
+  "name": "dax-conformance-stores",
+  "compatibilityLevel": 1604,
+  "model": {
+    "culture": "en-US",
+    "defaultPowerBIDataSourceVersion": "powerBI_V3",
+    "description": "Store sales and returns with item, date, store, and customer dimensions",
+    "tables": [
+      {
+        "name": "date_dim",
+        "columns": [
+          {
+            "name": "date_id",
+            "dataType": "string",
+            "sourceColumn": "date_id",
+            "isKey": true
+          },
+          {
+            "name": "year",
+            "dataType": "int64",
+            "sourceColumn": "d_year"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "date_dim",
+            "source": {
+              "type": "entity",
+              "entityName": "date_dim"
+            }
+          }
+        ]
+      },
+      {
+        "name": "item",
+        "columns": [
+          {
+            "name": "item_id",
+            "dataType": "string",
+            "sourceColumn": "item_id",
+            "isKey": true
+          },
+          {
+            "name": "brand",
+            "dataType": "string",
+            "sourceColumn": "brand"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "item",
+            "source": {
+              "type": "entity",
+              "entityName": "item"
+            }
+          }
+        ]
+      },
+      {
+        "name": "store",
+        "columns": [
+          {
+            "name": "store_id",
+            "dataType": "string",
+            "sourceColumn": "store_id",
+            "isKey": true
+          },
+          {
+            "name": "state",
+            "dataType": "string",
+            "sourceColumn": "state"
+          },
+          {
+            "name": "closing_date_id",
+            "dataType": "string",
+            "sourceColumn": "closing_date_id"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "store",
+            "source": {
+              "type": "entity",
+              "entityName": "store"
+            }
+          }
+        ]
+      },
+      {
+        "name": "customers",
+        "columns": [
+          {
+            "name": "customer_id",
+            "dataType": "string",
+            "sourceColumn": "customer_id",
+            "isKey": true
+          },
+          {
+            "name": "region",
+            "dataType": "string",
+            "sourceColumn": "region"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "customers",
+            "source": {
+              "type": "entity",
+              "entityName": "customers"
+            }
+          }
+        ],
+        "measures": [
+          {
+            "name": "customer_count",
+            "description": "Number of customers",
+            "expression": "COUNTROWS('customers')",
+            "annotations": [
+              {
+                "name": "Ossie",
+                "value": "{\"dataset\":\"customers\",\"home\":\"customers\",\"expression\":{\"sql\":\"COUNT(*)\"},\"dax\":\"COUNTROWS('customers')\",\"datatype\":\"Integer\"}"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "store_sales",
+        "columns": [
+          {
+            "name": "sale_id",
+            "dataType": "string",
+            "sourceColumn": "sale_id",
+            "isKey": true
+          },
+          {
+            "name": "item_id",
+            "dataType": "string",
+            "sourceColumn": "item_id"
+          },
+          {
+            "name": "sale_date_id",
+            "dataType": "string",
+            "sourceColumn": "sale_date_id"
+          },
+          {
+            "name": "store_id",
+            "dataType": "string",
+            "sourceColumn": "store_id"
+          },
+          {
+            "name": "customer_id",
+            "dataType": "string",
+            "sourceColumn": "customer_id"
+          },
+          {
+            "name": "sales_amount",
+            "dataType": "int64",
+            "sourceColumn": "sales_amount"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "store_sales",
+            "source": {
+              "type": "entity",
+              "entityName": "store_sales"
+            }
+          }
+        ],
+        "measures": [
+          {
+            "name": "total_sales",
+            "description": "Total sales amount",
+            "expression": "SUM('store_sales'[sales_amount])",
+            "annotations": [
+              {
+                "name": "Ossie",
+                "value": "{\"dataset\":\"store_sales\",\"home\":\"store_sales\",\"expression\":{\"sql\":\"SUM(sales_amount)\"},\"dax\":\"SUM('store_sales'[sales_amount])\",\"datatype\":\"Integer\"}"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "store_returns",
+        "columns": [
+          {
+            "name": "return_id",
+            "dataType": "string",
+            "sourceColumn": "return_id",
+            "isKey": true
+          },
+          {
+            "name": "item_id",
+            "dataType": "string",
+            "sourceColumn": "item_id"
+          },
+          {
+            "name": "return_date_id",
+            "dataType": "string",
+            "sourceColumn": "return_date_id"
+          },
+          {
+            "name": "return_amount",
+            "dataType": "int64",
+            "sourceColumn": "return_amount"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "store_returns",
+            "source": {
+              "type": "entity",
+              "entityName": "store_returns"
+            }
+          }
+        ],
+        "measures": [
+          {
+            "name": "total_returns",
+            "description": "Total return amount",
+            "expression": "SUM('store_returns'[return_amount])",
+            "annotations": [
+              {
+                "name": "Ossie",
+                "value": "{\"dataset\":\"store_returns\",\"home\":\"store_returns\",\"expression\":{\"sql\":\"SUM(return_amount)\"},\"dax\":\"SUM('store_returns'[return_amount])\",\"datatype\":\"Integer\"}"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "name": "store_sales_to_item",
+        "fromTable": "store_sales",
+        "fromColumn": "item_id",
+        "toTable": "item",
+        "toColumn": "item_id"
+      },
+      {
+        "name": "store_sales_to_sale_date",
+        "fromTable": "store_sales",
+        "fromColumn": "sale_date_id",
+        "toTable": "date_dim",
+        "toColumn": "date_id"
+      },
+      {
+        "name": "store_sales_to_store",
+        "fromTable": "store_sales",
+        "fromColumn": "store_id",
+        "toTable": "store",
+        "toColumn": "store_id"
+      },
+      {
+        "name": "store_sales_to_customers",
+        "fromTable": "store_sales",
+        "fromColumn": "customer_id",
+        "toTable": "customers",
+        "toColumn": "customer_id"
+      },
+      {
+        "name": "store_returns_to_item",
+        "fromTable": "store_returns",
+        "fromColumn": "item_id",
+        "toTable": "item",
+        "toColumn": "item_id"
+      },
+      {
+        "name": "store_returns_to_return_date",
+        "fromTable": "store_returns",
+        "fromColumn": "return_date_id",
+        "toTable": "date_dim",
+        "toColumn": "date_id"
+      }
+    ]
+  }
+}

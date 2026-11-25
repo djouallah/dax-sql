@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), cte: its SQL as dax-sql's SQL front end writes it in DAX:
+// WITH s AS (SELECT YearMonth, "Budget Amount" AS mm FROM "dax-sql-patterns".Budget WHERE YearMonth IS NOT NULL) SELECT YearMonth, AGG(mm) AS v FROM s GROUP BY YearMonth
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Budget'[YearMonth], "__rows", COUNTROWS(Budget), "v", 'Budget'[Budget Amount]), NOT(ISBLANK('Budget'[YearMonth]))), "YearMonth", 'Budget'[YearMonth], "v", [v])

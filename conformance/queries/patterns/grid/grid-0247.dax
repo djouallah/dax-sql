@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), star total: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT AGG(f."Sales Amount") AS v FROM "dax-sql-patterns".Sales AS f JOIN "dax-sql-patterns".Currency AS o ON f.CurrencyCode = o.CurrencyCode
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(ROW("v", 'Sales'[Sales Amount]), NOT(ISBLANK('Currency'[CurrencyCode]))), "v", [v])

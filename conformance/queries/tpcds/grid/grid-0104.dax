@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), where and: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.ss_promo_sk, AGG(t."Store Distinct Customers") AS v FROM tpcds.store_sales AS t WHERE t.ss_sold_date_sk <> 2461290 AND t.ss_addr_sk < 2 GROUP BY t.ss_promo_sk
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('store_sales'[ss_promo_sk], "__rows", COUNTROWS(store_sales), "v", 'store_sales'[Store Distinct Customers]), ('store_sales'[ss_sold_date_sk] <> 2461290), ('store_sales'[ss_addr_sk] < 2)), "ss_promo_sk", 'store_sales'[ss_promo_sk], "v", [v])

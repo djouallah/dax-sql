@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), rollup: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.deptno, AGG(t.avg_sal) AS v FROM scott_model.emp AS t GROUP BY ROLLUP (t.deptno) ORDER BY t.deptno NULLS LAST
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS(ROLLUPADDISSUBTOTAL('emp'[deptno], "__level1_deptno"), "__rows", COUNTROWS(emp), "v", 'emp'[avg_sal]), "deptno", 'emp'[deptno], "v", [v]) ORDER BY ISBLANK([deptno]), [deptno]

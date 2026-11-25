@@ -1,0 +1,3 @@
+// note: the view expander's grid (tools/ossie/grid.mjs), where and: its SQL as dax-sql's SQL front end writes it in DAX:
+// SELECT t.amount, AGG(t.total_returns) AS v FROM retail_model.returns AS t WHERE t.customer_id IN ('C4', 'C4') AND t.return_id IS NOT NULL GROUP BY t.amount
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('returns'[amount], "__rows", COUNTROWS(returns), "v", 'returns'[total_returns]), ('returns'[customer_id] IN {"C4", "C4"}), NOT(ISBLANK('returns'[return_id]))), "amount", 'returns'[amount], "v", [v])

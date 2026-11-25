@@ -1,0 +1,3 @@
+// note: Apache Ossie query compliance A4 (a04_having_on_unselected_measure.ost): HAVING and ORDER BY can use a measure that is not selected. As dax-sql's SQL front end writes its SQL in DAX:
+// SELECT job, AGG(sum_sal) AS sum_sal FROM scott_model.emp GROUP BY job HAVING AGG(emp_count) > 2 ORDER BY AGG(sum_sal) DESC LIMIT 3
+EVALUATE SELECTCOLUMNS(FILTER(SUMMARIZECOLUMNS('emp'[job], "__rows", COUNTROWS(emp), "sum_sal", 'emp'[sum_sal]), (COALESCE('emp'[emp_count], 0) > 2)), "job", 'emp'[job], "sum_sal", [sum_sal]) ORDER BY [sum_sal] DESC

@@ -1,0 +1,366 @@
+{
+  "name": "scott_model",
+  "model": {
+    "description": "The SCOTT schema with dataset-scoped metrics",
+    "tables": [
+      {
+        "name": "emp",
+        "columns": [
+          {
+            "name": "empno",
+            "dataType": "int64",
+            "sourceColumn": "empno",
+            "isKey": true
+          },
+          {
+            "name": "ename",
+            "dataType": "string",
+            "sourceColumn": "ename"
+          },
+          {
+            "name": "job",
+            "dataType": "string",
+            "sourceColumn": "job"
+          },
+          {
+            "name": "mgr",
+            "dataType": "int64",
+            "sourceColumn": "mgr"
+          },
+          {
+            "name": "hiredate",
+            "dataType": "dateTime",
+            "sourceColumn": "hiredate"
+          },
+          {
+            "name": "sal",
+            "dataType": "decimal",
+            "sourceColumn": "sal"
+          },
+          {
+            "name": "comm",
+            "dataType": "decimal",
+            "sourceColumn": "comm"
+          },
+          {
+            "name": "deptno",
+            "dataType": "int64",
+            "sourceColumn": "deptno"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "emp",
+            "source": {
+              "type": "entity",
+              "entityName": "emp",
+              "schemaName": "scott"
+            }
+          }
+        ],
+        "measures": [
+          {
+            "name": "sum_sal",
+            "description": "Total salary",
+            "expression": "SUM('emp'[sal])",
+            "annotations": [
+              {
+                "name": "Ossie",
+                "value": "{\"dataset\":\"emp\",\"home\":\"emp\",\"expression\":{\"sql\":\"SUM(sal)\"},\"dax\":\"SUM('emp'[sal])\",\"datatype\":\"Decimal\"}"
+              }
+            ]
+          },
+          {
+            "name": "avg_sal",
+            "description": "Average salary",
+            "expression": "AVERAGEX('emp', CONVERT('emp'[sal], DOUBLE))",
+            "annotations": [
+              {
+                "name": "Ossie",
+                "value": "{\"dataset\":\"emp\",\"home\":\"emp\",\"expression\":{\"sql\":\"AVG(CAST(sal AS DOUBLE))\"},\"dax\":\"AVERAGEX('emp', CONVERT('emp'[sal], DOUBLE))\",\"datatype\":\"Float\"}"
+              }
+            ]
+          },
+          {
+            "name": "emp_count",
+            "description": "Number of employees",
+            "expression": "COUNTROWS('emp')",
+            "annotations": [
+              {
+                "name": "Ossie",
+                "value": "{\"dataset\":\"emp\",\"home\":\"emp\",\"expression\":{\"sql\":\"COUNT(*)\"},\"dax\":\"COUNTROWS('emp')\",\"datatype\":\"Integer\"}"
+              }
+            ]
+          },
+          {
+            "name": "comm_count",
+            "description": "Number of employees that have a commission",
+            "expression": "COUNTA('emp'[comm])",
+            "annotations": [
+              {
+                "name": "Ossie",
+                "value": "{\"dataset\":\"emp\",\"home\":\"emp\",\"expression\":{\"sql\":\"COUNT(comm)\"},\"dax\":\"COUNTA('emp'[comm])\",\"datatype\":\"Integer\"}"
+              }
+            ]
+          },
+          {
+            "name": "sum_comm",
+            "description": "Total commission",
+            "expression": "SUM('emp'[comm])",
+            "annotations": [
+              {
+                "name": "Ossie",
+                "value": "{\"dataset\":\"emp\",\"home\":\"emp\",\"expression\":{\"sql\":\"SUM(comm)\"},\"dax\":\"SUM('emp'[comm])\",\"datatype\":\"Decimal\"}"
+              }
+            ]
+          },
+          {
+            "name": "avg_comm",
+            "description": "Average commission, over the employees that have a commission",
+            "expression": "AVERAGEX('emp', CONVERT('emp'[comm], DOUBLE))",
+            "annotations": [
+              {
+                "name": "Ossie",
+                "value": "{\"dataset\":\"emp\",\"home\":\"emp\",\"expression\":{\"sql\":\"AVG(CAST(comm AS DOUBLE))\"},\"dax\":\"AVERAGEX('emp', CONVERT('emp'[comm], DOUBLE))\",\"datatype\":\"Float\"}"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "dept",
+        "columns": [
+          {
+            "name": "deptno",
+            "dataType": "int64",
+            "sourceColumn": "deptno",
+            "isKey": true
+          },
+          {
+            "name": "dname",
+            "dataType": "string",
+            "sourceColumn": "dname"
+          },
+          {
+            "name": "loc",
+            "dataType": "string",
+            "sourceColumn": "loc"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "dept",
+            "source": {
+              "type": "entity",
+              "entityName": "dept",
+              "schemaName": "scott"
+            }
+          }
+        ],
+        "measures": [
+          {
+            "name": "dept_count",
+            "description": "Number of departments",
+            "expression": "COUNTROWS('dept')",
+            "annotations": [
+              {
+                "name": "Ossie",
+                "value": "{\"dataset\":\"dept\",\"home\":\"dept\",\"expression\":{\"sql\":\"COUNT(*)\"},\"dax\":\"COUNTROWS('dept')\",\"datatype\":\"Integer\"}"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "salgrade",
+        "columns": [
+          {
+            "name": "grade",
+            "dataType": "int64",
+            "sourceColumn": "grade",
+            "isKey": true
+          },
+          {
+            "name": "losal",
+            "dataType": "int64",
+            "sourceColumn": "losal"
+          },
+          {
+            "name": "hisal",
+            "dataType": "int64",
+            "sourceColumn": "hisal"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "salgrade",
+            "source": {
+              "type": "entity",
+              "entityName": "salgrade",
+              "schemaName": "scott"
+            }
+          }
+        ],
+        "measures": [
+          {
+            "name": "grade_count",
+            "description": "Number of salary grades",
+            "expression": "COUNTROWS('salgrade')",
+            "annotations": [
+              {
+                "name": "Ossie",
+                "value": "{\"dataset\":\"salgrade\",\"home\":\"salgrade\",\"expression\":{\"sql\":\"COUNT(*)\"},\"dax\":\"COUNTROWS('salgrade')\",\"datatype\":\"Integer\"}"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "pet",
+        "columns": [
+          {
+            "name": "pname",
+            "dataType": "string",
+            "sourceColumn": "pname",
+            "isKey": true
+          },
+          {
+            "name": "empno",
+            "dataType": "int64",
+            "sourceColumn": "empno"
+          },
+          {
+            "name": "species",
+            "dataType": "string",
+            "sourceColumn": "species"
+          },
+          {
+            "name": "age",
+            "dataType": "int64",
+            "sourceColumn": "age"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "pet",
+            "source": {
+              "type": "entity",
+              "entityName": "pet",
+              "schemaName": "scott"
+            }
+          }
+        ],
+        "measures": [
+          {
+            "name": "pet_count",
+            "description": "Number of pets",
+            "expression": "COUNTROWS('pet')",
+            "annotations": [
+              {
+                "name": "Ossie",
+                "value": "{\"dataset\":\"pet\",\"home\":\"pet\",\"expression\":{\"sql\":\"COUNT(*)\"},\"dax\":\"COUNTROWS('pet')\",\"datatype\":\"Integer\"}"
+              }
+            ]
+          },
+          {
+            "name": "sum_age",
+            "description": "Total age of pets",
+            "expression": "SUM('pet'[age])",
+            "annotations": [
+              {
+                "name": "Ossie",
+                "value": "{\"dataset\":\"pet\",\"home\":\"pet\",\"expression\":{\"sql\":\"SUM(age)\"},\"dax\":\"SUM('pet'[age])\",\"datatype\":\"Integer\"}"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "bonus",
+        "columns": [
+          {
+            "name": "ename",
+            "dataType": "string",
+            "sourceColumn": "ename",
+            "isKey": true
+          },
+          {
+            "name": "job",
+            "dataType": "string",
+            "sourceColumn": "job",
+            "isKey": true
+          },
+          {
+            "name": "sal",
+            "dataType": "decimal",
+            "sourceColumn": "sal",
+            "isKey": true
+          },
+          {
+            "name": "comm",
+            "dataType": "decimal",
+            "sourceColumn": "comm",
+            "isKey": true
+          }
+        ],
+        "partitions": [
+          {
+            "name": "bonus",
+            "source": {
+              "type": "entity",
+              "entityName": "bonus",
+              "schemaName": "scott"
+            }
+          }
+        ],
+        "measures": [
+          {
+            "name": "bonus_count",
+            "description": "Number of bonuses",
+            "expression": "COUNTROWS('bonus')",
+            "annotations": [
+              {
+                "name": "Ossie",
+                "value": "{\"dataset\":\"bonus\",\"home\":\"bonus\",\"expression\":{\"sql\":\"COUNT(*)\"},\"dax\":\"COUNTROWS('bonus')\",\"datatype\":\"Integer\"}"
+              }
+            ]
+          },
+          {
+            "name": "sum_bonus",
+            "description": "Total of bonuses",
+            "expression": "SUM('bonus'[comm])",
+            "annotations": [
+              {
+                "name": "Ossie",
+                "value": "{\"dataset\":\"bonus\",\"home\":\"bonus\",\"expression\":{\"sql\":\"SUM(comm)\"},\"dax\":\"SUM('bonus'[comm])\",\"datatype\":\"Decimal\"}"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "name": "emp_to_dept",
+        "fromTable": "emp",
+        "fromColumn": "deptno",
+        "toTable": "dept",
+        "toColumn": "deptno"
+      },
+      {
+        "name": "pet_to_owner",
+        "fromTable": "pet",
+        "fromColumn": "empno",
+        "toTable": "emp",
+        "toColumn": "empno"
+      },
+      {
+        "name": "bonus_to_emp",
+        "fromTable": "bonus",
+        "fromColumn": "ename",
+        "toTable": "emp",
+        "toColumn": "ename"
+      }
+    ]
+  }
+}

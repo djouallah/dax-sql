@@ -1,0 +1,3 @@
+// note: Apache Ossie query compliance A6 (a06_nulls_follow_aggregate.ost): A measure follows the NULL rules of its aggregate. As dax-sql's SQL front end writes its SQL in DAX:
+// SELECT deptno, AGG(emp_count) AS emp_count, AGG(comm_count) AS comm_count, AGG(sum_comm) AS sum_comm, AGG(avg_comm) AS avg_comm FROM scott_model.emp GROUP BY deptno ORDER BY deptno
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('emp'[deptno], "__rows", COUNTROWS(emp), "emp_count", 'emp'[emp_count], "comm_count", 'emp'[comm_count], "sum_comm", 'emp'[sum_comm], "avg_comm", 'emp'[avg_comm]), "deptno", 'emp'[deptno], "emp_count", COALESCE([emp_count], 0), "comm_count", COALESCE([comm_count], 0), "sum_comm", [sum_comm], "avg_comm", [avg_comm]) ORDER BY 'emp'[deptno]

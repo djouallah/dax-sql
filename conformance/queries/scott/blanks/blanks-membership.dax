@@ -1,0 +1,9 @@
+// note: a blank owner among the managers: IN VALUES, IN a table constructor with BLANK(), CONTAINSROW, TREATAS of BLANK(), LOOKUPVALUE of a blank manager
+EVALUATE
+ROW(
+    "owner in managers", COUNTROWS(FILTER(pet, pet[empno] IN VALUES(emp[mgr]))),
+    "owner in {blank}", COUNTROWS(FILTER(pet, pet[empno] IN {BLANK()})),
+    "owner in {0}", COUNTROWS(FILTER(pet, pet[empno] IN {0})),
+    "containsrow blank", CONTAINSROW(VALUES(emp[mgr]), BLANK()),
+    "treatas blank", CALCULATE(COUNTROWS(pet), TREATAS({BLANK()}, pet[empno])),
+    "lookup blank manager", LOOKUPVALUE(emp[ename], emp[mgr], BLANK()))

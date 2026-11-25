@@ -1,0 +1,3 @@
+// note: Apache Ossie query compliance B2 (b02_filter_on_joined_relation.ost): A filter on the joined relation restricts the measure. As dax-sql's SQL front end writes its SQL in DAX:
+// SELECT e.job, AGG(e.sum_sal) AS sum_sal, AGG(e.emp_count) AS emp_count FROM scott_model.emp AS e JOIN scott_model.dept AS d ON e.deptno = d.deptno WHERE d.loc = 'NEW YORK' GROUP BY e.job ORDER BY e.job
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('emp'[job], "__rows", COUNTROWS(emp), "sum_sal", 'emp'[sum_sal], "emp_count", 'emp'[emp_count]), ('dept'[loc] = "NEW YORK"), NOT(ISBLANK('dept'[deptno]))), "job", 'emp'[job], "sum_sal", [sum_sal], "emp_count", COALESCE([emp_count], 0)) ORDER BY 'emp'[job]

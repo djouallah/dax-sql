@@ -1,0 +1,4 @@
+// note: each pet's owner and the owner's department through two relationships, TRAMP's blank
+EVALUATE
+SELECTCOLUMNS(pet, "pname", pet[pname], "owner", RELATED(emp[ename]), "dept", RELATED(dept[dname]))
+ORDER BY [pname]

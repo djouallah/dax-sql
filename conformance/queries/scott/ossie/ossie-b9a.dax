@@ -1,0 +1,3 @@
+// note: Apache Ossie query compliance B9a (b09_inner_join_matched_rows.ost): INNER JOIN. As dax-sql's SQL front end writes its SQL in DAX:
+// SELECT AGG(e.emp_count) AS e_count, AGG(e.sum_sal) AS e_sal, AGG(p.pet_count) AS p_count, AGG(p.sum_age) AS p_age FROM scott_model.emp AS e JOIN scott_model.pet AS p ON p.empno = e.empno
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(ROW("e_count", CALCULATE('emp'[emp_count], pet), "e_sal", CALCULATE('emp'[sum_sal], pet), "p_count", 'pet'[pet_count], "p_age", 'pet'[sum_age]), NOT(ISBLANK('emp'[empno]))), "e_count", COALESCE([e_count], 0), "e_sal", [e_sal], "p_count", COALESCE([p_count], 0), "p_age", [p_age])

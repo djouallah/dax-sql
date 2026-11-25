@@ -1,0 +1,6 @@
+// note: Apache Ossie query compliance B5 (b05_manager_counted_once.ost): Fan-out in a self-join: each manager is counted once. As dax-sql's SQL front end writes its SQL in DAX:
+// SELECT e.job, AGG(e.emp_count) AS emp_count, AGG(m.emp_count) AS managers, AGG(m.sum_sal) AS managers_sal FROM scott_model.emp AS e JOIN scott_model.emp AS m ON e.mgr = m.empno GROUP BY e.job ORDER BY e.job
+DEFINE
+VAR __v1 = GENERATE(SELECTCOLUMNS(emp, "e.empno", 'emp'[empno], "e.job", 'emp'[job], "e.mgr", 'emp'[mgr]), FILTER(SELECTCOLUMNS(emp, "m.empno", 'emp'[empno]), ([e.mgr] = [m.empno])))
+VAR __v2 = DISTINCT(SELECTCOLUMNS(__v1, "job", [e.job]))
+EVALUATE SELECTCOLUMNS(ADDCOLUMNS(__v2, "__m1", COALESCE(CALCULATE('emp'[emp_count], REMOVEFILTERS(), TREATAS(SELECTCOLUMNS(FILTER(__v1, (NOT(ISBLANK([e.empno])) && ([e.job] == [job]))), "__k1", [e.empno]), 'emp'[empno])), 0), "__m2", COALESCE(CALCULATE('emp'[emp_count], REMOVEFILTERS(), TREATAS(SELECTCOLUMNS(FILTER(__v1, (NOT(ISBLANK([m.empno])) && ([e.job] == [job]))), "__k1", [m.empno]), 'emp'[empno])), 0), "__m3", CALCULATE('emp'[sum_sal], REMOVEFILTERS(), TREATAS(SELECTCOLUMNS(FILTER(__v1, (NOT(ISBLANK([m.empno])) && ([e.job] == [job]))), "__k1", [m.empno]), 'emp'[empno]))), "job", [job], "emp_count", [__m1], "managers", [__m2], "managers_sal", [__m3]) ORDER BY [job]

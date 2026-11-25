@@ -1,0 +1,11 @@
+// note: BLANK() under each operator and a few functions: =, ==, <>, <, + and -, *, /, &, NOT, IN, MOD, a number as a condition
+EVALUATE
+ROW(
+    "blank = 0", BLANK() = 0, "blank = empty", BLANK() = "", "blank = blank", BLANK() = BLANK(),
+    "blank == 0", BLANK() == 0, "blank == blank", BLANK() == BLANK(), "blank <> 0", BLANK() <> 0,
+    "blank < 1", BLANK() < 1, "blank > -1", BLANK() > -1,
+    "blank + 1", BLANK() + 1, "1 - blank", 1 - BLANK(), "blank + blank", BLANK() + BLANK(),
+    "blank * 2", BLANK() * 2, "blank / 2", BLANK() / 2,
+    "blank & x", BLANK() & "x", "not blank", NOT BLANK(),
+    "blank in {0}", BLANK() IN {0}, "blank in {blank}", BLANK() IN {BLANK()},
+    "mod blank 3", MOD(BLANK(), 3), "if blank", IF(BLANK(), "true", "false"))

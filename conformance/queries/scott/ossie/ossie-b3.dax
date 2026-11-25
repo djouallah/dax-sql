@@ -1,0 +1,3 @@
+// note: Apache Ossie query compliance B3 (b03_top_n_join_as_filter.ost): A join to a top-N subquery acts as a filter. As dax-sql's SQL front end writes its SQL in DAX:
+// SELECT e.job, AGG(e.sum_sal) AS sum_sal FROM scott_model.emp AS e JOIN (SELECT deptno FROM scott_model.emp GROUP BY deptno ORDER BY AGG(sum_sal) DESC LIMIT 2) AS t ON e.deptno = t.deptno GROUP BY e.job ORDER BY e.job
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('emp'[job], "__rows", COUNTROWS(emp), "sum_sal", 'emp'[sum_sal]), TREATAS(SELECTCOLUMNS(TOPN(2, SELECTCOLUMNS(SUMMARIZECOLUMNS('emp'[deptno], "__rows", COUNTROWS(emp)), "deptno", 'emp'[deptno]), 'emp'[sum_sal], DESC), "deptno", [deptno]), 'emp'[deptno])), "job", 'emp'[job], "sum_sal", [sum_sal]) ORDER BY 'emp'[job]

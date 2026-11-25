@@ -1,0 +1,3 @@
+// note: Apache Ossie query compliance B10a (b10_left_join_null_padding.ost): LEFT JOIN. As dax-sql's SQL front end writes its SQL in DAX:
+// SELECT AGG(e.emp_count) AS e_count, AGG(e.sum_sal) AS e_sal, AGG(p.pet_count) AS p_count, AGG(p.sum_age) AS p_age FROM scott_model.emp AS e LEFT JOIN scott_model.pet AS p ON p.empno = e.empno
+EVALUATE SELECTCOLUMNS(ROW("e_count", 'emp'[emp_count], "e_sal", 'emp'[sum_sal], "p_count", CALCULATE('pet'[pet_count], KEEPFILTERS(NOT(ISBLANK('emp'[empno])))), "p_age", CALCULATE('pet'[sum_age], KEEPFILTERS(NOT(ISBLANK('emp'[empno]))))), "e_count", COALESCE([e_count], 0), "e_sal", [e_sal], "p_count", COALESCE([p_count], 0), "p_age", [p_age])

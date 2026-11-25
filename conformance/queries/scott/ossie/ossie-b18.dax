@@ -1,0 +1,3 @@
+// note: Apache Ossie query compliance B18 (b18_filter_restricts_one_side_measure.ost): WHERE restricts a "one"-side measure that the join fans out. As dax-sql's SQL front end writes its SQL in DAX:
+// SELECT e.job, AGG(d.dept_count) AS dept_count, AGG(e.emp_count) AS emp_count FROM scott_model.emp AS e JOIN scott_model.dept AS d ON e.deptno = d.deptno WHERE e.sal > 1000 GROUP BY e.job ORDER BY e.job
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('emp'[job], "__rows", COUNTROWS(emp), "dept_count", CALCULATE('dept'[dept_count], emp), "emp_count", 'emp'[emp_count]), ('emp'[sal] > 1000), NOT(ISBLANK('dept'[deptno]))), "job", 'emp'[job], "dept_count", COALESCE([dept_count], 0), "emp_count", COALESCE([emp_count], 0)) ORDER BY 'emp'[job]

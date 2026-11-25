@@ -1,0 +1,6 @@
+// note: NATURALINNERJOIN of two tables of values with no lineage on a column named k, one blank on each side (KING's manager, TRAMP's owner)
+EVALUATE
+NATURALINNERJOIN(
+    SELECTCOLUMNS(DATATABLE("k", INTEGER, "ename", STRING, {{BLANK(), "KING"}, {7839, "JONES"}}), "k", [k], "ename", [ename]),
+    SELECTCOLUMNS(DATATABLE("k", INTEGER, "pname", STRING, {{BLANK(), "TRAMP"}, {7839, "REX"}}), "k", [k], "pname", [pname]))
+ORDER BY [ename]

@@ -1,0 +1,6 @@
+// note: the join as FILTER over CROSSJOIN of the model tables, on = and on ==, counted, and the pairs whose keys are both blank
+EVALUATE
+ROW(
+    "pairs eq", COUNTROWS(FILTER(CROSSJOIN(emp, pet), pet[empno] = emp[mgr])),
+    "pairs strict", COUNTROWS(FILTER(CROSSJOIN(emp, pet), pet[empno] == emp[mgr])),
+    "blank pairs eq", COUNTROWS(FILTER(CROSSJOIN(emp, pet), pet[empno] = emp[mgr] && ISBLANK(pet[empno]))))

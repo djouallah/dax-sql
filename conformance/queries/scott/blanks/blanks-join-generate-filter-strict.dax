@@ -1,0 +1,8 @@
+// note: the same join on == (strict): a blank matches only a blank, so TRAMP and KING meet there too if == holds of two blanks
+EVALUATE
+SELECTCOLUMNS(
+    GENERATE(
+        SELECTCOLUMNS(emp, "ename", emp[ename], "mgr", emp[mgr]),
+        FILTER(SELECTCOLUMNS(pet, "pname", pet[pname], "owner", pet[empno]), [owner] == [mgr])),
+    "ename", [ename], "pname", [pname])
+ORDER BY [ename], [pname]

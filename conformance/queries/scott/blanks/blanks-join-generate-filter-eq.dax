@@ -1,0 +1,8 @@
+// note: a join written as GENERATE + FILTER on =, as dax-sql's SQL front end writes JOIN ON p.empno = e.mgr: does a pet with no owner (TRAMP) meet an employee with no manager (KING)?
+EVALUATE
+SELECTCOLUMNS(
+    GENERATE(
+        SELECTCOLUMNS(emp, "ename", emp[ename], "mgr", emp[mgr]),
+        FILTER(SELECTCOLUMNS(pet, "pname", pet[pname], "owner", pet[empno]), [owner] = [mgr])),
+    "ename", [ename], "pname", [pname])
+ORDER BY [ename], [pname]

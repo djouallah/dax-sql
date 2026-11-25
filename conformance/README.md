@@ -13,5 +13,6 @@ Details, and how to run it: [CONTRACT.md](CONTRACT.md).
 ## Known limitations
 
 - A golden is what Power BI answered on the day the Oracle ran; a service update can change it.
-- Five models: `patterns`, `contoso`, `edges`, `aac` (analytics-as-code) and `tpcds`
-  (direct-lake-parquet-layout's TPC-DS store_sales), the last two on a data sample.
+- Six models: `patterns`, `contoso`, `edges`, `aac` (analytics-as-code), `tpcds`
+  (direct-lake-parquet-layout's TPC-DS store_sales), the two on a data sample, and `scott`
+  (Apache Ossie's query compliance data and model, built by `tools/scott/build.mjs`).

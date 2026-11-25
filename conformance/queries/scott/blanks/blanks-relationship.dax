@@ -1,0 +1,4 @@
+// note: a pet with no owner across the relationship pet -> emp: pets by owner (the blank row) and each pet's owner (RELATED)
+EVALUATE
+SUMMARIZECOLUMNS(emp[ename], "pets", COUNTROWS(pet))
+ORDER BY emp[ename]

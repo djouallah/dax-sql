@@ -1,0 +1,13 @@
+// note: employees by their commission (10 of 14 blank, TURNER's 0): = 0, <> 300, = BLANK(), NOT (= 0), IN {0, BLANK()}, IN {300, 500}, BETWEEN as >= 0 && <= 500, comm + 0 > 0
+EVALUATE
+ROW(
+    "comm = 0", COUNTROWS(FILTER(emp, emp[comm] = 0)),
+    "comm <> 300", COUNTROWS(FILTER(emp, emp[comm] <> 300)),
+    "comm = blank", COUNTROWS(FILTER(emp, emp[comm] = BLANK())),
+    "not comm = 0", COUNTROWS(FILTER(emp, NOT (emp[comm] = 0))),
+    "comm in {0, blank}", COUNTROWS(FILTER(emp, emp[comm] IN {0, BLANK()})),
+    "comm not in {300, 500}", COUNTROWS(FILTER(emp, NOT (emp[comm] IN {300, 500}))),
+    "comm 0 to 500", COUNTROWS(FILTER(emp, emp[comm] >= 0 && emp[comm] <= 500)),
+    "comm + 0 > 0", COUNTROWS(FILTER(emp, emp[comm] + 0 > 0)),
+    "calculate comm = 0", CALCULATE(COUNTROWS(emp), emp[comm] = 0),
+    "calculate comm <> 300", CALCULATE(COUNTROWS(emp), emp[comm] <> 300))

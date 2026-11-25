@@ -1,0 +1,7 @@
+// note: INTERSECT and EXCEPT of the managers and the pets' owners, a blank in each: is the blank in both?
+EVALUATE
+ROW(
+    "intersect", COUNTROWS(INTERSECT(SELECTCOLUMNS(emp, "k", emp[mgr]), SELECTCOLUMNS(pet, "k", pet[empno]))),
+    "intersect blank", COUNTROWS(FILTER(INTERSECT(SELECTCOLUMNS(emp, "k", emp[mgr]), SELECTCOLUMNS(pet, "k", pet[empno])), ISBLANK([k]))),
+    "except", COUNTROWS(EXCEPT(SELECTCOLUMNS(pet, "k", pet[empno]), SELECTCOLUMNS(emp, "k", emp[mgr]))),
+    "except blank", COUNTROWS(FILTER(EXCEPT(SELECTCOLUMNS(pet, "k", pet[empno]), SELECTCOLUMNS(emp, "k", emp[mgr])), ISBLANK([k]))))

@@ -1,0 +1,3 @@
+// note: Apache Ossie query compliance A1 (a01_grand_total.ost): Grand total. As dax-sql's SQL front end writes its SQL in DAX:
+// SELECT AGG(sum_sal) AS sum_sal, AGG(emp_count) AS emp_count FROM scott_model.emp
+EVALUATE SELECTCOLUMNS(ROW("sum_sal", 'emp'[sum_sal], "emp_count", 'emp'[emp_count]), "sum_sal", [sum_sal], "emp_count", COALESCE([emp_count], 0))

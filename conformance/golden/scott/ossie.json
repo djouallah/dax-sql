@@ -13,24 +13,121 @@
   ]
  },
  "ossie-a10": {
-  "hash": "30c6ce1d347cde390017ffaa5e271763a2b2a421",
-  "error": "Query (3, 291) A single value for column '<oii>deptno</oii>' in table '<oii>emp</oii>' cannot be determined. This can happen when a measure or function formula refers to a column that contains many values without specifying an aggregation such as min, max, count, or sum to get a single result."
+  "hash": "07e4dfd5830cf16bbedbf530f5f1b38dac53b1a7",
+  "columns": [
+   "[deptno]",
+   "[payroll]",
+   "[headcount]"
+  ],
+  "rows": [
+   [
+    10,
+    1300.0,
+    1
+   ],
+   [
+    20,
+    1900.0,
+    2
+   ],
+   [
+    30,
+    6550.0,
+    5
+   ]
+  ]
  },
  "ossie-a11": {
-  "hash": "fe9489ffec1f9c2ccd18cd00bf44ce922b39c620",
-  "error": "Query (5, 224) A single value for column '<oii>deptno</oii>' in table '<oii>emp</oii>' cannot be determined. This can happen when a measure or function formula refers to a column that contains many values without specifying an aggregation such as min, max, count, or sum to get a single result."
+  "hash": "c633e758e4bcc126d499b33858e9a66ece271e17",
+  "columns": [
+   "[deptno]",
+   "[emp_count]"
+  ],
+  "rows": [
+   [
+    10,
+    2
+   ],
+   [
+    20,
+    3
+   ],
+   [
+    30,
+    1
+   ]
+  ]
  },
  "ossie-a14": {
-  "hash": "46d6c39e2a44a9f359e00ecd5b9535d5a5d2a072",
-  "error": "Query (3, 446) A single value for column '<oii>deptno</oii>' in table '<oii>emp</oii>' cannot be determined. This can happen when a measure or function formula refers to a column that contains many values without specifying an aggregation such as min, max, count, or sum to get a single result."
+  "hash": "044e68fb5842554e64377d8be2550538db9cea6c",
+  "columns": [
+   "[deptno]",
+   "[emp_count]"
+  ],
+  "rows": [
+   [
+    10,
+    1
+   ],
+   [
+    20,
+    3
+   ],
+   [
+    30,
+    2
+   ]
+  ]
  },
  "ossie-a2": {
-  "hash": "9e2d3a4045a8ae0e32133b68c2b9ad70af1aec00",
-  "error": "Query (3, 236) A single value for column '<oii>deptno</oii>' in table '<oii>emp</oii>' cannot be determined. This can happen when a measure or function formula refers to a column that contains many values without specifying an aggregation such as min, max, count, or sum to get a single result."
+  "hash": "f60ace990d9d35db00051c2b40ff9c58b3a1aec2",
+  "columns": [
+   "[deptno]",
+   "[sum_sal]",
+   "[emp_count]"
+  ],
+  "rows": [
+   [
+    10,
+    8750.0,
+    3
+   ],
+   [
+    20,
+    10875.0,
+    5
+   ],
+   [
+    30,
+    9400.0,
+    6
+   ]
+  ]
  },
  "ossie-a3": {
-  "hash": "62043b0a35cbff55c374818ae03eb99697a81365",
-  "error": "Query (3, 277) A single value for column '<oii>deptno</oii>' in table '<oii>emp</oii>' cannot be determined. This can happen when a measure or function formula refers to a column that contains many values without specifying an aggregation such as min, max, count, or sum to get a single result."
+  "hash": "8632ff20f3c2e977be187562fc2caeeeeb0bcc27",
+  "columns": [
+   "[deptno]",
+   "[sum_sal]",
+   "[emp_count]"
+  ],
+  "rows": [
+   [
+    10,
+    7450.0,
+    2
+   ],
+   [
+    20,
+    8975.0,
+    3
+   ],
+   [
+    30,
+    8450.0,
+    5
+   ]
+  ]
  },
  "ossie-a4": {
   "hash": "49012d9dbd639627d1e50b33454daa5eadee98c9",
@@ -54,12 +151,66 @@
   ]
  },
  "ossie-a5": {
-  "hash": "038318282bb211d900901c8fcd4d1afe1c5dcff4",
-  "error": "Query (3, 442) A single value for column '<oii>deptno</oii>' in table '<oii>emp</oii>' cannot be determined. This can happen when a measure or function formula refers to a column that contains many values without specifying an aggregation such as min, max, count, or sum to get a single result."
+  "hash": "472d684c159fda86d3ee187525f4c9de2faf9172",
+  "columns": [
+   "[deptno]",
+   "[sal_per_emp]",
+   "[avg_sal]",
+   "[total_pay]"
+  ],
+  "rows": [
+   [
+    10,
+    2916.6666666666665,
+    2916.6666666666665,
+    8750.0
+   ],
+   [
+    20,
+    2175.0,
+    2175.0,
+    10875.0
+   ],
+   [
+    30,
+    1566.6666666666667,
+    1566.6666666666667,
+    11600.0
+   ]
+  ]
  },
  "ossie-a6": {
-  "hash": "24eb86ad9df85ab366888f6d0453a939559a75e9",
-  "error": "Query (3, 367) A single value for column '<oii>deptno</oii>' in table '<oii>emp</oii>' cannot be determined. This can happen when a measure or function formula refers to a column that contains many values without specifying an aggregation such as min, max, count, or sum to get a single result."
+  "hash": "9feebde2eb5cd2bfc5fa1e3559b1ac08c84ac9c3",
+  "columns": [
+   "[deptno]",
+   "[emp_count]",
+   "[comm_count]",
+   "[sum_comm]",
+   "[avg_comm]"
+  ],
+  "rows": [
+   [
+    10,
+    3,
+    0,
+    null,
+    null
+   ],
+   [
+    20,
+    5,
+    0,
+    null,
+    null
+   ],
+   [
+    30,
+    6,
+    4,
+    2200.0,
+    550.0
+   ]
+  ]
  },
  "ossie-a7": {
   "hash": "d0ce0529fe81a8a8c6fc0d6296dd4c64dedced69",
@@ -107,12 +258,59 @@
   ]
  },
  "ossie-a9": {
-  "hash": "28ad0aac399665c92a665819d57b6641ba7113f8",
-  "error": "Query (3, 284) A single value for column '<oii>deptno</oii>' in table '<oii>emp</oii>' cannot be determined. This can happen when a measure or function formula refers to a column that contains many values without specifying an aggregation such as min, max, count, or sum to get a single result."
+  "hash": "e205e8280bc2be8db69d05e3e815be4544fd6252",
+  "columns": [
+   "[deptno]",
+   "[emp_count]",
+   "[avg_sal]"
+  ],
+  "rows": [
+   [
+    10,
+    3,
+    2916.6666666666665
+   ],
+   [
+    20,
+    5,
+    2175.0
+   ],
+   [
+    30,
+    6,
+    1566.6666666666667
+   ],
+   [
+    null,
+    14,
+    2073.214285714286
+   ]
+  ]
  },
  "ossie-b1": {
-  "hash": "a3743f9895d08bd046be0a8bd0d8a34e9c889ab6",
-  "error": "Query (3, 281) A single value for column '<oii>dname</oii>' in table '<oii>dept</oii>' cannot be determined. This can happen when a measure or function formula refers to a column that contains many values without specifying an aggregation such as min, max, count, or sum to get a single result."
+  "hash": "bfc6d85c86c6fa1dd5d2ea0bb3f2a8764c3e35fa",
+  "columns": [
+   "[dname]",
+   "[sum_sal]",
+   "[emp_count]"
+  ],
+  "rows": [
+   [
+    "ACCOUNTING",
+    8750.0,
+    3
+   ],
+   [
+    "RESEARCH",
+    10875.0,
+    5
+   ],
+   [
+    "SALES",
+    9400.0,
+    6
+   ]
+  ]
  },
  "ossie-b10": {
   "hash": "325453ef3de9e921363ca6181250bd252c80dfd4",
@@ -302,32 +500,197 @@
   ]
  },
  "ossie-b17": {
-  "hash": "abb3ca086e0b49243fe5ef74fcdd3d3083606d5e",
-  "error": "Query (3, 447) A single value for column '<oii>dname</oii>' in table '<oii>dept</oii>' cannot be determined. This can happen when a measure or function formula refers to a column that contains many values without specifying an aggregation such as min, max, count, or sum to get a single result."
+  "hash": "59475c7099bb8182856c35aa2d0319ec3a858c7a",
+  "columns": [
+   "[dname]",
+   "[emp_count]",
+   "[sum_sal]",
+   "[avg_sal]"
+  ],
+  "rows": [
+   [
+    "ACCOUNTING",
+    3,
+    8750.0,
+    2916.6666666666665
+   ],
+   [
+    "OPERATIONS",
+    0,
+    null,
+    null
+   ],
+   [
+    "RESEARCH",
+    5,
+    10875.0,
+    2175.0
+   ],
+   [
+    "SALES",
+    6,
+    9400.0,
+    1566.6666666666667
+   ]
+  ]
  },
  "ossie-b18": {
-  "hash": "57243417303086b7253c3f031fce75632240abd8",
-  "error": "Query (3, 336) A single value for column '<oii>job</oii>' in table '<oii>emp</oii>' cannot be determined. This can happen when a measure or function formula refers to a column that contains many values without specifying an aggregation such as min, max, count, or sum to get a single result."
+  "hash": "7e68a306990ba77a3b8064e1b6d76c09bcc307b0",
+  "columns": [
+   "[job]",
+   "[dept_count]",
+   "[emp_count]"
+  ],
+  "rows": [
+   [
+    "ANALYST",
+    1,
+    2
+   ],
+   [
+    "CLERK",
+    2,
+    2
+   ],
+   [
+    "MANAGER",
+    3,
+    3
+   ],
+   [
+    "PRESIDENT",
+    1,
+    1
+   ],
+   [
+    "SALESMAN",
+    1,
+    4
+   ]
+  ]
  },
  "ossie-b19": {
-  "hash": "976ea3278266cdb90a0ead5b1a9d578d01b8b76e",
-  "error": "Query (3, 374) A single value for column '<oii>job</oii>' in table '<oii>emp</oii>' cannot be determined. This can happen when a measure or function formula refers to a column that contains many values without specifying an aggregation such as min, max, count, or sum to get a single result."
+  "hash": "3522841cc07b49cfaff2816f3eb0b044518b1fd5",
+  "columns": [
+   "[job]",
+   "[sum_sal]"
+  ],
+  "rows": [
+   [
+    "CLERK",
+    950.0
+   ],
+   [
+    "MANAGER",
+    2850.0
+   ],
+   [
+    "SALESMAN",
+    5600.0
+   ]
+  ]
  },
  "ossie-b2": {
-  "hash": "b35ed3e7f006493e25f06901ef160784ed99b23c",
-  "error": "Query (3, 301) A single value for column '<oii>job</oii>' in table '<oii>emp</oii>' cannot be determined. This can happen when a measure or function formula refers to a column that contains many values without specifying an aggregation such as min, max, count, or sum to get a single result."
+  "hash": "f0fe5820f4a5f0b7da15e6edc847ef72638dfa5f",
+  "columns": [
+   "[job]",
+   "[sum_sal]",
+   "[emp_count]"
+  ],
+  "rows": [
+   [
+    "CLERK",
+    1300.0,
+    1
+   ],
+   [
+    "MANAGER",
+    2450.0,
+    1
+   ],
+   [
+    "PRESIDENT",
+    5000.0,
+    1
+   ]
+  ]
  },
  "ossie-b20": {
-  "hash": "e967f9a91179a65ce69d429b705221be54afafa7",
-  "error": "Query (3, 286) A single value for column '<oii>job</oii>' in table '<oii>emp</oii>' cannot be determined. This can happen when a measure or function formula refers to a column that contains many values without specifying an aggregation such as min, max, count, or sum to get a single result."
+  "hash": "9843dfd43e4a3ed8861d8e837da54ef459767444",
+  "columns": [
+   "[job]",
+   "[dept_count]"
+  ],
+  "rows": [
+   [
+    "CLERK",
+    3
+   ],
+   [
+    "MANAGER",
+    3
+   ]
+  ]
  },
  "ossie-b3": {
-  "hash": "cfec63235d49b324664eaa7c07cc6dabf12e1fa1",
-  "error": "Query (3, 362) A single value for column '<oii>job</oii>' in table '<oii>emp</oii>' cannot be determined. This can happen when a measure or function formula refers to a column that contains many values without specifying an aggregation such as min, max, count, or sum to get a single result."
+  "hash": "59e3e2f23c5a52f525c890b2849f22970a605664",
+  "columns": [
+   "[job]",
+   "[sum_sal]"
+  ],
+  "rows": [
+   [
+    "ANALYST",
+    6000.0
+   ],
+   [
+    "CLERK",
+    2850.0
+   ],
+   [
+    "MANAGER",
+    5825.0
+   ],
+   [
+    "SALESMAN",
+    5600.0
+   ]
+  ]
  },
  "ossie-b4": {
-  "hash": "2460f711168d7fedcc6304206122c50a65ebc18b",
-  "error": "Query (3, 315) A single value for column '<oii>job</oii>' in table '<oii>emp</oii>' cannot be determined. This can happen when a measure or function formula refers to a column that contains many values without specifying an aggregation such as min, max, count, or sum to get a single result."
+  "hash": "1ebbb7982829bf5c707c37b3471675b38fc22243",
+  "columns": [
+   "[job]",
+   "[dept_count]",
+   "[emp_count]"
+  ],
+  "rows": [
+   [
+    "ANALYST",
+    1,
+    2
+   ],
+   [
+    "CLERK",
+    3,
+    4
+   ],
+   [
+    "MANAGER",
+    3,
+    3
+   ],
+   [
+    "PRESIDENT",
+    1,
+    1
+   ],
+   [
+    "SALESMAN",
+    1,
+    4
+   ]
+  ]
  },
  "ossie-b5": {
   "hash": "d284bdc7270d3d558df803467e5830159c778636",
@@ -365,8 +728,37 @@
   ]
  },
  "ossie-b5a": {
-  "hash": "9205afb8f3b042e2b3051059d09aa365e03ba50c",
-  "error": "Query (3, 419) A single value for column '<oii>species</oii>' in table '<oii>pet</oii>' cannot be determined. This can happen when a measure or function formula refers to a column that contains many values without specifying an aggregation such as min, max, count, or sum to get a single result."
+  "hash": "7836fc32c71caef2ac4f46f10cccba6ae90c72d9",
+  "columns": [
+   "[species]",
+   "[owners]",
+   "[owners_sal]",
+   "[pets]",
+   "[sum_age]"
+  ],
+  "rows": [
+   [
+    "CAT",
+    3,
+    8975.0,
+    4,
+    15
+   ],
+   [
+    "DOG",
+    2,
+    4575.0,
+    2,
+    14
+   ],
+   [
+    "HAMSTER",
+    1,
+    1100.0,
+    1,
+    1
+   ]
+  ]
  },
  "ossie-b6": {
   "hash": "aecb9ef221b43b1a6e7332a9b63b5bed34b59338",

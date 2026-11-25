@@ -9,6 +9,5 @@
   {"id":"contoso/functions/functions-error-message","reason":"by design: DAX raises an error at run time (ERROR), and Polars computes a CASE branch no row takes too: an error there would fail every query, so it is a blank"},
   {"id":"contoso/functions/functions-fact-rept","reason":"not supported yet: FACT on Polars (its SQL has no factorial)"},
   {"id":"contoso/functions/functions-today-now","reason":"not supported yet: UTCNOW and UTCTODAY on Polars (its SQL has no time in a zone)"},
-  {"id":"patterns/segmentation/segmentation-percentilex-exc-quartiles","reason":"flaky: a customer's sales equal to their country's third quartile, which Polars' sum (in chunks, in parallel) gives in other last digits from run to run: counted above it or not"},
-  {"id":"tpcds/fuzz3/fuzz3-0136","reason":"engine: Polars 2.2 does not find a column of a derived table that reads the row around it (ColumnNotFoundError; pola-rs/polars#31067)"}
+  {"id":"patterns/segmentation/segmentation-percentilex-exc-quartiles","reason":"flaky: a customer's sales equal to their country's third quartile, which Polars' sum (in chunks, in parallel) gives in other last digits from run to run: counted above it or not"}
 ]

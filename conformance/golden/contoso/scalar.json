@@ -522,6 +522,22 @@
    ]
   ]
  },
+ "scalar-text-column-gt-number": {
+  "hash": "c8b167c53dc62f4cc15e56f9225e1814a7930e6a",
+  "error": "Query (2, 50) DAX comparison operations do not support comparing values of type Text with values of type Integer. Consider using the VALUE or FORMAT function to convert one of the values."
+ },
+ "scalar-text-eq-number": {
+  "hash": "07c27e854019aa0ec9adbe718391580950eff07c",
+  "error": "Query (2, 19) DAX comparison operations do not support comparing values of type Text with values of type Integer. Consider using the VALUE or FORMAT function to convert one of the values."
+ },
+ "scalar-text-gt-number-five": {
+  "hash": "078e034eae24582dc50e76e60db295d318010bc9",
+  "error": "Query (2, 19) DAX comparison operations do not support comparing values of type Text with values of type Integer. Consider using the VALUE or FORMAT function to convert one of the values."
+ },
+ "scalar-text-gt-number-zero": {
+  "hash": "9f131945e019ffb9ef284ac76209e1d6274ec4c0",
+  "error": "Query (2, 19) DAX comparison operations do not support comparing values of type Text with values of type Integer. Consider using the VALUE or FORMAT function to convert one of the values."
+ },
  "scalar-text-in-arithmetic": {
   "hash": "6e19fe23e79fd4011cb1eb2622c12837f92ab54e",
   "columns": [

@@ -2613,6 +2613,10 @@
    ]
   ]
  },
+ "context-rls-crossfilter-both-customer-quarters": {
+  "hash": "92c89ab227ae213028eab5fa0b0fa60a3024ee87",
+  "error": "Join paths are expected to form a tree, but the table '<oii>Customer</oii>' has two join paths to table '<oii>Customer</oii>': <oii>'Customer'</oii> and <oii>'Customer'->'Sales'->'Customer'</oii>."
+ },
  "context-rls-france-crossfilter-both-blank-product": {
   "hash": "af576a80a32a92581236b9618bbebcc99de8cf0c",
   "columns": [
@@ -3379,6 +3383,35 @@
     null,
     null,
     97211.38
+   ]
+  ]
+ },
+ "context-summarize-year-lastnonblank-inventory": {
+  "hash": "6516b35153ed7bd9008e1dddbc353d6438f57840",
+  "columns": [
+   "Date[Year]",
+   "[x]",
+   "[n]",
+   "[l]"
+  ],
+  "rows": [
+   [
+    2024,
+    4023,
+    14445,
+    3594
+   ],
+   [
+    2023,
+    4023,
+    10350,
+    3166
+   ],
+   [
+    2022,
+    4023,
+    2464,
+    2211
    ]
   ]
  },

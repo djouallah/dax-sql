@@ -27,6 +27,8 @@ const read = p => readFileSync(p, 'utf8').replace(/\r\n/g, '\n');
 const doc = parse(read(join(src, 'scott', 'scott_model.ossie.yaml')));
 doc.relationships = doc.relationships.filter(r => r.from !== r.to);
 const bim = { ...ossieToTmsl(doc, { onSkip: s => console.log('skipped', s) }), name: 'dax-conformance-scott' };
+// Each table's rows by its name alone, as the suite's other models (data/<table>.csv).
+for (const t of bim.model.tables) for (const p of t.partitions ?? []) if (p.source?.schemaName) delete p.source.schemaName;
 const dir = join(root, 'models', 'scott');
 rmSync(dir, { recursive: true, force: true });
 mkdirSync(join(dir, 'data'), { recursive: true });
@@ -49,7 +51,7 @@ const cell = v => {
 for (const t of bim.model.tables) {
   const p = t.partitions?.[0]?.source;
   if (p?.type !== 'entity') continue;
-  const r = await con.runAndReadAll(`SELECT * FROM ${p.schemaName ?? 'scott'}.${p.entityName} ORDER BY ALL`);
+  const r = await con.runAndReadAll(`SELECT * FROM scott.${p.entityName} ORDER BY ALL`);
   const lines = [r.columnNames().map(c => `"${c}"`).join(','), ...r.getRowsJS().map(row => row.map(cell).join(','))];
   writeFileSync(join(dir, 'data', `${p.entityName}.csv`), lines.join('\n') + '\n');
 }

@@ -1,4 +1,4 @@
-// What the emitter asks of a SQL dialect. The base class writes ANSI SQL where there is one;
+// What the SQL writer (plan-sql.js) asks of a SQL dialect. The base class writes ANSI SQL where there is one;
 // a dialect overrides what its engine spells differently (see duckdb.js). To add an engine,
 // extend this class and implement what throws here.
 //
@@ -46,7 +46,6 @@ export class Dialect {
   cast(sql, t) { return `CAST(${sql} AS ${this.type(t)})`; }
   // A blank of type t where a column is one (a subtotal's key): NULL, which the engine types.
   nullOf() { return 'NULL'; }
-  bigint(v) { return `CAST(${this.num(v)} AS BIGINT)`; }
 
   // a / b as a number with a fraction.
   div(a, b) { return `(CAST(${a} AS DOUBLE PRECISION) / ${b})`; }
@@ -61,11 +60,6 @@ export class Dialect {
   // name a value once (T-SQL) writes the ones that are more than a column or a constant once,
   // in a row the body reads; nested, they would grow the SQL at each level.
   bind(vals, body) { return body(...vals); }
-
-  // a + b where either can be blank: blank only when both are.
-  blankAdd(a, b, sub) {
-    return this.bind([a, b], (a, b) => `CASE WHEN ${a} IS NULL AND ${b} IS NULL THEN NULL ELSE COALESCE(${a}, 0) ${sub ? '-' : '+'} COALESCE(${b}, 0) END`);
-  }
 
   // A value as text, the way & joins it.
   text(sql, t) {
@@ -104,43 +98,18 @@ export class Dialect {
   }
 
   materialized = '';   // what follows AS in a CTE written once (DuckDB: MATERIALIZED)
-  supportsQualify = false;   // without it, a SELECT around the window keeps the rows (emit.js Block)
 
   // Conditions and boolean values. Where a condition is a value as it is (a BOOLEAN), these are
-  // nothing; an engine with no boolean type (T-SQL) converts between the two, and the emitter
+  // nothing; an engine with no boolean type (T-SQL) converts between the two, and the SQL writer
   // asks for each where it needs it.
   boolValues = true;
-  // Whether an aggregate can take a subquery (SUM((SELECT ...))) and GROUP BY can group by one;
-  // without, the emitter makes them columns of a SELECT the aggregate is over.
-  aggOverSubquery = true;
   // Whether a subquery in a CASE's branch is decorrelated as one elsewhere is; without, the
-  // emitter makes the branches' values a row the CASE reads.
+  // SQL writer makes the branches' values a row the CASE reads.
   subqueryInCase = true;
-  // Whether a correlated semi-join over many columns runs as fast as conditions do; without, a
-  // filter of a table's own rows is written as their conditions where it can be (T-SQL: minutes
-  // as a loop; DuckDB: a join of the table to itself, 40 s over a million rows and 1 s so).
-  correlatedSemiJoin = true;
-  // Whether the aggregates an iterator's rows take over their own values are fused into a GROUP BY
-  // joined to the rows (emit.js rowFused), for an engine that runs the subqueries as loops.
-  fuseRows = false;
-  // Whether a join's ON can read a row of the query around (T-SQL; DuckDB: not in an outer join).
-  correlatedJoin = false;
-  mapAlone = false;
   // SUMMARIZECOLUMNS by one calculation group's column: 'split' (a level for each item) or
   // 'smaller' (that or one level of CASEs, whichever SQL is smaller; index.js).
   splitOneGroup = 'smaller';
-  // A time-intelligence mapping's keys: the values the level's filters keep (true) or every
-  // value of the key columns.
-  mapDomain = true;
-  // Whether an iterator's aggregate that a mapping takes is fused, where fuseRows is off.
-  fuseMappedRows = false;
-  // Whether the engine computes again what the SQL writes again (T-SQL): a CTE at each name, a
-  // subquery at each copy. The emitter then writes a value once where it can.
-  repeats = false;
-  // Whether a fused group's rows are aggregated before its joins to the one side (emit.js
-  // Fusion.belowJoins), for an engine that joins every row first.
-  aggBelowJoins = false;
-  // The statement as the engine is to run it, from the SQL the emitter wrote.
+  // The statement as the engine is to run it, from the SQL plan-sql.js wrote.
   finish(sql) { return sql; }
   cond(v) { return v; }      // a boolean value as a condition
   value(c) { return c; }     // a condition as a boolean value, blank where it is unknown
@@ -162,11 +131,4 @@ export class Dialect {
 
   fn(name) { throw new Error(`${this.name}: function ${name} is not implemented`); }
   agg(name) { throw new Error(`${this.name}: aggregate ${name} is not implemented`); }
-  // Whether agg() takes extra.filter: the aggregate over the rows a condition keeps.
-  get aggFilter() { return false; }
-  // The sum of floating-point sums (a table's groups, emit.js groupedFirst), the same whatever
-  // order the engine reads them in.
-  sumOfGroups(v) { return `CAST(SUM(CAST(${v} AS DECIMAL(38,15))) AS ${this.type('double')})`; }
-  // Whether agg() takes 'sum_currency': SUM of currency(x), written from x.
-  get sumCurrency() { return false; }
 }

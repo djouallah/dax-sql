@@ -2,7 +2,7 @@
 // ROWNUMBER (values), with ORDERBY, PARTITIONBY and MATCHBY.
 //
 // The relation's rows are numbered within their partitions, in the order (ir 'window' and
-// 'wrank'; emit.js writes them). The current row is the relation's row whose columns hold the
+// 'wrank'; lower.js plans them). The current row is the relation's row whose columns hold the
 // outer values: a row context's column of that lineage, or the value the filter context binds
 // the column to (a group key, a context transition). A column with no outer value takes each
 // of its values in the filter context, and the result is the union over them. With no

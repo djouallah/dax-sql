@@ -67,7 +67,7 @@ export class Compiler {
       }
       // A column defined in the query is a calculated column: its expression on a row of its
       // table, in an empty filter context. Unlike the model's, it is computed with the query,
-      // so under its row-level security (emit.js).
+      // so under its row-level security (lower.js).
       for (const [col, d] of queryCols) {
         const row = ir.newRow(col.table.columns.map(x => ({ name: x.name, lineage: x, t: x.type })), 'scan', { base: col.table });
         let expr;

@@ -89,14 +89,13 @@ addEventListener('resize', moveInd);
 
 // ---------------------------------------------------------------- the compiler
 const compilers = new Map();
-function compiler(dialect = 'duckdb', optimize = true) {
-  const k = `${dialect}:${optimize}`;
-  if (!compilers.has(k)) compilers.set(k, createCompiler(tmslToModel(bim), { dialect, optimize }));
-  return compilers.get(k);
+function compiler(dialect = 'duckdb') {
+  if (!compilers.has(dialect)) compilers.set(dialect, createCompiler(tmslToModel(bim), { dialect }));
+  return compilers.get(dialect);
 }
-function compile(query, { dialect = 'duckdb', optimize = true } = {}) {
+function compile(query, { dialect = 'duckdb' } = {}) {
   try {
-    return compiler(dialect, optimize).compile(query);
+    return compiler(dialect).compile(query);
   } catch (e) {
     return { error: { code: e.code ?? 'ERROR', message: e.message } };
   }

@@ -72,8 +72,8 @@ jobs:
           const wide = ex.playground.map(p => sqlToWide(doc, p[1]).query).filter(Boolean);
           if (!wide.length) throw new Error('no playground example has a Layer 3 form');
           for (const q of wide) compileWide(doc, q);
-          for (const dialect of ['duckdb', 'tsql']) for (const optimize of [true, false]) {
-            const c = createCompiler(tmslToModel(bim), { dialect, optimize });
+          for (const dialect of ['duckdb', 'tsql']) {
+            const c = createCompiler(tmslToModel(bim), { dialect });
             for (const q of all) c.compile(q);
           }
           console.log(`${all.length} examples compile, ${wide.length} with a Layer 3 form`);

@@ -22,23 +22,12 @@ const g15 = v => `CAST(FORMAT(CAST(${v} AS FLOAT), 'G15') AS FLOAT)`;
 
 export class TSqlDialect extends Dialect {
   name = 'tsql';
-  supportsQualify = true;
   boolValues = false;
   // The plan's functions defined as standard ones that T-SQL writes with its own: FORMAT (the
   // definition, many values each read several times, is past Fabric's expression limit, which
   // merges the projections that read each once).
   nativeFns = new Set(['format_number', 'format_date', 'unicode', 'exact']);
-  aggOverSubquery = false;
   subqueryInCase = false;
-  correlatedSemiJoin = false;
-  fuseRows = true;
-  correlatedJoin = true;
-  mapAlone = true;
-  aggBelowJoins = true;
-  // extra.filter, as a CASE (agg): aggregates by the same keys with different filters on the joined
-  // tables share a scan.
-  get aggFilter() { return true; }
-  repeats = true;
 
   // Fabric drops a varchar literal's trailing spaces in a query over a table (', ' || x is ",x"),
   // but not a cast one's.
@@ -65,7 +54,7 @@ export class TSqlDialect extends Dialect {
   }
 
   // A value more than a column or a constant, written once in a row the body reads, as the
-  // CASE's branches are (emit.js): (SELECT body FROM (SELECT x AS "v0") AS b1). An aggregate
+  // CASE's branches are (plan-sql.js): (SELECT body FROM (SELECT x AS "v0") AS b1). An aggregate
   // over the rows around it can't be in a subquery: as it is.
   bind(vals, body) {
     const at = vals.map((v, i) => (v == null || plain(v) ? -1 : i)).filter(i => i >= 0);

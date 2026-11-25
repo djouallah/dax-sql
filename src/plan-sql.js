@@ -1,19 +1,40 @@
 // A query plan (plan.js) -> one dialect's SQL. Every relation is a SELECT whose columns are
 // named by their ids (_c<id>), unique in the query, so a column is read by its name wherever it
-// is: in the SELECT over its relation, or in a subquery correlated to it. The plan's scalars
-// are written as the emitter writes them (its scalar writer, with DAX's rules for blanks); the
-// rest through the dialect's methods. No rewrite: the SQL says what the plan says.
-import { Emitter, orderTerm } from './emit.js';
+// is: in the SELECT over its relation, or in a subquery correlated to it. The plan's scalars are
+// standard (passes/standard.js: DAX's rules for blanks are in the plan already); each is written
+// through the dialect's methods. No rewrite: the SQL says what the plan says.
 import * as P from './plan.js';
 import { isCondOp } from './plan.js';
+import { isNum, qualifiedName } from './ir.js';
 import { free, refsOf } from './passes/decorrelate.js';
 
 const EMPTY = new Map();
 const MANY = 'A table of multiple values was supplied where a single value was expected.';
+const lc = s => String(s).toLowerCase();
+const isQuery = s => /\bSELECT\b/i.test(s ?? '');
 
-export class PlanSql extends Emitter {
+export class PlanSql {
   constructor(model, dialect, options = {}) {
-    super(model, dialect, { ...options, optimize: false });
+    this.model = model;
+    // The dialect, with this statement's aliases for what it declares itself (bind).
+    this.d = Object.create(dialect, { alias: { value: p => this.alias(p) } });
+    this.options = options;
+    this.n = options.aliasStart ?? 0;   // aliases go on from here (compileStatement: one numbering for all)
+    this.ctes = [];
+  }
+
+  alias(p) { return `${p}${++this.n}`; }
+  ident(n) { return this.d.ident(n); }
+  // An ORDER BY term as DAX orders: a blank first ascending, last descending.
+  orderBy(v, desc) { return desc ? this.d.order(v, 'DESC', 'LAST') : this.d.order(v, 'ASC', 'FIRST'); }
+
+  // A model table's stored rows (a calculated table or a calculation group is in the plan as the
+  // rows it is made of, never a scan).
+  source(table) {
+    if (table.calc || table.calcGroup) throw new Error(`plan-sql: a scan of ${table.name}, a table the plan makes`);
+    if (this.options.tableSource) return this.options.tableSource(table);
+    const s = table.source;
+    return s.schema ? `${this.ident(s.schema)}.${this.ident(s.entity)}` : this.ident(s.entity);
   }
 
   // A column's name: numbered in the query in the order its columns are first written, so that
@@ -228,7 +249,17 @@ export class PlanSql extends Emitter {
       if (isCondOp(x.op) || (x.op === 'call' && x.name === 'contains')) return pred ? s : this.d.value(s);
       return pred && x.t === 'bool' ? this.d.cond(s) : s;
     }
-    return super.scalar(x, scope, pred);
+    // A column, a constant, a CASE, an EXISTS. Where a condition is no value (T-SQL has no boolean
+    // type): an EXISTS is a condition, the others values, each converted to what is asked for.
+    const s = this.scalarOf(x, scope, pred);
+    if (this.d.boolValues || x.t !== 'bool') return s;
+    return pred === (x.k === 'exists') ? s : pred ? this.d.cond(s) : this.d.value(s);
+  }
+
+  // A value among values of other kinds, as text.
+  variant(v, scope) {
+    const s = this.scalar(v, scope);
+    return v.t === 'string' || v.t === 'blank' ? s : this.d.text(s, v.t);
   }
 
   // A standard function, as the dialect writes it.
@@ -310,12 +341,65 @@ export class PlanSql extends Emitter {
       return `EXISTS (${this.rel(x.rel)})`;
     }
     // A number in its exact digits (a decimal no double holds).
-    if (x.k === 'lit' && x.digits) return x.v;
-    return super.scalarOf(x, scope, pred);
+    if (x.k === 'lit') return x.digits ? x.v : this.d.literal(x.v, x.t);
+    if (x.k === 'case') {
+      const val = v => (x.t === 'variant' ? this.variant(v, scope) : this.scalar(v, scope));
+      // In this order, which numbers their aliases.
+      const conds = [], vals = [];
+      for (const [c, v] of x.w) { conds.push(this.scalar(c, scope, true)); vals.push(val(v)); }
+      if (!(x.e.k === 'lit' && x.e.v === null)) vals.push(val(x.e));
+      // An engine that leaves a subquery in a branch correlated (Fabric: a RANKX took 24 s,
+      // and 0.5 s so): the branches' values are a row of their own, which the CASE reads.
+      let from = '';
+      if (!this.d.subqueryInCase && vals.some(isQuery)) {
+        const h = this.alias('h'), hoisted = vals.map((v, i) => (isQuery(v) ? i : -1)).filter(i => i >= 0);
+        from = ` FROM (SELECT ${hoisted.map(i => `${vals[i]} AS ${this.ident(`v${i}`)}`).join(', ')}) AS ${h}`;
+        for (const i of hoisted) vals[i] = `${h}.${this.ident(`v${i}`)}`;
+      }
+      const w = conds.map((c, i) => `WHEN ${c} THEN ${vals[i]}`).join(' ');
+      const e = vals.length > conds.length ? ` ELSE ${vals.at(-1)}` : '';
+      return from ? `(SELECT CASE ${w}${e} END${from})` : `CASE ${w}${e} END`;
+    }
+    throw new Error(`plan-sql: scalar ${x.k}`);
   }
-  // A whole-number column in arithmetic as 64 bits, as the emitter writes one.
-  num(v, scope) {
-    if (v.k === 'ref' && v.t === 'int') return this.d.cast(this.scalar(v, scope), 'int');
-    return super.num(v, scope);
-  }
+}
+
+// An ORDER BY term with DAX's blanks: DEFAULT puts a numeric blank between the negative
+// numbers and zero, and a text blank before every text; FIRST and LAST say.
+export function orderTerm(d, v, o) {
+  const dir = o.desc ? 'DESC' : 'ASC';
+  if (o.blanks === 'first') return d.order(v, dir, 'FIRST');
+  if (o.blanks === 'last') return d.order(v, dir, 'LAST');
+  if (isNum(o.t)) return `COALESCE(${v}, 0) ${dir}, ${d.value(`(${v} IS NULL)`)} ${o.desc ? 'ASC' : 'DESC'}`;
+  return d.order(v, dir, o.desc ? 'LAST' : 'FIRST');
+}
+
+// Names unique without regard to case, as SQL compares them.
+function uniqNames(names) {
+  const seen = new Set();
+  return names.map(n => {
+    let name = String(n || 'col'), i = 1;
+    while (seen.has(lc(name))) name = `${n}_${++i}`;
+    seen.add(lc(name));
+    return name;
+  });
+}
+
+// A result column's name in DAX ('Table'[Column], [Name]), and the names a query's columns are
+// output under: DAX's (columnNames: 'dax'), or short ones, where two collide the later ones
+// saying their table.
+export function daxName(c) {
+  const q = c.lineage ? null : qualifiedName(c.name);
+  return c.lineage ? `'${c.lineage.table.name}'[${c.lineage.name}]` : q ? `'${q.table}'[${q.name}]` : `[${c.name}]`;
+}
+export function outputNames(cols, style) {
+  const named = c => { const q = c.lineage ? null : qualifiedName(c.name); return q ? `${q.table}[${q.name}]` : `[${c.name}]`; };
+  if (style === 'dax') return uniqNames(cols.map(c => (c.lineage ? `${c.lineage.table.name}[${c.lineage.name}]` : named(c))));
+  const seen = new Set();
+  return uniqNames(cols.map(c => {
+    let n = c.name;
+    if (seen.has(lc(n)) && c.lineage) n = `${c.lineage.table.name}[${c.name}]`;
+    seen.add(lc(n));
+    return n;
+  }));
 }

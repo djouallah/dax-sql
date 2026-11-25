@@ -8,7 +8,7 @@
 // Scalars (all carry `t`, the type, and `nn`, true when the value can never be blank):
 //   lit   { v }                       a constant; v null is BLANK()
 //   col   { row, ref }
-//   op    { op, a }                   DAX operators, with DAX's rules for blanks (see emit.js)
+//   op    { op, a }                   DAX operators, with DAX's rules for blanks (passes/standard.js)
 //   fn    { name, a }                 a function the dialect writes (see dialects/)
 //   case  { w: [[cond, value]], e }
 //   agg   { fn, src, row, arg, a }    an aggregate over the rows of table `src`, `arg`

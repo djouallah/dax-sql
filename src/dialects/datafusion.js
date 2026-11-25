@@ -37,7 +37,6 @@ export class DataFusionDialect extends PostgresDialect {
   isNotDistinct(a, b) { return `(${a} IS NOT DISTINCT FROM ${b})`; }
   type(t) { return t === 'string' ? 'VARCHAR' : t === 'double' ? 'DOUBLE' : super.type(t); }
   bind(vals, body) { return body(...vals); }
-  sumOfGroups(v) { return `SUM(${v})`; }
 
   // generate_series takes constants only: bounds of a row (CALENDARAUTO's) the steps of a series
   // of constants (SERIES_STEPS at most) that the bounds keep.

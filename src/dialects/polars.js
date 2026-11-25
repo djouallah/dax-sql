@@ -65,7 +65,6 @@ export class PolarsDialect extends PostgresDialect {
   flatSql = true;
   keysTogether = null;
   bind(vals, body) { return body(...vals); }
-  sumOfGroups(v) { return `SUM(${v})`; }
   // generate_series as a table (its scalar form is a list); dates by a step of n days
   // (pola-rs/polars#31054).
   series(start, end, step, t) {

@@ -21,9 +21,9 @@ Nothing here blocks a release. DAX on DuckDB has nothing left; T-SQL is the last
 
 # The query plan
 
-- What emit.js read off a level's groups the plan scans again: a total over what is selected
+- What the old emitter read off a level's groups the plan scans again: a total over what is selected
   (`DIVIDE([m], CALCULATE([m], ALLSELECTED(t)))` next to the groups), and a subtotal level beside a
-  measure with a filter of its own (two scans of the fact where emit.js wrote one).
+  measure with a filter of its own (two scans of the fact where the emitter wrote one).
 
 `DAX → query plan → optimizer (every engine) → Substrait → engine passes (only what one needs) → SQL`.
 
@@ -39,6 +39,6 @@ as every engine does. DAX's runtime errors are in the plan (an `error` lambda in
    and DataFusion in CI.
 3. **The emitter's rewrites as passes**, one at a time, each checked against the plan as it
    is: fusion, filters on the scan, grouping below joins, sharing.
-4. Done: `compile()` through the plan as Substrait on every dialect, held to `emit.js`'s SQL by
-   `perf.yml` on DuckDB. Left: **Fabric's own pass** (`mapAlone`, a CTE computed again at each
-   name); `emit.js` deleted once nothing checks against it.
+4. Done: `compile()` through the plan as Substrait on every dialect; `emit.js`, the writer before
+   the plan, deleted (none of its rewrites was reached any more). Left: **Fabric's own pass** (a
+   CTE computed again at each name).

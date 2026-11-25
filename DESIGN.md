@@ -287,7 +287,7 @@ its columns, a grouping all its keys).
 `planSql(query)` writes the query plan in a dialect's SQL.
 
 **Every engine's SQL is the plan's, through Substrait.** `compile` lowers each statement with the
-compiler's decisions built in (`lower.js`'s `Fusion`, emit.js's ported: a level's measures over
+compiler's decisions built in (`lower.js`'s `Fusion`: a level's measures over
 the same rows one grouping by its keys; a table filter that reads the keys a mapping of (keys,
 value) computed once; the fact grouped by its join keys before the dimensions, with a semi-join
 of each dimension's condition; the same for an iterator's, a FILTER's and an ADDCOLUMNS' rows),
@@ -297,8 +297,7 @@ unnests its applies and EXISTS itself (correlated fusion, the standard scalars, 
 sharing, inlining, renames and pruning); every other engine the plan unnested. Of a calculation
 group's two forms, the smaller plan after the passes is kept. A column is named by its order in
 the query (`_c1`, `_c2`, …), so a query compiles to the same SQL each time. There is no other
-way to SQL: no fallback, no option to another writer. (`emit.js` is left as the scalar writer
-`plan-sql.js` builds on.) Speed (`perf.yml`) holds each push's SQL to the commit before's.
+way to SQL: no fallback, no option to another writer. Speed (`perf.yml`) holds each push's SQL to the commit before's.
 
 **The correlated plan, unnested** (`unnest.js`, `planSql(query, { unnest: true })`): DuckDB's plan
 (fused, its scalars standard) with no apply and no correlated EXISTS, for an engine that does not
@@ -342,7 +341,7 @@ rows from outside an expression or table it reads, which is the correlation of i
 
 ## SQL
 
-`emit.js` builds each table as a `Block`: one SELECT under construction and a resolver for the
+`lower.js` builds each table as a `Block`: one SELECT under construction and a resolver for the
 columns of its input row. A FILTER over a scan becomes a WHERE on it; anything that cannot
 extend a block wraps it in a subquery.
 
@@ -655,7 +654,6 @@ SELECT * FROM (SHOW SEMANTIC METRICS IN sales) WHERE ...;   -- each one reads as
 | `user` | The value of `USERNAME()` and `USERPRINCIPALNAME()`. |
 | `roles` | A role name, or several: row-level security, each table keeping the rows that at least one of the roles keeps; and object-level security, a table or column hidden when every role hides it. A hidden object is no name for the query (naming it, a measure that reads it, a measure of a hidden table: an error, as the model lacked it), while the model still reads it: relationships, joins, and calculated columns computed from it, which stay visible. A table result leaves its hidden columns out. Roles that hide objects together with roles that filter rows are an error, as in Power BI; one role can do both. |
 | `params` | The values of the query's parameters (`@name`), by name: numbers, text, booleans, `Date`s or `null` (blank). |
-| `optimize` | `false`: every aggregate its own subquery, none fused or shared. Much slower; it is for checking that the rewrites change no answer, as CI does. |
 
 Errors are `DaxError` with a `code`:
 
@@ -1070,7 +1068,6 @@ SELECT m.*, p.n FROM m JOIN (SELECT "Color", COUNT(*) AS n FROM "Product" GROUP 
 | `context.js` | the filter context: its filters, and what removing columns leaves of them |
 | `functions/` | the function library, by kind |
 | `ir.js` | the intermediate form: scalars, tables, rows, aggregates over scans |
-| `emit.js` | the intermediate form into SQL, rewritten (T-SQL, PostgreSQL; DuckDB's queries the plan does not take) |
 | `lower.js`, `plan.js` | the intermediate form into the query plan, the compiler's fusion built in (DuckDB's SQL), and the plan's nodes |
 | `passes/` | the optimizer: passes over the query plan (`decorrelate.js`, `fuse.js`, `fuse-applies.js`, `joins.js`, `outer.js`, `standard.js`, `exact.js`, `share.js`, `inline.js`, `renames.js`, `prune.js`) |
 | `plan-sql.js`, `explain.js` | the query plan as SQL; drawn as a tree |
@@ -1104,9 +1101,9 @@ aggregates to write) and pass an instance as `dialect`.
 ### T-SQL
 
 `dialect: 'tsql'` writes T-SQL for Microsoft Fabric's SQL analytics endpoint and Warehouse,
-tested on a lakehouse's SQL analytics endpoint. The DuckDB SQL is the same with or without it: the emitter asks the dialect for
-what it wrote itself (conditions and boolean values, `NULLS FIRST/LAST`, `LATERAL`, `||`, a
-window's `ORDER BY`), and DuckDB's answers are what the emitter wrote before.
+tested on a lakehouse's SQL analytics endpoint. It is written from the same plan as every other
+dialect's (unnested): the dialect says how to write what differs (conditions and boolean values,
+`NULLS FIRST/LAST`, `LATERAL`, `||`, a window's `ORDER BY`).
 
 **What it writes differently**
 
@@ -1119,29 +1116,15 @@ window's `ORDER BY`), and DuckDB's answers are what the emitter wrote before.
 - **The rest:** `OUTER`/`CROSS APPLY` for `LATERAL`; a CASE inside an aggregate for `FILTER`;
   `OFFSET … FETCH` for `LIMIT`; typed blanks (`IN` over an untyped NULL keeps nothing on Fabric).
 
-**Fabric runs some correlated subqueries as loops**, where DuckDB decorrelates them all. For
-T-SQL the emitter avoids those shapes (a RANKX of 121 rows took over 300 s, and under 1 s so):
-
-- `COALESCE((SELECT …), <a blank>)` is `ISNULL`, which Fabric decorrelates.
-- A subquery in a CASE's branch is a row the CASE reads.
-- An aggregate's argument is computed a row at a time first: T-SQL aggregates no subquery and
-  no outer column beside its own.
-- A table filter of a table's own rows is their conditions, when the columns it keeps
-  determine the others (a related table's by its key or the foreign key; a calculated column by
-  its table's stored ones): a SUMMARIZE's extension columns.
-- The measures an iterator's rows take over their own values are fused into a GROUP BY joined
-  to the rows, as SUMMARIZECOLUMNS' are, for a row of a few columns that reads no outer row.
+**Fabric runs some correlated subqueries as loops**, where DuckDB decorrelates them all (a RANKX
+of 121 rows took over 300 s, and under 1 s so). T-SQL is given the plan unnested
+(`passes/unnest.js`: no apply, no correlated EXISTS); `COALESCE((SELECT …), <a blank>)` is
+`ISNULL`, which Fabric decorrelates; and a subquery in a CASE's branch is a row the CASE reads.
 
 **Fabric computes again what the SQL writes again**: a CTE at each name, a subquery at each
-copy. DuckDB names a value once (`[… FOR x IN [v]][1]`) and reads a CTE once; for T-SQL:
-
-- A value a function names more than once (a fixed decimal's rounding, a blank-aware sum, a
-  date as text) is written once, in a row the function reads: nested, it grew the SQL at each
-  level (a price change was 434 KB, 30 KB so).
-- SUMMARIZECOLUMNS whose groups are one fused group's reads that group, not the group joined to
-  its own keys.
-- A table-reading subquery that a row's values write more than once (a measure in a column and
-  again in another's DIVIDE) is a column of an `OUTER APPLY`, computed once a row.
+copy. A relation the plan reads twice is one definition (`passes/share.js`), and a value a
+function names more than once (a fixed decimal's rounding, a date as text) is written once, in a
+row the function reads (the dialect's `bind`).
 
 A table filter of a table's own rows is their conditions on DuckDB too: as a semi-join it
 joined the table to itself on every column (a SUMMARIZE with a measure by year and category
@@ -1186,8 +1169,8 @@ suite, signed in as the Oracle is (an OIDC federated login); a query has 30 s to
 
 `dialect: 'postgres'` writes PostgreSQL's SQL (tested on 17). It has what DuckDB has but `QUALIFY`
 (a SELECT around the window) and lists (an array, or a value bound in a subquery's row), and it
-runs a correlated subquery as a loop, as Fabric does, so the emitter fuses rows, hoists repeats and
-aggregates over a SELECT of a subquery as for T-SQL. Where PostgreSQL differs from DuckDB:
+runs a correlated subquery as a loop, as Fabric does, so it is given the plan unnested, as T-SQL
+is. Where PostgreSQL differs from DuckDB:
 
 - A blank-safe join key is `ARRAY[CAST(a AS t)] = ARRAY[CAST(b AS t)]` (an array's `=` takes NULL
   for equal to NULL, and is hashed): `IS NOT DISTINCT FROM` it joins in a loop.

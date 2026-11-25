@@ -24,8 +24,6 @@
 //                  some role keeps (row-level security), and what every role hides is no name
 //                  (object-level security)
 //   params         the values of query parameters (@name), by name
-//   optimize       false: every aggregate its own subquery, none fused or shared (much slower;
-//                  for checking that the rewrites change no answer, as CI does)
 import { Model } from './model.js';
 import { Compiler } from './compiler.js';
 import { parseExpression } from './parser.js';

@@ -2,7 +2,7 @@
 // WITH RECURSIVE and MATERIALIZED, as DuckDB; no QUALIFY (a SELECT around the window), no list
 // (an array, or a value bound in a subquery's row), / of two whole numbers a whole number, a
 // division by zero an error, and its own names for the date functions. It runs a correlated
-// subquery as a loop, as Fabric does: the emitter fuses and writes once what it can (the flags).
+// subquery as a loop, as Fabric does: the plan fuses and writes once what it can.
 import { Dialect } from './base.js';
 import { semantic } from '../errors.js';
 import { formatNumber, formatDate, generalNumber, generalDate, dateSerial, serialDate, bindAs, sqlAggregates, e14 } from './postgres-format.js';
@@ -28,18 +28,8 @@ export class PostgresDialect extends Dialect {
   // no other join can be (a range).
   session = ['SET enable_nestloop = off'];
   materialized = 'MATERIALIZED ';
-  aggBelowJoins = true;
-  repeats = true;
-  fuseRows = true;
-  correlatedJoin = true;
-  correlatedSemiJoin = false;
-  // An aggregate belongs to the query whose columns it reads: SUM((SELECT ... k1 ...)) is the
-  // outer query's. Its subqueries are columns of a SELECT it is over, as on T-SQL.
-  aggOverSubquery = false;
   // A subquery in a CASE's branch is run for each row, as Fabric does: the branches' values a row.
   subqueryInCase = false;
-  get aggFilter() { return true; }
-  get sumCurrency() { return true; }
 
   // IS NOT DISTINCT FROM is no join key Postgres hashes (a loop over both sides: a currency's
   // groups past 30 s); an array's = takes a NULL element for equal to a NULL, and is hashed. Its
@@ -257,8 +247,6 @@ export class PostgresDialect extends Dialect {
     return super.fn(name, a);
   }
 
-  // The groups added in their values' order (a DECIMAL's sum would round them to 15 places).
-  sumOfGroups(v) { return `SUM(${v} ORDER BY ${v})`; }
   agg(fn, x, extra = {}) {
     const f = extra.filter ? ` FILTER (WHERE ${extra.filter})` : '';
     const and = c => ` FILTER (WHERE ${c}${extra.filter ? ` AND ${extra.filter}` : ''})`;

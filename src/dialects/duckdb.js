@@ -16,24 +16,12 @@ export class DuckDBDialect extends Dialect {
   // The plan's defined functions DuckDB has its own of (FORMAT's, UNICODE: unicode()).
   nativeFns = new Set(['format_number', 'format_date', 'unicode']);
   materialized = 'MATERIALIZED ';
-  supportsQualify = true;
-  aggBelowJoins = true;
-  // A subquery written twice is planned twice (and run twice where it reads the row).
-  repeats = true;
-  // A value an expression names more than once is computed once, in a row it reads (bindOnce).
-  bindsOnce = true;
-  fuseMappedRows = true;
-  // A SUMMARIZE's extension columns: the group's rows as conditions, not the table joined to itself.
-  correlatedSemiJoin = false;
 
   type(t) { return t === 'double' ? 'DOUBLE' : super.type(t); }
 
 
   // / divides as DOUBLE already.
   div(a, b) { return `(${a} / ${b})`; }
-
-  // list_sum skips blanks and is blank when all are: DAX's + in one expression, each side once.
-  blankAdd(a, b, sub) { return `list_sum([${a}, ${sub ? `-(${b})` : b}])`; }
 
   // As DAX converts: 3.0 as "3", 0.1 + 0.2 as "0.3" (15 digits), 1E+20; a date as 1/5/2024, with
   // the time when it is not midnight; TRUE as "TRUE".
@@ -201,12 +189,6 @@ export class DuckDBDialect extends Dialect {
     return super.fn(name, a);
   }
 
-  // extra.filter: the aggregate over the rows that condition keeps (FILTER on each call).
-  get aggFilter() { return true; }
-  // The groups added in their values' order (a DECIMAL's sum would round them to 15 places).
-  sumOfGroups(v) { return `SUM(${v} ORDER BY ${v})`; }
-  // agg('sum_currency'): a sum of fixed decimals, the range checked once.
-  get sumCurrency() { return true; }
   agg(fn, x, extra = {}) {
     const f = extra.filter ? ` FILTER (WHERE ${extra.filter})` : '';
     switch (fn) {

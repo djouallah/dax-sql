@@ -1,5 +1,5 @@
 // The compiled query -> its query plan (plan.js): the work an engine has to do, as relational
-// algebra, with nothing of any engine. It makes emit.js's decisions: the aggregates of a
+// algebra, with nothing of any engine. It makes the decisions a SQL writer would: the aggregates of a
 // SUMMARIZECOLUMNS level over the same rows by the level's keys are one grouping (Fusion); any
 // other aggregate is over its own rows, under the filter context as it is, for each row.
 //
@@ -12,7 +12,7 @@ import * as ir from './ir.js';
 import * as P from './plan.js';
 import { Ctx, narrow, EMPTY_CTX } from './context.js';
 import { semantic, unsupported } from './errors.js';
-import { outputNames, daxName } from './emit.js';
+import { outputNames, daxName } from './plan-sql.js';
 import { canon, text } from './passes/fuse.js';
 import { free, subst } from './passes/decorrelate.js';
 import { clone } from './passes/clone.js';
@@ -261,7 +261,7 @@ export class Lowerer {
     return [P.or(per.map(c => P.and(c)))];
   }
 
-  // As emit.js: two join paths from a secured table to `table` are an error.
+  // Two join paths from a secured table to `table` are an error.
   securityTree(table, rel, state) {
     const roles = this.options.security;
     if (!roles?.length || this.insecure) return;
@@ -365,7 +365,7 @@ export class Lowerer {
   // (FILTER(ALL(T[c]), T[c] >= x)), as a filter on columns every row of the scan holds a value of:
   // the row's value is one of them when the conditions hold of it (and, read through a
   // relationship, it is not blank). The conditions on the scan's row; null when the filter is not
-  // of that kind (emit.js's inlineValues).
+  // of that kind.
   inlineValues(f, D, table, res, scope, state) {
     if (this.options.security?.length && !this.insecure) return null;
     const chain = valuesChain(f.src);
@@ -385,7 +385,7 @@ export class Lowerer {
 
   // A table of constants on one column of the scan (TREATAS({"AR", "CA"}, T[c])) as a list: c IN
   // ('AR', 'CA'), a BLANK() among them keeping the blank. Null when the filter is not of that
-  // kind, or a constant is of another type than the column's (emit.js's listedValues).
+  // kind, or a constant is of another type than the column's.
   listedValues(f, D, res) {
     if (D.length !== 1) return null;
     let src = f.src;
@@ -536,7 +536,7 @@ export class Lowerer {
     const cols = () => x.cols.map(c => P.newCol(c.name, c.t, { lineage: c.lineage }));
     if (x.rows.every(r => r.every(v => v.k === 'lit'))) return this.fromRel(P.values(x.rows, cols()), x.cols);
     if (x.rows.length === 1) {
-      // ROW(...): one row, its aggregates fused where they can be (emit.js's fusedRow).
+      // ROW(...): one row, its aggregates fused where they can be.
       const b = new Block(this, null, x.cols);
       const fusion = new Fusion(this, null, [], []);
       this.fusions.push(fusion);
@@ -685,7 +685,7 @@ export class Lowerer {
     return this.exact(r);
   }
 
-  // The filters that decide which values the grouping columns of table t take (as emit.js);
+  // The filters that decide which values the grouping columns of table t take;
   // `of`: the filters they come from (not narrowed to t's columns).
   keyFilters(x, t, of = false) {
     const state = this.model.state(x.ctx0.mods), out = [];
@@ -785,7 +785,7 @@ export class Lowerer {
     if (!blk) throw unsupported('plan: an aggregate where no row is');
     // The same aggregate (the same node: a measure an expression names more than once, a
     // calculation item's SELECTEDMEASURE in several items) for the same rows in scope: computed
-    // once, as emit.js's repeatedValues are.
+    // once.
     const memo = blk.memo ??= new Map(), seen = memo.get(x);
     const exact = this.exactSums > 0;
     if (seen && seen.scope === scope && seen.exact === exact) return seen.v;
@@ -802,7 +802,7 @@ export class Lowerer {
     // An apply the same as one the block has already (the same operators over the same tables, up
     // to their columns' ids, reading the same outer columns: a measure a calculation item names
     // again, PY in the PY, YoY and YoY % items) is that one, as the compiled SQL writes a
-    // subquery repeated once (emit.js's once, hoistRepeats).
+    // subquery repeated once.
     const t = this.hoist(x, scope, blk) ?? blk;
     const key = canon(rel, true).key;
     const seen = (t.applyKeys ??= new Map()).get(key);
@@ -816,7 +816,7 @@ export class Lowerer {
   // ADDCOLUMNS): the aggregates a row's
   // expressions take that a mapping takes (a filter that reads the row: the LASTNONBLANK of a
   // currency's rate for each date) fused as SUMMARIZECOLUMNS' are, one grouping by the row's
-  // columns, joined to the rows (emit.js's rowFused, as for an engine that decorrelates the rest
+  // columns, joined to the rows (as for an engine that decorrelates the rest
   // itself). A row of a few columns of the model's.
   rowFused(b, x, f, scope) {
     const row = x.row;
@@ -844,7 +844,7 @@ export class Lowerer {
   }
 
   // An aggregate that reads the row around it (block b of a scan of `table`, parts a) over the
-  // table's rows grouped first, or null to write it as it is (emit.js's groupedFirst). Each outer
+  // table's rows grouped first, or null to write it as it is. Each outer
   // row otherwise reads the table's every row: last year's sales by month is the fact joined to
   // its dates for each month. The table is grouped once, one definition, by the columns of its
   // own that the joins and the conditions on other rows read (its date key), under the
@@ -906,7 +906,7 @@ export class Lowerer {
 
 // --- fusion ------------------------------------------------------------------------------
 
-// The aggregates of one SUMMARIZECOLUMNS level that can share a grouping (emit.js's Fusion): over
+// The aggregates of one SUMMARIZECOLUMNS level that can share a grouping: over
 // a scan, reading no row but the level's keys, which they filter it by. A group is one grouping:
 // the scan's table and its other filters (compared as plan, up to columns' ids), by the keys
 // that filter it, joined to the level's rows on them (a blank matching a blank); an aggregate
@@ -1178,7 +1178,7 @@ class Fusion {
   // The conditions of a scan of S's table under filters `rest`, written on the rows of group h
   // (joining to h's scan what they need), when they differ from h's only on the tables it joins:
   // the scan's own conditions are h's (what lets the engine skip its rows). Else null, and h as
-  // it was (emit.js's condsOn).
+  // it was.
   condsOn(h, S, rest) {
     const lw = this.lw, b = h.block, res = b.res;
     if (b.from?.k !== 'scan') return null;
@@ -1247,8 +1247,8 @@ class Fusion {
   }
 }
 
-// Group g's grouping with its scan's rows aggregated before the joins, or null (emit.js's
-// belowJoins): the scan grouped by the columns of its own the keys and the joins read, those
+// Group g's grouping with its scan's rows aggregated before the joins, or null
+// (belowJoins): the scan grouped by the columns of its own the keys and the joins read, those
 // groups joined to the other tables, and aggregated again by the keys. An engine that joins every
 // row before a GROUP BY above the join cannot know the other side's key is unique; the model can.
 // Only for sums, counts, mins and maxes of the scan's own columns, under conditions on its own
@@ -1280,7 +1280,7 @@ Fusion.prototype.belowJoins = function belowJoins(g) {
     const cs = after.filter(c => [...R(c).cols].every(x => own.has(x)) && blankFails(c));
     if (!cs.length) continue;
     const { rel, map: m } = clone(j.rel);
-    // A membership: the scan's column one of the table's kept (emit.js writes it IN).
+    // A membership: the scan's column one of the table's kept (written IN).
     before.push({ ...P.exists(P.select(rel, P.and([...cs.map(c => subst(c, m)), P.eq(P.ref(m.get(to.col)), fk)]))), member: true });
   }
   const cols = [...new Set([...g.keyExprs, ...b.joins.map(j => j.on)].flatMap(e => [...R(e).cols].filter(c => base.has(c))))];
@@ -1323,13 +1323,13 @@ const NULL_EMPTY = new Set(['sum', 'avg', 'min', 'max', 'count', 'countrows', 'd
 const mayHoldNull = c => !c.unique && c.nullable !== false;
 // Whether values `left` are a row of relation `rel` (its values `right`), a blank matching a
 // blank as in DAX: where no blank can meet a blank (blanks false), = says the same as ≡, and the
-// test is a membership (`member`: a printer writes one column of it as IN, emit.js's member).
+// test is a membership (`member`: a printer writes one column of it as IN).
 function member(left, right, rel, blanks) {
   const on = left.map((l, i) => (blanks ? P.same(right[i], l) : P.eq(right[i], l)));
   const x = P.exists(P.select(rel, P.and(on)));
   return blanks ? x : { ...x, member: true };
 }
-// Whether column i of table x can hold a blank, as far as the compiler can tell (emit.js's).
+// Whether column i of table x can hold a blank, as far as the compiler can tell.
 function mayBeBlank(x, i) {
   if (i == null || i < 0) return true;
   const lit = v => v?.k === 'lit' && v.v !== null;
@@ -1414,7 +1414,7 @@ function scalarReads(x, out = { cols: new Set(), query: false }) {
 }
 
 // The fused groups without whose rows an expression is blank, or null if it can be non-blank
-// without any (emit.js's support): whether SUMMARIZECOLUMNS can take its groups from them.
+// without any: whether SUMMARIZECOLUMNS can take its groups from them.
 function support(x, fusedIn) {
   const all = xs => {
     const out = new Set();
@@ -1448,7 +1448,7 @@ function support(x, fusedIn) {
   }
 }
 
-// Whether an expression is blank whatever its rows (emit.js's support with nothing fused): a
+// Whether an expression is blank whatever its rows: a
 // level of SUMMARIZECOLUMNS whose expressions all are has no group.
 function blankOnly(x) {
   const all = xs => xs.every(blankOnly);

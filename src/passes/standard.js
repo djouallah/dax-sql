@@ -351,8 +351,9 @@ function fn(x) {
     // The date and time the query runs at (Substrait's execution context: its current date, its
     // current timestamp in the session's zone or in UTC), each named, as each engine has its own.
     case 'today': case 'now': case 'utctoday': case 'utcnow': return call(x.name, [], 'datetime', true);
-    // REPT and FACT of a number's whole part (DAX truncates it).
-    case 'rept': return call('rept', [T(0), cast(call('trunc', [q], 'double'), 'int')], 'string');
+    // REPT of the count rounded (REPT("ab", 2.7) is "ababab"), FACT of the number's whole part
+    // (FACT(5.9) is 120): Power BI's (contoso/functions/functions-fact-rept).
+    case 'rept': return call('rept', [T(0), cast(halfAway(q), 'int')], 'string');
     case 'fact': return call('fact', [cast(call('trunc', [p], 'double'), 'int')], 'int');
     // EVEN and ODD: away from zero, to the next even or odd whole number (ODD(0) is 1).
     case 'even': return cast(pop('mul', [pop('mul', [call('sign', [p], 'double'), call('ceil', [pop('div', [call('abs', [p], 'double'), int(2)], 'double')], 'double')], 'double'), int(2)], 'double'), 'int');

@@ -18,7 +18,7 @@ const ENGINES = [
   { engine: 'DuckDB', path: 'correlated', artifact: 'plan-report', report: 'plan-correlated.json', known: ['dax-sql/known.json'] },
   { engine: 'Fabric DWH', path: 'unnested by the compiler', artifact: 'tsql-report', report: 'tsql-unnest.json', known: ['dax-sql-tsql/known.json', 'dax-sql-tsql/known-unnest.json'] },
   { engine: 'Polars', path: 'unnested by the compiler', artifact: 'polars-report', report: 'polars.json', known: ['dax-sql-polars/known.json', 'dax-sql/known.json'] },
-  { engine: 'DataFusion 55', path: 'unnested by the compiler', artifact: 'datafusion-report', report: 'datafusion.json', known: ['dax-sql-datafusion/known.json', 'dax-sql/known.json'] },
+  { engine: 'DataFusion', path: 'unnested by the compiler', artifact: 'datafusion-report', report: 'datafusion.json', known: ['dax-sql-datafusion/known.json', 'dax-sql/known.json'] },
 ];
 
 const rows = [];

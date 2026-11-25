@@ -1,0 +1,2 @@
+// note: a number literal past a double's range (1E400, -1E400)
+EVALUATE ROW("p", 1E400, "n", -1E400)

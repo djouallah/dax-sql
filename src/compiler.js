@@ -21,7 +21,7 @@ import { Ctx, EMPTY_CTX, narrow } from './context.js';
 import { isDateKey, Model } from './model.js';
 import * as ir from './ir.js';
 import { dateLit, rowsTable } from './ir.js';
-import { SCALAR, TABLE, MODIFIERS } from './functions/index.js';
+import { SCALAR, TABLE, MODIFIERS, minArgs } from './functions/index.js';
 import { visualTable } from './functions/visual.js';
 
 const lc = s => String(s).toLowerCase();
@@ -485,7 +485,7 @@ export class Compiler {
     if (ast.args?.[0]?.k === 'call' && ast.args[0].fn === 'CURRENTGROUP' && !GROUPBY_AGGREGATES.has(ast.fn))
       throw semantic(`GROUPBY's expressions aggregate CURRENTGROUP() with ${[...GROUPBY_AGGREGATES].join(', ')}, not ${ast.fn}`);
     const f = SCALAR.get(ast.fn);
-    if (f) return f(this, ast.args, env, ast);
+    if (f) { enough(ast); return f(this, ast.args, env, ast); }
     if (TABLE.has(ast.fn)) return this.single(this.table(ast, env));
     if (MODIFIERS.has(ast.fn)) throw semantic(`${ast.fn} can only be a filter argument of CALCULATE or CALCULATETABLE`);
     throw unsupported(`function ${ast.fn}`);
@@ -572,6 +572,7 @@ export class Compiler {
           if (MODIFIERS.has(ast.fn)) throw semantic(`${ast.fn} can only be a filter argument of CALCULATE`);
           throw unsupported(`function ${ast.fn}`);
         }
+        enough(ast);
         return f(this, ast.args, env, ast);
       }
       case 'table': {
@@ -671,7 +672,7 @@ export class Compiler {
         });
       }
       const m = MODIFIERS.get(ast.fn);
-      if (m) return [m(this, ast.args, env, ast)].flat();
+      if (m) { enough(ast); return [m(this, ast.args, env, ast)].flat(); }
     }
     if (this.isTable(ast, env)) {
       const f = this.tableFilter(this.table(ast, env), env.ctx);
@@ -803,6 +804,12 @@ function valuesCtx(x) {
 
 // The model columns an expression names directly (not inside an aggregate or an iterator):
 // the columns of a boolean filter.
+// A call with fewer arguments than its function takes: DAX's error.
+function enough(ast) {
+  const n = minArgs(ast.fn), got = (ast.args ?? []).filter(a => a && a.k !== 'empty').length;
+  if ((ast.args?.length ?? 0) < n || got < Math.min(n, 1)) throw semantic(`Too few arguments were passed to the ${ast.fn} function. The minimum argument count for the function is ${n}.`);
+}
+
 const OPAQUE = new Set(['CALCULATE', 'CALCULATETABLE', 'FILTER', 'SUMX', 'AVERAGEX', 'MINX', 'MAXX', 'COUNTX', 'COUNTAX',
   'CONCATENATEX', 'PRODUCTX', 'MEDIANX', 'RANKX', 'RANK', 'ROWNUMBER', 'SUM', 'AVERAGE', 'AVERAGEA', 'MIN', 'MINA', 'MAX',
   'MAXA', 'COUNT', 'COUNTA', 'COUNTROWS', 'HASONEFILTER',

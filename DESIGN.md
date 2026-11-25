@@ -1259,6 +1259,10 @@ npm test
   (NULLs, joins, `IN` and `LIKE`, `CAST`, `%`, `WITH TIES`).
 - `views.test.js`: semantic views' statements, run on DuckDB.
 - `explain.test.js`: the query plan as drawn, and its SQL answering as the compiled SQL does.
+- `errors.test.js`: any text is SQL or a `DaxError`: every function and modifier with 0 to 4
+  arguments of each kind on every dialect (too few is DAX's error, `minArgs` in
+  `functions/index.js`), the suite's queries broken on purpose (`conformance/tools/mutate.mjs`),
+  a query that is no text; what Substrait has nothing for refused by name.
 - `plan.test.js`: every plan well formed (`src/check.js`) as lowered and after each pipeline,
   and the same after its Substrait round trip; the check finds a plan broken each way it looks.
 - `tsql.test.js`: every conformance query is T-SQL with nothing Fabric lacks, or refused by

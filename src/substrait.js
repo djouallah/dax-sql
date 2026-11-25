@@ -544,7 +544,8 @@ export function literal(v, t) {
   if (v === null) return { literal: { null: typeOf(t), nullable: true } };
   switch (t) {
     case 'int': return { literal: { i64: String(v) } };
-    case 'double': return { literal: { fp64: v } };
+    // (Past a double's range: proto3's JSON names it, "Infinity" or "-Infinity"; JSON has no number of it.)
+    case 'double': return { literal: { fp64: Number.isFinite(v) ? v : String(v) } };
     case 'decimal': return { literal: { decimal: decimalOf(v), nullable: false } };
     case 'bool': return { literal: { boolean: v } };
     case 'date': return { literal: { date: Math.round(Date.parse(`${String(v).slice(0, 10)}T00:00:00Z`) / 86400000) } };

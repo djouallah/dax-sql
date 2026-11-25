@@ -286,7 +286,7 @@ export function readSubstrait(plan, model, options = {}) {
 function literalOf(l) {
   if ('null' in l) return lit(null, kindOf(l.null).t);
   if ('i64' in l) return lit(Number(l.i64), 'int');
-  if ('fp64' in l) return lit(l.fp64, 'double');
+  if ('fp64' in l) return lit(Number(l.fp64), 'double');
   if ('boolean' in l) return lit(l.boolean, 'bool');
   if ('string' in l) return lit(l.string, 'string');
   if ('date' in l) return lit(new Date(l.date * 86400000).toISOString().slice(0, 10), 'date');

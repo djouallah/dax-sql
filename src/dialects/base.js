@@ -5,7 +5,7 @@
 // fn(name, args) receives the names below (the `fn` nodes of ir.js), with args as SQL text:
 //   logic     isblank coalesce greatest least divide iseven isodd error row
 //   math      abs sign sqrt exp ln log log10 power mod quotient round roundup rounddown int trunc
-//             ceiling floor mround rand randbetween gcd lcm fact even odd value cast currency
+//             ceiling floor mround fact even odd value cast currency
 //             cydiv cydivide
 //   text      left right mid len upper lower trim substitute replace search find rept exact
 //             unichar unicode containsstring containsstringexact combinevalues format_date
@@ -16,6 +16,8 @@
 // agg(fn, arg, extra) the aggregates of ir.js: sum avg min max count countrows dcount dcountnb
 //   countblank product median pct_inc pct_exc pctx_inc pctx_exc stdev_s stdev_p var_s var_p concat
 //   hasone count0 dcount0 sum_currency
+import { DaxError } from '../errors.js';
+
 export class Dialect {
   name = 'ansi';
   // Statements a session runs before the SQL (the engine's settings this SQL wants).
@@ -24,7 +26,7 @@ export class Dialect {
   ident(name) { return `"${String(name).replace(/"/g, '""')}"`; }
   str(v) { return `'${String(v).replace(/'/g, "''")}'`; }
   num(v) {
-    if (!Number.isFinite(v)) throw new Error(`not a finite number: ${v}`);
+    if (!Number.isFinite(v)) throw new DaxError(`DAX: a number past a double's range (${v}) is not supported`, { code: 'UNSUPPORTED' });
     return String(v);
   }
   bool(v) { return v ? 'TRUE' : 'FALSE'; }

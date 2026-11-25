@@ -98,6 +98,12 @@ export { Model } from './model.js';
 
 const DIALECTS = { duckdb: () => new DuckDBDialect(), tsql: () => new TSqlDialect(), postgres: () => new PostgresDialect(), polars: () => new PolarsDialect(), datafusion: () => new DataFusionDialect() };
 
+// A query: its text (or, `tree`, the tree a DAX query parses to); anything else, a SYNTAX error.
+function query(q, tree = true) {
+  if (typeof q === 'string' || (tree && q && typeof q === 'object')) return q;
+  throw new DaxError(`a query is a text, not ${q === null ? 'null' : typeof q}`, { code: 'SYNTAX' });
+}
+
 export function createCompiler(input, options = {}) {
   const model = input instanceof Model ? input : new Model(input);
   const dialect = options.dialect instanceof Dialect ? options.dialect : DIALECTS[options.dialect ?? 'duckdb']?.();
@@ -219,6 +225,7 @@ export function createCompiler(input, options = {}) {
   // `dax`: the query's text, or its tree (keyed by `key`, the text it was built from).
   // `extra`: options of this compilation only (aliasStart).
   function compileAll(dax, key = dax, extra = null) {
+    query(dax);
     if (rolesError) throw semantic(rolesError);
     const opts = extra ? { ...options, ...extra } : options;
     if (extra) key = `${key}\u0000${JSON.stringify(extra)}`;
@@ -255,6 +262,7 @@ export function createCompiler(input, options = {}) {
   // [{ start, end, arm, text, dax, sql, ctes, body, ordered }], aliases }. Aliases are numbered
   // from `aliases` on, so that queries of several models can share one WITH.
   function statementRelations(text, name = 'model', aliases = 0) {
+    query(text, false);
     if (/^\s*(DEFINE|EVALUATE)\b/i.test(text)) throw new DaxError('SQL: a DAX query is not SQL', { code: 'UNSUPPORTED' });
     const relation = t => {
       const { query, out } = translateSql(t, dialect.nestedWith ? null : { aliasStart: aliases });
@@ -275,6 +283,7 @@ export function createCompiler(input, options = {}) {
   // The query plan: what an engine has to do for the query, as relational algebra (lower.js),
   // with no rewrite; one per EVALUATE. -> [{ plan, columns, ordered }]
   function plans(text) {
+    query(text);
     if (rolesError) throw semantic(rolesError);
     const opts = { ...options, calcColumn, calcTable, security };
     const lower1 = q => base.query(q, statements => statements.map(s => new Lowerer(model, opts).query(s)));
@@ -333,6 +342,7 @@ export function createCompiler(input, options = {}) {
     },
     // One EVALUATE, or a SELECT over the model -> { sql, columns: [{ name, dax, type, lineage }] }.
     compile(dax) {
+      query(dax);
       if (isSqlQuery(dax)) return compileSql(dax);
       const out = compileAll(dax);
       if (out.length !== 1) throw new DaxError(`the query has ${out.length} EVALUATE statements; use compileAll`);

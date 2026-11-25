@@ -81,6 +81,15 @@ test('the suite\'s queries broken on purpose: SQL or a DaxError on every dialect
   assert.ok(compiled > 60, `only ${compiled} of the broken queries compile: the check of their plans checks little`);
 });
 
+test('a calculation group over a value of two kinds compiles on every dialect, in moments (passes/outer.js read its condition through every projection: it doubled each time, past the memory there is)', () => {
+  const c = Object.fromEntries(DIALECTS.map(d => [d, createCompiler(tmslToModel(readBim('contoso')), { dialect: d })]));
+  for (const d of DIALECTS) {
+    const t0 = Date.now();
+    assert.equal(outcome(c[d], 'EVALUATE SUMMARIZECOLUMNS(\'Time Calc\'[Time Calc], "m0", IF(1 > 0, [All Sales], TRUE()))'), 'sql', d);
+    assert.ok(Date.now() - t0 < 5000, `${d}: ${Date.now() - t0} ms`);
+  }
+});
+
 test('a query that is not a text: SYNTAX', () => {
   for (const q of [null, undefined, 42, true]) {
     for (const f of ['compile', 'compileAll', 'plan', 'explain', 'compileStatement']) {
@@ -89,8 +98,8 @@ test('a query that is not a text: SYNTAX', () => {
   }
 });
 
-test('a number past a double\'s range is refused, not compiled to a blank', () => {
-  for (const d of DIALECTS) assert.equal(outcome(compilers[d], 'EVALUATE ROW("x", 1E400)'), 'UNSUPPORTED', d);
+test('a number past a double\'s range is DAX\'s error (Power BI\'s: out of range), not a blank', () => {
+  for (const d of DIALECTS) for (const n of ['1E400', '-1E400']) assert.equal(outcome(compilers[d], `EVALUATE ROW("x", ${n})`), 'SEMANTIC', `${d} ${n}`);
 });
 
 test('what Substrait has nothing for is refused by name; what it has compiles, on every dialect', () => {

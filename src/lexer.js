@@ -6,7 +6,7 @@
 //   col  [name] (v without brackets, ]] unescaped)
 //   param @name, a query parameter
 //   op   an operator or punctuation
-import { syntax } from './errors.js';
+import { DaxError, syntax } from './errors.js';
 
 // (=> and : are DEFINE FUNCTION's, which the parser reports as not supported.)
 const OPS = ['==', '=>', ':', '&&', '||', '<>', '<=', '>=', '=', '<', '>', '+', '-', '*', '/', '^', '&', '(', ')', '{', '}', ','];
@@ -85,6 +85,8 @@ export function lex(src) {
     }
     if (/[0-9]/.test(c) || (c === '.' && /[0-9]/.test(src[i + 1] ?? ''))) {
       const m = /^(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?/.exec(src.slice(i));
+      // Past a double's range: Power BI's error ("Out of present range"), not a number.
+      if (!Number.isFinite(Number(m[0]))) throw new DaxError(`DAX: the number ${m[0]} is out of range`, { code: 'SEMANTIC', pos: at, src });
       out.push({ t: 'num', v: m[0], at, end: i + m[0].length });
       i += m[0].length;
       continue;

@@ -29,10 +29,16 @@ export function outer(root) {
 }
 
 // r with the left joins whose added rows the condition `pred` over r's columns drops made inner.
+// (The condition read through a projection is its items' expressions: through many, a column
+// read twice in each, it doubles each time; past BUDGET nodes the joins below are left as they
+// are, which is always right: a rewrite not made.)
+const BUDGET = 20000;
 function inner(r, pred) {
   switch (r.k) {
     case 'project': {
-      const src = inner(r.src, put(pred, new Map(r.items.map(i => [i.col, i.expr]))));
+      const through = put(pred, new Map(r.items.map(i => [i.col, i.expr])), { left: BUDGET });
+      if (through === null) return r;
+      const src = inner(r.src, through);
       return src === r.src ? r : { ...r, src };
     }
     case 'select': {
@@ -173,13 +179,36 @@ function refs(x, out = new Set()) {
   if (Array.isArray(x.a)) x.a.forEach(y => refs(y, out));
   return out;
 }
-// A scalar with the columns of `m` as their values.
-function put(x, m) {
+// A scalar with the columns of `m` as their values, or null when it would be more than `n.left`
+// nodes.
+function put(x, m, n) {
+  try { return putIn(x, m, n); } catch (e) { if (e === PAST) return null; throw e; }
+}
+const PAST = Symbol('past the budget');
+function putIn(x, m, n) {
   if (!x || typeof x !== 'object') return x;
-  if (x.k === 'ref') return m.has(x.col) ? m.get(x.col) : x;
-  if (x.k === 'case') return { ...x, w: x.w.map(([c, v]) => [put(c, m), put(v, m)]), e: put(x.e, m) };
-  if (Array.isArray(x.a)) return { ...x, a: x.a.map(y => put(y, m)) };
+  if (--n.left < 0) throw PAST;
+  if (x.k === 'ref') {
+    if (!m.has(x.col)) return x;
+    const v = m.get(x.col);
+    n.left -= size(v, n.left);
+    if (n.left < 0) throw PAST;
+    return v;
+  }
+  if (x.k === 'case') return { ...x, w: x.w.map(([c, v]) => [putIn(c, m, n), putIn(v, m, n)]), e: putIn(x.e, m, n) };
+  if (Array.isArray(x.a)) return { ...x, a: x.a.map(y => putIn(y, m, n)) };
   return x;
+}
+// A scalar's nodes, counted up to one past `most`.
+function size(x, most) {
+  let k = 0;
+  const go = y => {
+    if (!y || typeof y !== 'object' || k > most) return;
+    k++;
+    if (y.k === 'case') { y.w.forEach(([c, v]) => { go(c); go(v); }); go(y.e); } else if (Array.isArray(y.a)) y.a.forEach(go);
+  };
+  go(x);
+  return k;
 }
 function hasExists(x) {
   if (!x || typeof x !== 'object') return false;

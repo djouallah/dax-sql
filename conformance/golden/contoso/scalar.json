@@ -292,6 +292,10 @@
    ]
   ]
  },
+ "scalar-literal-past-double-range": {
+  "hash": "809fc5b7cc9078f79d3aded7daaa5160b9c3899d",
+  "error": "The following system error occurred:  Out of present range. "
+ },
  "scalar-lookupvalue-ignores-filter-context": {
   "hash": "200be71a7ccf730740e541900a56aa1deb1c465f",
   "columns": [

@@ -1,6 +1,10 @@
 {
-  "name": "scott_model",
+  "name": "dax-conformance-scott",
+  "compatibilityLevel": 1604,
   "model": {
+    "culture": "en-US",
+    "discourageImplicitMeasures": true,
+    "defaultPowerBIDataSourceVersion": "powerBI_V3",
     "description": "The SCOTT schema with dataset-scoped metrics",
     "tables": [
       {

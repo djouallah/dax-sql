@@ -38,19 +38,34 @@ export function sqlAggregates(sql) {
 // m (>= 0, or any number) to 15 significant digits in scientific notation, as DuckDB's
 // printf('%.14e'): 1.23450000000000e+03.
 export const e14 = m => `trim(to_char(CAST(${m} AS DOUBLE PRECISION), '9.99999999999999EEEE'))`;
+// The same digits for Polars, which has no to_char of a number: the mantissa rounded to 14 places
+// (ROUND's places a constant on Polars), as Polars writes a double (its shortest form: 1.2345,
+// 1.0), 'e', the exponent (one more when the mantissa rounds up to 10). The exponent a double's:
+// Polars reads a negative whole one as unsigned.
+const e14Polars = x => {
+  const v = `CAST(${x} AS DOUBLE PRECISION)`, e0 = `CAST(floor(log10(abs(${v}))) AS BIGINT)`;
+  const m0 = `round(${v} / power(10.0, CAST(${e0} AS DOUBLE PRECISION)), 14)`;
+  return `CASE WHEN ${v} = 0 THEN '0.0e0' ELSE CAST(CASE WHEN abs(${m0}) >= 10 THEN round(${m0} / 10, 14) ELSE ${m0} END AS TEXT)
+    || 'e' || CAST(CASE WHEN abs(${m0}) >= 10 THEN ${e0} + 1 ELSE ${e0} END AS TEXT) END`;
+};
 
 // --- numbers ---------------------------------------------------------------------------
 
 // A value as DAX's General Number writes it (15 significant digits, 1E+20 beyond them): C's
-// %.15g, upper case. inline: the value written where it is read, not bound in a row of its own
-// (Polars reads no outer row in a derived table: pola-rs/polars#31067).
-export function generalNumber(x, t, inline = false) {
+// %.15g, upper case. For Polars (polars: true): its digits as e14Polars writes them, the value
+// written where it is read, not bound in
+// a row of its own (Polars reads no outer row in a derived table: pola-rs/polars#31067), and its
+// trailing zeros trimmed as text (Polars has no trim_scale: the 15 digits as DECIMAL(38,18),
+// exactly, as the exponents -4 to 14 need).
+export function generalNumber(x, t, polars = false) {
   if (t === 'int') return `CAST(${x} AS TEXT)`;
   if (t === 'bool') return `CASE ${x} WHEN TRUE THEN 'True' WHEN FALSE THEN 'False' END`;
   const ex = `CAST(split_part(dax_ge, 'e', 2) AS INTEGER)`;
   const sci = `rtrim(rtrim(split_part(dax_ge, 'e', 1), '0'), '.') || 'E' || CASE WHEN ${ex} < 0 THEN '-' ELSE '+' END || lpad(CAST(abs(${ex}) AS TEXT), 2, '0')`;
-  return (inline ? (n, v, body) => body.replaceAll(n, `(${v})`) : bind)('dax_ge', e14(x), `CASE WHEN dax_ge IS NULL THEN NULL WHEN ${ex} < -4 OR ${ex} >= 15 THEN ${sci}
-    ELSE CAST(trim_scale(CAST(dax_ge AS NUMERIC)) AS TEXT) END`);
+  // (Polars computes a CASE's branches no row takes too: the cast sees only exponents -4 to 14.)
+  const plain = polars ? `rtrim(rtrim(CAST(CAST(CASE WHEN ${ex} BETWEEN -4 AND 14 THEN dax_ge END AS DECIMAL(38,18)) AS TEXT), '0'), '.')` : `CAST(trim_scale(CAST(dax_ge AS NUMERIC)) AS TEXT)`;
+  return (polars ? (n, v, body) => body.replaceAll(n, `(${v})`) : bind)('dax_ge', (polars ? e14Polars : e14)(x), `CASE WHEN dax_ge IS NULL THEN NULL WHEN ${ex} < -4 OR ${ex} >= 15 THEN ${sci}
+    ELSE ${plain} END`);
 }
 
 // m >= 0 rounded to n places, as text with n decimals ("1234.50").

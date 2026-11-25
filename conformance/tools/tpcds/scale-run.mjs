@@ -78,6 +78,9 @@ for (const q of queries) {
   try { sql = compiler(q.roles).compile(q.dax).sql; } catch (err) { r.compileError = `${err.code ? `${err.code}: ` : ''}${err.message.split('\n')[0]}`; continue; }
   const a = await run(sql);
   r.ms = Math.round(a.ms); r.bytes = sql.length;
+  // DAX's own run-time error, raised by the SQL (a fixed decimal past its range at SF10): the
+  // query's answer, as DAX's; any other error the engine's.
+  if (a.error && /DAX: /.test(a.error)) { r.daxError = a.error.replace(/^.*?DAX: /, ''); console.log(`DAX error ${r.id}: ${r.daxError}`); continue; }
   if (a.error) { r.error = a.error; console.log(`error ${r.id}: ${a.error}`); continue; }
   r.rows = a.n;
   if (answersFile && a.rows) answers[r.id] = { rows: a.n, hash: createHash('sha1').update(norm(a.rows).join('\n')).digest('hex') };
@@ -94,13 +97,13 @@ for (const q of queries) {
 const ran = results.filter(r => r.ms != null && !r.error);
 const total = ran.reduce((s, r) => s + r.ms, 0);
 const pct = p => { const v = ran.map(r => r.ms).sort((a, b) => a - b); return v.length ? v[Math.min(v.length - 1, Math.floor(p * v.length))] : 0; };
-const line = r => `| ${r.id} | ${r.ms ?? ''} | ${r.unnestMs ?? ''} | ${r.rows ?? ''} | ${(r.compileError ?? r.error ?? r.unnestError ?? (r.differs ? 'the two answers differ' : '')).replaceAll('|', '\\|').slice(0, 160)} |`;
+const line = r => `| ${r.id} | ${r.ms ?? ''} | ${r.unnestMs ?? ''} | ${r.rows ?? ''} | ${(r.compileError ?? r.error ?? r.unnestError ?? (r.daxError ? `DAX's error: ${r.daxError}` : '') ?? '') || (r.differs ? 'the two answers differ' : '').replaceAll('|', '\\|').slice(0, 160)} |`;
 const bad = results.filter(r => r.compileError || r.error || r.unnestError || r.differs);
 const head = '| query | ms | unnested ms | rows | |\n|---|---|---|---|---|';
 const summary = [
   `### tpcds at scale (${file.replace(/\\/g, '/').split('/').pop()}): ${queries.length} queries`, '',
   `${ran.length} ran in ${(total / 1000).toFixed(1)} s (median ${pct(0.5)} ms, p90 ${pct(0.9)} ms, p99 ${pct(0.99)} ms, max ${pct(1)} ms); `
-    + `${results.filter(r => r.compileError).length} refused by the compiler, ${results.filter(r => r.error).length} failed or timed out on DuckDB`
+    + `${results.filter(r => r.compileError).length} refused by the compiler, ${results.filter(r => r.error).length} failed or timed out on DuckDB, ${results.filter(r => r.daxError).length} raised DAX's error`
     + (agree ? `, ${results.filter(r => r.differs).length} answer otherwise unnested, ${results.filter(r => r.unnestError).length} fail unnested` : ''), '',
   '#### The slowest 25', '', head, ...[...ran].sort((a, b) => b.ms - a.ms).slice(0, 25).map(line), '',
   ...(bad.length ? ['#### Errors and disagreements', '', head, ...bad.map(line), ''] : []),

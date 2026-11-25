@@ -8,10 +8,16 @@
 // formats/tmsl.js (a checkout from before formats/ took the TMSL itself); one given as an
 // Apache Ossie YAML file is read as the TMSL it stands for (formats/ossie.js; `yaml` from the
 // checkout).
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, openSync, readSync, closeSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
+
+// The first 1 MB of a file, as text.
+function head(file) {
+  const fd = openSync(file, 'r'), buf = Buffer.alloc(1 << 20);
+  try { return buf.toString('utf8', 0, readSync(fd, buf, 0, buf.length, 0)); } finally { closeSync(fd); }
+}
 
 const DUCK_TYPE = { int64: 'BIGINT', double: 'DOUBLE', decimal: 'DECIMAL(18,4)', string: 'VARCHAR', boolean: 'BOOLEAN' };
 const sqlString = s => `'${String(s).replace(/'/g, "''")}'`;
@@ -41,7 +47,9 @@ export async function engine(dir, { DuckDBInstance: duck } = {}) {
         if (s?.type !== 'entity') continue;
         const file = join(dataDir, `${s.entityName}.csv`);
         if (!existsSync(file)) throw new Error(`no data for ${t.name}: ${file}`);
-        const text = readFileSync(file, 'utf8');
+        // Its first rows, enough to tell a date from a date and time (a table at SF10 is past the
+        // longest string Node holds).
+        const text = head(file);
         const cols = t.columns.filter(c => !c.type || c.type === 'data');
         const types = cols.map(c => {
           if (c.dataType !== 'dateTime') return DUCK_TYPE[c.dataType] ?? 'VARCHAR';

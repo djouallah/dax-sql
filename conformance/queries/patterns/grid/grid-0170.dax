@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), star where one: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT o.Brand, AGG(f."Sales Amount") AS v FROM "dax-sql-patterns".Sales AS f LEFT JOIN "dax-sql-patterns".Product AS o ON f.ProductKey = o.ProductKey WHERE o.Color = 'Blue' GROUP BY o.Brand
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Product'[Brand], "__rows", COUNTROWS(Sales), "v", 'Sales'[Sales Amount]), ('Product'[Color] = "Blue")), "Brand", 'Product'[Brand], "v", [v])
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Product'[Brand], "__rows", COUNTROWS('Sales'), "v", 'Sales'[Sales Amount]), ('Product'[Color] = "Blue")), "Brand", 'Product'[Brand], "v", [v])

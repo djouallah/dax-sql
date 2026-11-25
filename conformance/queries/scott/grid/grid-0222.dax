@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), having: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t.dname, AGG(t.dept_count) AS v FROM scott_model.dept AS t GROUP BY t.dname HAVING AGG(t.dept_count) > 0
-EVALUATE SELECTCOLUMNS(FILTER(SUMMARIZECOLUMNS('dept'[dname], "__rows", COUNTROWS(dept), "v", 'dept'[dept_count]), (COALESCE([v], 0) > 0)), "dname", 'dept'[dname], "v", COALESCE([v], 0))
+EVALUATE SELECTCOLUMNS(FILTER(SUMMARIZECOLUMNS('dept'[dname], "__rows", COUNTROWS('dept'), "v", 'dept'[dept_count]), (COALESCE([v], 0) > 0)), "dname", 'dept'[dname], "v", COALESCE([v], 0))

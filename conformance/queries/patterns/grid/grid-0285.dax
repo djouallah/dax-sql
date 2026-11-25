@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), star where many: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT o.SubcategoryKey, AGG(f.Snapshots) AS v FROM "dax-sql-patterns".Inventory AS f LEFT JOIN "dax-sql-patterns".Product AS o ON f.ProductKey = o.ProductKey WHERE f."On Hand" <> 204 GROUP BY o.SubcategoryKey
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Product'[SubcategoryKey], "__rows", COUNTROWS(Inventory), "v", 'Inventory'[Snapshots]), ('Inventory'[On Hand] <> 204)), "SubcategoryKey", 'Product'[SubcategoryKey], "v", [v])
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Product'[SubcategoryKey], "__rows", COUNTROWS('Inventory'), "v", 'Inventory'[Snapshots]), ('Inventory'[On Hand] <> 204)), "SubcategoryKey", 'Product'[SubcategoryKey], "v", [v])

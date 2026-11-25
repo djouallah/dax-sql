@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), where and: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t.comm, AGG(t.comm_count) AS v FROM scott_model.emp AS t WHERE t.ename IS NOT NULL AND t.hiredate IS NOT NULL GROUP BY t.comm
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('emp'[comm], "__rows", COUNTROWS(emp), "v", 'emp'[comm_count]), NOT(ISBLANK('emp'[ename])), NOT(ISBLANK('emp'[hiredate]))), "comm", 'emp'[comm], "v", COALESCE([v], 0))
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('emp'[comm], "__rows", COUNTROWS('emp'), "v", 'emp'[comm_count]), NOT(ISBLANK('emp'[ename])), NOT(ISBLANK('emp'[hiredate]))), "comm", 'emp'[comm], "v", COALESCE([v], 0))

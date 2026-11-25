@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), where: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t.YearMonth, AGG(t."Budget Amount") AS v FROM "dax-sql-patterns".Budget AS t WHERE t.Budget BETWEEN 4097 AND 6781 GROUP BY t.YearMonth
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Budget'[YearMonth], "__rows", COUNTROWS(Budget), "v", 'Budget'[Budget Amount]), (('Budget'[Budget] >= 4097) && ('Budget'[Budget] <= 6781))), "YearMonth", 'Budget'[YearMonth], "v", [v])
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Budget'[YearMonth], "__rows", COUNTROWS('Budget'), "v", 'Budget'[Budget Amount]), (('Budget'[Budget] >= 4097) && ('Budget'[Budget] <= 6781))), "YearMonth", 'Budget'[YearMonth], "v", [v])

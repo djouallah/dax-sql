@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), ratio: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t.FuelSourceDescriptor, CAST(AGG(t."Storage MWh") AS DOUBLE) / NULLIF(AGG(t."Registered MW"), 0) AS r FROM aac.dim_duid AS t GROUP BY t.FuelSourceDescriptor
-EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('dim_duid'[FuelSourceDescriptor], "__rows", COUNTROWS(dim_duid), "r", IF(ISBLANK(COUNTROWS(dim_duid)), BLANK(), (CONVERT('dim_duid'[Storage MWh], DOUBLE) / IF(('dim_duid'[Registered MW] == 0), BLANK(), 'dim_duid'[Registered MW])))), "FuelSourceDescriptor", 'dim_duid'[FuelSourceDescriptor], "r", [r])
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('dim_duid'[FuelSourceDescriptor], "__rows", COUNTROWS('dim_duid'), "r", IF(ISBLANK(COUNTROWS('dim_duid')), BLANK(), (CONVERT('dim_duid'[Storage MWh], DOUBLE) / IF(('dim_duid'[Registered MW] == 0), BLANK(), 'dim_duid'[Registered MW])))), "FuelSourceDescriptor", 'dim_duid'[FuelSourceDescriptor], "r", [r])

@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), star two sides: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT o.Weekday, f.StoreKey, AGG(f."Target Amount") AS v FROM "dax-conformance-edges".Target AS f LEFT JOIN "dax-conformance-edges"."Date" AS o ON f."Date" = o."Date" GROUP BY o.Weekday, f.StoreKey
-EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('Date'[Weekday], 'Target'[StoreKey], "__rows", COUNTROWS(Target), "v", 'Target'[Target Amount]), "Weekday", 'Date'[Weekday], "StoreKey", 'Target'[StoreKey], "v", [v])
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('Date'[Weekday], 'Target'[StoreKey], "__rows", COUNTROWS('Target'), "v", 'Target'[Target Amount]), "Weekday", 'Date'[Weekday], "StoreKey", 'Target'[StoreKey], "v", [v])

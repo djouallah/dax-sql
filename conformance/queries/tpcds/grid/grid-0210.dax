@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), derived table: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT s.cs_ship_addr_sk, s.v FROM (SELECT t.cs_ship_addr_sk, AGG(t."Catalog Net Profit") AS v FROM tpcds.catalog_sales AS t GROUP BY t.cs_ship_addr_sk) AS s WHERE s.v IS NOT NULL
-EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('catalog_sales'[cs_ship_addr_sk], "__rows", COUNTROWS(catalog_sales), "v", 'catalog_sales'[Catalog Net Profit]), "cs_ship_addr_sk", 'catalog_sales'[cs_ship_addr_sk], "v", [v])
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('catalog_sales'[cs_ship_addr_sk], "__rows", COUNTROWS('catalog_sales'), "v", 'catalog_sales'[Catalog Net Profit]), "cs_ship_addr_sk", 'catalog_sales'[cs_ship_addr_sk], "v", [v])

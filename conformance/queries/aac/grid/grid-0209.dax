@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), ratio: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t."time", CAST(AGG(t."Average MW") AS DOUBLE) / NULLIF(AGG(t."Days with output"), 0) AS r FROM aac.fct_summary AS t GROUP BY t."time"
-EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('fct_summary'[time], "__rows", COUNTROWS(fct_summary), "r", IF(ISBLANK(COUNTROWS(fct_summary)), BLANK(), (CONVERT('fct_summary'[Average MW], DOUBLE) / IF(('fct_summary'[Days with output] == 0), BLANK(), 'fct_summary'[Days with output])))), "time", 'fct_summary'[time], "r", [r])
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('fct_summary'[time], "__rows", COUNTROWS('fct_summary'), "r", IF(ISBLANK(COUNTROWS('fct_summary')), BLANK(), (CONVERT('fct_summary'[Average MW], DOUBLE) / IF(('fct_summary'[Days with output] == 0), BLANK(), 'fct_summary'[Days with output])))), "time", 'fct_summary'[time], "r", [r])

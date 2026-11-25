@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), order by measure: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t.Target, AGG(t."Target Total") AS v FROM contoso.CityTarget AS t GROUP BY t.Target ORDER BY v DESC NULLS LAST, t.Target NULLS FIRST
-EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('CityTarget'[Target], "__rows", COUNTROWS(CityTarget), "v", 'CityTarget'[Target Total]), "Target", 'CityTarget'[Target], "v", [v]) ORDER BY [v] DESC, [Target]
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('CityTarget'[Target], "__rows", COUNTROWS('CityTarget'), "v", 'CityTarget'[Target Total]), "Target", 'CityTarget'[Target], "v", [v]) ORDER BY [v] DESC, [Target]

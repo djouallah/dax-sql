@@ -18,6 +18,7 @@ POWERBI_TOKEN, a token for https://analysis.windows.net/powerbi/api (REST and XM
 
 import glob
 import json
+import math
 import os
 import sys
 import time
@@ -108,6 +109,9 @@ def value(v):
         return None
     if kind == "DateTime":
         return v.ToString("yyyy-MM-dd") if v.TimeOfDay.Ticks == 0 else v.ToString("yyyy-MM-dd HH:mm:ss")
+    # NaN and an infinity, which JSON has no number for, as their names.
+    if isinstance(v, float) and (math.isnan(v) or math.isinf(v)):
+        return "NaN" if math.isnan(v) else "Infinity" if v > 0 else "-Infinity"
     if isinstance(v, (bool, int, float, str)):
         return v
     if kind == "Decimal":

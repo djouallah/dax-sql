@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), cte: its SQL as dax-sql's SQL front end writes it in DAX:
 // WITH s AS (SELECT CurrencyCode, "Avg Order Value" AS mm FROM "dax-sql-patterns".Sales WHERE EmployeeKey >= 9) SELECT CurrencyCode, AGG(mm) AS v FROM s GROUP BY CurrencyCode
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Sales'[CurrencyCode], "__rows", COUNTROWS(Sales), "v", 'Sales'[Avg Order Value]), ('Sales'[EmployeeKey] >= 9)), "CurrencyCode", 'Sales'[CurrencyCode], "v", [v])
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Sales'[CurrencyCode], "__rows", COUNTROWS('Sales'), "v", 'Sales'[Avg Order Value]), ('Sales'[EmployeeKey] >= 9)), "CurrencyCode", 'Sales'[CurrencyCode], "v", [v])

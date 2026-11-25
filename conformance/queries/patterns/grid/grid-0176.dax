@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), star two sides: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT o.City, f."Line Number", AGG(f."Avg Order Value") AS v FROM "dax-sql-patterns".Sales AS f JOIN "dax-sql-patterns".Customer AS o ON f.CustomerKey = o.CustomerKey GROUP BY o.City, f."Line Number"
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Customer'[City], 'Sales'[Line Number], "__rows", COUNTROWS(Sales), "v", 'Sales'[Avg Order Value]), NOT(ISBLANK('Customer'[CustomerKey]))), "City", 'Customer'[City], "Line Number", 'Sales'[Line Number], "v", [v])
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Customer'[City], 'Sales'[Line Number], "__rows", COUNTROWS('Sales'), "v", 'Sales'[Avg Order Value]), NOT(ISBLANK('Customer'[CustomerKey]))), "City", 'Customer'[City], "Line Number", 'Sales'[Line Number], "v", [v])

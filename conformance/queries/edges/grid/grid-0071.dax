@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), ratio: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t."Line Number", CAST(AGG(t."Customers No Blank") AS DOUBLE) / NULLIF(AGG(t."Total Quantity"), 0) AS r FROM "dax-conformance-edges".Sales AS t GROUP BY t."Line Number"
-EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('Sales'[Line Number], "__rows", COUNTROWS(Sales), "r", IF(ISBLANK(COUNTROWS(Sales)), BLANK(), (CONVERT('Sales'[Customers No Blank], DOUBLE) / IF(('Sales'[Total Quantity] == 0), BLANK(), 'Sales'[Total Quantity])))), "Line Number", 'Sales'[Line Number], "r", [r])
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('Sales'[Line Number], "__rows", COUNTROWS('Sales'), "r", IF(ISBLANK(COUNTROWS('Sales')), BLANK(), (CONVERT('Sales'[Customers No Blank], DOUBLE) / IF(('Sales'[Total Quantity] == 0), BLANK(), 'Sales'[Total Quantity])))), "Line Number", 'Sales'[Line Number], "r", [r])

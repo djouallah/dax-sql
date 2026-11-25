@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), star two sides: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT o.Quarter, f.ShipDate, AGG(f."Line Value Column") AS v FROM contoso.Sales AS f LEFT JOIN contoso."Date" AS o ON f.OrderDate = o."Date" GROUP BY o.Quarter, f.ShipDate
-EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('Date'[Quarter], 'Sales'[ShipDate], "__rows", COUNTROWS(Sales), "v", 'Sales'[Line Value Column]), "Quarter", 'Date'[Quarter], "ShipDate", 'Sales'[ShipDate], "v", [v])
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('Date'[Quarter], 'Sales'[ShipDate], "__rows", COUNTROWS('Sales'), "v", 'Sales'[Line Value Column]), "Quarter", 'Date'[Quarter], "ShipDate", 'Sales'[ShipDate], "v", [v])

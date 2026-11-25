@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), star where one: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT o."Year", AGG(f.Quantity) AS v FROM contoso.Sales AS f JOIN contoso."Date" AS o ON f.OrderDate = o."Date" WHERE o."Month" >= 10 GROUP BY o."Year"
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Date'[Year], "__rows", COUNTROWS(Sales), "v", 'Sales'[Quantity]), ('Date'[Month] >= 10), NOT(ISBLANK('Date'[Date]))), "Year", 'Date'[Year], "v", [v])
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Date'[Year], "__rows", COUNTROWS('Sales'), "v", 'Sales'[Quantity]), ('Date'[Month] >= 10), NOT(ISBLANK('Date'[Date]))), "Year", 'Date'[Year], "v", [v])

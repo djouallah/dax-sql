@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), having: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t.ShipDate, AGG(t."Line Value Column") AS v FROM contoso.Sales AS t GROUP BY t.ShipDate HAVING AGG(t."Line Value Column") > 0
-EVALUATE SELECTCOLUMNS(FILTER(SUMMARIZECOLUMNS('Sales'[ShipDate], "__rows", COUNTROWS(Sales), "v", 'Sales'[Line Value Column]), ([v] > 0)), "ShipDate", 'Sales'[ShipDate], "v", [v])
+EVALUATE SELECTCOLUMNS(FILTER(SUMMARIZECOLUMNS('Sales'[ShipDate], "__rows", COUNTROWS('Sales'), "v", 'Sales'[Line Value Column]), ([v] > 0)), "ShipDate", 'Sales'[ShipDate], "v", [v])

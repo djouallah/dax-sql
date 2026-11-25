@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), where and: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t."date", AGG(t."Regional solar available MWh") AS v FROM aac.fct_region AS t WHERE t.wind_available = 819.13 AND NOT (t.REGIONID = 'QLD1') GROUP BY t."date"
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('fct_region'[date], "__rows", COUNTROWS(fct_region), "v", 'fct_region'[Regional solar available MWh]), ('fct_region'[wind_available] = 819.13), NOT(('fct_region'[REGIONID] = "QLD1"))), "date", 'fct_region'[date], "v", [v])
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('fct_region'[date], "__rows", COUNTROWS('fct_region'), "v", 'fct_region'[Regional solar available MWh]), ('fct_region'[wind_available] = 819.13), NOT(('fct_region'[REGIONID] = "QLD1"))), "date", 'fct_region'[date], "v", [v])

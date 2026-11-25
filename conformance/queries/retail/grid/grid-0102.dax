@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), where or: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t.order_id, AGG(t.total_revenue) AS v FROM retail_model.orders AS t WHERE t.order_id <> 'O2' OR t.customer_id IS NOT NULL GROUP BY t.order_id
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('orders'[order_id], "__rows", COUNTROWS(orders), "v", 'orders'[total_revenue]), (('orders'[order_id] <> "O2") || NOT(ISBLANK('orders'[customer_id])))), "order_id", 'orders'[order_id], "v", [v])
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('orders'[order_id], "__rows", COUNTROWS('orders'), "v", 'orders'[total_revenue]), (('orders'[order_id] <> "O2") || NOT(ISBLANK('orders'[customer_id])))), "order_id", 'orders'[order_id], "v", [v])

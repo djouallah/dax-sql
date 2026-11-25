@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), where or: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t.ProductKey, AGG(t.Returned) AS v FROM contoso.Returns AS t WHERE t.ProductKey >= 3 OR t.ReturnQty <> 2 GROUP BY t.ProductKey
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Returns'[ProductKey], "__rows", COUNTROWS(Returns), "v", 'Returns'[Returned]), (('Returns'[ProductKey] >= 3) || ('Returns'[ReturnQty] <> 2))), "ProductKey", 'Returns'[ProductKey], "v", [v])
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Returns'[ProductKey], "__rows", COUNTROWS('Returns'), "v", 'Returns'[Returned]), (('Returns'[ProductKey] >= 3) || ('Returns'[ReturnQty] <> 2))), "ProductKey", 'Returns'[ProductKey], "v", [v])

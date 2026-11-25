@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), derived table: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT s.DUID, s.v FROM (SELECT t.DUID, AGG(t."Average MW") AS v FROM aac.fct_summary AS t GROUP BY t.DUID) AS s WHERE s.v IS NOT NULL
-EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('fct_summary'[DUID], "__rows", COUNTROWS(fct_summary), "v", 'fct_summary'[Average MW]), "DUID", 'fct_summary'[DUID], "v", [v])
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('fct_summary'[DUID], "__rows", COUNTROWS('fct_summary'), "v", 'fct_summary'[Average MW]), "DUID", 'fct_summary'[DUID], "v", [v])

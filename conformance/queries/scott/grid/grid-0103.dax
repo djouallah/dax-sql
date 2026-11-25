@@ -1,7 +1,7 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), star where one: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT o.comm, AGG(f.sum_comm) AS v FROM scott_model.emp AS f LEFT JOIN scott_model.emp AS o ON f.mgr = o.empno WHERE o.mgr >= 7902 GROUP BY o.comm
 DEFINE
-VAR __v1 = GENERATEALL(SELECTCOLUMNS(emp, "f.empno", 'emp'[empno], "f.mgr", 'emp'[mgr]), FILTER(SELECTCOLUMNS(emp, "o.empno", 'emp'[empno], "o.comm", 'emp'[comm], "o.mgr", 'emp'[mgr]), ([f.mgr] = [o.empno])))
+VAR __v1 = GENERATEALL(SELECTCOLUMNS('emp', "f.empno", 'emp'[empno], "f.mgr", 'emp'[mgr]), FILTER(SELECTCOLUMNS('emp', "o.empno", 'emp'[empno], "o.comm", 'emp'[comm], "o.mgr", 'emp'[mgr]), ([f.mgr] = [o.empno])))
 VAR __v2 = FILTER(__v1, ([o.mgr] >= 7902))
 VAR __v3 = DISTINCT(SELECTCOLUMNS(__v2, "comm", [o.comm]))
 EVALUATE SELECTCOLUMNS(ADDCOLUMNS(__v3, "__m1", CALCULATE('emp'[sum_comm], REMOVEFILTERS(), TREATAS(SELECTCOLUMNS(FILTER(__v2, (NOT(ISBLANK([f.empno])) && ([o.comm] == [comm]))), "__k1", [f.empno]), 'emp'[empno]))), "comm", [comm], "v", [__m1])

@@ -1,7 +1,7 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), star where many: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT o."Day Name", AGG(f."Budget Amount") AS v FROM "dax-sql-patterns".Budget AS f LEFT JOIN "dax-sql-patterns"."Date" AS o ON f.YearMonth = o.YearMonth WHERE f.Budget >= 115409 GROUP BY o."Day Name"
 DEFINE
-VAR __v1 = GENERATEALL(SELECTCOLUMNS(Budget, "f.CategoryKey", 'Budget'[CategoryKey], "f.YearMonth", 'Budget'[YearMonth], "f.Budget", 'Budget'[Budget]), FILTER(SELECTCOLUMNS(Date, "o.Date", 'Date'[Date], "o.Day Name", 'Date'[Day Name], "o.YearMonth", 'Date'[YearMonth]), ([f.YearMonth] = [o.YearMonth])))
+VAR __v1 = GENERATEALL(SELECTCOLUMNS('Budget', "f.CategoryKey", 'Budget'[CategoryKey], "f.YearMonth", 'Budget'[YearMonth], "f.Budget", 'Budget'[Budget]), FILTER(SELECTCOLUMNS('Date', "o.Date", 'Date'[Date], "o.Day Name", 'Date'[Day Name], "o.YearMonth", 'Date'[YearMonth]), ([f.YearMonth] = [o.YearMonth])))
 VAR __v2 = FILTER(__v1, ([f.Budget] >= 115409))
 VAR __v3 = DISTINCT(SELECTCOLUMNS(__v2, "Day Name", [o.Day Name]))
 EVALUATE SELECTCOLUMNS(ADDCOLUMNS(__v3, "__m1", CALCULATE('Budget'[Budget Amount], REMOVEFILTERS(), TREATAS(SELECTCOLUMNS(FILTER(__v2, (NOT(((ISBLANK([f.CategoryKey]) && ISBLANK([f.YearMonth])) && ISBLANK([f.Budget]))) && ([o.Day Name] == [Day Name]))), "__k1", [f.CategoryKey], "__k2", [f.YearMonth], "__k3", [f.Budget]), 'Budget'[CategoryKey], 'Budget'[YearMonth], 'Budget'[Budget]))), "Day Name", [Day Name], "v", [__m1])

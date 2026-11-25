@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), rollup: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t.ReturnQty, AGG(t.Returned) AS v FROM contoso.Returns AS t GROUP BY ROLLUP (t.ReturnQty) ORDER BY t.ReturnQty NULLS LAST
-EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS(ROLLUPADDISSUBTOTAL('Returns'[ReturnQty], "__level1_ReturnQty"), "__rows", COUNTROWS(Returns), "v", 'Returns'[Returned]), "ReturnQty", 'Returns'[ReturnQty], "v", [v]) ORDER BY ISBLANK([ReturnQty]), [ReturnQty]
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS(ROLLUPADDISSUBTOTAL('Returns'[ReturnQty], "__level1_ReturnQty"), "__rows", COUNTROWS('Returns'), "v", 'Returns'[Returned]), "ReturnQty", 'Returns'[ReturnQty], "v", [v]) ORDER BY ISBLANK([ReturnQty]), [ReturnQty]

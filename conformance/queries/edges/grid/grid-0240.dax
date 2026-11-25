@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), star where one: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT o."Month", AGG(f."Target Amount") AS v FROM "dax-conformance-edges".Target AS f JOIN "dax-conformance-edges"."Date" AS o ON f."Date" = o."Date" WHERE o.YearMonth = 202306 GROUP BY o."Month"
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Date'[Month], "__rows", COUNTROWS(Target), "v", 'Target'[Target Amount]), ('Date'[YearMonth] = 202306), NOT(ISBLANK('Date'[Date]))), "Month", 'Date'[Month], "v", [v])
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Date'[Month], "__rows", COUNTROWS('Target'), "v", 'Target'[Target Amount]), ('Date'[YearMonth] = 202306), NOT(ISBLANK('Date'[Date]))), "Month", 'Date'[Month], "v", [v])

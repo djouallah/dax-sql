@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), one to many: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT o.mgr, AGG(o.sum_sal) AS a, AGG(f.bonus_count) AS b FROM scott_model.emp AS o LEFT JOIN scott_model.bonus AS f ON f.ename = o.ename GROUP BY o.mgr
-EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('emp'[mgr], "__rows", COUNTROWS(emp), "a", 'emp'[sum_sal], "b", CALCULATE('bonus'[bonus_count], KEEPFILTERS(NOT(ISBLANK('emp'[ename]))))), "mgr", 'emp'[mgr], "a", [a], "b", COALESCE([b], 0))
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('emp'[mgr], "__rows", COUNTROWS('emp'), "a", 'emp'[sum_sal], "b", CALCULATE('bonus'[bonus_count], KEEPFILTERS(NOT(ISBLANK('emp'[ename]))))), "mgr", 'emp'[mgr], "a", [a], "b", COALESCE([b], 0))

@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), where or: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t.ename, AGG(t.avg_comm) AS v FROM scott_model.emp AS t WHERE t.hiredate >= DATE '1981-01-05' OR t.mgr = 7839 GROUP BY t.ename
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('emp'[ename], "__rows", COUNTROWS(emp), "v", 'emp'[avg_comm]), (('emp'[hiredate] >= DATE(1981, 1, 5)) || ('emp'[mgr] = 7839))), "ename", 'emp'[ename], "v", [v])
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('emp'[ename], "__rows", COUNTROWS('emp'), "v", 'emp'[avg_comm]), (('emp'[hiredate] >= DATE(1981, 1, 5)) || ('emp'[mgr] = 7839))), "ename", 'emp'[ename], "v", [v])

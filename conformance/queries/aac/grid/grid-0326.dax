@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), one to many: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT o."month", AGG(o."Month days") AS a, AGG(f."Output MWh hourly") AS b FROM aac.dim_month AS o LEFT JOIN aac.fct_summary_hourly AS f ON f."month" = o."month" GROUP BY o."month"
-EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('dim_month'[month], "__rows", COUNTROWS(dim_month), "a", 'dim_month'[Month days], "b", CALCULATE('fct_summary_hourly'[Output MWh hourly], KEEPFILTERS(NOT(ISBLANK('dim_month'[month]))))), "month", 'dim_month'[month], "a", [a], "b", [b])
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('dim_month'[month], "__rows", COUNTROWS('dim_month'), "a", 'dim_month'[Month days], "b", CALCULATE('fct_summary_hourly'[Output MWh hourly], KEEPFILTERS(NOT(ISBLANK('dim_month'[month]))))), "month", 'dim_month'[month], "a", [a], "b", [b])

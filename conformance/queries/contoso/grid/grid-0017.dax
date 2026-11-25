@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), cte: its SQL as dax-sql's SQL front end writes it in DAX:
 // WITH s AS (SELECT ProductKey, "Product Count" AS mm FROM contoso.Product WHERE NOT (CategoryKey = 1)) SELECT ProductKey, AGG(mm) AS v FROM s GROUP BY ProductKey
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Product'[ProductKey], "__rows", COUNTROWS(Product), "v", 'Product'[Product Count]), NOT(('Product'[CategoryKey] = 1))), "ProductKey", 'Product'[ProductKey], "v", [v])
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Product'[ProductKey], "__rows", COUNTROWS('Product'), "v", 'Product'[Product Count]), NOT(('Product'[CategoryKey] = 1))), "ProductKey", 'Product'[ProductKey], "v", [v])

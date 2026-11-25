@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), star: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT o.i_current_price, AGG(f."Store Revenue") AS v FROM tpcds.store_sales AS f LEFT JOIN tpcds.item AS o ON f.ss_item_sk = o.i_item_sk GROUP BY o.i_current_price
-EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('item'[i_current_price], "__rows", COUNTROWS(store_sales), "v", 'store_sales'[Store Revenue]), "i_current_price", 'item'[i_current_price], "v", [v])
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('item'[i_current_price], "__rows", COUNTROWS('store_sales'), "v", 'store_sales'[Store Revenue]), "i_current_price", 'item'[i_current_price], "v", [v])

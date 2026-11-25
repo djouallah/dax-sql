@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), cte: its SQL as dax-sql's SQL front end writes it in DAX:
 // WITH s AS (SELECT ename, emp_count AS mm FROM scott_model.emp WHERE deptno >= 10) SELECT ename, AGG(mm) AS v FROM s GROUP BY ename
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('emp'[ename], "__rows", COUNTROWS(emp), "v", 'emp'[emp_count]), ('emp'[deptno] >= 10)), "ename", 'emp'[ename], "v", COALESCE([v], 0))
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('emp'[ename], "__rows", COUNTROWS('emp'), "v", 'emp'[emp_count]), ('emp'[deptno] >= 10)), "ename", 'emp'[ename], "v", COALESCE([v], 0))

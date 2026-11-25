@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), rollup: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t.cache_buster, AGG(t."Catalog Sales Quantity") AS v FROM tpcds.catalog_sales AS t GROUP BY ROLLUP (t.cache_buster) ORDER BY t.cache_buster NULLS LAST
-EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS(ROLLUPADDISSUBTOTAL('catalog_sales'[cache_buster], "__level1_cache_buster"), "__rows", COUNTROWS(catalog_sales), "v", 'catalog_sales'[Catalog Sales Quantity]), "cache_buster", 'catalog_sales'[cache_buster], "v", [v]) ORDER BY ISBLANK([cache_buster]), [cache_buster]
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS(ROLLUPADDISSUBTOTAL('catalog_sales'[cache_buster], "__level1_cache_buster"), "__rows", COUNTROWS('catalog_sales'), "v", 'catalog_sales'[Catalog Sales Quantity]), "cache_buster", 'catalog_sales'[cache_buster], "v", [v]) ORDER BY ISBLANK([cache_buster]), [cache_buster]

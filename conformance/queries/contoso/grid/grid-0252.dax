@@ -1,6 +1,6 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), star total: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT AGG(f."Line Value Column") AS v FROM contoso.Sales AS f JOIN contoso."Date" AS o ON f.ShipDate = o."Date"
 DEFINE
-VAR __v1 = GENERATE(SELECTCOLUMNS(Sales, "f.OrderDate", 'Sales'[OrderDate], "f.ShipDate", 'Sales'[ShipDate], "f.ProductKey", 'Sales'[ProductKey], "f.CustomerKey", 'Sales'[CustomerKey], "f.Qty", 'Sales'[Qty], "f.Amount", 'Sales'[Amount]), FILTER(SELECTCOLUMNS(Date, "o.Date", 'Date'[Date]), ([f.ShipDate] = [o.Date])))
+VAR __v1 = GENERATE(SELECTCOLUMNS('Sales', "f.OrderDate", 'Sales'[OrderDate], "f.ShipDate", 'Sales'[ShipDate], "f.ProductKey", 'Sales'[ProductKey], "f.CustomerKey", 'Sales'[CustomerKey], "f.Qty", 'Sales'[Qty], "f.Amount", 'Sales'[Amount]), FILTER(SELECTCOLUMNS('Date', "o.Date", 'Date'[Date]), ([f.ShipDate] = [o.Date])))
 VAR __v2 = ROW("__all", 1)
 EVALUATE SELECTCOLUMNS(ADDCOLUMNS(__v2, "__m1", CALCULATE('Sales'[Line Value Column], REMOVEFILTERS(), TREATAS(SELECTCOLUMNS(FILTER(__v1, NOT((((((ISBLANK([f.OrderDate]) && ISBLANK([f.ShipDate])) && ISBLANK([f.ProductKey])) && ISBLANK([f.CustomerKey])) && ISBLANK([f.Qty])) && ISBLANK([f.Amount])))), "__k1", [f.OrderDate], "__k2", [f.ShipDate], "__k3", [f.ProductKey], "__k4", [f.CustomerKey], "__k5", [f.Qty], "__k6", [f.Amount]), 'Sales'[OrderDate], 'Sales'[ShipDate], 'Sales'[ProductKey], 'Sales'[CustomerKey], 'Sales'[Qty], 'Sales'[Amount]))), "v", [__m1])

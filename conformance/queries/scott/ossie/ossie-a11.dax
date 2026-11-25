@@ -2,4 +2,4 @@
 // SELECT deptno, AGG(emp_count) AS emp_count FROM scott_model.emp WHERE sal > (SELECT AGG(avg_sal) FROM scott_model.emp) GROUP BY deptno ORDER BY deptno
 DEFINE
 VAR __v1 = MAXX(SELECTCOLUMNS(ROW("avg_sal", 'emp'[avg_sal]), "avg_sal", [avg_sal]), [avg_sal])
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('emp'[deptno], "__rows", COUNTROWS(emp), "emp_count", 'emp'[emp_count]), ('emp'[sal] > __v1)), "deptno", 'emp'[deptno], "emp_count", COALESCE([emp_count], 0)) ORDER BY [deptno]
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('emp'[deptno], "__rows", COUNTROWS('emp'), "emp_count", 'emp'[emp_count]), ('emp'[sal] > __v1)), "deptno", 'emp'[deptno], "emp_count", COALESCE([emp_count], 0)) ORDER BY [deptno]

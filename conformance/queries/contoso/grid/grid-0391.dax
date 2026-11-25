@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), where and: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t.City, AGG(t."Target Total") AS v FROM contoso.CityTarget AS t WHERE t.Target = 2000 AND t.City = 'Rome' GROUP BY t.City
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('CityTarget'[City], "__rows", COUNTROWS(CityTarget), "v", 'CityTarget'[Target Total]), ('CityTarget'[Target] = 2000), ('CityTarget'[City] = "Rome")), "City", 'CityTarget'[City], "v", [v])
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('CityTarget'[City], "__rows", COUNTROWS('CityTarget'), "v", 'CityTarget'[Target Total]), ('CityTarget'[Target] = 2000), ('CityTarget'[City] = "Rome")), "City", 'CityTarget'[City], "v", [v])

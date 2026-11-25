@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), star where one: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT o.deptno, AGG(f.bonus_count) AS v FROM scott_model.bonus AS f LEFT JOIN scott_model.emp AS o ON f.ename = o.ename WHERE o.hiredate IN (DATE '1987-05-23', DATE '1981-01-05') GROUP BY o.deptno
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('emp'[deptno], "__rows", COUNTROWS(bonus), "v", 'bonus'[bonus_count]), ('emp'[hiredate] IN {DATE(1987, 5, 23), DATE(1981, 1, 5)})), "deptno", 'emp'[deptno], "v", COALESCE([v], 0))
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('emp'[deptno], "__rows", COUNTROWS('bonus'), "v", 'bonus'[bonus_count]), ('emp'[hiredate] IN {DATE(1987, 5, 23), DATE(1981, 1, 5)})), "deptno", 'emp'[deptno], "v", COALESCE([v], 0))

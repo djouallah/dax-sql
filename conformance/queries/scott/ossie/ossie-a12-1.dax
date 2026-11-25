@@ -1,3 +1,3 @@
 // note: Apache Ossie query compliance A12 (a12_aggregate_over_agg_values.ost): An ordinary aggregate over AGG() values (two-stage aggregation). Model query 1 of 2 of its SQL. As dax-sql's SQL front end writes its SQL in DAX:
 // SELECT 'avg payroll per dept' AS metric, AVG(CAST(dept_sal AS DOUBLE)) AS amount FROM (SELECT deptno, AGG(sum_sal) AS dept_sal FROM scott_model.emp GROUP BY deptno) AS d UNION ALL SELECT 'avg salary per emp', AGG(avg_sal) FROM scott_model.emp ORDER BY metric
-EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('emp'[deptno], "__rows", COUNTROWS(emp), "dept_sal", 'emp'[sum_sal]), "deptno", 'emp'[deptno], "dept_sal", [dept_sal])
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('emp'[deptno], "__rows", COUNTROWS('emp'), "dept_sal", 'emp'[sum_sal]), "deptno", 'emp'[deptno], "dept_sal", [dept_sal])

@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), order limit: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t.loc, AGG(t.dept_count) AS v FROM scott_model.dept AS t GROUP BY t.loc ORDER BY t.loc NULLS FIRST LIMIT 3
-EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('dept'[loc], "__rows", COUNTROWS(dept), "v", 'dept'[dept_count]), "loc", 'dept'[loc], "v", COALESCE([v], 0)) ORDER BY [loc]
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('dept'[loc], "__rows", COUNTROWS('dept'), "v", 'dept'[dept_count]), "loc", 'dept'[loc], "v", COALESCE([v], 0)) ORDER BY [loc]

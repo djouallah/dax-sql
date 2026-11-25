@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), having: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t.Amount, AGG(t."Sales Amount") AS v FROM contoso.Sales AS t GROUP BY t.Amount HAVING AGG(t.Quantity) > 0
-EVALUATE SELECTCOLUMNS(FILTER(SUMMARIZECOLUMNS('Sales'[Amount], "__rows", COUNTROWS(Sales), "v", 'Sales'[Sales Amount]), ('Sales'[Quantity] > 0)), "Amount", 'Sales'[Amount], "v", [v])
+EVALUATE SELECTCOLUMNS(FILTER(SUMMARIZECOLUMNS('Sales'[Amount], "__rows", COUNTROWS('Sales'), "v", 'Sales'[Sales Amount]), ('Sales'[Quantity] > 0)), "Amount", 'Sales'[Amount], "v", [v])

@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), rollup: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t.customer_id, AGG(t.customer_count) AS v FROM stores_model.customers AS t GROUP BY ROLLUP (t.customer_id) ORDER BY t.customer_id NULLS LAST
-EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS(ROLLUPADDISSUBTOTAL('customers'[customer_id], "__level1_customer_id"), "__rows", COUNTROWS(customers), "v", 'customers'[customer_count]), "customer_id", 'customers'[customer_id], "v", COALESCE([v], 0)) ORDER BY ISBLANK([customer_id]), [customer_id]
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS(ROLLUPADDISSUBTOTAL('customers'[customer_id], "__level1_customer_id"), "__rows", COUNTROWS('customers'), "v", 'customers'[customer_count]), "customer_id", 'customers'[customer_id], "v", COALESCE([v], 0)) ORDER BY ISBLANK([customer_id]), [customer_id]

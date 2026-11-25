@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), two metrics: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t.empno, AGG(t.pet_count) AS a, AGG(t.pet_count) AS b FROM scott_model.pet AS t GROUP BY t.empno
-EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('pet'[empno], "__rows", COUNTROWS(pet), "a", 'pet'[pet_count], "b", 'pet'[pet_count]), "empno", 'pet'[empno], "a", COALESCE([a], 0), "b", COALESCE([b], 0))
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('pet'[empno], "__rows", COUNTROWS('pet'), "a", 'pet'[pet_count], "b", 'pet'[pet_count]), "empno", 'pet'[empno], "a", COALESCE([a], 0), "b", COALESCE([b], 0))

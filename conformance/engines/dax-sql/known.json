@@ -159,5 +159,10 @@
   {"id":"edges/iterators/iterators-if-fixed-decimal-branch-times-double","reason":"not supported yet: an inline IF of a fixed decimal and a decimal number, multiplied, keeps the branch's fixed decimal in Power BI (rounded to four places; a measure's IF is a decimal number)"},
   {"id":"patterns/fuzz3/fuzz3-0007","reason":"not supported yet: SUMMARIZE's group filter under LASTNONBLANK of a CALCULATE: Power BI takes each product's last date with inventory in any year (context-summarize-year-lastnonblank-inventory)"},
   {"id":"patterns/context/context-summarize-year-lastnonblank-inventory","reason":"not supported yet: SUMMARIZE's group filter under LASTNONBLANK of a CALCULATE: Power BI takes each product's last date with inventory in any year (its other two columns match)"},
-  {"id":"scott/blanks/blanks-relationship","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"}
+  {"id":"scott/blanks/blanks-relationship","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"},
+  {"id":"stores/grid/grid-0216","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"},
+  {"id":"stores/grid/grid-0219","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"},
+  {"id":"stores/grid/grid-0220","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"},
+  {"id":"stores/grid/grid-0221","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"},
+  {"id":"stores/grid/grid-0222","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"}
 ]

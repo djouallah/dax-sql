@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), cte: its SQL as dax-sql's SQL front end writes it in DAX:
 // WITH s AS (SELECT cs_bill_cdemo_sk, "Catalog Revenue" AS mm FROM tpcds.catalog_sales WHERE cs_list_price >= 86.52) SELECT cs_bill_cdemo_sk, AGG(mm) AS v FROM s GROUP BY cs_bill_cdemo_sk
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('catalog_sales'[cs_bill_cdemo_sk], "__rows", COUNTROWS(catalog_sales), "v", 'catalog_sales'[Catalog Revenue]), ('catalog_sales'[cs_list_price] >= 86.52)), "cs_bill_cdemo_sk", 'catalog_sales'[cs_bill_cdemo_sk], "v", [v])
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('catalog_sales'[cs_bill_cdemo_sk], "__rows", COUNTROWS('catalog_sales'), "v", 'catalog_sales'[Catalog Revenue]), ('catalog_sales'[cs_list_price] >= 86.52)), "cs_bill_cdemo_sk", 'catalog_sales'[cs_bill_cdemo_sk], "v", [v])

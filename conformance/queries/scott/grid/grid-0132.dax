@@ -1,6 +1,6 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), star total: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT AGG(f.comm_count) AS v FROM scott_model.emp AS f JOIN scott_model.emp AS o ON f.mgr = o.empno
 DEFINE
-VAR __v1 = GENERATE(SELECTCOLUMNS(emp, "f.empno", 'emp'[empno], "f.mgr", 'emp'[mgr]), FILTER(SELECTCOLUMNS(emp, "o.empno", 'emp'[empno]), ([f.mgr] = [o.empno])))
+VAR __v1 = GENERATE(SELECTCOLUMNS('emp', "f.empno", 'emp'[empno], "f.mgr", 'emp'[mgr]), FILTER(SELECTCOLUMNS('emp', "o.empno", 'emp'[empno]), ([f.mgr] = [o.empno])))
 VAR __v2 = ROW("__all", 1)
 EVALUATE SELECTCOLUMNS(ADDCOLUMNS(__v2, "__m1", COALESCE(CALCULATE('emp'[comm_count], REMOVEFILTERS(), TREATAS(SELECTCOLUMNS(FILTER(__v1, NOT(ISBLANK([f.empno]))), "__k1", [f.empno]), 'emp'[empno])), 0)), "v", [__m1])

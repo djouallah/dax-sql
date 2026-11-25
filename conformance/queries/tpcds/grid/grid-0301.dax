@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), star where many: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT o.ca_city, AGG(f."Store Net Profit") AS v FROM tpcds.store_sales AS f LEFT JOIN tpcds.customer_address AS o ON f.ss_addr_sk = o.ca_address_sk WHERE f.cache_buster IS NOT NULL GROUP BY o.ca_city
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('customer_address'[ca_city], "__rows", COUNTROWS(store_sales), "v", 'store_sales'[Store Net Profit]), NOT(ISBLANK('store_sales'[cache_buster]))), "ca_city", 'customer_address'[ca_city], "v", [v])
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('customer_address'[ca_city], "__rows", COUNTROWS('store_sales'), "v", 'store_sales'[Store Net Profit]), NOT(ISBLANK('store_sales'[cache_buster]))), "ca_city", 'customer_address'[ca_city], "v", [v])

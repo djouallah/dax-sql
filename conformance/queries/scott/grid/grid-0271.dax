@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), where or: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t.loc, AGG(t.dept_count) AS v FROM scott_model.dept AS t WHERE t.loc = 'DALLAS' OR t.dname = 'OPERATIONS' GROUP BY t.loc
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('dept'[loc], "__rows", COUNTROWS(dept), "v", 'dept'[dept_count]), (('dept'[loc] = "DALLAS") || ('dept'[dname] = "OPERATIONS"))), "loc", 'dept'[loc], "v", COALESCE([v], 0))
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('dept'[loc], "__rows", COUNTROWS('dept'), "v", 'dept'[dept_count]), (('dept'[loc] = "DALLAS") || ('dept'[dname] = "OPERATIONS"))), "loc", 'dept'[loc], "v", COALESCE([v], 0))

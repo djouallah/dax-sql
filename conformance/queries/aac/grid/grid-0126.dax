@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), rollup: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t.Storage, AGG(t."Registered MW") AS v FROM aac.dim_duid AS t GROUP BY ROLLUP (t.Storage) ORDER BY t.Storage NULLS LAST
-EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS(ROLLUPADDISSUBTOTAL('dim_duid'[Storage], "__level1_Storage"), "__rows", COUNTROWS(dim_duid), "v", 'dim_duid'[Registered MW]), "Storage", 'dim_duid'[Storage], "v", [v]) ORDER BY ISBLANK([Storage]), [Storage]
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS(ROLLUPADDISSUBTOTAL('dim_duid'[Storage], "__level1_Storage"), "__rows", COUNTROWS('dim_duid'), "v", 'dim_duid'[Registered MW]), "Storage", 'dim_duid'[Storage], "v", [v]) ORDER BY ISBLANK([Storage]), [Storage]

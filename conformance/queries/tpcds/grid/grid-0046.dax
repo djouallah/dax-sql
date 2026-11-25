@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), star where many: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT o.d_dow, AGG(f."Store Revenue") AS v FROM tpcds.store_sales AS f LEFT JOIN tpcds.date_dim AS o ON f.ss_sold_date_sk = o.d_date_sk_1 WHERE f.ss_ext_sales_price IN (4.14, 10.11) GROUP BY o.d_dow
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('date_dim'[d_dow], "__rows", COUNTROWS(store_sales), "v", 'store_sales'[Store Revenue]), ('store_sales'[ss_ext_sales_price] IN {4.14, 10.11})), "d_dow", 'date_dim'[d_dow], "v", [v])
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('date_dim'[d_dow], "__rows", COUNTROWS('store_sales'), "v", 'store_sales'[Store Revenue]), ('store_sales'[ss_ext_sales_price] IN {4.14, 10.11})), "d_dow", 'date_dim'[d_dow], "v", [v])

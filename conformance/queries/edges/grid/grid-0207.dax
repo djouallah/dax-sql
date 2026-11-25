@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), star two sides: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT o.StoreKey, f.Quantity, AGG(f."Customers No Blank") AS v FROM "dax-conformance-edges".Sales AS f JOIN "dax-conformance-edges".Store AS o ON f.StoreKey = o.StoreKey GROUP BY o.StoreKey, f.Quantity
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Store'[StoreKey], 'Sales'[Quantity], "__rows", COUNTROWS(Sales), "v", 'Sales'[Customers No Blank]), NOT(ISBLANK('Store'[StoreKey]))), "StoreKey", 'Store'[StoreKey], "Quantity", 'Sales'[Quantity], "v", [v])
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Store'[StoreKey], 'Sales'[Quantity], "__rows", COUNTROWS('Sales'), "v", 'Sales'[Customers No Blank]), NOT(ISBLANK('Store'[StoreKey]))), "StoreKey", 'Store'[StoreKey], "Quantity", 'Sales'[Quantity], "v", [v])

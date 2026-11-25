@@ -3459,7 +3459,7 @@
   "rows": [
    [
     false,
-    Infinity
+    "Infinity"
    ],
    [
     true,
@@ -5650,7 +5650,7 @@
    ],
    [
     "QLDLOAD1",
-    Infinity
+    "Infinity"
    ],
    [
     "LYA1",
@@ -5686,23 +5686,23 @@
    ],
    [
     "ROOFTOP_NSW1",
-    Infinity
+    "Infinity"
    ],
    [
     "ROOFTOP_QLD1",
-    Infinity
+    "Infinity"
    ],
    [
     "ROOFTOP_SA1",
-    Infinity
+    "Infinity"
    ],
    [
     "ROOFTOP_TAS1",
-    Infinity
+    "Infinity"
    ],
    [
     "ROOFTOP_VIC1",
-    Infinity
+    "Infinity"
    ],
    [
     "WRSF1",
@@ -18777,19 +18777,19 @@
   "rows": [
    [
     "2026-07-28",
-    -Infinity
+    "-Infinity"
    ],
    [
     "2026-07-29",
-    -Infinity
+    "-Infinity"
    ],
    [
     "2026-07-30",
-    Infinity
+    "Infinity"
    ],
    [
     "2026-07-31",
-    -Infinity
+    "-Infinity"
    ],
    [
     "2026-08-01",

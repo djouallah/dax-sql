@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), ratio: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t.customer_id, CAST(AGG(t.return_count) AS DOUBLE) / NULLIF(AGG(t.total_returns), 0) AS r FROM retail_model.returns AS t GROUP BY t.customer_id
-EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('returns'[customer_id], "__rows", COUNTROWS(returns), "r", IF(ISBLANK(COUNTROWS(returns)), BLANK(), (CONVERT(COALESCE('returns'[return_count], 0), DOUBLE) / IF(('returns'[total_returns] == 0), BLANK(), 'returns'[total_returns])))), "customer_id", 'returns'[customer_id], "r", [r])
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('returns'[customer_id], "__rows", COUNTROWS('returns'), "r", IF(ISBLANK(COUNTROWS('returns')), BLANK(), (CONVERT(COALESCE('returns'[return_count], 0), DOUBLE) / IF(('returns'[total_returns] == 0), BLANK(), 'returns'[total_returns])))), "customer_id", 'returns'[customer_id], "r", [r])

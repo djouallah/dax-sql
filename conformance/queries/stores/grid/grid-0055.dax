@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), having null: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t.sale_date_id, AGG(t.total_sales) AS v FROM stores_model.store_sales AS t GROUP BY t.sale_date_id HAVING AGG(t.total_sales) IS NOT NULL
-EVALUATE SELECTCOLUMNS(FILTER(SUMMARIZECOLUMNS('store_sales'[sale_date_id], "__rows", COUNTROWS(store_sales), "v", 'store_sales'[total_sales]), NOT(ISBLANK([v]))), "sale_date_id", 'store_sales'[sale_date_id], "v", [v])
+EVALUATE SELECTCOLUMNS(FILTER(SUMMARIZECOLUMNS('store_sales'[sale_date_id], "__rows", COUNTROWS('store_sales'), "v", 'store_sales'[total_sales]), NOT(ISBLANK([v]))), "sale_date_id", 'store_sales'[sale_date_id], "v", [v])

@@ -44,9 +44,9 @@ def value(v):
         return v.isoformat()
     if isinstance(v, decimal.Decimal):
         return float(v)
-    # Infinity and NaN: JSON has neither (the DuckDB adapter's are written null too).
+    # NaN and an infinity, which JSON has no number for, as their names (as the goldens have them).
     if isinstance(v, float) and (math.isnan(v) or math.isinf(v)):
-        return None
+        return "NaN" if math.isnan(v) else "Infinity" if v > 0 else "-Infinity"
     return v
 
 

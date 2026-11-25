@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), two metrics: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t."date", AGG(t."Days with output") AS a, AGG(t."Price seen") AS b FROM aac.fct_summary AS t GROUP BY t."date"
-EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('fct_summary'[date], "__rows", COUNTROWS(fct_summary), "a", 'fct_summary'[Days with output], "b", 'fct_summary'[Price seen]), "date", 'fct_summary'[date], "a", [a], "b", [b])
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('fct_summary'[date], "__rows", COUNTROWS('fct_summary'), "a", 'fct_summary'[Days with output], "b", 'fct_summary'[Price seen]), "date", 'fct_summary'[date], "a", [a], "b", [b])

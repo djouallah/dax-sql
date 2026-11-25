@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), star where many: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT o.City, AGG(f."Total Quantity") AS v FROM "dax-conformance-edges".Sales AS f JOIN "dax-conformance-edges".Customer AS o ON f.CustomerKey = o.CustomerKey WHERE f.CustomerKey BETWEEN 1 AND 8 GROUP BY o.City
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Customer'[City], "__rows", COUNTROWS(Sales), "v", 'Sales'[Total Quantity]), (('Sales'[CustomerKey] >= 1) && ('Sales'[CustomerKey] <= 8)), NOT(ISBLANK('Customer'[CustomerKey]))), "City", 'Customer'[City], "v", [v])
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Customer'[City], "__rows", COUNTROWS('Sales'), "v", 'Sales'[Total Quantity]), (('Sales'[CustomerKey] >= 1) && ('Sales'[CustomerKey] <= 8)), NOT(ISBLANK('Customer'[CustomerKey]))), "City", 'Customer'[City], "v", [v])

@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), cte: its SQL as dax-sql's SQL front end writes it in DAX:
 // WITH s AS (SELECT DUID, "Days with output" AS mm FROM aac.fct_summary WHERE "time" < 1900) SELECT DUID, AGG(mm) AS v FROM s GROUP BY DUID
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('fct_summary'[DUID], "__rows", COUNTROWS(fct_summary), "v", 'fct_summary'[Days with output]), ('fct_summary'[time] < 1900)), "DUID", 'fct_summary'[DUID], "v", [v])
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('fct_summary'[DUID], "__rows", COUNTROWS('fct_summary'), "v", 'fct_summary'[Days with output]), ('fct_summary'[time] < 1900)), "DUID", 'fct_summary'[DUID], "v", [v])

@@ -477,6 +477,8 @@ const D = {
   neg: e => ({ k: 'neg', e }),
   in: (e, items) => ({ k: 'in', e, set: { k: 'table', rows: items.map(x => [x]) } }),
   word: name => ({ k: 'name', name }),
+  // A model table's name, written quoted ('item': a bare item is no table to Power BI).
+  table: name => ({ k: 'name', name, quoted: true }),
   // VAR name = e ... RETURN body (the parser's var node).
   let: (defs, body) => ({ k: 'var', defs: defs.map(([name, e]) => ({ name, e })), body }),
 };
@@ -490,7 +492,7 @@ export function printDax(e) {
     case 'str': return `"${e.v.replace(/"/g, '""')}"`;
     case 'bool': return e.v ? 'TRUE' : 'FALSE';
     case 'col': return `${e.table != null ? `'${e.table.replace(/'/g, "''")}'` : ''}[${e.name.replace(/]/g, ']]')}]`;
-    case 'name': return e.name;
+    case 'name': return e.quoted ? `'${e.name.replace(/'/g, "''")}'` : e.name;
     case 'call': return `${e.fn}(${e.args.map(printDax).join(', ')})`;
     case 'bin': return `(${printDax(e.l)} ${e.op} ${printDax(e.r)})`;
     case 'neg': return `(-${printDax(e.e)})`;
@@ -1024,7 +1026,7 @@ export class SqlTranslator {
     return {
       root, where,
       filters: edges.filter(e => e.type === 'inner').map(e => D.not(D.call('ISBLANK', D.col(e.rel.to)))),
-      measure: (r, d) => (r === root ? d : D.call('CALCULATE', d, D.word(root.table.name))),
+      measure: (r, d) => (r === root ? d : D.call('CALCULATE', d, D.table(root.table.name))),
     };
   }
 
@@ -1072,7 +1074,7 @@ export class SqlTranslator {
       return false;
     });
     const rowsOf = r => {
-      const t = D.call('SELECTCOLUMNS', D.word(r.table.name), ...[...need.get(r)].flatMap(c => [D.str(jn(r, c)), D.col(c)]));
+      const t = D.call('SELECTCOLUMNS', D.table(r.table.name), ...[...need.get(r)].flatMap(c => [D.str(jn(r, c)), D.col(c)]));
       const own = filters.filter(f => f.alias === lc(r.alias)).map(f => f.dax);
       return own.length ? D.call('CALCULATETABLE', t, ...own) : t;
     };
@@ -1327,14 +1329,14 @@ export class SqlTranslator {
 
     // An expression that is not blank over no rows (a count made 0, COALESCE): blank where the
     // group has none of the root's rows, so that it makes no group of its own.
-    const guard = it => (it.filled && grouped.length ? D.call('IF', D.call('ISBLANK', D.call('COUNTROWS', D.word(ossie.root.name))), D.call('BLANK'), it.ast) : it.ast);
+    const guard = it => (it.filled && grouped.length ? D.call('IF', D.call('ISBLANK', D.call('COUNTROWS', D.table(ossie.root.name))), D.call('BLANK'), it.ast) : it.ast);
     const aggArgs = aggs.flatMap(it => [D.str(it.name), guard(it)]);
     const rollupArgs = rollups.map(levels => D.call('ROLLUPADDISSUBTOTAL', ...levels.flatMap(l => [
       l.cols.length > 1 ? D.call('ROLLUPGROUP', ...l.cols.map(D.col)) : D.col(l.cols[0]), D.str(l.flag.name)])));
     // Over datasets, a group is one the rows have: the root's rows counted beside the
     // aggregates, so that a group whose aggregates are all blank is kept.
     const ROWS = '__rows';
-    const rowsArgs = ossie && grouped.length ? [D.str(ROWS), D.call('COUNTROWS', D.word(ossie.root.name))] : [];
+    const rowsArgs = ossie && grouped.length ? [D.str(ROWS), D.call('COUNTROWS', D.table(ossie.root.name))] : [];
     let table = grouped.length || (q.groupBy && !aggs.length && !constants.length)
       ? D.call('SUMMARIZECOLUMNS', ...groups.map(D.col), ...rollupArgs, ...rowsArgs, ...aggArgs)
       // Nothing to group or aggregate: the one row is the constants'.
@@ -1365,7 +1367,7 @@ export class SqlTranslator {
         }
         // A condition on no column (WHERE FALSE), over datasets: on the rows of the root, all
         // of them or none.
-        if (!cols.length && ossie) return D.call('FILTER', D.call('ALL', D.word(ossie.root.name)), dax);
+        if (!cols.length && ossie) return D.call('FILTER', D.call('ALL', D.table(ossie.root.name)), dax);
         if (!cols.length) throw sqlUnsupported(`WHERE ${e.src}: a condition on no column`);
         if (new Set(cols.map(c => c.table)).size === 1) return dax;
         const all = c => D.call('ALL', D.col(c));

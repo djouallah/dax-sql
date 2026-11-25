@@ -1,7 +1,7 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), star where many: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT o.Brand, AGG(f."Target Amount") AS v FROM "dax-conformance-edges".Target AS f JOIN "dax-conformance-edges".Product AS o ON f.Brand = o.Brand WHERE f.StoreKey = 'SYD-01' GROUP BY o.Brand
 DEFINE
-VAR __v1 = GENERATE(SELECTCOLUMNS(Target, "f.Date", 'Target'[Date], "f.StoreKey", 'Target'[StoreKey], "f.Brand", 'Target'[Brand], "f.Target", 'Target'[Target]), FILTER(SELECTCOLUMNS(Product, "o.ProductKey", 'Product'[ProductKey], "o.Brand", 'Product'[Brand]), ([f.Brand] = [o.Brand])))
+VAR __v1 = GENERATE(SELECTCOLUMNS('Target', "f.Date", 'Target'[Date], "f.StoreKey", 'Target'[StoreKey], "f.Brand", 'Target'[Brand], "f.Target", 'Target'[Target]), FILTER(SELECTCOLUMNS('Product', "o.ProductKey", 'Product'[ProductKey], "o.Brand", 'Product'[Brand]), ([f.Brand] = [o.Brand])))
 VAR __v2 = FILTER(__v1, ([f.StoreKey] = "SYD-01"))
 VAR __v3 = DISTINCT(SELECTCOLUMNS(__v2, "Brand", [o.Brand]))
 EVALUATE SELECTCOLUMNS(ADDCOLUMNS(__v3, "__m1", CALCULATE('Target'[Target Amount], REMOVEFILTERS(), TREATAS(SELECTCOLUMNS(FILTER(__v2, (NOT((((ISBLANK([f.Date]) && ISBLANK([f.StoreKey])) && ISBLANK([f.Brand])) && ISBLANK([f.Target]))) && ([o.Brand] == [Brand]))), "__k1", [f.Date], "__k2", [f.StoreKey], "__k3", [f.Brand], "__k4", [f.Target]), 'Target'[Date], 'Target'[StoreKey], 'Target'[Brand], 'Target'[Target]))), "Brand", [Brand], "v", [__m1])

@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), rollup: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t.ProductKey, AGG(t."Line Value Column") AS v FROM contoso.Sales AS t GROUP BY ROLLUP (t.ProductKey) ORDER BY t.ProductKey NULLS LAST
-EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS(ROLLUPADDISSUBTOTAL('Sales'[ProductKey], "__level1_ProductKey"), "__rows", COUNTROWS(Sales), "v", 'Sales'[Line Value Column]), "ProductKey", 'Sales'[ProductKey], "v", [v]) ORDER BY ISBLANK([ProductKey]), [ProductKey]
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS(ROLLUPADDISSUBTOTAL('Sales'[ProductKey], "__level1_ProductKey"), "__rows", COUNTROWS('Sales'), "v", 'Sales'[Line Value Column]), "ProductKey", 'Sales'[ProductKey], "v", [v]) ORDER BY ISBLANK([ProductKey]), [ProductKey]

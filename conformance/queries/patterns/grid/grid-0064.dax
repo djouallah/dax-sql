@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), where or: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t.CurrencyCode, AGG(t."Total Cost") AS v FROM "dax-sql-patterns".Sales AS t WHERE NOT (t.ProductKey = 17) OR t.ProductKey >= 38 GROUP BY t.CurrencyCode
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Sales'[CurrencyCode], "__rows", COUNTROWS(Sales), "v", 'Sales'[Total Cost]), (NOT(('Sales'[ProductKey] = 17)) || ('Sales'[ProductKey] >= 38))), "CurrencyCode", 'Sales'[CurrencyCode], "v", [v])
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Sales'[CurrencyCode], "__rows", COUNTROWS('Sales'), "v", 'Sales'[Total Cost]), (NOT(('Sales'[ProductKey] = 17)) || ('Sales'[ProductKey] >= 38))), "CurrencyCode", 'Sales'[CurrencyCode], "v", [v])

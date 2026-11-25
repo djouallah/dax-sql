@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), star where one: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT o.ca_city, AGG(f."Store Distinct Customers") AS v FROM tpcds.store_sales AS f LEFT JOIN tpcds.customer_address AS o ON f.ss_addr_sk = o.ca_address_sk WHERE o.ca_address_sk IS NOT NULL GROUP BY o.ca_city
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('customer_address'[ca_city], "__rows", COUNTROWS(store_sales), "v", 'store_sales'[Store Distinct Customers]), NOT(ISBLANK('customer_address'[ca_address_sk]))), "ca_city", 'customer_address'[ca_city], "v", [v])
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('customer_address'[ca_city], "__rows", COUNTROWS('store_sales'), "v", 'store_sales'[Store Distinct Customers]), NOT(ISBLANK('customer_address'[ca_address_sk]))), "ca_city", 'customer_address'[ca_city], "v", [v])

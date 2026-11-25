@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), where or: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t.StoreKey, AGG(t."Target Amount") AS v FROM "dax-conformance-edges".Target AS t WHERE t.Target IS NOT NULL OR NOT (t.Target = 594.9759) GROUP BY t.StoreKey
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Target'[StoreKey], "__rows", COUNTROWS(Target), "v", 'Target'[Target Amount]), (NOT(ISBLANK('Target'[Target])) || NOT(('Target'[Target] = 594.9759)))), "StoreKey", 'Target'[StoreKey], "v", [v])
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Target'[StoreKey], "__rows", COUNTROWS('Target'), "v", 'Target'[Target Amount]), (NOT(ISBLANK('Target'[Target])) || NOT(('Target'[Target] = 594.9759)))), "StoreKey", 'Target'[StoreKey], "v", [v])

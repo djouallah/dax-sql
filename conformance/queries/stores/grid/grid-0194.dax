@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), star: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT o.state, AGG(f.total_sales) AS v FROM stores_model.store_sales AS f JOIN stores_model.store AS o ON f.store_id = o.store_id GROUP BY o.state
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('store'[state], "__rows", COUNTROWS(store_sales), "v", 'store_sales'[total_sales]), NOT(ISBLANK('store'[store_id]))), "state", 'store'[state], "v", [v])
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('store'[state], "__rows", COUNTROWS('store_sales'), "v", 'store_sales'[total_sales]), NOT(ISBLANK('store'[store_id]))), "state", 'store'[state], "v", [v])

@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), star where one: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT o."Month", AGG(f.Returned) AS v FROM contoso.Returns AS f LEFT JOIN contoso."Date" AS o ON f."Date" = o."Date" WHERE o."Year" >= 2024 GROUP BY o."Month"
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Date'[Month], "__rows", COUNTROWS(Returns), "v", 'Returns'[Returned]), ('Date'[Year] >= 2024)), "Month", 'Date'[Month], "v", [v])
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Date'[Month], "__rows", COUNTROWS('Returns'), "v", 'Returns'[Returned]), ('Date'[Year] >= 2024)), "Month", 'Date'[Month], "v", [v])

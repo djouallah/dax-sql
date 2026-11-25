@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), fan-out: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT f.DUID, AGG(o."Storage MWh") AS v FROM aac.fct_curtailment AS f LEFT JOIN aac.dim_duid AS o ON f.DUID = o.DUID GROUP BY f.DUID
-EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('fct_curtailment'[DUID], "__rows", COUNTROWS(fct_curtailment), "v", CALCULATE('dim_duid'[Storage MWh], fct_curtailment)), "DUID", 'fct_curtailment'[DUID], "v", [v])
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('fct_curtailment'[DUID], "__rows", COUNTROWS('fct_curtailment'), "v", CALCULATE('dim_duid'[Storage MWh], 'fct_curtailment')), "DUID", 'fct_curtailment'[DUID], "v", [v])

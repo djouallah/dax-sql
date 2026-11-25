@@ -1,3 +1,3 @@
 // note: Apache Ossie wide table compliance A07 (a07_dimension_only.ost):  Its Layer 3 query {"dimensions":["customers.region"]}, lowered to Layer 2 SQL, as dax-sql's SQL front end writes it in DAX:
 // SELECT customers.region AS region FROM retail_model.customers GROUP BY customers.region
-EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('customers'[region], "__rows", COUNTROWS(customers)), "region", 'customers'[region])
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('customers'[region], "__rows", COUNTROWS('customers')), "region", 'customers'[region])

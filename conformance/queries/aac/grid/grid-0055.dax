@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), snowflake: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT c.Region, AGG(f."Curtailed MWh") AS v FROM aac.fct_curtailment AS f JOIN aac.dim_duid AS b ON f.DUID = b.DUID JOIN aac.dim_region AS c ON b.Region = c.Region GROUP BY c.Region
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('dim_region'[Region], "__rows", COUNTROWS(fct_curtailment), "v", 'fct_curtailment'[Curtailed MWh]), NOT(ISBLANK('dim_duid'[DUID])), NOT(ISBLANK('dim_region'[Region]))), "Region", 'dim_region'[Region], "v", [v])
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('dim_region'[Region], "__rows", COUNTROWS('fct_curtailment'), "v", 'fct_curtailment'[Curtailed MWh]), NOT(ISBLANK('dim_duid'[DUID])), NOT(ISBLANK('dim_region'[Region]))), "Region", 'dim_region'[Region], "v", [v])

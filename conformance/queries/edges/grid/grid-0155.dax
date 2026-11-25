@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), where: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t.Brand, AGG(t."Target Amount") AS v FROM "dax-conformance-edges".Target AS t WHERE t.Target >= 2230.7758 GROUP BY t.Brand
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Target'[Brand], "__rows", COUNTROWS(Target), "v", 'Target'[Target Amount]), ('Target'[Target] >= 2230.7758)), "Brand", 'Target'[Brand], "v", [v])
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Target'[Brand], "__rows", COUNTROWS('Target'), "v", 'Target'[Target Amount]), ('Target'[Target] >= 2230.7758)), "Brand", 'Target'[Brand], "v", [v])

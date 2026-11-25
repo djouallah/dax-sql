@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), star two sides: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT o.customer_id, f.customer_id AS many_side, AGG(f.return_count) AS v FROM retail_model.returns AS f JOIN retail_model.customers AS o ON f.customer_id = o.customer_id GROUP BY o.customer_id, f.customer_id
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('customers'[customer_id], 'returns'[customer_id], "__rows", COUNTROWS(returns), "v", 'returns'[return_count]), NOT(ISBLANK('customers'[customer_id]))), "customer_id", 'customers'[customer_id], "many_side", 'returns'[customer_id], "v", COALESCE([v], 0))
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('customers'[customer_id], 'returns'[customer_id], "__rows", COUNTROWS('returns'), "v", 'returns'[return_count]), NOT(ISBLANK('customers'[customer_id]))), "customer_id", 'customers'[customer_id], "many_side", 'returns'[customer_id], "v", COALESCE([v], 0))

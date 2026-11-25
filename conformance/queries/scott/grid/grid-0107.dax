@@ -1,6 +1,6 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), one side counted once: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT o.sal, AGG(f.emp_count) AS a, AGG(o.comm_count) AS b FROM scott_model.emp AS f LEFT JOIN scott_model.emp AS o ON f.mgr = o.empno GROUP BY o.sal
 DEFINE
-VAR __v1 = GENERATEALL(SELECTCOLUMNS(emp, "f.empno", 'emp'[empno], "f.mgr", 'emp'[mgr]), FILTER(SELECTCOLUMNS(emp, "o.empno", 'emp'[empno], "o.sal", 'emp'[sal]), ([f.mgr] = [o.empno])))
+VAR __v1 = GENERATEALL(SELECTCOLUMNS('emp', "f.empno", 'emp'[empno], "f.mgr", 'emp'[mgr]), FILTER(SELECTCOLUMNS('emp', "o.empno", 'emp'[empno], "o.sal", 'emp'[sal]), ([f.mgr] = [o.empno])))
 VAR __v2 = DISTINCT(SELECTCOLUMNS(__v1, "sal", [o.sal]))
 EVALUATE SELECTCOLUMNS(ADDCOLUMNS(__v2, "__m1", COALESCE(CALCULATE('emp'[emp_count], REMOVEFILTERS(), TREATAS(SELECTCOLUMNS(FILTER(__v1, (NOT(ISBLANK([f.empno])) && ([o.sal] == [sal]))), "__k1", [f.empno]), 'emp'[empno])), 0), "__m2", COALESCE(CALCULATE('emp'[comm_count], REMOVEFILTERS(), TREATAS(SELECTCOLUMNS(FILTER(__v1, (NOT(ISBLANK([o.empno])) && ([o.sal] == [sal]))), "__k1", [o.empno]), 'emp'[empno])), 0)), "sal", [sal], "a", [__m1], "b", [__m2])

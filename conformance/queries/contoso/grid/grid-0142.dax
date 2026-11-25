@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), where and: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t.Name, AGG(t."Avg Price") AS v FROM contoso.Product AS t WHERE NOT (t.Name = 'Helmet') AND NOT (t.Name = 'Jersey') GROUP BY t.Name
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Product'[Name], "__rows", COUNTROWS(Product), "v", 'Product'[Avg Price]), NOT(('Product'[Name] = "Helmet")), NOT(('Product'[Name] = "Jersey"))), "Name", 'Product'[Name], "v", [v])
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Product'[Name], "__rows", COUNTROWS('Product'), "v", 'Product'[Avg Price]), NOT(('Product'[Name] = "Helmet")), NOT(('Product'[Name] = "Jersey"))), "Name", 'Product'[Name], "v", [v])

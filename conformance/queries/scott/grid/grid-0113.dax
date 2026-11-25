@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), two groups: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t.comm, t.job, AGG(t.avg_comm) AS v FROM scott_model.emp AS t GROUP BY t.comm, t.job
-EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('emp'[comm], 'emp'[job], "__rows", COUNTROWS(emp), "v", 'emp'[avg_comm]), "comm", 'emp'[comm], "job", 'emp'[job], "v", [v])
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('emp'[comm], 'emp'[job], "__rows", COUNTROWS('emp'), "v", 'emp'[avg_comm]), "comm", 'emp'[comm], "job", 'emp'[job], "v", [v])

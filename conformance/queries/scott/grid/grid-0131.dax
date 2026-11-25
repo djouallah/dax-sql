@@ -1,6 +1,6 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), star two sides: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT o.empno, f.job, AGG(f.comm_count) AS v FROM scott_model.emp AS f JOIN scott_model.emp AS o ON f.mgr = o.empno GROUP BY o.empno, f.job
 DEFINE
-VAR __v1 = GENERATE(SELECTCOLUMNS(emp, "f.empno", 'emp'[empno], "f.job", 'emp'[job], "f.mgr", 'emp'[mgr]), FILTER(SELECTCOLUMNS(emp, "o.empno", 'emp'[empno]), ([f.mgr] = [o.empno])))
+VAR __v1 = GENERATE(SELECTCOLUMNS('emp', "f.empno", 'emp'[empno], "f.job", 'emp'[job], "f.mgr", 'emp'[mgr]), FILTER(SELECTCOLUMNS('emp', "o.empno", 'emp'[empno]), ([f.mgr] = [o.empno])))
 VAR __v2 = DISTINCT(SELECTCOLUMNS(__v1, "empno", [o.empno], "job", [f.job]))
 EVALUATE SELECTCOLUMNS(ADDCOLUMNS(__v2, "__m1", COALESCE(CALCULATE('emp'[comm_count], REMOVEFILTERS(), TREATAS(SELECTCOLUMNS(FILTER(__v1, ((NOT(ISBLANK([f.empno])) && ([o.empno] == [empno])) && ([f.job] == [job]))), "__k1", [f.empno]), 'emp'[empno])), 0)), "empno", [empno], "job", [job], "v", [__m1])

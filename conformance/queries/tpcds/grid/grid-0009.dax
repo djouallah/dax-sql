@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), having: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t.ss_quantity, AGG(t."Store Revenue") AS v FROM tpcds.store_sales AS t GROUP BY t.ss_quantity HAVING AGG(t."Store Distinct Customers") > 0
-EVALUATE SELECTCOLUMNS(FILTER(SUMMARIZECOLUMNS('store_sales'[ss_quantity], "__rows", COUNTROWS(store_sales), "v", 'store_sales'[Store Revenue]), ('store_sales'[Store Distinct Customers] > 0)), "ss_quantity", 'store_sales'[ss_quantity], "v", [v])
+EVALUATE SELECTCOLUMNS(FILTER(SUMMARIZECOLUMNS('store_sales'[ss_quantity], "__rows", COUNTROWS('store_sales'), "v", 'store_sales'[Store Revenue]), ('store_sales'[Store Distinct Customers] > 0)), "ss_quantity", 'store_sales'[ss_quantity], "v", [v])

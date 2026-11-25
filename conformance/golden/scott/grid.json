@@ -1320,7 +1320,7 @@
    ],
    [
     0.0,
-    NaN
+    "NaN"
    ],
    [
     300.0,
@@ -2502,7 +2502,7 @@
   "rows": [
    [
     "SMITH",
-    Infinity
+    "Infinity"
    ],
    [
     "ALLEN",
@@ -2514,7 +2514,7 @@
    ],
    [
     "JONES",
-    Infinity
+    "Infinity"
    ],
    [
     "MARTIN",
@@ -2522,19 +2522,19 @@
    ],
    [
     "BLAKE",
-    Infinity
+    "Infinity"
    ],
    [
     "CLARK",
-    Infinity
+    "Infinity"
    ],
    [
     "SCOTT",
-    Infinity
+    "Infinity"
    ],
    [
     "KING",
-    Infinity
+    "Infinity"
    ],
    [
     "TURNER",
@@ -2542,19 +2542,19 @@
    ],
    [
     "ADAMS",
-    Infinity
+    "Infinity"
    ],
    [
     "JAMES",
-    Infinity
+    "Infinity"
    ],
    [
     "FORD",
-    Infinity
+    "Infinity"
    ],
    [
     "MILLER",
-    Infinity
+    "Infinity"
    ]
   ]
  },

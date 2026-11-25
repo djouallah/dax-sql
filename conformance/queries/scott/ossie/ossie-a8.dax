@@ -1,6 +1,6 @@
 // note: Apache Ossie query compliance A8 (a08_group_by_all_skips_measures.ost): GROUP BY ALL does not group by measures. As dax-sql's SQL front end writes its SQL in DAX:
 // SELECT EXTRACT(YEAR FROM hiredate) AS hire_year, AGG(emp_count) AS emp_count, AGG(sum_sal) AS sum_sal FROM scott_model.emp GROUP BY ALL ORDER BY hire_year
 DEFINE
-VAR __v1 = SELECTCOLUMNS(emp, "emp.empno", 'emp'[empno], "emp.hiredate", 'emp'[hiredate])
+VAR __v1 = SELECTCOLUMNS('emp', "emp.empno", 'emp'[empno], "emp.hiredate", 'emp'[hiredate])
 VAR __v2 = DISTINCT(SELECTCOLUMNS(__v1, "hire_year", YEAR([emp.hiredate])))
 EVALUATE SELECTCOLUMNS(ADDCOLUMNS(__v2, "__m1", COALESCE(CALCULATE('emp'[emp_count], REMOVEFILTERS(), TREATAS(SELECTCOLUMNS(FILTER(__v1, (NOT(ISBLANK([emp.empno])) && (YEAR([emp.hiredate]) == [hire_year]))), "__k1", [emp.empno]), 'emp'[empno])), 0), "__m2", CALCULATE('emp'[sum_sal], REMOVEFILTERS(), TREATAS(SELECTCOLUMNS(FILTER(__v1, (NOT(ISBLANK([emp.empno])) && (YEAR([emp.hiredate]) == [hire_year]))), "__k1", [emp.empno]), 'emp'[empno]))), "hire_year", [hire_year], "emp_count", [__m1], "sum_sal", [__m2]) ORDER BY [hire_year]

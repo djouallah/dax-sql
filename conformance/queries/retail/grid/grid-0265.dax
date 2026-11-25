@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), star: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT o.region, AGG(f.total_revenue) AS v FROM retail_model.orders AS f JOIN retail_model.customers AS o ON f.customer_id = o.customer_id GROUP BY o.region
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('customers'[region], "__rows", COUNTROWS(orders), "v", 'orders'[total_revenue]), NOT(ISBLANK('customers'[customer_id]))), "region", 'customers'[region], "v", [v])
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('customers'[region], "__rows", COUNTROWS('orders'), "v", 'orders'[total_revenue]), NOT(ISBLANK('customers'[customer_id]))), "region", 'customers'[region], "v", [v])

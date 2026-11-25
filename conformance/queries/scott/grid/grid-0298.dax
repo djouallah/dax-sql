@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), having: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t.grade, AGG(t.grade_count) AS v FROM scott_model.salgrade AS t GROUP BY t.grade HAVING AGG(t.grade_count) > 0
-EVALUATE SELECTCOLUMNS(FILTER(SUMMARIZECOLUMNS('salgrade'[grade], "__rows", COUNTROWS(salgrade), "v", 'salgrade'[grade_count]), (COALESCE([v], 0) > 0)), "grade", 'salgrade'[grade], "v", COALESCE([v], 0))
+EVALUATE SELECTCOLUMNS(FILTER(SUMMARIZECOLUMNS('salgrade'[grade], "__rows", COUNTROWS('salgrade'), "v", 'salgrade'[grade_count]), (COALESCE([v], 0) > 0)), "grade", 'salgrade'[grade], "v", COALESCE([v], 0))

@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), where or: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t.CustomerKey, AGG(t."Total Quantity") AS v FROM "dax-conformance-edges".Sales AS t WHERE t."Unit Price" < 35.99 OR t.Promo = FALSE GROUP BY t.CustomerKey
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Sales'[CustomerKey], "__rows", COUNTROWS(Sales), "v", 'Sales'[Total Quantity]), (('Sales'[Unit Price] < 35.99) || ('Sales'[Promo] = FALSE()))), "CustomerKey", 'Sales'[CustomerKey], "v", [v])
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Sales'[CustomerKey], "__rows", COUNTROWS('Sales'), "v", 'Sales'[Total Quantity]), (('Sales'[Unit Price] < 35.99) || ('Sales'[Promo] = FALSE()))), "CustomerKey", 'Sales'[CustomerKey], "v", [v])

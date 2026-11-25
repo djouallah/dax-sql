@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), one to many: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT o.customer_id, AGG(o.customer_count) AS a, AGG(f.total_returns) AS b FROM retail_model.customers AS o LEFT JOIN retail_model.returns AS f ON f.customer_id = o.customer_id GROUP BY o.customer_id
-EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('customers'[customer_id], "__rows", COUNTROWS(customers), "a", 'customers'[customer_count], "b", CALCULATE('returns'[total_returns], KEEPFILTERS(NOT(ISBLANK('customers'[customer_id]))))), "customer_id", 'customers'[customer_id], "a", COALESCE([a], 0), "b", [b])
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('customers'[customer_id], "__rows", COUNTROWS('customers'), "a", 'customers'[customer_count], "b", CALCULATE('returns'[total_returns], KEEPFILTERS(NOT(ISBLANK('customers'[customer_id]))))), "customer_id", 'customers'[customer_id], "a", COALESCE([a], 0), "b", [b])

@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), two metrics: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t.sal, AGG(t.sum_bonus) AS a, AGG(t.sum_bonus) AS b FROM scott_model.bonus AS t GROUP BY t.sal
-EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('bonus'[sal], "__rows", COUNTROWS(bonus), "a", 'bonus'[sum_bonus], "b", 'bonus'[sum_bonus]), "sal", 'bonus'[sal], "a", [a], "b", [b])
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('bonus'[sal], "__rows", COUNTROWS('bonus'), "a", 'bonus'[sum_bonus], "b", 'bonus'[sum_bonus]), "sal", 'bonus'[sal], "a", [a], "b", [b])

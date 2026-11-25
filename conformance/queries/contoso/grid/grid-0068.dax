@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), order by measure: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t.Name, AGG(t."Avg Price") AS v FROM contoso.Product AS t GROUP BY t.Name ORDER BY v DESC NULLS LAST, t.Name NULLS FIRST
-EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('Product'[Name], "__rows", COUNTROWS(Product), "v", 'Product'[Avg Price]), "Name", 'Product'[Name], "v", [v]) ORDER BY [v] DESC, [Name]
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('Product'[Name], "__rows", COUNTROWS('Product'), "v", 'Product'[Avg Price]), "Name", 'Product'[Name], "v", [v]) ORDER BY [v] DESC, [Name]

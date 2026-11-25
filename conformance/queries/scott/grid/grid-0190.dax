@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), two metrics: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t.age, AGG(t.sum_age) AS a, AGG(t.sum_age) AS b FROM scott_model.pet AS t GROUP BY t.age
-EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('pet'[age], "__rows", COUNTROWS(pet), "a", 'pet'[sum_age], "b", 'pet'[sum_age]), "age", 'pet'[age], "a", [a], "b", [b])
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('pet'[age], "__rows", COUNTROWS('pet'), "a", 'pet'[sum_age], "b", 'pet'[sum_age]), "age", 'pet'[age], "a", [a], "b", [b])

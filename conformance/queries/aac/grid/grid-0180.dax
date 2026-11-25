@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), rollup: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t."time", AGG(t."Days with output") AS v FROM aac.fct_summary AS t GROUP BY ROLLUP (t."time") ORDER BY t."time" NULLS LAST
-EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS(ROLLUPADDISSUBTOTAL('fct_summary'[time], "__level1_time"), "__rows", COUNTROWS(fct_summary), "v", 'fct_summary'[Days with output]), "time", 'fct_summary'[time], "v", [v]) ORDER BY ISBLANK([time]), [time]
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS(ROLLUPADDISSUBTOTAL('fct_summary'[time], "__level1_time"), "__rows", COUNTROWS('fct_summary'), "v", 'fct_summary'[Days with output]), "time", 'fct_summary'[time], "v", [v]) ORDER BY ISBLANK([time]), [time]

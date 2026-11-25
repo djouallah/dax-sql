@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), fan-out: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT f.sal, AGG(o.comm_count) AS v FROM scott_model.bonus AS f LEFT JOIN scott_model.emp AS o ON f.ename = o.ename GROUP BY f.sal
-EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('bonus'[sal], "__rows", COUNTROWS(bonus), "v", CALCULATE('emp'[comm_count], bonus)), "sal", 'bonus'[sal], "v", COALESCE([v], 0))
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('bonus'[sal], "__rows", COUNTROWS('bonus'), "v", CALCULATE('emp'[comm_count], 'bonus')), "sal", 'bonus'[sal], "v", COALESCE([v], 0))

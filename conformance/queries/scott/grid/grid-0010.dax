@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), having null: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t.comm, AGG(t.sum_comm) AS v FROM scott_model.emp AS t GROUP BY t.comm HAVING AGG(t.emp_count) IS NOT NULL
-EVALUATE SELECTCOLUMNS(FILTER(SUMMARIZECOLUMNS('emp'[comm], "__rows", COUNTROWS(emp), "v", 'emp'[sum_comm]), NOT(ISBLANK(COALESCE('emp'[emp_count], 0)))), "comm", 'emp'[comm], "v", [v])
+EVALUATE SELECTCOLUMNS(FILTER(SUMMARIZECOLUMNS('emp'[comm], "__rows", COUNTROWS('emp'), "v", 'emp'[sum_comm]), NOT(ISBLANK(COALESCE('emp'[emp_count], 0)))), "comm", 'emp'[comm], "v", [v])

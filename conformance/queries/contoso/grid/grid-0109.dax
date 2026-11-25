@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), fan-out: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT f."Date", AGG(o."Product Count") AS v FROM contoso.Returns AS f LEFT JOIN contoso.Product AS o ON f.ProductKey = o.ProductKey GROUP BY f."Date"
-EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('Returns'[Date], "__rows", COUNTROWS(Returns), "v", CALCULATE('Product'[Product Count], Returns)), "Date", 'Returns'[Date], "v", [v])
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('Returns'[Date], "__rows", COUNTROWS('Returns'), "v", CALCULATE('Product'[Product Count], 'Returns')), "Date", 'Returns'[Date], "v", [v])

@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), two groups: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t."Date", t.StoreKey, AGG(t."Target Amount") AS v FROM "dax-conformance-edges".Target AS t GROUP BY t."Date", t.StoreKey
-EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('Target'[Date], 'Target'[StoreKey], "__rows", COUNTROWS(Target), "v", 'Target'[Target Amount]), "Date", 'Target'[Date], "StoreKey", 'Target'[StoreKey], "v", [v])
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('Target'[Date], 'Target'[StoreKey], "__rows", COUNTROWS('Target'), "v", 'Target'[Target Amount]), "Date", 'Target'[Date], "StoreKey", 'Target'[StoreKey], "v", [v])

@@ -63,6 +63,8 @@ export function value(v) {
     const iso = v.toISOString();
     return iso.endsWith('T00:00:00.000Z') ? iso.slice(0, 10) : iso.slice(0, 19).replace('T', ' ');
   }
-  if (v && typeof v === 'object' && 'toDouble' in v) return v.toDouble();
+  if (v && typeof v === 'object' && 'toDouble' in v) v = v.toDouble();
+  // NaN and an infinity, which JSON has no number for, as their names (as the goldens have them).
+  if (typeof v === 'number' && !Number.isFinite(v)) return Number.isNaN(v) ? 'NaN' : v > 0 ? 'Infinity' : '-Infinity';
   return v;
 }

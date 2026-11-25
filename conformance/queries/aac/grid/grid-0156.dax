@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), cte: its SQL as dax-sql's SQL front end writes it in DAX:
 // WITH s AS (SELECT Renewable, "Registered MW" AS mm FROM aac.dim_duid WHERE CO2eFactor IS NULL) SELECT Renewable, AGG(mm) AS v FROM s GROUP BY Renewable
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('dim_duid'[Renewable], "__rows", COUNTROWS(dim_duid), "v", 'dim_duid'[Registered MW]), ISBLANK('dim_duid'[CO2eFactor])), "Renewable", 'dim_duid'[Renewable], "v", [v])
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('dim_duid'[Renewable], "__rows", COUNTROWS('dim_duid'), "v", 'dim_duid'[Registered MW]), ISBLANK('dim_duid'[CO2eFactor])), "Renewable", 'dim_duid'[Renewable], "v", [v])

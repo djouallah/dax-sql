@@ -1,6 +1,6 @@
 // note: Apache Ossie query compliance B8 (b08_many_to_many_chasm_trap.ost): A many-to-many join repeats rows on both sides (chasm trap). As dax-sql's SQL front end writes its SQL in DAX:
 // SELECT e.deptno, AGG(e.sum_sal) AS sum_sal, AGG(c.emp_count) AS colleagues FROM scott_model.emp AS e JOIN scott_model.emp AS c ON e.deptno = c.deptno GROUP BY e.deptno ORDER BY e.deptno
 DEFINE
-VAR __v1 = GENERATE(SELECTCOLUMNS(emp, "e.empno", 'emp'[empno], "e.deptno", 'emp'[deptno]), FILTER(SELECTCOLUMNS(emp, "c.empno", 'emp'[empno], "c.deptno", 'emp'[deptno]), ([e.deptno] = [c.deptno])))
+VAR __v1 = GENERATE(SELECTCOLUMNS('emp', "e.empno", 'emp'[empno], "e.deptno", 'emp'[deptno]), FILTER(SELECTCOLUMNS('emp', "c.empno", 'emp'[empno], "c.deptno", 'emp'[deptno]), ([e.deptno] = [c.deptno])))
 VAR __v2 = DISTINCT(SELECTCOLUMNS(__v1, "deptno", [e.deptno]))
 EVALUATE SELECTCOLUMNS(ADDCOLUMNS(__v2, "__m1", CALCULATE('emp'[sum_sal], REMOVEFILTERS(), TREATAS(SELECTCOLUMNS(FILTER(__v1, (NOT(ISBLANK([e.empno])) && ([e.deptno] == [deptno]))), "__k1", [e.empno]), 'emp'[empno])), "__m2", COALESCE(CALCULATE('emp'[emp_count], REMOVEFILTERS(), TREATAS(SELECTCOLUMNS(FILTER(__v1, (NOT(ISBLANK([c.empno])) && ([e.deptno] == [deptno]))), "__k1", [c.empno]), 'emp'[empno])), 0)), "deptno", [deptno], "sum_sal", [__m1], "colleagues", [__m2]) ORDER BY [deptno]

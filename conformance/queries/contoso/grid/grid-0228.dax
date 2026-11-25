@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), star where many: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT o.Customer, AGG(f."Sales Amount") AS v FROM contoso.Sales AS f JOIN contoso.Customer AS o ON f.CustomerKey = o.CustomerKey WHERE f.OrderDate IN (DATE '2024-06-30', DATE '2023-01-15') GROUP BY o.Customer
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Customer'[Customer], "__rows", COUNTROWS(Sales), "v", 'Sales'[Sales Amount]), ('Sales'[OrderDate] IN {DATE(2024, 6, 30), DATE(2023, 1, 15)}), NOT(ISBLANK('Customer'[CustomerKey]))), "Customer", 'Customer'[Customer], "v", [v])
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Customer'[Customer], "__rows", COUNTROWS('Sales'), "v", 'Sales'[Sales Amount]), ('Sales'[OrderDate] IN {DATE(2024, 6, 30), DATE(2023, 1, 15)}), NOT(ISBLANK('Customer'[CustomerKey]))), "Customer", 'Customer'[Customer], "v", [v])

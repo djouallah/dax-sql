@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), two metrics: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t.Name, AGG(t."Product Count") AS a, AGG(t."Avg Price") AS b FROM contoso.Product AS t GROUP BY t.Name
-EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('Product'[Name], "__rows", COUNTROWS(Product), "a", 'Product'[Product Count], "b", 'Product'[Avg Price]), "Name", 'Product'[Name], "a", [a], "b", [b])
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('Product'[Name], "__rows", COUNTROWS('Product'), "a", 'Product'[Product Count], "b", 'Product'[Avg Price]), "Name", 'Product'[Name], "a", [a], "b", [b])

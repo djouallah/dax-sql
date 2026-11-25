@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), where or: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t.Quantity, AGG(t.Lines) AS v FROM "dax-conformance-edges".Sales AS t WHERE t.CustomerKey = 16 OR t."Ship Date" <> DATE '2024-05-07' GROUP BY t.Quantity
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Sales'[Quantity], "__rows", COUNTROWS(Sales), "v", 'Sales'[Lines]), (('Sales'[CustomerKey] = 16) || ('Sales'[Ship Date] <> DATE(2024, 5, 7)))), "Quantity", 'Sales'[Quantity], "v", [v])
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Sales'[Quantity], "__rows", COUNTROWS('Sales'), "v", 'Sales'[Lines]), (('Sales'[CustomerKey] = 16) || ('Sales'[Ship Date] <> DATE(2024, 5, 7)))), "Quantity", 'Sales'[Quantity], "v", [v])

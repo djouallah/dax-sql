@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), where and: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t.CurrencyCode, AGG(t."Sales Amount") AS v FROM "dax-sql-patterns".Sales AS t WHERE t.CustomerKey < 50 AND t."Order Number" BETWEEN 1 AND 430 GROUP BY t.CurrencyCode
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Sales'[CurrencyCode], "__rows", COUNTROWS(Sales), "v", 'Sales'[Sales Amount]), ('Sales'[CustomerKey] < 50), (('Sales'[Order Number] >= 1) && ('Sales'[Order Number] <= 430))), "CurrencyCode", 'Sales'[CurrencyCode], "v", [v])
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Sales'[CurrencyCode], "__rows", COUNTROWS('Sales'), "v", 'Sales'[Sales Amount]), ('Sales'[CustomerKey] < 50), (('Sales'[Order Number] >= 1) && ('Sales'[Order Number] <= 430))), "CurrencyCode", 'Sales'[CurrencyCode], "v", [v])

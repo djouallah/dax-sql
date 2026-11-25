@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), star where one: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT o.CategoryKey, AGG(f."Product Count") AS v FROM contoso.Product AS f LEFT JOIN contoso.Category AS o ON f.CategoryKey = o.CategoryKey WHERE o.CategoryKey BETWEEN 1 AND 2 GROUP BY o.CategoryKey
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Category'[CategoryKey], "__rows", COUNTROWS(Product), "v", 'Product'[Product Count]), (('Category'[CategoryKey] >= 1) && ('Category'[CategoryKey] <= 2))), "CategoryKey", 'Category'[CategoryKey], "v", [v])
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Category'[CategoryKey], "__rows", COUNTROWS('Product'), "v", 'Product'[Product Count]), (('Category'[CategoryKey] >= 1) && ('Category'[CategoryKey] <= 2))), "CategoryKey", 'Category'[CategoryKey], "v", [v])

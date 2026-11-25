@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), cte: its SQL as dax-sql's SQL front end writes it in DAX:
 // WITH s AS (SELECT CustomerKey, Customers AS mm FROM "dax-conformance-edges".Sales WHERE "Loyalty Points" = 68) SELECT CustomerKey, AGG(mm) AS v FROM s GROUP BY CustomerKey
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Sales'[CustomerKey], "__rows", COUNTROWS(Sales), "v", 'Sales'[Customers]), ('Sales'[Loyalty Points] = 68)), "CustomerKey", 'Sales'[CustomerKey], "v", [v])
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Sales'[CustomerKey], "__rows", COUNTROWS('Sales'), "v", 'Sales'[Customers]), ('Sales'[Loyalty Points] = 68)), "CustomerKey", 'Sales'[CustomerKey], "v", [v])

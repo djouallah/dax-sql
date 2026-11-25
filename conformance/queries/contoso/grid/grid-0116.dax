@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), where and: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t.ProductKey, AGG(t."Product Count") AS v FROM contoso.Product AS t WHERE t.ProductKey >= 4 AND t.Price >= 20 GROUP BY t.ProductKey
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Product'[ProductKey], "__rows", COUNTROWS(Product), "v", 'Product'[Product Count]), ('Product'[ProductKey] >= 4), ('Product'[Price] >= 20)), "ProductKey", 'Product'[ProductKey], "v", [v])
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Product'[ProductKey], "__rows", COUNTROWS('Product'), "v", 'Product'[Product Count]), ('Product'[ProductKey] >= 4), ('Product'[Price] >= 20)), "ProductKey", 'Product'[ProductKey], "v", [v])

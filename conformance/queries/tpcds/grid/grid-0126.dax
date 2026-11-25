@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), two groups: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t.ss_store_sk, t.ss_item_sk, AGG(t."Store Net Profit") AS v FROM tpcds.store_sales AS t GROUP BY t.ss_store_sk, t.ss_item_sk
-EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('store_sales'[ss_store_sk], 'store_sales'[ss_item_sk], "__rows", COUNTROWS(store_sales), "v", 'store_sales'[Store Net Profit]), "ss_store_sk", 'store_sales'[ss_store_sk], "ss_item_sk", 'store_sales'[ss_item_sk], "v", [v])
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('store_sales'[ss_store_sk], 'store_sales'[ss_item_sk], "__rows", COUNTROWS('store_sales'), "v", 'store_sales'[Store Net Profit]), "ss_store_sk", 'store_sales'[ss_store_sk], "ss_item_sk", 'store_sales'[ss_item_sk], "v", [v])

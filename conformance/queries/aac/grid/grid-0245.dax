@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), one to many: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT o.Participant, AGG(o."Registered MW") AS a, AGG(f."Output MWh hourly") AS b FROM aac.dim_duid AS o LEFT JOIN aac.fct_summary_hourly AS f ON f.DUID = o.DUID GROUP BY o.Participant
-EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('dim_duid'[Participant], "__rows", COUNTROWS(dim_duid), "a", 'dim_duid'[Registered MW], "b", CALCULATE('fct_summary_hourly'[Output MWh hourly], KEEPFILTERS(NOT(ISBLANK('dim_duid'[DUID]))))), "Participant", 'dim_duid'[Participant], "a", [a], "b", [b])
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('dim_duid'[Participant], "__rows", COUNTROWS('dim_duid'), "a", 'dim_duid'[Registered MW], "b", CALCULATE('fct_summary_hourly'[Output MWh hourly], KEEPFILTERS(NOT(ISBLANK('dim_duid'[DUID]))))), "Participant", 'dim_duid'[Participant], "a", [a], "b", [b])

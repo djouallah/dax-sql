@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), order by measure: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t.comm, AGG(t.comm_count) AS v FROM scott_model.emp AS t GROUP BY t.comm ORDER BY v DESC NULLS LAST, t.comm NULLS FIRST
-EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('emp'[comm], "__rows", COUNTROWS(emp), "v", 'emp'[comm_count]), "comm", 'emp'[comm], "v", COALESCE([v], 0)) ORDER BY [v] DESC, [comm]
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('emp'[comm], "__rows", COUNTROWS('emp'), "v", 'emp'[comm_count]), "comm", 'emp'[comm], "v", COALESCE([v], 0)) ORDER BY [v] DESC, [comm]

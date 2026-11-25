@@ -5,6 +5,7 @@
 import datetime
 import decimal
 import json
+import math
 import os
 import sys
 import threading
@@ -20,6 +21,9 @@ def value(v):
         return v.isoformat()
     if isinstance(v, decimal.Decimal):
         return float(v)
+    # NaN and an infinity, which JSON has no number for, as their names (as the goldens have them).
+    if isinstance(v, float) and (math.isnan(v) or math.isinf(v)):
+        return 'NaN' if math.isnan(v) else 'Infinity' if v > 0 else '-Infinity'
     return v
 
 

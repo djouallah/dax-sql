@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), having null: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t.cs_catalog_page_sk, AGG(t."Catalog Net Profit") AS v FROM tpcds.catalog_sales AS t GROUP BY t.cs_catalog_page_sk HAVING AGG(t."Catalog Sales Quantity") IS NOT NULL
-EVALUATE SELECTCOLUMNS(FILTER(SUMMARIZECOLUMNS('catalog_sales'[cs_catalog_page_sk], "__rows", COUNTROWS(catalog_sales), "v", 'catalog_sales'[Catalog Net Profit]), NOT(ISBLANK('catalog_sales'[Catalog Sales Quantity]))), "cs_catalog_page_sk", 'catalog_sales'[cs_catalog_page_sk], "v", [v])
+EVALUATE SELECTCOLUMNS(FILTER(SUMMARIZECOLUMNS('catalog_sales'[cs_catalog_page_sk], "__rows", COUNTROWS('catalog_sales'), "v", 'catalog_sales'[Catalog Net Profit]), NOT(ISBLANK('catalog_sales'[Catalog Sales Quantity]))), "cs_catalog_page_sk", 'catalog_sales'[cs_catalog_page_sk], "v", [v])

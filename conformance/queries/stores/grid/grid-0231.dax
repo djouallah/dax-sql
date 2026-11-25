@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), star where one: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT o.brand, AGG(f.total_returns) AS v FROM stores_model.store_returns AS f JOIN stores_model.item AS o ON f.item_id = o.item_id WHERE o.item_id IN ('I1', 'I1') GROUP BY o.brand
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('item'[brand], "__rows", COUNTROWS(store_returns), "v", 'store_returns'[total_returns]), ('item'[item_id] IN {"I1", "I1"}), NOT(ISBLANK('item'[item_id]))), "brand", 'item'[brand], "v", [v])
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('item'[brand], "__rows", COUNTROWS('store_returns'), "v", 'store_returns'[total_returns]), ('item'[item_id] IN {"I1", "I1"}), NOT(ISBLANK('item'[item_id]))), "brand", 'item'[brand], "v", [v])

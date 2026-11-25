@@ -1,3 +1,3 @@
 // note: Apache Ossie wide table compliance A06 (a06_groups_from_returns.ost):  Its Layer 3 query {"dimensions":["customers.region"],"metrics":["returns.total_returns"]}, lowered to Layer 2 SQL, as dax-sql's SQL front end writes it in DAX:
 // SELECT customers.region AS region, AGG(returns.total_returns) AS total_returns FROM retail_model.returns LEFT JOIN retail_model.customers ON returns.customer_id = customers.customer_id GROUP BY customers.region
-EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('customers'[region], "__rows", COUNTROWS(returns), "total_returns", 'returns'[total_returns]), "region", 'customers'[region], "total_returns", [total_returns])
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('customers'[region], "__rows", COUNTROWS('returns'), "total_returns", 'returns'[total_returns]), "region", 'customers'[region], "total_returns", [total_returns])

@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), one side counted once: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT o.Classification, AGG(f."Curtailed MWh") AS a, AGG(o."Registered MW") AS b FROM aac.fct_curtailment AS f LEFT JOIN aac.dim_duid AS o ON f.DUID = o.DUID GROUP BY o.Classification
-EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('dim_duid'[Classification], "__rows", COUNTROWS(fct_curtailment), "a", 'fct_curtailment'[Curtailed MWh], "b", CALCULATE('dim_duid'[Registered MW], fct_curtailment)), "Classification", 'dim_duid'[Classification], "a", [a], "b", [b])
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('dim_duid'[Classification], "__rows", COUNTROWS('fct_curtailment'), "a", 'fct_curtailment'[Curtailed MWh], "b", CALCULATE('dim_duid'[Registered MW], 'fct_curtailment')), "Classification", 'dim_duid'[Classification], "a", [a], "b", [b])

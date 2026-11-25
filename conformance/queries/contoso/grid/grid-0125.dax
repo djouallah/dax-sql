@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), scalar ops: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t.CustomerKey, AGG(t.Quantity) * 2 AS a, AGG(t.Quantity) + 1 AS b, COALESCE(AGG(t.Quantity), 0) AS c FROM contoso.Sales AS t GROUP BY t.CustomerKey
-EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('Sales'[CustomerKey], "__rows", COUNTROWS(Sales), "a", ('Sales'[Quantity] * 2), "b", ('Sales'[Quantity] + 1), "c", IF(ISBLANK(COUNTROWS(Sales)), BLANK(), COALESCE('Sales'[Quantity], 0))), "CustomerKey", 'Sales'[CustomerKey], "a", [a], "b", [b], "c", [c])
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('Sales'[CustomerKey], "__rows", COUNTROWS('Sales'), "a", ('Sales'[Quantity] * 2), "b", ('Sales'[Quantity] + 1), "c", IF(ISBLANK(COUNTROWS('Sales')), BLANK(), COALESCE('Sales'[Quantity], 0))), "CustomerKey", 'Sales'[CustomerKey], "a", [a], "b", [b], "c", [c])

@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), where or: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t.CustomerKey, AGG(t."Sales Amount") AS v FROM contoso.Sales AS t WHERE NOT (t.Amount = 50) OR t.ProductKey = 2 GROUP BY t.CustomerKey
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Sales'[CustomerKey], "__rows", COUNTROWS(Sales), "v", 'Sales'[Sales Amount]), (NOT(('Sales'[Amount] = 50)) || ('Sales'[ProductKey] = 2))), "CustomerKey", 'Sales'[CustomerKey], "v", [v])
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Sales'[CustomerKey], "__rows", COUNTROWS('Sales'), "v", 'Sales'[Sales Amount]), (NOT(('Sales'[Amount] = 50)) || ('Sales'[ProductKey] = 2))), "CustomerKey", 'Sales'[CustomerKey], "v", [v])

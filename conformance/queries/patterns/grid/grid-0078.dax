@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), where and: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t.EmployeeKey, AGG(t."Total Cost") AS v FROM "dax-sql-patterns".Sales AS t WHERE NOT (t.CurrencyCode = 'AUD') AND t."Delivery Date" < DATE '2024-06-28' GROUP BY t.EmployeeKey
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Sales'[EmployeeKey], "__rows", COUNTROWS(Sales), "v", 'Sales'[Total Cost]), NOT(('Sales'[CurrencyCode] = "AUD")), ('Sales'[Delivery Date] < DATE(2024, 6, 28))), "EmployeeKey", 'Sales'[EmployeeKey], "v", [v])
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Sales'[EmployeeKey], "__rows", COUNTROWS('Sales'), "v", 'Sales'[Total Cost]), NOT(('Sales'[CurrencyCode] = "AUD")), ('Sales'[Delivery Date] < DATE(2024, 6, 28))), "EmployeeKey", 'Sales'[EmployeeKey], "v", [v])

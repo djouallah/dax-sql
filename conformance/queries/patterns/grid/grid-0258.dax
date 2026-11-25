@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), star where one: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT o.CategoryKey, AGG(f."Budget Amount") AS v FROM "dax-sql-patterns".Budget AS f JOIN "dax-sql-patterns".Category AS o ON f.CategoryKey = o.CategoryKey WHERE o.Category = 'Bikes' GROUP BY o.CategoryKey
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Category'[CategoryKey], "__rows", COUNTROWS(Budget), "v", 'Budget'[Budget Amount]), ('Category'[Category] = "Bikes"), NOT(ISBLANK('Category'[CategoryKey]))), "CategoryKey", 'Category'[CategoryKey], "v", [v])
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Category'[CategoryKey], "__rows", COUNTROWS('Budget'), "v", 'Budget'[Budget Amount]), ('Category'[Category] = "Bikes"), NOT(ISBLANK('Category'[CategoryKey]))), "CategoryKey", 'Category'[CategoryKey], "v", [v])

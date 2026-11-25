@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), where or: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t.hisal, AGG(t.grade_count) AS v FROM scott_model.salgrade AS t WHERE t.grade < 2 OR t.losal BETWEEN 700 AND 3001 GROUP BY t.hisal
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('salgrade'[hisal], "__rows", COUNTROWS(salgrade), "v", 'salgrade'[grade_count]), (('salgrade'[grade] < 2) || (('salgrade'[losal] >= 700) && ('salgrade'[losal] <= 3001)))), "hisal", 'salgrade'[hisal], "v", COALESCE([v], 0))
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('salgrade'[hisal], "__rows", COUNTROWS('salgrade'), "v", 'salgrade'[grade_count]), (('salgrade'[grade] < 2) || (('salgrade'[losal] >= 700) && ('salgrade'[losal] <= 3001)))), "hisal", 'salgrade'[hisal], "v", COALESCE([v], 0))

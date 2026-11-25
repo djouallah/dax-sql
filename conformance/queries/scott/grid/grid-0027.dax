@@ -1,6 +1,6 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), chasm: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT o.empno, AGG(a.comm_count) AS x, AGG(b.pet_count) AS y FROM scott_model.emp AS o LEFT JOIN scott_model.emp AS a ON a.mgr = o.empno LEFT JOIN scott_model.pet AS b ON b.empno = o.empno GROUP BY o.empno
 DEFINE
-VAR __v1 = GENERATEALL(GENERATEALL(SELECTCOLUMNS(emp, "o.empno", 'emp'[empno]), FILTER(SELECTCOLUMNS(emp, "a.empno", 'emp'[empno], "a.mgr", 'emp'[mgr]), ([a.mgr] = [o.empno]))), FILTER(SELECTCOLUMNS(pet, "b.pname", 'pet'[pname], "b.empno", 'pet'[empno]), ([b.empno] = [o.empno])))
+VAR __v1 = GENERATEALL(GENERATEALL(SELECTCOLUMNS('emp', "o.empno", 'emp'[empno]), FILTER(SELECTCOLUMNS('emp', "a.empno", 'emp'[empno], "a.mgr", 'emp'[mgr]), ([a.mgr] = [o.empno]))), FILTER(SELECTCOLUMNS('pet', "b.pname", 'pet'[pname], "b.empno", 'pet'[empno]), ([b.empno] = [o.empno])))
 VAR __v2 = DISTINCT(SELECTCOLUMNS(__v1, "empno", [o.empno]))
 EVALUATE SELECTCOLUMNS(ADDCOLUMNS(__v2, "__m1", COALESCE(CALCULATE('emp'[comm_count], REMOVEFILTERS(), TREATAS(SELECTCOLUMNS(FILTER(__v1, (NOT(ISBLANK([a.empno])) && ([o.empno] == [empno]))), "__k1", [a.empno]), 'emp'[empno])), 0), "__m2", COALESCE(CALCULATE('pet'[pet_count], REMOVEFILTERS(), TREATAS(SELECTCOLUMNS(FILTER(__v1, (NOT(ISBLANK([b.pname])) && ([o.empno] == [empno]))), "__k1", [b.pname]), 'pet'[pname])), 0)), "empno", [empno], "x", [__m1], "y", [__m2])

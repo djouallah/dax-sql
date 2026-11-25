@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), one side counted once: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT o.Plant, AGG(f."Average MWh a day") AS a, AGG(o."Storage MWh") AS b FROM aac.fct_summary_daily AS f JOIN aac.dim_duid AS o ON f.DUID = o.DUID GROUP BY o.Plant
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('dim_duid'[Plant], "__rows", COUNTROWS(fct_summary_daily), "a", 'fct_summary_daily'[Average MWh a day], "b", CALCULATE('dim_duid'[Storage MWh], fct_summary_daily)), NOT(ISBLANK('dim_duid'[DUID]))), "Plant", 'dim_duid'[Plant], "a", [a], "b", [b])
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('dim_duid'[Plant], "__rows", COUNTROWS('fct_summary_daily'), "a", 'fct_summary_daily'[Average MWh a day], "b", CALCULATE('dim_duid'[Storage MWh], 'fct_summary_daily')), NOT(ISBLANK('dim_duid'[DUID]))), "Plant", 'dim_duid'[Plant], "a", [a], "b", [b])

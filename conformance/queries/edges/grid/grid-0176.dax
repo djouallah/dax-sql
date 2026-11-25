@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), star where one: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT o.Color, AGG(f."Total Cost") AS v FROM "dax-conformance-edges".Sales AS f LEFT JOIN "dax-conformance-edges".Product AS o ON f.ProductKey = o.ProductKey WHERE o.ProductKey >= 8 GROUP BY o.Color
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Product'[Color], "__rows", COUNTROWS(Sales), "v", 'Sales'[Total Cost]), ('Product'[ProductKey] >= 8)), "Color", 'Product'[Color], "v", [v])
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Product'[Color], "__rows", COUNTROWS('Sales'), "v", 'Sales'[Total Cost]), ('Product'[ProductKey] >= 8)), "Color", 'Product'[Color], "v", [v])

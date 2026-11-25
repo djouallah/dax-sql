@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), star where many: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT o.brand, AGG(f.total_sales) AS v FROM stores_model.store_sales AS f LEFT JOIN stores_model.item AS o ON f.item_id = o.item_id WHERE f.customer_id = 'C1' GROUP BY o.brand
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('item'[brand], "__rows", COUNTROWS(store_sales), "v", 'store_sales'[total_sales]), ('store_sales'[customer_id] = "C1")), "brand", 'item'[brand], "v", [v])
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('item'[brand], "__rows", COUNTROWS('store_sales'), "v", 'store_sales'[total_sales]), ('store_sales'[customer_id] = "C1")), "brand", 'item'[brand], "v", [v])

@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), star two sides: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT o."Month Name", f."Line Number", AGG(f.Customers) AS v FROM "dax-conformance-edges".Sales AS f LEFT JOIN "dax-conformance-edges"."Date" AS o ON f."Order Date" = o."Date" GROUP BY o."Month Name", f."Line Number"
-EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('Date'[Month Name], 'Sales'[Line Number], "__rows", COUNTROWS(Sales), "v", 'Sales'[Customers]), "Month Name", 'Date'[Month Name], "Line Number", 'Sales'[Line Number], "v", [v])
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('Date'[Month Name], 'Sales'[Line Number], "__rows", COUNTROWS('Sales'), "v", 'Sales'[Customers]), "Month Name", 'Date'[Month Name], "Line Number", 'Sales'[Line Number], "v", [v])

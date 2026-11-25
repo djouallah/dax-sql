@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), rollup: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t.hisal, AGG(t.grade_count) AS v FROM scott_model.salgrade AS t GROUP BY ROLLUP (t.hisal) ORDER BY t.hisal NULLS LAST
-EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS(ROLLUPADDISSUBTOTAL('salgrade'[hisal], "__level1_hisal"), "__rows", COUNTROWS(salgrade), "v", 'salgrade'[grade_count]), "hisal", 'salgrade'[hisal], "v", COALESCE([v], 0)) ORDER BY ISBLANK([hisal]), [hisal]
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS(ROLLUPADDISSUBTOTAL('salgrade'[hisal], "__level1_hisal"), "__rows", COUNTROWS('salgrade'), "v", 'salgrade'[grade_count]), "hisal", 'salgrade'[hisal], "v", COALESCE([v], 0)) ORDER BY ISBLANK([hisal]), [hisal]

@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), ratio: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t.CustomerKey, CAST(AGG(t."Line Value Column") AS DOUBLE) / NULLIF(AGG(t.Orders), 0) AS r FROM contoso.Sales AS t GROUP BY t.CustomerKey
-EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('Sales'[CustomerKey], "__rows", COUNTROWS(Sales), "r", IF(ISBLANK(COUNTROWS(Sales)), BLANK(), (CONVERT('Sales'[Line Value Column], DOUBLE) / IF(('Sales'[Orders] == 0), BLANK(), 'Sales'[Orders])))), "CustomerKey", 'Sales'[CustomerKey], "r", [r])
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('Sales'[CustomerKey], "__rows", COUNTROWS('Sales'), "r", IF(ISBLANK(COUNTROWS('Sales')), BLANK(), (CONVERT('Sales'[Line Value Column], DOUBLE) / IF(('Sales'[Orders] == 0), BLANK(), 'Sales'[Orders])))), "CustomerKey", 'Sales'[CustomerKey], "r", [r])

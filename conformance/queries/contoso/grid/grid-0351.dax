@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), star two sides: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT o.Color, f."Date", AGG(f.Returned) AS v FROM contoso.Returns AS f LEFT JOIN contoso.Product AS o ON f.ProductKey = o.ProductKey GROUP BY o.Color, f."Date"
-EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('Product'[Color], 'Returns'[Date], "__rows", COUNTROWS(Returns), "v", 'Returns'[Returned]), "Color", 'Product'[Color], "Date", 'Returns'[Date], "v", [v])
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('Product'[Color], 'Returns'[Date], "__rows", COUNTROWS('Returns'), "v", 'Returns'[Returned]), "Color", 'Product'[Color], "Date", 'Returns'[Date], "v", [v])

@@ -1,3 +1,3 @@
 // note: Apache Ossie wide table compliance A15 (a15_unconnected_filter_false.ost):  Its Layer 3 query {"metrics":["orders.total_revenue","tickets.ticket_count"],"filter":"FALSE"}, lowered to Layer 2 SQL, model query 2 of 2, as dax-sql's SQL front end writes it in DAX:
 // WITH b_orders AS ( SELECT AGG(orders.total_revenue) AS c1 FROM retail_model.orders WHERE FALSE ), b_tickets AS ( SELECT AGG(tickets.ticket_count) AS c1 FROM retail_model.tickets WHERE FALSE ) SELECT b_orders.c1 AS total_revenue, b_tickets.c1 AS ticket_count FROM b_orders CROSS JOIN b_tickets
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(ROW("c1", 'tickets'[ticket_count]), FILTER(ALL(tickets), FALSE())), "c1", COALESCE([c1], 0))
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(ROW("c1", 'tickets'[ticket_count]), FILTER(ALL('tickets'), FALSE())), "c1", COALESCE([c1], 0))

@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), where and: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t.losal, AGG(t.grade_count) AS v FROM scott_model.salgrade AS t WHERE t.hisal IS NOT NULL AND t.hisal IN (2000, 1200) GROUP BY t.losal
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('salgrade'[losal], "__rows", COUNTROWS(salgrade), "v", 'salgrade'[grade_count]), NOT(ISBLANK('salgrade'[hisal])), ('salgrade'[hisal] IN {2000, 1200})), "losal", 'salgrade'[losal], "v", COALESCE([v], 0))
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('salgrade'[losal], "__rows", COUNTROWS('salgrade'), "v", 'salgrade'[grade_count]), NOT(ISBLANK('salgrade'[hisal])), ('salgrade'[hisal] IN {2000, 1200})), "losal", 'salgrade'[losal], "v", COALESCE([v], 0))

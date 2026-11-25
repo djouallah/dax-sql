@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), where and: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t."Line Number", AGG(t.Customers) AS v FROM "dax-conformance-edges".Sales AS t WHERE t."Unit Price" IN (111.75, 4.12) AND t.ProductKey <> 3 GROUP BY t."Line Number"
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Sales'[Line Number], "__rows", COUNTROWS(Sales), "v", 'Sales'[Customers]), ('Sales'[Unit Price] IN {111.75, 4.12}), ('Sales'[ProductKey] <> 3)), "Line Number", 'Sales'[Line Number], "v", [v])
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Sales'[Line Number], "__rows", COUNTROWS('Sales'), "v", 'Sales'[Customers]), ('Sales'[Unit Price] IN {111.75, 4.12}), ('Sales'[ProductKey] <> 3)), "Line Number", 'Sales'[Line Number], "v", [v])

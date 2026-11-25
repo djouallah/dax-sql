@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), group by all: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t."Line Number", AGG(t."Sales Amount") AS v FROM "dax-conformance-edges".Sales AS t GROUP BY ALL
-EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('Sales'[Line Number], "__rows", COUNTROWS(Sales), "v", 'Sales'[Sales Amount]), "Line Number", 'Sales'[Line Number], "v", [v])
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('Sales'[Line Number], "__rows", COUNTROWS('Sales'), "v", 'Sales'[Sales Amount]), "Line Number", 'Sales'[Line Number], "v", [v])

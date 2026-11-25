@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), where or: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t."date", AGG(t."Days with output") AS v FROM aac.fct_summary AS t WHERE t."date" IN (DATE '2026-08-11', DATE '2026-07-28') OR t.price = 242.28 GROUP BY t."date"
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('fct_summary'[date], "__rows", COUNTROWS(fct_summary), "v", 'fct_summary'[Days with output]), (('fct_summary'[date] IN {DATE(2026, 8, 11), DATE(2026, 7, 28)}) || ('fct_summary'[price] = 242.28))), "date", 'fct_summary'[date], "v", [v])
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('fct_summary'[date], "__rows", COUNTROWS('fct_summary'), "v", 'fct_summary'[Days with output]), (('fct_summary'[date] IN {DATE(2026, 8, 11), DATE(2026, 7, 28)}) || ('fct_summary'[price] = 242.28))), "date", 'fct_summary'[date], "v", [v])

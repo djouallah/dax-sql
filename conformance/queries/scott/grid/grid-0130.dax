@@ -1,7 +1,7 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), star where many: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT o.empno, AGG(f.avg_sal) AS v FROM scott_model.emp AS f JOIN scott_model.emp AS o ON f.mgr = o.empno WHERE f.deptno < 10 GROUP BY o.empno
 DEFINE
-VAR __v1 = GENERATE(SELECTCOLUMNS(emp, "f.empno", 'emp'[empno], "f.deptno", 'emp'[deptno], "f.mgr", 'emp'[mgr]), FILTER(SELECTCOLUMNS(emp, "o.empno", 'emp'[empno]), ([f.mgr] = [o.empno])))
+VAR __v1 = GENERATE(SELECTCOLUMNS('emp', "f.empno", 'emp'[empno], "f.deptno", 'emp'[deptno], "f.mgr", 'emp'[mgr]), FILTER(SELECTCOLUMNS('emp', "o.empno", 'emp'[empno]), ([f.mgr] = [o.empno])))
 VAR __v2 = FILTER(__v1, ([f.deptno] < 10))
 VAR __v3 = DISTINCT(SELECTCOLUMNS(__v2, "empno", [o.empno]))
 EVALUATE SELECTCOLUMNS(ADDCOLUMNS(__v3, "__m1", CALCULATE('emp'[avg_sal], REMOVEFILTERS(), TREATAS(SELECTCOLUMNS(FILTER(__v2, (NOT(ISBLANK([f.empno])) && ([o.empno] == [empno]))), "__k1", [f.empno]), 'emp'[empno]))), "empno", [empno], "v", [__m1])

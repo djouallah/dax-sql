@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), order limit: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t.DUID, AGG(t."Registered units") AS v FROM aac.dim_duid AS t GROUP BY t.DUID ORDER BY t.DUID NULLS FIRST LIMIT 3
-EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('dim_duid'[DUID], "__rows", COUNTROWS(dim_duid), "v", 'dim_duid'[Registered units]), "DUID", 'dim_duid'[DUID], "v", [v]) ORDER BY [DUID]
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('dim_duid'[DUID], "__rows", COUNTROWS('dim_duid'), "v", 'dim_duid'[Registered units]), "DUID", 'dim_duid'[DUID], "v", [v]) ORDER BY [DUID]

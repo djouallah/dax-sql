@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), rollup: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t."Date", AGG(t.Returned) AS v FROM contoso.Returns AS t GROUP BY ROLLUP (t."Date") ORDER BY t."Date" NULLS LAST
-EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS(ROLLUPADDISSUBTOTAL('Returns'[Date], "__level1_Date"), "__rows", COUNTROWS(Returns), "v", 'Returns'[Returned]), "Date", 'Returns'[Date], "v", [v]) ORDER BY ISBLANK([Date]), [Date]
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS(ROLLUPADDISSUBTOTAL('Returns'[Date], "__level1_Date"), "__rows", COUNTROWS('Returns'), "v", 'Returns'[Returned]), "Date", 'Returns'[Date], "v", [v]) ORDER BY ISBLANK([Date]), [Date]

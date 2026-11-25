@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), derived table: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT s.region, s.v FROM (SELECT t.region, AGG(t.customer_count) AS v FROM stores_model.customers AS t GROUP BY t.region) AS s WHERE s.v IS NOT NULL
-EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('customers'[region], "__rows", COUNTROWS(customers), "v", 'customers'[customer_count]), "region", 'customers'[region], "v", COALESCE([v], 0))
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('customers'[region], "__rows", COUNTROWS('customers'), "v", 'customers'[customer_count]), "region", 'customers'[region], "v", COALESCE([v], 0))

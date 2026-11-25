@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), two groups: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t."date", t.interconnector, AGG(t."Flow MW") AS v FROM aac.fct_interconnector AS t GROUP BY t."date", t.interconnector
-EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('fct_interconnector'[date], 'fct_interconnector'[interconnector], "__rows", COUNTROWS(fct_interconnector), "v", 'fct_interconnector'[Flow MW]), "date", 'fct_interconnector'[date], "interconnector", 'fct_interconnector'[interconnector], "v", [v])
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('fct_interconnector'[date], 'fct_interconnector'[interconnector], "__rows", COUNTROWS('fct_interconnector'), "v", 'fct_interconnector'[Flow MW]), "date", 'fct_interconnector'[date], "interconnector", 'fct_interconnector'[interconnector], "v", [v])

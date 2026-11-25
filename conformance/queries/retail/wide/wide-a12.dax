@@ -1,3 +1,3 @@
 // note: Apache Ossie wide table compliance A12 (a12_anchor_from_dimensions.ost):  Its Layer 3 query {"dimensions":["orders.order_id","customers.region"],"filter":"orders.amount > 100"}, lowered to Layer 2 SQL, as dax-sql's SQL front end writes it in DAX:
 // SELECT orders.order_id AS order_id, customers.region AS region FROM retail_model.orders LEFT JOIN retail_model.customers ON orders.customer_id = customers.customer_id WHERE orders.amount > 100 GROUP BY orders.order_id, customers.region
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('orders'[order_id], 'customers'[region], "__rows", COUNTROWS(orders)), ('orders'[amount] > 100)), "order_id", 'orders'[order_id], "region", 'customers'[region])
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('orders'[order_id], 'customers'[region], "__rows", COUNTROWS('orders')), ('orders'[amount] > 100)), "order_id", 'orders'[order_id], "region", 'customers'[region])

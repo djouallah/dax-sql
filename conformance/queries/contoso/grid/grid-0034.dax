@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), where and: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t.CategoryKey, AGG(t."Avg Price") AS v FROM contoso.Product AS t WHERE t.Price = 800 AND t.Name <> 'Road Bike' GROUP BY t.CategoryKey
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Product'[CategoryKey], "__rows", COUNTROWS(Product), "v", 'Product'[Avg Price]), ('Product'[Price] = 800), ('Product'[Name] <> "Road Bike")), "CategoryKey", 'Product'[CategoryKey], "v", [v])
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Product'[CategoryKey], "__rows", COUNTROWS('Product'), "v", 'Product'[Avg Price]), ('Product'[Price] = 800), ('Product'[Name] <> "Road Bike")), "CategoryKey", 'Product'[CategoryKey], "v", [v])

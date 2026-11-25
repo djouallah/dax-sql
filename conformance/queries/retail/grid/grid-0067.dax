@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), two groups: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t.order_id, t.amount, AGG(t.total_revenue) AS v FROM retail_model.orders AS t GROUP BY t.order_id, t.amount
-EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('orders'[order_id], 'orders'[amount], "__rows", COUNTROWS(orders), "v", 'orders'[total_revenue]), "order_id", 'orders'[order_id], "amount", 'orders'[amount], "v", [v])
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('orders'[order_id], 'orders'[amount], "__rows", COUNTROWS('orders'), "v", 'orders'[total_revenue]), "order_id", 'orders'[order_id], "amount", 'orders'[amount], "v", [v])

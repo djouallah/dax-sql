@@ -164,5 +164,10 @@
   {"id":"patterns/context/context-summarize-year-lastnonblank-inventory","reason":"not supported yet: SUMMARIZE's group filter under LASTNONBLANK of a CALCULATE: Power BI takes each product's last date with inventory in any year (its other two columns match)"},
   {"id":"contoso/functions/functions-fact-rept","reason":"not supported yet: FACT on the SQL endpoint (T-SQL has no factorial)"},
   {"id":"patterns/fuzz3/fuzz3-0126","reason":"slow: past the 30 s a query has on the Fabric SQL endpoint (a random query of measures over measures)"},
-  {"id":"scott/blanks/blanks-relationship","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"}
+  {"id":"scott/blanks/blanks-relationship","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"},
+  {"id":"stores/grid/grid-0216","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"},
+  {"id":"stores/grid/grid-0219","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"},
+  {"id":"stores/grid/grid-0220","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"},
+  {"id":"stores/grid/grid-0221","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"},
+  {"id":"stores/grid/grid-0222","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"}
 ]

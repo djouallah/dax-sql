@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), snowflake: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT c.Category, AGG(f.Returned) AS v FROM contoso.Returns AS f JOIN contoso.Product AS b ON f.ProductKey = b.ProductKey JOIN contoso.Category AS c ON b.CategoryKey = c.CategoryKey GROUP BY c.Category
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Category'[Category], "__rows", COUNTROWS(Returns), "v", 'Returns'[Returned]), NOT(ISBLANK('Product'[ProductKey])), NOT(ISBLANK('Category'[CategoryKey]))), "Category", 'Category'[Category], "v", [v])
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Category'[Category], "__rows", COUNTROWS('Returns'), "v", 'Returns'[Returned]), NOT(ISBLANK('Product'[ProductKey])), NOT(ISBLANK('Category'[CategoryKey]))), "Category", 'Category'[Category], "v", [v])

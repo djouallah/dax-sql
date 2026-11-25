@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), two groups: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t.Quantity, t.EmployeeKey, AGG(t."Sales Amount") AS v FROM "dax-sql-patterns".Sales AS t GROUP BY t.Quantity, t.EmployeeKey
-EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('Sales'[Quantity], 'Sales'[EmployeeKey], "__rows", COUNTROWS(Sales), "v", 'Sales'[Sales Amount]), "Quantity", 'Sales'[Quantity], "EmployeeKey", 'Sales'[EmployeeKey], "v", [v])
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('Sales'[Quantity], 'Sales'[EmployeeKey], "__rows", COUNTROWS('Sales'), "v", 'Sales'[Sales Amount]), "Quantity", 'Sales'[Quantity], "EmployeeKey", 'Sales'[EmployeeKey], "v", [v])

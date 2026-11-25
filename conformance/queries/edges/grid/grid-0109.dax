@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), where and: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t.StoreKey, AGG(t."Target Amount") AS v FROM "dax-conformance-edges".Target AS t WHERE t.StoreKey IN ('SYD-01', 'NYC-01') AND t.Target IN (2819.9624, 2030.7044) GROUP BY t.StoreKey
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Target'[StoreKey], "__rows", COUNTROWS(Target), "v", 'Target'[Target Amount]), ('Target'[StoreKey] IN {"SYD-01", "NYC-01"}), ('Target'[Target] IN {2819.9624, 2030.7044})), "StoreKey", 'Target'[StoreKey], "v", [v])
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Target'[StoreKey], "__rows", COUNTROWS('Target'), "v", 'Target'[Target Amount]), ('Target'[StoreKey] IN {"SYD-01", "NYC-01"}), ('Target'[Target] IN {2819.9624, 2030.7044})), "StoreKey", 'Target'[StoreKey], "v", [v])

@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), where or: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t.Participant, AGG(t."Storage MWh") AS v FROM aac.dim_duid AS t WHERE t.State <> 'New South Wales' OR t.StationName <> 'Torrens Island Power Station B' GROUP BY t.Participant
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('dim_duid'[Participant], "__rows", COUNTROWS(dim_duid), "v", 'dim_duid'[Storage MWh]), (('dim_duid'[State] <> "New South Wales") || ('dim_duid'[StationName] <> "Torrens Island Power Station B"))), "Participant", 'dim_duid'[Participant], "v", [v])
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('dim_duid'[Participant], "__rows", COUNTROWS('dim_duid'), "v", 'dim_duid'[Storage MWh]), (('dim_duid'[State] <> "New South Wales") || ('dim_duid'[StationName] <> "Torrens Island Power Station B"))), "Participant", 'dim_duid'[Participant], "v", [v])

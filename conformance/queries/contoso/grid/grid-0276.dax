@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), two metrics: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t.CustomerKey, AGG(t."Sales Amount") AS a, AGG(t.Orders) AS b FROM contoso.Sales AS t GROUP BY t.CustomerKey
-EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('Sales'[CustomerKey], "__rows", COUNTROWS(Sales), "a", 'Sales'[Sales Amount], "b", 'Sales'[Orders]), "CustomerKey", 'Sales'[CustomerKey], "a", [a], "b", [b])
+EVALUATE SELECTCOLUMNS(SUMMARIZECOLUMNS('Sales'[CustomerKey], "__rows", COUNTROWS('Sales'), "a", 'Sales'[Sales Amount], "b", 'Sales'[Orders]), "CustomerKey", 'Sales'[CustomerKey], "a", [a], "b", [b])

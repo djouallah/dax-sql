@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), where: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT t.return_amount, AGG(t.total_returns) AS v FROM stores_model.store_returns AS t WHERE t.return_amount < 5 GROUP BY t.return_amount
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('store_returns'[return_amount], "__rows", COUNTROWS(store_returns), "v", 'store_returns'[total_returns]), ('store_returns'[return_amount] < 5)), "return_amount", 'store_returns'[return_amount], "v", [v])
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('store_returns'[return_amount], "__rows", COUNTROWS('store_returns'), "v", 'store_returns'[total_returns]), ('store_returns'[return_amount] < 5)), "return_amount", 'store_returns'[return_amount], "v", [v])

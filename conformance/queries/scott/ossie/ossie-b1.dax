@@ -1,3 +1,3 @@
 // note: Apache Ossie query compliance B1 (b01_many_to_one_no_fan_out.ost): A many-to-one join repeats no row of the measure. As dax-sql's SQL front end writes its SQL in DAX:
 // SELECT d.dname, AGG(e.sum_sal) AS sum_sal, AGG(e.emp_count) AS emp_count FROM scott_model.emp AS e JOIN scott_model.dept AS d ON e.deptno = d.deptno GROUP BY d.dname ORDER BY d.dname
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('dept'[dname], "__rows", COUNTROWS(emp), "sum_sal", 'emp'[sum_sal], "emp_count", 'emp'[emp_count]), NOT(ISBLANK('dept'[deptno]))), "dname", 'dept'[dname], "sum_sal", [sum_sal], "emp_count", COALESCE([emp_count], 0)) ORDER BY [dname]
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('dept'[dname], "__rows", COUNTROWS('emp'), "sum_sal", 'emp'[sum_sal], "emp_count", 'emp'[emp_count]), NOT(ISBLANK('dept'[deptno]))), "dname", 'dept'[dname], "sum_sal", [sum_sal], "emp_count", COALESCE([emp_count], 0)) ORDER BY [dname]

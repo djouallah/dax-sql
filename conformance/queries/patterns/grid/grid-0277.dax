@@ -1,3 +1,3 @@
 // note: the view expander's grid (tools/ossie/grid.mjs), star where one: its SQL as dax-sql's SQL front end writes it in DAX:
 // SELECT o."Fiscal Quarter", AGG(f.Snapshots) AS v FROM "dax-sql-patterns".Inventory AS f JOIN "dax-sql-patterns"."Date" AS o ON f."Date" = o."Date" WHERE NOT (o.Weekday = 7) GROUP BY o."Fiscal Quarter"
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Date'[Fiscal Quarter], "__rows", COUNTROWS(Inventory), "v", 'Inventory'[Snapshots]), NOT(('Date'[Weekday] = 7)), NOT(ISBLANK('Date'[Date]))), "Fiscal Quarter", 'Date'[Fiscal Quarter], "v", [v])
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(SUMMARIZECOLUMNS('Date'[Fiscal Quarter], "__rows", COUNTROWS('Inventory'), "v", 'Inventory'[Snapshots]), NOT(('Date'[Weekday] = 7)), NOT(ISBLANK('Date'[Date]))), "Fiscal Quarter", 'Date'[Fiscal Quarter], "v", [v])

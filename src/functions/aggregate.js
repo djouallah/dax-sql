@@ -1,6 +1,7 @@
 // Aggregates and iterators, CALCULATE, and the functions that ask about the filter context.
 // An aggregate is { k:'agg' } over a table (a scan of the column's table, for SUM(T[c])).
 import * as ir from '../ir.js';
+import { parseExpression } from '../parser.js';
 import { semantic } from '../errors.js';
 
 const lc = s => String(s).toLowerCase();
@@ -261,7 +262,88 @@ function rankX(c, args, env) {
   const ahead = ir.op(desc ? 'gt' : 'lt', arg, value);
   const fallback = rankCount(arg, value, src, row, ahead, dense);
   const w = byWindow(c, args, env);
-  return w ? { k: 'rankw', ...w, expr: value, all: src, desc, dense, fallback, t: 'int', nn: true } : fallback;
+  if (w) return { k: 'rankw', ...w, expr: value, all: src, desc, dense, fallback, t: 'int', nn: true };
+  return pruned(c, args, env, value, desc, dense, same, src, row) ?? fallback;
+}
+
+// RANKX(ALL(T[c]), e) where e is blank whenever T has no rows (blankWithout): a value of T[c] that
+// the context leaves no row of T for (its filters on T[c] aside) is a blank, 0 as RANKX compares
+// it, so e is computed for the values the context leaves rows for (VALUES(T[c]), its own filters
+// on T[c] removed: a few for each row) and the others are counted, not computed for each row and
+// each value (tpcds fuzz2-0109: each group's YoY at every one of 2,689 prices, 17.5 million, where
+// a group's color and classes leave a handful). -> the rank, or null when e may be non-blank so.
+function pruned(c, args, env, value, desc, dense, same, allSrc, allRow) {
+  const t = args[0];
+  if ((args[2] && args[2].k !== 'empty') || t?.k !== 'call' || t.fn !== 'ALL' || t.args.length !== 1 || t.args[0].k !== 'col' || !t.args[0].table) return null;
+  const col = c.model.findColumn(t.args[0].table, t.args[0].name);
+  if (!col || col.expr) return null;
+  const T = col.table, state = c.model.state(env.ctx.mods);
+  if (!blankWithout(c, args[1], T, state, new Set())) return null;
+  const src = ir.values(T, env.ctx.remove(x => x === col), [col], (tb, x) => c.scan(tb, x));
+  const row = ir.rowOf(src);
+  const arg = same(c.scalar(args[1], c.iter(env, row)));
+  const ahead = ir.op(desc ? 'gt' : 'lt', arg, value);
+  const count = (s, r, cond) => ir.agg('count0', s, r, ir.kase([[cond, ir.lit(1)]], ir.BLANK, 'int'), 'int');
+  // The values of ALL(T[c]) left out: blanks, ahead of the value when 0 is.
+  const blanks = ir.op('sub', ir.agg('count0', allSrc, allRow, ir.lit(1), 'int'), ir.agg('count0', src, row, ir.lit(1), 'int'));
+  const blankAhead = ir.op(desc ? 'gt' : 'lt', ir.BLANK, value);
+  if (!dense) return ir.op('add', ir.op('add', count(src, row, ahead), ir.kase([[blankAhead, blanks]], ir.lit(0), 'int')), ir.lit(1));
+  const isDefault = ir.op('eq', arg, ir.BLANK);
+  const distinct = ir.agg('dcount0', src, row, ir.kase([[ir.op('and', ahead, ir.op('not', isDefault)), arg]], ir.BLANK, arg.t), 'int');
+  const defaultAhead = ir.op('or', ir.op('gt', count(src, row, ir.op('and', ahead, isDefault)), ir.lit(0)), ir.op('and', blankAhead, ir.op('gt', blanks, ir.lit(0))));
+  return ir.op('add', ir.op('add', distinct, ir.kase([[defaultAhead, ir.lit(1)]], ir.lit(0), 'int')), ir.lit(1));
+}
+
+// Whether expression x (DAX) is blank whenever table T has no rows in its context: aggregates of
+// tables T filters (a fact by its dimension), their sums and differences, a product or quotient of
+// one, DIVIDE of one, CALCULATE of one under filters that leave T's as they are (time intelligence
+// on another table, filters on other tables, ALL of a table T does not filter); measures read
+// through. Anything else (a constant, IF, a filter on T or removing it): not known, false.
+const BLANK_AGGS = new Set(['SUM', 'AVERAGE', 'MIN', 'MAX', 'COUNT', 'COUNTA', 'COUNTROWS', 'DISTINCTCOUNT', 'DISTINCTCOUNTNOBLANK',
+  'SUMX', 'AVERAGEX', 'MINX', 'MAXX', 'COUNTX', 'COUNTAX', 'PRODUCT', 'PRODUCTX']);
+const TIME_FILTERS = new Set(['SAMEPERIODLASTYEAR', 'DATEADD', 'DATESYTD', 'DATESQTD', 'DATESMTD', 'PARALLELPERIOD', 'PREVIOUSDAY',
+  'PREVIOUSMONTH', 'PREVIOUSQUARTER', 'PREVIOUSYEAR', 'NEXTDAY', 'NEXTMONTH', 'NEXTQUARTER', 'NEXTYEAR', 'DATESINPERIOD', 'DATESBETWEEN']);
+const REMOVERS = new Set(['ALL', 'ALLEXCEPT', 'ALLSELECTED', 'ALLNOBLANKROW', 'REMOVEFILTERS', 'ALLCROSSFILTERED']);
+function blankWithout(c, x, T, state, seen) {
+  const m = c.model, bw = y => blankWithout(c, y, T, state, seen);
+  const tableOf = a => (a?.k === 'col' && a.table ? m.table(a.table) : a?.k === 'name' ? m.table(a.name) : null);
+  const cols = (y, out = []) => {
+    if (!y || typeof y !== 'object') return out;
+    if (y.k === 'col') out.push(y);
+    for (const v of Object.values(y)) if (v && typeof v === 'object') Array.isArray(v) ? v.forEach(z => cols(z, out)) : cols(v, out);
+    return out;
+  };
+  const keepsT = f => {
+    if (f.k === 'call' && f.fn === 'KEEPFILTERS') return keepsT(f.args[0]);
+    if (f.k === 'call' && TIME_FILTERS.has(f.fn)) { const tb = tableOf(f.args[0]); return !!tb && tb !== T && !m.reaches(tb, T, state); }
+    if (f.k === 'call' && REMOVERS.has(f.fn)) return f.args.every(a => { const tb = tableOf(a); return !!tb && tb !== T && !m.reaches(T, tb, state); });
+    if (f.k === 'bin') return cols(f).every(y => { const tb = y.table ? m.table(y.table) : null; return !!tb && tb !== T && !m.reaches(tb, T, state); });
+    return false;
+  };
+  switch (x?.k) {
+    case 'col': {
+      const me = m.measure(x.name);
+      if (!me || (x.table && m.findColumn(x.table, x.name)) || seen.has(me)) return false;
+      // seen: the measures being read (a measure that names itself is not known); one read twice
+      // (YoY: the revenue and the revenue of the year before) is read again.
+      seen.add(me);
+      me.ast ??= parseExpression(me.text);
+      try { return bw(me.ast); } finally { seen.delete(me); }
+    }
+    case 'neg': return bw(x.e);
+    case 'bin':
+      if (x.op === '+' || x.op === '-') return bw(x.l) && bw(x.r);
+      if (x.op === '*') return bw(x.l) || bw(x.r);
+      if (x.op === '/') return bw(x.l);
+      return false;
+    case 'call':
+      if (x.fn === 'BLANK') return true;
+      if (BLANK_AGGS.has(x.fn)) { const tb = tableOf(x.args[0]); return !!tb && (tb === T || m.reaches(T, tb, state)); }
+      if (x.fn === 'DIVIDE') return x.args.length === 2 && (bw(x.args[0]) || bw(x.args[1]));
+      if (x.fn === 'CALCULATE') return bw(x.args[0]) && x.args.slice(1).every(keepsT);
+      return false;
+  }
+  return false;
 }
 
 // RANKX(ALL(T[c]), e) as an expression of a SUMMARIZECOLUMNS level that groups by T[c] (its

@@ -1,6 +1,6 @@
 {
  "wide-a16-1": {
-  "hash": "d17d507cfa9b8f33e4f3554edd362fbc02fb4ea8",
+  "hash": "cd2136ce40989549dde1a650d33f86720a48784d",
   "columns": [
    "[brand]",
    "[year]",
@@ -29,7 +29,7 @@
   ]
  },
  "wide-a16-2": {
-  "hash": "7a709e5660594167b56557127c1b0190cabd888a",
+  "hash": "4fd196e74d19175c9c3b80809d9786d079d27eec",
   "columns": [
    "[brand]",
    "[year]",
@@ -52,7 +52,7 @@
   ]
  },
  "wide-a17": {
-  "hash": "7de0b6dbae4910e2353cf2dc8350440b292a7fa9",
+  "hash": "96fb8e2422bd679f00959c6976f96619a24a362f",
   "columns": [
    "[region]",
    "[total_sales]"
@@ -73,7 +73,7 @@
   ]
  },
  "wide-a18": {
-  "hash": "eef15718a1dc4142ee5244091e19b4c714f9f0e9",
+  "hash": "9a03cce7bb174d0fbca52a87f922180634639d0e",
   "columns": [
    "[brand]",
    "[state]",
@@ -93,7 +93,7 @@
   ]
  },
  "wide-a19": {
-  "hash": "cdb1bd2f416114e7d39bf185fb12c3d86d955286",
+  "hash": "c842218beb69e183fc228777a9c2b665adc81197",
   "columns": [
    "[year]",
    "[total_sales]"

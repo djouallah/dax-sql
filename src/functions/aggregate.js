@@ -254,6 +254,39 @@ function rankX(c, args, env) {
   const desc = isDesc(args[3], true);
   const dense = args[4] && args[4].k === 'name' && args[4].name.toUpperCase() === 'DENSE';
   const ahead = ir.op(desc ? 'gt' : 'lt', arg, value);
+  const fallback = rankCount(arg, value, src, row, ahead, dense);
+  const w = byWindow(c, args, env);
+  return w ? { k: 'rankw', ...w, expr: value, all: src, desc, dense, fallback, t: 'int', nn: true } : fallback;
+}
+
+// RANKX(ALL(T[c]), e) as an expression of a SUMMARIZECOLUMNS level that groups by T[c] (its
+// context the level's own, no row context, no other filter on T[c]; e a measure or CALCULATE): each row of ALL(T[c]) is
+// the level's group with that value of T[c] (context transition replaces the group's), so the
+// values ranked are e of the level's groups by every key, partitioned by the other keys; lowered
+// as a window over them (lower.js rankWindow), not e computed for each group and each value.
+// -> { keyRow, key } (the key's position), or null.
+function byWindow(c, args, env) {
+  const kr = env.ctx.level;
+  if (!kr || env.rows.length || env.currentGroup || (args[2] && args[2].k !== 'empty')) return null;
+  // The value of a row of ALL(T[c]) is the group's with that T[c] only by a context transition:
+  // a measure, or CALCULATE (MIN(x) alone is the outer group's value for every row).
+  const e = args[1];
+  const measure = e?.k === 'col' && c.model.measure(e.name) && (!e.table || !c.model.findColumn(e.table, e.name))
+    && !(e.table && (env.vars.get(e.table.toLowerCase()) || env.queryTables?.get(e.table.toLowerCase())));
+  if (!measure && !(e?.k === 'call' && e.fn === 'CALCULATE')) return null;
+  const t = args[0];
+  if (t?.k !== 'call' || t.fn !== 'ALL' || t.args.length !== 1 || t.args[0].k !== 'col' || !t.args[0].table) return null;
+  const col = c.model.findColumn(t.args[0].table, t.args[0].name);
+  if (!col) return null;
+  // Auto-exist's combinations of the filters on T[c]'s table hold T[c] only as a key (keyOnly):
+  // the level's groups are of those rows, as the values ranked are. Its tie of them to the group
+  // (with `keys`) is not: narrowed to the other columns, it keeps the outer group's rows of them.
+  const on = env.ctx.filters.filter(f => (f.cols.includes(col) || f.keys?.includes(col)) && !(f.keyOnly?.includes(col) && !f.keys));
+  if (on.length !== 1 || on[0].kind !== 'bind' || on[0].val.k !== 'col' || on[0].val.row !== kr) return null;
+  return { keyRow: kr, key: on[0].val.ref };
+}
+
+function rankCount(arg, value, src, row, ahead, dense) {
   if (!dense) return ir.op('add', ir.agg('count0', src, row, ir.kase([[ahead, ir.lit(1)]], ir.BLANK, 'int'), 'int'), ir.lit(1));
   // DENSE: the distinct values ahead. RANKX compares a blank as its type's default (0, ""),
   // so a blank and the default are one value: the other values ahead counted apart, and one

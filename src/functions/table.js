@@ -566,6 +566,9 @@ function summarizeColumns(c, args, env) {
     let ctx = given && active.length ? autoExist(c, given, env.ctx, active, binds) : ctx0;
     for (const f of binds) ctx = ctx.add(f);
     for (const [k, v] of fixed) ctx = ctx.add({ kind: 'bind', cols: [k], val: ir.lit(v, k.type) });
+    // The level's own context (what an expression of it sees before any CALCULATE): RANKX over
+    // ALL of one of its keys is a window over the level's groups (functions/aggregate.js).
+    if (active.length) ctx.level = keyRow;
     const shadows = shadow.cols.size ? [...env.shadows, shadow] : env.shadows;
     const inner = { ...env, ctx, rows: [], grouped: new Set([...active, ...fixed.keys()]), shadows };
     const items = exprs.map(([name, x]) => {
@@ -617,8 +620,10 @@ function autoExist(c, ctx, outer, keys, binds = []) {
     const cols = [...new Set([...fs.flatMap(f => f.cols), ...keys.filter(k => k.table === t)])];
     const own = binds.filter(f => f.cols[0].table === t);
     const combos = extra => ir.values(t, new Ctx([...fs, ...extra], ctx.mods), cols, (tb, x) => c.scan(tb, x));
-    ctx = new Ctx(ctx.filters.filter(f => !fs.includes(f)), ctx.mods).add({ kind: 'rel', cols, src: combos([]), idx: cols.map((_, i) => i), base: null });
-    if (own.length) ctx = ctx.add({ kind: 'rel', cols, src: combos(own), idx: cols.map((_, i) => i), base: null, keys: own.map(f => f.cols[0]) });
+    // keyOnly: the keys no filter of fs is on (there only to tie them to the filtered columns).
+    const keyOnly = cols.filter(k => !fs.some(f => f.cols.includes(k)));
+    ctx = new Ctx(ctx.filters.filter(f => !fs.includes(f)), ctx.mods).add({ kind: 'rel', cols, src: combos([]), idx: cols.map((_, i) => i), base: null, keyOnly });
+    if (own.length) ctx = ctx.add({ kind: 'rel', cols, src: combos(own), idx: cols.map((_, i) => i), base: null, keys: own.map(f => f.cols[0]), keyOnly });
   }
   return ctx;
 }

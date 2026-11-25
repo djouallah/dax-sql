@@ -649,8 +649,9 @@ export class Lowerer {
     const domain = [...new Set([...new Set(L.active.map(c => c.table))].flatMap(t => this.keyFilters(x, t, true)))];
     const fusion = new Fusion(this, x.keyRow, active, x.keyCols, domain);
     this.fusions.push(fusion);
+    (this.levels ??= []).push({ x, L, scope, kb, refs, active });
     let items;
-    try { items = L.items.map(i => this.scalar(i.expr, s, kb)); } finally { this.fusions.pop(); }
+    try { items = L.items.map(i => this.scalar(i.expr, s, kb)); } finally { this.fusions.pop(); this.levels.pop(); }
     // The groups: from the fused aggregates when every expression is blank without their rows,
     // and those rows are under all the filters that decide the combinations (an expression that
     // removed one has rows of groups SUMMARIZECOLUMNS does not have); else every combination of
@@ -753,6 +754,7 @@ export class Lowerer {
         const blanks = x.e.some((e, j) => !e.nn && mayBeBlank(x.src, j));
         return member(left, sub.list.map(o => o.expr), sub.rel, blanks);
       }
+      case 'rankw': return this.rankWindow(x, scope, blk);
       case 'wrank': {
         // The current row's rank; several current rows (rows that differ, or ROWNUMBER's equal
         // rows) give no value.
@@ -767,6 +769,65 @@ export class Lowerer {
       }
     }
     throw unsupported(`plan: scalar ${x.k}`);
+  }
+
+  // RANKX(ALL(T[c]), e) in a SUMMARIZECOLUMNS level grouped by T[c] (functions/aggregate.js
+  // byWindow): R, e of the level's groups by every key (a level of its own: its groups and e
+  // fused as the level's are), each ranked among those with the same other keys and a value of
+  // ALL(T[c]) (RANK or DENSE_RANK over them, partitioned by the other keys); a value of ALL(T[c])
+  // with no group in R is a blank, 0 as RANKX compares it (counted: |ALL(T[c])| less those in R).
+  // A group whose e is blank has no row in R: ahead of it, the values of R ahead of 0. Joined to
+  // the level's groups by their keys.
+  rankWindow(x, scope, blk) {
+    const lv = this.levels?.at(-1);
+    if (!lv || lv.x.keyRow !== x.keyRow || blk !== lv.kb || !lv.active.includes(x.key)) return this.scalar(x.fallback, scope, blk);
+    const { x: sc, L, kb, refs, active } = lv, nk = sc.keyCols.length;
+    // R: the level's keys and e, the groups where e is not blank.
+    const xr = { ...sc, cols: [...sc.cols.slice(0, nk), { name: 'v', lineage: null, t: x.expr.t }] };
+    const saved = new Map(this.fusedIn);
+    let R;
+    try { R = this.level(xr, { active: L.active, items: [{ expr: x.expr }], flags: [], consts: L.consts }, lv.scope); } finally { this.fusedIn = saved; }
+    // The values of ALL(T[c]), each once, and whether a group of R has one of them.
+    const all = this.table(x.all, lv.scope).render();
+    const vals = P.distinct(P.project(all.rel, [{ name: 'c', expr: all.list[0].expr }, { name: 'one', expr: int(1) }]));
+    const J = P.join('left', R, vals, P.key(P.ref(R.cols[x.key]), P.ref(vals.cols[0])));
+    const others = active.filter(ki => ki !== x.key);
+    const order = [{ expr: P.ref(R.cols[nk]), desc: x.desc }];
+    const fn = x.dense ? 'dense_rank' : 'rank';
+    // Ranked among the groups with a value of ALL(T[c]) (in), and among all of R (a group whose
+    // value is not one of them: T[c] blank, its rank the place it would take among them).
+    const W1 = P.window(J, [...others.map(ki => P.ref(R.cols[ki])), P.ref(vals.cols[1])], [{ name: 'r_in', fn, order }]);
+    const W = P.window(W1, others.map(ki => P.ref(R.cols[ki])), [{ name: 'r_all', fn, order }]);
+    const [rIn, rAll] = [W1.fns[0].col, W.fns[0].col].map(P.ref);
+    const v = P.ref(R.cols[nk]), inAll = P.notNull(P.ref(vals.cols[1]));
+    kb.joins.push({ kind: 'left', rel: W, on: P.and(active.map(ki => P.key(P.ref(R.cols[ki]), refs.get(ki)))) });
+    // By the other keys: the groups of R with a value of ALL(T[c]), those whose e is the blank's
+    // value (0, ""), and the values ahead of a blank.
+    const c2 = clone(J), J2 = c2.rel, at = col => c2.map.get(col) ?? col;
+    const v2 = P.ref(at(R.cols[nk]));
+    // e ahead of a blank (0, ""), and a blank ahead of e.
+    const ahead0 = e => ir.op(x.desc ? 'gt' : 'lt', e, ir.BLANK);
+    const blankAhead = e => ir.op(x.desc ? 'lt' : 'gt', e, ir.BLANK);
+    const isBlank = e => ir.op('eq', e, ir.BLANK);
+    const G = P.aggregate(P.select(J2, P.notNull(P.ref(at(vals.cols[1])))), others.map(ki => ({ name: sc.keyCols[ki].name, expr: P.ref(at(R.cols[ki])) })), [
+      { name: 'n', fn: 'count0', arg: int(1), extra: { t: 'int' }, t: 'int' },
+      { name: 'zeros', fn: 'count0', arg: when([[isBlank(v2), int(1)]], ir.lit(null, 'int'), 'int'), extra: { t: 'int' }, t: 'int' },
+      { name: 'ahead', fn: x.dense ? 'dcount0' : 'count0', arg: when([[ahead0(v2), x.dense ? v2 : int(1)]], ir.lit(null, x.dense ? v2.t : 'int'), x.dense ? v2.t : 'int'), extra: { t: 'int' }, t: 'int' },
+    ]);
+    const gk = G.cols.slice(0, others.length), [gn, gz, ga] = G.cols.slice(others.length).map(P.ref);
+    kb.joins.push(others.length
+      ? { kind: 'left', rel: G, on: P.and(others.map((ki, j) => P.key(P.ref(gk[j]), refs.get(ki)))) }
+      : { kind: 'cross', rel: G, on: null });
+    // |ALL(T[c])|.
+    const c3 = clone(vals);
+    const N = P.aggregate(c3.rel, [], [{ name: 'n_all', fn: 'count0', arg: int(1), extra: { t: 'int' }, t: 'int' }]);
+    kb.joins.push({ kind: 'cross', rel: N, on: null });
+    const blanks = P.sub(P.ref(N.cols[0]), P.coalesce(gn, int(0)));
+    const r = when([[inAll, rIn]], rAll, 'int');
+    const more = x.dense
+      ? when([[P.and([blankAhead(v), P.cmp('gt', blanks, int(0)), P.eq(P.coalesce(gz, int(0)), int(0))]), int(1)]], int(0), 'int')
+      : when([[blankAhead(v), blanks]], int(0), 'int');
+    return when([[P.notNull(v), P.add(r, more)]], P.add(int(1), P.coalesce(ga, int(0))), 'int');
   }
 
   // An aggregate: over its table's rows, for each row of `blk` (an apply), or GROUPBY's.

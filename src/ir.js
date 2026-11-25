@@ -299,6 +299,7 @@ export function freeRows(x) {
     case 'generate': add(x.left); add(x.right); bound.add(x.lrow.id); break;
     case 'sc': add(x.ctx0 && { k: 'scan', ctx: x.ctx0 }); x.levels.forEach(l => l.items.forEach(i => add(i.expr))); bound.add(x.keyRow.id); break;
     case 'currentgroup': break;
+    case 'rankw': add(x.fallback); break;
     case 'onerow': x.vals.forEach(add); add(x.cond); break;
     case 'window': case 'wrank':
       add(x.rel); x.order.forEach(o => add(o.expr)); x.parts.forEach(add); x.match.forEach(m => add(m.val)); add(x.unbound?.table);

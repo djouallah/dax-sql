@@ -90,18 +90,29 @@ function dateAdd(c, args, env, ast) {
   const { col, visible } = datesOf(c, args[0], env, ast.fn);
   const n = ast.fn === 'SAMEPERIODLASTYEAR' ? ir.lit(-1) : c.scalar(args[1], env);
   const unit = ast.fn === 'SAMEPERIODLASTYEAR' ? 'year' : unitArg(args[2], 'DATEADD');
-  const vrow = ir.rowOf(visible, 'table'), v = ir.col(vrow, 0);
-  const moved = ir.project(visible, vrow, [{ name: col.name, expr: shift(v, n, unit), lineage: col, t: 'datetime' }]);
-  return dates(c, col, env, a => {
-    let p = { k: 'insub', e: [a], src: moved, t: 'bool', nn: true };
-    if (unit === 'month' || unit === 'quarter' || unit === 'year') {
-      const erow = ir.rowOf(visible, 'table'), e = ir.col(erow, 0), to = shift(e, n, unit);
-      const dayBefore = { k: 'insub', e: [shift(e, -1, 'day')], src: visible, t: 'bool', nn: true };
-      const tail = ir.exists(ir.filter(visible, erow, and(ir.op('eq', e, endOf(e, 'month')), dayBefore, ir.op('gt', a, to), ir.op('le', a, endOf(to, 'month')))));
-      p = ir.op('or', p, tail);
-    }
-    return p;
-  });
+  // Built from the visible dates (a few for each group), not by testing every date of the
+  // column against them (for each group, every date: SQL that grows with the date table).
+  const all = ir.values(col.table, new Ctx([], env.ctx.mods), [col], (t, x) => c.scan(t, x));
+  const out = [];
+  // Each visible date moved, where the column has it.
+  const vrow = ir.rowOf(visible, 'table');
+  const moved = ir.project(visible, vrow, [{ name: col.name, expr: shift(ir.col(vrow, 0), n, unit), lineage: col, t: 'datetime' }]);
+  const mrow = ir.rowOf(moved, 'table');
+  out.push(ir.filter(moved, mrow, { k: 'insub', e: [ir.col(mrow, 0)], src: all, t: 'bool', nn: true }));
+  if (unit === 'month' || unit === 'quarter' || unit === 'year') {
+    // The rest of the moved month after the moved end of a month whose day before is visible:
+    // for each such end, the column's dates after it to the end of its month.
+    const erow = ir.rowOf(visible, 'table'), e = ir.col(erow, 0);
+    const ends = ir.filter(visible, erow, and(ir.op('eq', e, endOf(e, 'month')), { k: 'insub', e: [shift(e, -1, 'day')], src: visible, t: 'bool', nn: true }));
+    const lrow = ir.rowOf(ends, 'table'), to = shift(ir.col(lrow, 0), n, unit);
+    const arow = ir.rowOf(all, 'table'), d = ir.col(arow, 0);
+    const right = ir.filter(all, arow, and(ir.op('gt', d, to), ir.op('le', d, endOf(to, 'month'))));
+    const gen = { k: 'generate', left: ends, lrow, right, outer: false, cols: [...ends.cols, ...right.cols], base: null };
+    const grow = ir.rowOf(gen, 'table');
+    out.push(ir.project(gen, grow, [{ name: col.name, expr: ir.col(grow, 1), lineage: col, t: 'datetime' }]));
+  }
+  const cols = [{ name: col.name, lineage: col, t: 'datetime' }];
+  return ir.distinct(out.length === 1 ? out[0] : { k: 'union', srcs: out, cols, base: null });
 }
 
 function parallelPeriod(c, args, env) {

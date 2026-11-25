@@ -1,4 +1,8 @@
 {
+ "check-average-fixed-decimal-half": {
+  "hash": "6f708d960f78f4cb79fb08d7bb14cb4edda9a011",
+  "error": "Query (4, 92) The syntax for '<ccon>item</ccon>' is incorrect. (<ccon>// note: AVERAGE of a fixed decimal column whose exact average is a half at its fifth place (8 sales each: 242.02875, 409.59125, 609.76125): how Power BI rounds it to four places (half away from zero, to even, or a double's), and AVERAGEX, and SUM / COUNT"
+ },
  "check-rows-catalog-page": {
   "hash": "86e43b4db9f09b85aa877db4ed3a8afa247e8a97",
   "columns": [

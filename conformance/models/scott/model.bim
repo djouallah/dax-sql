@@ -3,7 +3,6 @@
   "compatibilityLevel": 1604,
   "model": {
     "culture": "en-US",
-    "discourageImplicitMeasures": true,
     "defaultPowerBIDataSourceVersion": "powerBI_V3",
     "description": "The SCOTT schema with dataset-scoped metrics",
     "tables": [
@@ -285,26 +284,22 @@
           {
             "name": "ename",
             "dataType": "string",
-            "sourceColumn": "ename",
-            "isKey": true
+            "sourceColumn": "ename"
           },
           {
             "name": "job",
             "dataType": "string",
-            "sourceColumn": "job",
-            "isKey": true
+            "sourceColumn": "job"
           },
           {
             "name": "sal",
             "dataType": "decimal",
-            "sourceColumn": "sal",
-            "isKey": true
+            "sourceColumn": "sal"
           },
           {
             "name": "comm",
             "dataType": "decimal",
-            "sourceColumn": "comm",
-            "isKey": true
+            "sourceColumn": "comm"
           }
         ],
         "partitions": [
@@ -315,6 +310,12 @@
               "entityName": "bonus",
               "schemaName": "scott"
             }
+          }
+        ],
+        "annotations": [
+          {
+            "name": "PrimaryKey",
+            "value": "[\"ename\",\"job\",\"sal\",\"comm\"]"
           }
         ],
         "measures": [

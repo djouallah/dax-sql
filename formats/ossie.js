@@ -38,6 +38,8 @@ const VENDOR = 'POWER_BI';
 // in its dialect, word for word: COUNT stays COUNT, a CASE a CASE, ANSI_SQL ANSI_SQL. Changed
 // since (in Power BI, say), it is translated.
 const OSSIE = 'Ossie';
+// A table's key of several columns (Power BI's isKey is of one), as a JSON list of their names.
+export const PRIMARY_KEY = 'PrimaryKey';
 function fromOssie(ms) {
   const a = (ms.annotations ?? []).find(x => x.name === OSSIE);
   try { return a ? JSON.parse(a.value) : null; } catch { return null; }
@@ -63,6 +65,12 @@ const pick = (o, keep, when = v => v != null) => Object.fromEntries(keep.filter(
 const NOISE = new Set(['lineageTag', 'sourceLineageTag', 'annotations', 'changedProperties', 'modifiedTime', 'structureModifiedTime', 'refreshedTime']);
 const clean = v => (Array.isArray(v) ? v.map(clean)
   : v && typeof v === 'object' ? Object.fromEntries(Object.entries(v).filter(([k]) => !NOISE.has(k)).map(([k, x]) => [k, clean(x)])) : v);
+
+// A table's key: its column whose isKey is set, or the columns its PrimaryKey annotation names.
+const primaryKey = t => {
+  const note = (t.annotations ?? []).find(a => a.name === PRIMARY_KEY);
+  return note ? JSON.parse(note.value) : (t.columns ?? []).filter(c => c.isKey === true).map(c => c.name);
+};
 
 const isData = c => !c.type || c.type === 'data';
 const entity = t => {
@@ -198,7 +206,7 @@ export function tmslToOssie(bim, name = 'model', { source = () => null } = {}) {
   if (defaults.expressionSource) expressionsUsed.add(defaults.expressionSource);
   const datasets = m.tables.map(t => {
     const s = t.partitions?.[0]?.source;
-    const keys = (t.columns ?? []).filter(c => c.isKey === true).map(c => c.name);
+    const keys = primaryKey(t);
     const left = {};
     if (t.isHidden === true) left.isHidden = true;
     if (t.dataCategory === 'Time') left.dataCategory = 'Time';
@@ -318,18 +326,22 @@ export function ossieToTmsl(doc, { onSkip = () => {} } = {}) {
       const col = tmsl({ name: f.name, description: f.description, dataType: TO_TMSL[f.datatype], ...def }, {});
       return [tmsl({
         ...col,
-        ...(keys.has(f.name) ? { isKey: true } : {}),
+        // A key of one column is the column's isKey; Power BI has no key of several (a table's
+        // annotation PrimaryKey says it, for dax-sql and the way back).
+        ...(keys.size === 1 && keys.has(f.name) ? { isKey: true } : {}),
         ...(same ? {} : { annotations: [{ name: OSSIE, value: JSON.stringify({ expression: f.expression, as: readAs(col) }) }] }),
       }, e)];
     });
     const partition = { name: d.name, ...(own.mode ? { mode: own.mode } : {}),
       source: tmsl({ type: 'entity', entityName, schemaName: schema, expressionSource: own.expressionSource }, {}) };
+    const keyNote = keys.size > 1 ? [{ name: PRIMARY_KEY, value: JSON.stringify([...keys]) }] : [];
     return tmsl({
       name: d.name,
       description: d.description,
       columns,
       ...(extra.partitions ? {} : { partitions: [partition] }),
-    }, extra);
+      ...(keyNote.length ? { annotations: [...(extra.annotations ?? []), ...keyNote] } : {}),
+    }, keyNote.length ? Object.fromEntries(Object.entries(extra).filter(([k]) => k !== 'annotations')) : extra);
   });
   const byName = new Map(tables.map(t => [t.name.toLowerCase(), t]));
   const place = (m, table, code, dataset) => {
@@ -358,10 +370,12 @@ export function ossieToTmsl(doc, { onSkip = () => {} } = {}) {
     if (r.from_columns.length !== 1 || r.to_columns.length !== 1) throw new Error(`relationship '${r.name}': TMSL joins one column`);
     return tmsl({ name: r.name, fromTable: r.from, fromColumn: r.from_columns[0], toTable: r.to, toColumn: r.to_columns[0] }, powerBi(r));
   });
+  // A Power BI model (V3), which Power BI imports from JSON, unless the extension says otherwise.
   return tmsl({
     name: doc.name,
+    compatibilityLevel: 1604,
     ...docExtra,
-    model: tmsl({ description: doc.description, tables, relationships }, modelExtra),
+    model: tmsl({ culture: 'en-US', defaultPowerBIDataSourceVersion: 'powerBI_V3', description: doc.description, tables, relationships }, modelExtra),
   }, {});
 }
 

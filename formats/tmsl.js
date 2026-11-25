@@ -27,12 +27,14 @@ function table(t) {
   const s = t.partitions?.[0]?.source;
   if (s?.type === 'calculated') out.dax = text(s.expression);
   else if (s?.type === 'entity' || s?.entityName) out.source = { schema: s.schemaName ?? null, entity: s.entityName };
+  // A key of several columns: Ossie's (formats/ossie.js), its names in the table's PrimaryKey.
+  const keyOf = JSON.parse((t.annotations ?? []).find(x => x.name === 'PrimaryKey')?.value ?? '[]');
   out.columns = (t.columns ?? []).filter(c => c.type !== 'rowNumber').map(c => ({
     name: c.name,
     type: TYPES[c.dataType] ?? 'variant',
     source: c.sourceColumn ?? c.name,
     ...(c.type === 'calculated' ? { dax: text(c.expression) } : {}),
-    key: !!c.isKey,
+    key: !!c.isKey || keyOf.includes(c.name),
     nullable: c.isNullable !== false,
     ...(c.dataCategory ? { dataCategory: c.dataCategory } : {}),
     // Power BI marks the fields column of a field parameter in its extended properties.

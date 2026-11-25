@@ -26,10 +26,7 @@ const read = p => readFileSync(p, 'utf8').replace(/\r\n/g, '\n');
 
 const doc = parse(read(join(src, 'scott', 'scott_model.ossie.yaml')));
 doc.relationships = doc.relationships.filter(r => r.from !== r.to);
-const tmsl = ossieToTmsl(doc, { onSkip: s => console.log('skipped', s) });
-// A Power BI model (V3, as the other models of the suite): Power BI imports no other from JSON.
-const bim = { name: 'dax-conformance-scott', compatibilityLevel: 1604,
-  model: { culture: 'en-US', discourageImplicitMeasures: true, defaultPowerBIDataSourceVersion: 'powerBI_V3', ...tmsl.model } };
+const bim = { ...ossieToTmsl(doc, { onSkip: s => console.log('skipped', s) }), name: 'dax-conformance-scott' };
 const dir = join(root, 'models', 'scott');
 rmSync(dir, { recursive: true, force: true });
 mkdirSync(join(dir, 'data'), { recursive: true });

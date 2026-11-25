@@ -13,6 +13,7 @@
 import { copyFileSync, existsSync, mkdirSync, rmSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
+import { dirname } from 'node:path';
 
 const args = process.argv.slice(2);
 const md = args.indexOf('--model-dir'), modelDir = md >= 0 ? args.splice(md, 2)[1] : null;
@@ -41,6 +42,7 @@ const tables = {
       cs_ext_sales_price, cs_list_price, cs_net_profit FROM catalog_sales`,
 };
 
+mkdirSync(dirname(out), { recursive: true });
 for (const f of [out, `${out}.wal`]) if (existsSync(f)) rmSync(f);
 const con = await (await DuckDBInstance.create(out)).connect();
 const t0 = Date.now();

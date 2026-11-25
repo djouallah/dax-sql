@@ -13,6 +13,18 @@ import time
 
 from datafusion import SessionContext
 
+# DATAFUSION_MEMORY (bytes): DataFusion's memory pool (spilling, then failing the query that needs
+# more), so that a query too big for the machine fails alone (tools/tpcds/scale-engine.mjs at SF1);
+# none: DataFusion's own (unbounded).
+MEMORY = int(os.environ.get('DATAFUSION_MEMORY') or 0)
+
+
+def context():
+    if not MEMORY:
+        return SessionContext()
+    from datafusion import RuntimeEnvBuilder, SessionConfig
+    return SessionContext(SessionConfig(), RuntimeEnvBuilder().with_fair_spill_pool(MEMORY).with_disk_manager_os())
+
 
 def value(v):
     if isinstance(v, datetime.datetime):
@@ -59,7 +71,7 @@ def main():
         try:
             m = q['model']
             if m not in contexts:
-                ctx = SessionContext()
+                ctx = context()
                 for name, path in jobs['models'][m].items():
                     # Quoted: DataFusion lowercases a name that is not (the SQL reads "Sales").
                     ctx.register_parquet('"' + name.replace('"', '""') + '"', path)

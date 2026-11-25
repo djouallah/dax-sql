@@ -96,6 +96,7 @@ jobs:
           DATAFUSION_PYTHON: python
           POLARS_TIMEOUT_MS: "120000"
           DATAFUSION_TIMEOUT: "120"
+          DATAFUSION_MEMORY: "6000000000"
           NODE_OPTIONS: --max-old-space-size=6144
         run: |
           node conformance/tools/tpcds/scale-engine.mjs --adapter "${{ matrix.adapter }}" --label "${{ matrix.engine }}"             --model-dir "$RUNNER_TEMP/sf1" --answers "$RUNNER_TEMP/duck/answers.json" --report "$RUNNER_TEMP/${{ matrix.engine }}.json"

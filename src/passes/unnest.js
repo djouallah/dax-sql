@@ -323,7 +323,12 @@ class Unnest {
         // inner or cross join's row has its F' from the side that has it, or from its condition.
         let b = this.push(r.right, ctx);
         let a = this.push(r.left, ctx);
-        if (r.kind === 'left') a = this.need(a, ctx.F.filter(f => b.dc.has(f) && !a.dc.has(f)), ctx);
+        // An inner join's left takes them too when D of its F' and the right's is one part of L (L's
+        // own combinations: each group's (first, last) dates beside its keys), so that the right is
+        // matched on them, not crossed with every group's (tpcds fuzz3-0139: each sale with every
+        // group's PARALLELPERIOD dates, 441 million rows); of parts crossed, not.
+        const theirs = ctx.F.filter(f => b.dc.has(f) && !a.dc.has(f));
+        if (theirs.length && (r.kind === 'left' || this.onePart(ctx, [...ctx.F.filter(f => a.dc.has(f)), ...theirs]))) a = this.need(a, theirs, ctx);
         // An inner join's F = x (x a column of either side): F' is x, as a filter's (tpcds
         // fuzz2-0142: each sale's color and brand, k1 ≡ item.i_color in the ON, were F' of D, every
         // group's, crossed with TOTALYTD's dates: 19 million rows for 2.9 million sales).
@@ -384,6 +389,11 @@ class Unnest {
       }
     }
     throw new Error(`unnest: ${r.k} reading a row from outside it`);
+  }
+
+  // Whether D of cols is of one part of L (not parts crossed).
+  onePart(ctx, cols) {
+    return ctx.parts.filter(p => cols.some(f => p.map.has(f))).length === 1;
   }
 
   // An inner join's condition: its F = x (x a column of the join's rows) binding F' to x in by

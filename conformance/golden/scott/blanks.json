@@ -1,0 +1,324 @@
+{
+ "blanks-comm-filters": {
+  "hash": "de0b2b476d5200dfc65cb04c4dc42fc1366c70e1",
+  "columns": [
+   "[comm = 0]",
+   "[comm <> 300]",
+   "[comm = blank]",
+   "[not comm = 0]",
+   "[comm in {0, blank}]",
+   "[comm not in {300, 500}]",
+   "[comm 0 to 500]",
+   "[comm + 0 > 0]",
+   "[calculate comm = 0]",
+   "[calculate comm <> 300]"
+  ],
+  "rows": [
+   [
+    11,
+    13,
+    11,
+    3,
+    11,
+    12,
+    13,
+    3,
+    11,
+    13
+   ]
+  ]
+ },
+ "blanks-join-crossjoin-filter": {
+  "hash": "01c3929aaf2472b1ab5cb2a1f32f119362faf6d0",
+  "columns": [
+   "[pairs eq]",
+   "[pairs strict]",
+   "[blank pairs eq]"
+  ],
+  "rows": [
+   [
+    9,
+    9,
+    1
+   ]
+  ]
+ },
+ "blanks-join-generate-filter-eq": {
+  "hash": "8e37b2adb7187058d6fa2bc7d0272b6c2511074b",
+  "columns": [
+   "[ename]",
+   "[pname]"
+  ],
+  "rows": [
+   [
+    "ADAMS",
+    "TIGER"
+   ],
+   [
+    "FORD",
+    "FELIX"
+   ],
+   [
+    "FORD",
+    "OREO"
+   ],
+   [
+    "FORD",
+    "RUBY"
+   ],
+   [
+    "KING",
+    "TRAMP"
+   ],
+   [
+    "SCOTT",
+    "FELIX"
+   ],
+   [
+    "SCOTT",
+    "OREO"
+   ],
+   [
+    "SCOTT",
+    "RUBY"
+   ],
+   [
+    "SMITH",
+    "STEALTH"
+   ]
+  ]
+ },
+ "blanks-join-generate-filter-strict": {
+  "hash": "568394bed03d70852b056f37eab0df8d5ca9cf47",
+  "columns": [
+   "[ename]",
+   "[pname]"
+  ],
+  "rows": [
+   [
+    "ADAMS",
+    "TIGER"
+   ],
+   [
+    "FORD",
+    "FELIX"
+   ],
+   [
+    "FORD",
+    "OREO"
+   ],
+   [
+    "FORD",
+    "RUBY"
+   ],
+   [
+    "KING",
+    "TRAMP"
+   ],
+   [
+    "SCOTT",
+    "FELIX"
+   ],
+   [
+    "SCOTT",
+    "OREO"
+   ],
+   [
+    "SCOTT",
+    "RUBY"
+   ],
+   [
+    "SMITH",
+    "STEALTH"
+   ]
+  ]
+ },
+ "blanks-join-natural": {
+  "hash": "0a8216129757cc2815e81d7831b2576e93caba32",
+  "columns": [
+   "[k]",
+   "[ename]",
+   "[pname]"
+  ],
+  "rows": [
+   [
+    7839,
+    "JONES",
+    "REX"
+   ],
+   [
+    null,
+    "KING",
+    "TRAMP"
+   ]
+  ]
+ },
+ "blanks-membership": {
+  "hash": "d3817e7683564033f894a47f63578cdd808027ca",
+  "columns": [
+   "[owner in managers]",
+   "[owner in {blank}]",
+   "[owner in {0}]",
+   "[containsrow blank]",
+   "[treatas blank]",
+   "[lookup blank manager]"
+  ],
+  "rows": [
+   [
+    6,
+    1,
+    null,
+    true,
+    1,
+    "KING"
+   ]
+  ]
+ },
+ "blanks-operators": {
+  "hash": "ee5a225e20f419583364841b5faf07d8e6479e17",
+  "columns": [
+   "[blank = 0]",
+   "[blank = empty]",
+   "[blank = blank]",
+   "[blank == 0]",
+   "[blank == blank]",
+   "[blank <> 0]",
+   "[blank < 1]",
+   "[blank > -1]",
+   "[blank + 1]",
+   "[1 - blank]",
+   "[blank + blank]",
+   "[blank * 2]",
+   "[blank / 2]",
+   "[blank & x]",
+   "[not blank]",
+   "[blank in {0}]",
+   "[blank in {blank}]",
+   "[mod blank 3]",
+   "[if blank]"
+  ],
+  "rows": [
+   [
+    true,
+    true,
+    true,
+    false,
+    true,
+    false,
+    true,
+    true,
+    1,
+    1,
+    null,
+    null,
+    null,
+    "x",
+    true,
+    false,
+    true,
+    null,
+    "false"
+   ]
+  ]
+ },
+ "blanks-related": {
+  "hash": "e5a9eb989b80de04093cfc9f37585e4617ce2872",
+  "columns": [
+   "[pname]",
+   "[owner]",
+   "[dept]"
+  ],
+  "rows": [
+   [
+    "FELIX",
+    "JONES",
+    "RESEARCH"
+   ],
+   [
+    "HAMMY",
+    "ADAMS",
+    "RESEARCH"
+   ],
+   [
+    "OREO",
+    "JONES",
+    "RESEARCH"
+   ],
+   [
+    "RUBY",
+    "JONES",
+    "RESEARCH"
+   ],
+   [
+    "SNOOPY",
+    "ALLEN",
+    "SALES"
+   ],
+   [
+    "STEALTH",
+    "FORD",
+    "RESEARCH"
+   ],
+   [
+    "TIGER",
+    "SCOTT",
+    "RESEARCH"
+   ],
+   [
+    "TRAMP",
+    null,
+    null
+   ]
+  ]
+ },
+ "blanks-relationship": {
+  "hash": "33ff9a5521e913348faf504c5eb4ef92ed5c4733",
+  "columns": [
+   "emp[ename]",
+   "[pets]"
+  ],
+  "rows": [
+   [
+    null,
+    1
+   ],
+   [
+    "ADAMS",
+    1
+   ],
+   [
+    "ALLEN",
+    1
+   ],
+   [
+    "FORD",
+    1
+   ],
+   [
+    "JONES",
+    3
+   ],
+   [
+    "SCOTT",
+    1
+   ]
+  ]
+ },
+ "blanks-set-operations": {
+  "hash": "32a894c0dd27f46862311665e362cc14d10cb562",
+  "columns": [
+   "[intersect]",
+   "[intersect blank]",
+   "[except]",
+   "[except blank]"
+  ],
+  "rows": [
+   [
+    5,
+    1,
+    2,
+    null
+   ]
+  ]
+ }
+}

@@ -3,7 +3,7 @@
 // answer held to the same query through the plan unnested (passes/unnest.js: no correlated
 // subquery left), a second SQL of the same plan that DuckDB runs another way.
 //   node tools/tpcds/scale-run.mjs <sf.duckdb> [--timeout 120] [--grep regex] [--no-agree] [--report out.json] [--gate]
-//   [--answers out.json]
+//   [--answers out.json] [--max-rows 100000]
 // --answers: each query's answer as a count of rows and a hash of them (as norm() writes them), for
 // another engine's to be held to (tools/tpcds/scale-engine.mjs).
 // --gate (.github/workflows/scale.yml, a release gate): fails when a query fails or times out on
@@ -24,6 +24,7 @@ const timeout = Number(opt('--timeout', 120)) * 1000;
 const grep = opt('--grep', null);
 const report = opt('--report', null);
 const agree = !flag('--no-agree');
+const maxRows = Number(opt('--max-rows', 100000));
 const gate = flag('--gate');
 const answersFile = opt('--answers', null);
 const answers = {};
@@ -33,7 +34,7 @@ if (!file) throw new Error('usage: scale-run.mjs <sf.duckdb> [--timeout 120] [--
 const root = new URL('../../../', import.meta.url);
 const e = await engine(root.pathname.replace(/^\/([A-Za-z]:)/, '$1'));
 const require = createRequire(new URL('package.json', root));
-const { DuckDBInstance } = require('@duckdb/node-api');
+const { DuckDBInstance, JSDuckDBValueConverter } = require('@duckdb/node-api');
 const con = await (await DuckDBInstance.create(file, { access_mode: 'READ_ONLY' })).connect();
 const db = await e.database(join(modelDir('tpcds'), 'model.bim'), null, con);
 const compilers = new Map();
@@ -43,12 +44,21 @@ const compiler = roles => {
   return compilers.get(k);
 };
 
+// A query's answer streamed: its rows counted, kept while there are --max-rows at most (at SF10 an
+// answer of 28 million rows is no answer to hold in memory, nor one another engine is held to).
 async function run(sql) {
   const timer = setTimeout(() => con.interrupt(), timeout);
   const t0 = performance.now();
   try {
-    const rows = (await con.runAndReadAll(sql)).getRowsJS().map(r => r.map(value));
-    return { ms: performance.now() - t0, rows };
+    const result = await con.stream(sql);
+    let n = 0, rows = [];
+    for (let ch; (ch = await result.fetchChunk()) && ch.rowCount;) {
+      n += ch.rowCount;
+      if (n > maxRows) { rows = null; continue; }
+      const cols = ch.convertColumns(JSDuckDBValueConverter);
+      for (let i = 0; i < ch.rowCount; i++) rows.push(cols.map(c => value(c[i])));
+    }
+    return { ms: performance.now() - t0, n, rows };
   } catch (err) {
     const ms = performance.now() - t0;
     return { ms, error: ms >= timeout - 50 ? `timeout (${timeout / 1000} s)` : err.message.split('\n')[0] };
@@ -69,14 +79,14 @@ for (const q of queries) {
   const a = await run(sql);
   r.ms = Math.round(a.ms); r.bytes = sql.length;
   if (a.error) { r.error = a.error; console.log(`error ${r.id}: ${a.error}`); continue; }
-  r.rows = a.rows.length;
-  if (answersFile) answers[r.id] = { rows: a.rows.length, hash: createHash('sha1').update(norm(a.rows).join('\n')).digest('hex') };
+  r.rows = a.n;
+  if (answersFile && a.rows) answers[r.id] = { rows: a.n, hash: createHash('sha1').update(norm(a.rows).join('\n')).digest('hex') };
   if (r.ms > 2000) console.log(`slow ${r.id}: ${r.ms} ms`);
   if (agree) {
     const b = await run(compiler(q.roles).planSql(q.dax, { unnest: true }).sql);
     r.unnestMs = Math.round(b.ms);
     if (b.error) r.unnestError = b.error;
-    else if (!same(a.rows, b.rows)) r.differs = true;
+    else if (a.rows && b.rows && !same(a.rows, b.rows)) r.differs = true;
   }
   if (results.length % 100 === 0) console.log(`… ${results.length}/${queries.length}, ${((performance.now() - t0) / 1000).toFixed(0)} s`);
 }

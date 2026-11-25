@@ -1861,6 +1861,20 @@
    ]
   ]
  },
+ "filters-topn-blank-ranks-against-negative": {
+  "hash": "ba77bc4ea8127125724c7c9f9dc5caa6a46e3076",
+  "columns": [
+   "[v]"
+  ],
+  "rows": [
+   [
+    null
+   ],
+   [
+    5
+   ]
+  ]
+ },
  "filters-treatas-store-key-empty-vs-blank": {
   "hash": "1c5e095ead8dce80ea91d6d5abf42435d2306b20",
   "columns": [

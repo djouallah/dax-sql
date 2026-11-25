@@ -1237,6 +1237,23 @@
   "hash": "6e84f24ef1882bb15af2d7c12ca114c8e1e439ab",
   "error": "Query (5, 5) Function 'GROUPBY' scalar expressions have to be Aggregation functions over CurrentGroup(). The expression of each Aggregation has to be either a constant or directly reference the columns in CurrentGroup()."
  },
+ "iterators-if-fixed-decimal-branch-times-double": {
+  "hash": "854ff2c6aa9af5106a2acf326e7934d8ebec1c58",
+  "columns": [
+   "Date[Year]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    2023,
+    0.0
+   ],
+   [
+    2024,
+    -309.2592
+   ]
+  ]
+ },
  "iterators-offset-previous-month-empty-months": {
   "hash": "c9fbbfaffeddcc1c269de0ce874e0e9f5ed63580",
   "columns": [

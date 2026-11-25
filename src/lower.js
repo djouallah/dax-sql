@@ -1110,7 +1110,11 @@ class Fusion {
       const free = reads(f);
       for (const id of free) if (id !== kid) return null;
       if (!free.size) continue;
-      const refs = [...ir.rowRefs(f, kid)];
+      // The keys whose values change the filter's rows: not one only a scan's filter reads that
+      // reaches no table of that scan (TOTALYTD's dates under a group's color: the date table's,
+      // whatever the color, so the mapping is of the quarter's dates, not each group's).
+      const all = [...ir.rowRefs(f, kid)], used = keysThatFilter(f, kid, lw.model);
+      const refs = used.size ? all.filter(i => used.has(i)) : all;
       if (refs.every(i => keys.has(i))) { readsKeys = true; continue; }
       // The column the mapping is on: the filter's one column, or the key of the one table whose
       // columns it holds (FILTER(ALL('Date'), ...): the key says which row).
@@ -1351,6 +1355,30 @@ function blankFails(x) {
 
 // Whether each row of table x is of one row of each model table its columns come from: the rows
 // of a scan, filtered, projected, distinct, grouped (SUMMARIZE), ordered, or a variable of those.
+// The keys of key row kid that x (an IR table, a filter) reads where they decide its rows: a
+// read in a scan's filter counts only when that filter reaches the scan's table (one on a table
+// that filters no table of the scan is idle there).
+function keysThatFilter(x, kid, model) {
+  const out = new Set(), seen = new Set();
+  const walk = y => {
+    if (!y || typeof y !== 'object' || seen.has(y)) return;
+    seen.add(y);
+    if (Array.isArray(y)) { y.forEach(walk); return; }
+    if (y.k === 'col' && y.row?.id === kid) { out.add(y.ref); return; }
+    for (const [k, v] of Object.entries(y)) {
+      if (k === 'row' || k === 'lrow' || k === 'cols' || k === 'table' || k === 'base' || k === 'lineage') continue;
+      if (k === 'ctx' && v?.filters) {
+        const state = y.k === 'scan' ? model.state(v.mods) : null;
+        for (const g of v.filters) if (!state || g.cols.some(c => model.reaches(c.table, y.table, state))) walk(g);
+        continue;
+      }
+      walk(v);
+    }
+  };
+  walk(x);
+  return out;
+}
+
 function ownRows(x) {
   if (!x) return false;
   if (x.k === 'scan') return true;

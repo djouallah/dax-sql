@@ -311,17 +311,26 @@ class Unnest {
           const left = !has(r.right);
           let s = this.push(left ? r.left : r.right, ctx);
           const other = this.U(left ? r.right : r.left);
-          s = this.need(s, this.reads([r.on], ctx, s), ctx);
-          const on = r.on && this.S(r.on, s.dc);
-          return { ...s, rel: left ? P.join(r.kind, s.rel, other, on) : P.join(r.kind, other, s.rel, on) };
+          const by = { dc: new Map(s.dc), op: new Map(s.op) };
+          const rest = r.kind === 'left' ? r.on : this.bindOn(r.on, ctx, by);
+          s = this.need(s, this.reads([rest], ctx, by), ctx);
+          const dc = new Map([...by.dc, ...s.dc]), op = new Map([...by.op, ...s.op]);
+          const on = rest && this.S(rest, dc);
+          return { rel: left ? P.join(r.kind, s.rel, other, on) : P.join(r.kind, other, s.rel, on), dc, op };
         }
-        // Both (or the right of a left join): R' of each, the left with every F' the right has,
-        // matched.
+        // Both (or the right of a left join): R' of each, matched on the F' both have. A left join's
+        // left takes every F' the right has (from D: its rows for each value, matched or not); an
+        // inner or cross join's row has its F' from the side that has it, or from its condition.
         let b = this.push(r.right, ctx);
         let a = this.push(r.left, ctx);
-        a = this.need(a, ctx.F.filter(f => b.dc.has(f) && !a.dc.has(f)), ctx);
-        a = this.need(a, this.reads([r.on], ctx, { dc: new Map([...b.dc, ...a.dc]) }), ctx);
-        const dc = new Map([...b.dc, ...a.dc]), op = new Map([...b.op, ...a.op]);
+        if (r.kind === 'left') a = this.need(a, ctx.F.filter(f => b.dc.has(f) && !a.dc.has(f)), ctx);
+        // An inner join's F = x (x a column of either side): F' is x, as a filter's (tpcds
+        // fuzz2-0142: each sale's color and brand, k1 ≡ item.i_color in the ON, were F' of D, every
+        // group's, crossed with TOTALYTD's dates: 19 million rows for 2.9 million sales).
+        const by = { dc: new Map([...b.dc, ...a.dc]), op: new Map([...b.op, ...a.op]) };
+        const rest = r.kind === 'left' ? r.on : this.bindOn(r.on, ctx, by);
+        a = this.need(a, this.reads([rest], ctx, by), ctx);
+        const dc = new Map([...by.dc, ...b.dc, ...a.dc]), op = new Map([...by.op, ...b.op, ...a.op]);
         const eqs = [];
         for (const f of ctx.F) {
           if (!a.dc.has(f) || !b.dc.has(f)) continue;
@@ -329,7 +338,7 @@ class Unnest {
           op.set(f, m);
           eqs.push((m === 'eq' ? P.eq : P.key)(P.ref(a.dc.get(f)), P.ref(b.dc.get(f))));
         }
-        const own = r.on ? [this.S(r.on, dc)] : [];
+        const own = rest ? [this.S(rest, dc)] : [];
         return { rel: P.join(r.kind === 'cross' ? 'inner' : r.kind, a.rel, b.rel, AND([...own, ...eqs])), dc, op };
       }
       case 'apply': {
@@ -375,6 +384,18 @@ class Unnest {
       }
     }
     throw new Error(`unnest: ${r.k} reading a row from outside it`);
+  }
+
+  // An inner join's condition: its F = x (x a column of the join's rows) binding F' to x in by
+  // (as a filter's do: no D for F); the rest, or null.
+  bindOn(on, ctx, by) {
+    if (!on) return on;
+    const rest = [];
+    for (const c of conjuncts(on)) {
+      const b = bind(subst(c, by.dc), ctx.F, by.dc);
+      if (b && b.x.k === 'ref') { by.dc.set(b.f, b.x.col); by.op.set(b.f, b.m); } else rest.push(c);
+    }
+    return rest.length ? P.and(rest) : null;
   }
 
   // F' carried through a projection or a grouping: columns of its own.

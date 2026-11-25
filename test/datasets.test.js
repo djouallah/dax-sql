@@ -1,9 +1,12 @@
-// SQL over a model's datasets (Apache Ossie's Relational Query Interface) follows SQL's rules,
-// not DAX's. Each query here is checked against plain SQL over the same tables, written by hand
-// as spec Section 9 says it means. CI checks far more against Ossie's view expander
+// SQL over a model's datasets (Apache Ossie's Relational Query Interface): its relations, joins
+// and groups are SQL's, its blanks DAX's, as everywhere in dax-sql (BLANK + 1 is 1, a blank
+// compares as 0 or "", IN matches a blank with a blank only). Each query here is checked against
+// plain SQL over the same tables, written by hand as spec Section 9 says it means; where a blank
+// makes DAX's answer differ from SQL's, `differs` checks DAX's (the blanks written out in the SQL)
+// and that SQL's is another. CI checks far more against Ossie's view expander
 // (formats/test/ossie-expand.mjs); these are the cases it found, kept here so that `npm test`
 // holds them without Python or an Ossie checkout:
-//   - NOT of a comparison with NULL is not true; NULL + 1 is NULL; NULLIF; WHERE FALSE;
+//   - where dax-sql differs from SQL: a blank compared, added, in IN, LIKE and ||; NULLIF; WHERE FALSE;
 //   - a COUNT metric is 0 over no rows inside an expression and in HAVING, NULLIF(COUNT(..), 0)
 //     is not, and an expression makes no group of its own;
 //   - one LEFT JOIN many, grouped by the one side's key: the many side's measure is the group's;
@@ -84,21 +87,31 @@ async function same(query, reference) {
   const [got, want] = [await rowsOf(sql), await rowsOf(reference)];
   assert.deepEqual(got.map(key).sort(), want.map(key).sort(), `${query}\n--- SQL\n${sql}`);
 }
+// Where dax-sql differs from SQL: the query's rows are DAX's (`daxRef`, plain SQL with the blanks
+// written out as DAX has them), not SQL's (`sqlRef`, the same query as SQL means it).
+async function differs(query, sqlRef, daxRef) {
+  await same(query, daxRef);
+  const { sql } = dax.compile(query);
+  const [got, sqlRows] = [await rowsOf(sql), await rowsOf(sqlRef)];
+  assert.notDeepEqual(got.map(key).sort(), sqlRows.map(key).sort(), `${query}: SQL's answer, not DAX's`);
+}
 
-test('NOT of a comparison with NULL is not true', async () => {
+// A blank compares as 0, so NOT (comm = 0) leaves out the NULL commissions too (SQL: NOT of
+// unknown is unknown, which leaves them out as well; with OR and AND around it, not).
+test('differs from SQL: a blank in a comparison is 0', async () => {
   await same('SELECT AGG(emp_count) AS n FROM m.emp WHERE NOT (comm = 0)',
-    'SELECT COUNT(*) FROM s.emp WHERE NOT (comm = 0)');
-  await same("SELECT job, AGG(sum_sal) AS s FROM m.emp WHERE NOT (comm = 0 OR job = 'CLERK') GROUP BY job",
-    "SELECT job, SUM(sal) FROM s.emp WHERE NOT (comm = 0 OR job = 'CLERK') GROUP BY job");
-  await same("SELECT job, AGG(sum_sal) AS s FROM m.emp WHERE NOT (comm = 0 AND job = 'CLERK') GROUP BY job",
-    "SELECT job, SUM(sal) FROM s.emp WHERE NOT (comm = 0 AND job = 'CLERK') GROUP BY job");
+    'SELECT COUNT(*) FROM s.emp WHERE NOT (COALESCE(comm, 0) = 0)');
+  await differs('SELECT AGG(emp_count) AS n FROM m.emp WHERE comm = 0',
+    'SELECT COUNT(*) FROM s.emp WHERE comm = 0', 'SELECT COUNT(*) FROM s.emp WHERE COALESCE(comm, 0) = 0');
+  await differs("SELECT job, AGG(sum_sal) AS s FROM m.emp WHERE NOT (comm > 0 AND job = 'CLERK') GROUP BY job",
+    "SELECT job, SUM(sal) FROM s.emp WHERE NOT (comm > 0 AND job = 'CLERK') GROUP BY job",
+    "SELECT job, SUM(sal) FROM s.emp WHERE NOT (COALESCE(comm, 0) > 0 AND job = 'CLERK') GROUP BY job");
 });
-
-test('NULL + 1 is NULL, and so are NULL - 1 and 1 / NULL', async () => {
-  await same('SELECT job, AGG(sum_comm) + 1 AS a, AGG(sum_comm) - 1 AS b, 1 / AGG(sum_comm) AS c FROM m.emp GROUP BY job',
-    'SELECT job, SUM(comm) + 1, SUM(comm) - 1, 1 / SUM(comm) FROM s.emp GROUP BY job');
+test('differs from SQL: BLANK + 1 is 1, BLANK - 1 is -1 (blank only when both are)', async () => {
+  await differs('SELECT job, AGG(sum_comm) + 1 AS a, AGG(sum_comm) - 1 AS b FROM m.emp GROUP BY job',
+    'SELECT job, SUM(comm) + 1, SUM(comm) - 1 FROM s.emp GROUP BY job',
+    'SELECT job, COALESCE(SUM(comm), 0) + 1, COALESCE(SUM(comm), 0) - 1 FROM s.emp GROUP BY job');
 });
-
 test('NULLIF, and WHERE FALSE', async () => {
   await same('SELECT job, NULLIF(AGG(comm_count), 0) AS a FROM m.emp GROUP BY job',
     'SELECT job, NULLIF(COUNT(comm), 0) FROM s.emp GROUP BY job');
@@ -155,34 +168,54 @@ test("a fixed decimal: SQL's AVG and division are not rounded, ROUND(.., 4) is",
   assert.equal(sql('SUMX(T, T[x] * T[n])'), 'SUM(x * n)');
 });
 
-test("SQL's NULLs: = NULL, <> NULL and NOT IN a list with a NULL keep no row", async () => {
-  for (const c of ['comm = NULL', 'comm <> NULL', 'comm NOT IN (0, NULL)', 'comm IN (0, NULL)', 'NOT (comm IN (300, NULL))',
-    'NOT (comm NOT IN (300, 500))', 'comm NOT IN (300, 500)', 'comm BETWEEN NULL AND 500', 'NOT (comm + NULL > 0)'])
-    await same(`SELECT AGG(emp_count) AS n FROM m.emp WHERE ${c}`, `SELECT COUNT(*) FROM s.emp WHERE ${c}`);
+// = NULL is = BLANK(), which 0 meets too; IN matches a blank with a blank only (DAX's ==).
+test('differs from SQL: a NULL in a condition is a blank', async () => {
+  const is = v => `comm IS NOT DISTINCT FROM ${v}`;
+  for (const [c, ref] of [
+    ['comm = NULL', 'COALESCE(comm, 0) = 0'], ['comm <> NULL', 'COALESCE(comm, 0) <> 0'],
+    ['comm NOT IN (0, NULL)', `NOT (${is(0)} OR comm IS NULL)`], ['comm IN (0, NULL)', `${is(0)} OR comm IS NULL`],
+    ['NOT (comm IN (300, NULL))', `NOT (${is(300)} OR comm IS NULL)`],
+    ['comm NOT IN (300, 500)', `NOT (${is(300)} OR ${is(500)})`], ['comm BETWEEN NULL AND 500', 'COALESCE(comm, 0) BETWEEN 0 AND 500'],
+    ['NOT (comm + NULL > 0)', 'NOT (COALESCE(comm, 0) > 0)']])
+    await differs(`SELECT AGG(emp_count) AS n FROM m.emp WHERE ${c}`, `SELECT COUNT(*) FROM s.emp WHERE ${c}`, `SELECT COUNT(*) FROM s.emp WHERE ${ref}`);
+  // The same both ways: no blank among the values compared.
+  await same('SELECT AGG(emp_count) AS n FROM m.emp WHERE NOT (comm NOT IN (300, 500))',
+    'SELECT COUNT(*) FROM s.emp WHERE NOT (comm NOT IN (300, 500))');
 });
-
-test('LIKE and NOT LIKE leave out NULLs', async () => {
+// A blank text is "": LIKE 'a%' does not hold of it, NOT LIKE does, LIKE '' does.
+test('differs from SQL: LIKE of a blank is LIKE of ""', async () => {
   for (const c of ["label NOT LIKE 'a%'", "NOT label LIKE 'a%'", "label LIKE '%%'", "label LIKE ''", "NOT (label LIKE '%b%')",
     "label NOT LIKE '%a'"])
-    await same(`SELECT AGG(events) AS n FROM m.ev WHERE ${c}`, `SELECT COUNT(*) FROM s.ev WHERE ${c}`);
+    await differs(`SELECT AGG(events) AS n FROM m.ev WHERE ${c}`, `SELECT COUNT(*) FROM s.ev WHERE ${c}`,
+      `SELECT COUNT(*) FROM s.ev WHERE ${c.replace('label', "COALESCE(label, '')")}`);
 });
-
-test('IN and NOT IN a subquery with a NULL in it', async () => {
-  for (const c of ['comm IN (SELECT comm FROM m.emp)', 'comm NOT IN (SELECT comm FROM m.emp)',
-    "comm NOT IN (SELECT comm FROM m.emp WHERE job = 'SALESMAN')", "NOT (comm IN (SELECT comm FROM m.emp WHERE job = 'SALESMAN'))",
-    "deptno NOT IN (SELECT deptno FROM m.dept WHERE dname = 'SALES')"])
-    await same(`SELECT AGG(emp_count) AS n FROM m.emp WHERE ${c}`, `SELECT COUNT(*) FROM s.emp WHERE ${c.replaceAll('m.', 's.')}`);
+// IN a subquery matches a blank with a blank only, so a NULL commission is IN one that has one.
+test('differs from SQL: IN a subquery matches a blank with a blank', async () => {
+  const within = (col, q) => `EXISTS (SELECT 1 FROM (${q}) AS q (v) WHERE q.v IS NOT DISTINCT FROM s.emp.${col})`;
+  for (const [c, col, q, not] of [
+    ['comm IN (SELECT comm FROM m.emp)', 'comm', 'SELECT comm FROM s.emp', false],
+    ["comm NOT IN (SELECT comm FROM m.emp WHERE job = 'SALESMAN')", 'comm', "SELECT comm FROM s.emp WHERE job = 'SALESMAN'", true],
+    ["NOT (comm IN (SELECT comm FROM m.emp WHERE job = 'SALESMAN'))", 'comm', "SELECT comm FROM s.emp WHERE job = 'SALESMAN'", true]])
+    await differs(`SELECT AGG(emp_count) AS n FROM m.emp WHERE ${c}`, `SELECT COUNT(*) FROM s.emp WHERE ${c.replaceAll('m.', 's.')}`,
+      `SELECT COUNT(*) FROM s.emp WHERE ${not ? 'NOT ' : ''}${within(col, q)}`);
+  // The same both ways: every commission is in the set (no row), and no blank among the deptnos.
+  await same('SELECT AGG(emp_count) AS n FROM m.emp WHERE comm NOT IN (SELECT comm FROM m.emp)',
+    'SELECT COUNT(*) FROM s.emp WHERE comm NOT IN (SELECT comm FROM s.emp)');
+  await same("SELECT AGG(emp_count) AS n FROM m.emp WHERE deptno NOT IN (SELECT deptno FROM m.dept WHERE dname = 'SALES')",
+    "SELECT COUNT(*) FROM s.emp WHERE deptno NOT IN (SELECT deptno FROM s.dept WHERE dname = 'SALES')");
 });
-
-test("CAST AS DATE drops the time; %, LOG(b, x), || and TRIM as SQL has them", async () => {
+test("CAST AS DATE drops the time; %, LOG(b, x) and TRIM as SQL has them; || of a blank differs from SQL", async () => {
   await same("SELECT AGG(events) AS n FROM m.ev WHERE CAST(ts AS DATE) = DATE '2024-01-02'",
     "SELECT COUNT(*) FROM s.ev WHERE CAST(ts AS DATE) = DATE '2024-01-02'");
   await same('SELECT CAST(ts AS DATE) AS d, AGG(events) AS n FROM m.ev GROUP BY CAST(ts AS DATE)',
     'SELECT CAST(ts AS DATE), COUNT(*) FROM s.ev GROUP BY 1');
-  await same('SELECT id, n % 3 AS r, LOG(2, id * 4) AS l, label || 1 + 2 AS t, AGG(events) AS c FROM m.ev GROUP BY ALL',
-    'SELECT id, n % 3, LOG(2, id * 4), label || 1 + 2, COUNT(*) FROM s.ev GROUP BY ALL');
-  await same("SELECT TRIM('  a   b  ' || label) AS t, AGG(events) AS n FROM m.ev GROUP BY ALL",
-    "SELECT TRIM('  a   b  ' || label), COUNT(*) FROM s.ev GROUP BY ALL");
+  // A blank in || is "" (DAX's &), where SQL's NULL || x is NULL; a blank % 3 is blank both ways.
+  await differs('SELECT id, n % 3 AS r, LOG(2, id * 4) AS l, label || 1 + 2 AS t, AGG(events) AS c FROM m.ev GROUP BY ALL',
+    'SELECT id, n % 3, LOG(2, id * 4), label || 1 + 2, COUNT(*) FROM s.ev GROUP BY ALL',
+    "SELECT id, n % 3, LOG(2, id * 4), COALESCE(label, '') || 1 + 2, COUNT(*) FROM s.ev GROUP BY ALL");
+  await differs("SELECT TRIM('  a   b  ' || label) AS t, AGG(events) AS n FROM m.ev GROUP BY ALL",
+    "SELECT TRIM('  a   b  ' || label), COUNT(*) FROM s.ev GROUP BY ALL",
+    "SELECT TRIM('  a   b  ' || COALESCE(label, '')), COUNT(*) FROM s.ev GROUP BY ALL");
 });
 
 test('over a join: FETCH WITH TIES; a subquery whose WHERE a RIGHT JOIN would pad', async () => {

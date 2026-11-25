@@ -541,11 +541,6 @@ function mapExpr(e, f) {
   }
 }
 const someExpr = (e, f) => !!e && (f(e) || kids(e).some(x => someExpr(x, f)));
-// An operand that can be NULL: one that is not a constant, or a constant with a NULL in it.
-const nullable = e => !isConstant(e) || someExpr(e, x => x.k === 'null');
-// x, where each operand of `pairs` ([SQL, DAX]) that can be NULL is not blank.
-const guard = (pairs, x) => [x, ...pairs.filter(([s]) => nullable(s)).map(([, d]) => D.not(D.call('ISBLANK', d)))]
-  .reduce((a, b) => D.bin('&&', a, b));
 // a % b: SQL's remainder has the sign of a, DAX's MOD the sign of b.
 const remainder = (a, b) => {
   const m = D.call('MOD', a, b);
@@ -632,9 +627,8 @@ export class SqlTranslator {
       if (hit) return hit;
     }
     const sub = x => this.dax(x, ctx);
-    // Over datasets, SQL's NULLs: a comparison with one is not true (DAX's blank equals blank,
-    // 0 and ""). Each operand that can be NULL is known not to be blank.
-    const known = (pairs, x) => this.sqlNulls ? guard(pairs, x) : x;
+    // A blank is DAX's, whatever the query is over (a model or its datasets): BLANK + 1 is 1, a
+    // blank compares as 0, "" or FALSE.
     const CMP = new Set(['=', '<>', '<', '<=', '>', '>=']);
     switch (e.k) {
       case 'num': return D.num(e.v);
@@ -649,32 +643,24 @@ export class SqlTranslator {
       }
       case 'name': return this.nameDax(e, ctx);
       case 'neg': return D.neg(sub(e.e));
-      case 'not': return this.sqlNulls ? this.falseDax(e.e, ctx) : D.not(sub(e.e));
+      case 'not': return D.not(sub(e.e));
       case 'bin': {
         const l = sub(e.l), r = sub(e.r);
-        if (CMP.has(e.op)) return known([[e.l, l], [e.r, r]], D.bin(e.op, l, r));
-        const x = e.op === '%' ? remainder(l, r) : D.bin({ AND: '&&', OR: '||', '||': '&' }[e.op] ?? e.op, l, r);
-        // Over datasets, SQL's NULLs: NULL + 1 is NULL (DAX's BLANK + 1 is 1), and so are
-        // NULL - 1, 1 / NULL, NULL % 2 and NULL || 'a'.
-        if (this.sqlNulls && ['+', '-', '/', '%', '||'].includes(e.op)) {
-          const blanks = [[e.l, l], [e.r, r]].filter(([s]) => nullable(s)).map(([, d]) => D.call('ISBLANK', d));
-          if (blanks.length) return D.call('IF', blanks.reduce((a, b) => D.bin('||', a, b)), D.call('BLANK'), x);
-        }
-        return x;
+        if (CMP.has(e.op)) return D.bin(e.op, l, r);
+        return e.op === '%' ? remainder(l, r) : D.bin({ AND: '&&', OR: '||', '||': '&' }[e.op] ?? e.op, l, r);
       }
       case 'isnull': return e.not ? D.not(D.call('ISBLANK', sub(e.e))) : D.call('ISBLANK', sub(e.e));
       case 'in': {
-        if (this.sqlNulls) return this.inList(e, ctx, true);
         const x = D.in(sub(e.e), e.list.map(sub));
         return e.not ? D.not(x) : x;
       }
       case 'between': {
         const x = sub(e.e), lo = sub(e.lo), hi = sub(e.hi), b = D.bin('&&', D.bin('>=', x, lo), D.bin('<=', x, hi));
-        return known([[e.e, x], [e.lo, lo], [e.hi, hi]], e.not ? D.not(b) : b);
+        return e.not ? D.not(b) : b;
       }
       case 'like': {
         const { x, c } = this.like(e, ctx);
-        return known([[e.e, x]], e.not ? D.not(c) : c);
+        return e.not ? D.not(c) : c;
       }
       case 'case': {
         const parts = e.whens.flatMap(([w, t]) => [sub(w), sub(t)]);
@@ -705,7 +691,6 @@ export class SqlTranslator {
         return D.let(sq.captures.map(x => [x.name, D.col(x.col)]), D.call('CALCULATE', v, D.call('REMOVEFILTERS')));
       }
       case 'insub': {
-        if (this.sqlNulls) return this.inSubquery(e, ctx, true);
         const x = { k: 'in', e: sub(e.e), set: this.inSet(e) };
         return e.not ? D.not(x) : x;
       }
@@ -733,42 +718,7 @@ export class SqlTranslator {
     throw sqlUnsupported(e.src);
   }
 
-  // Over datasets, where a condition is false, not unknown: NOT of it is true there only (SQL's
-  // NOT of a comparison with a NULL is not true either).
-  falseDax(e, ctx) {
-    const sub = x => this.dax(x, ctx);
-    const known = guard;
-    const NEG = { '=': '<>', '<>': '=', '<': '>=', '<=': '>', '>': '<=', '>=': '<' };
-    switch (e.k) {
-      case 'not': return sub(e.e);
-      case 'bool': return D.call(e.v ? 'FALSE' : 'TRUE');
-      case 'null': return D.call('FALSE');
-      case 'isnull': return e.not ? D.call('ISBLANK', sub(e.e)) : D.not(D.call('ISBLANK', sub(e.e)));
-      case 'bin':
-        if (e.op === 'AND') return D.bin('||', this.falseDax(e.l, ctx), this.falseDax(e.r, ctx));
-        if (e.op === 'OR') return D.bin('&&', this.falseDax(e.l, ctx), this.falseDax(e.r, ctx));
-        if (NEG[e.op]) {
-          const l = sub(e.l), r = sub(e.r);
-          return known([[e.l, l], [e.r, r]], D.bin(NEG[e.op], l, r));
-        }
-        break;
-      case 'in': return this.inList(e, ctx, false);
-      case 'insub': return this.inSubquery(e, ctx, false);
-      case 'between': {
-        const x = sub(e.e), lo = sub(e.lo), hi = sub(e.hi), b = D.bin('&&', D.bin('>=', x, lo), D.bin('<=', x, hi));
-        return known([[e.e, x], [e.lo, lo], [e.hi, hi]], e.not ? b : D.not(b));
-      }
-      case 'like': {
-        const { x, c } = this.like(e, ctx);
-        return known([[e.e, x]], e.not ? c : D.not(c));
-      }
-    }
-    // Anything else: false where it is neither true nor blank.
-    const x = sub(e);
-    return D.bin('&&', D.not(x), D.not(D.call('ISBLANK', x)));
-  }
-
-  // x [NOT] LIKE 'pattern': the value, and the condition on it whether it is blank or not.
+  // x [NOT] LIKE 'pattern': the value, and the condition on it.
   like(e, ctx) {
     if (e.pat.k !== 'str') throw sqlUnsupported('LIKE with a pattern that is not a constant');
     const p = e.pat.v, inner = p.replace(/^%/, '').replace(/%$/, '');
@@ -780,22 +730,6 @@ export class SqlTranslator {
     return { x, c };
   }
 
-  // Over datasets, x [NOT] IN (a, b, ...) where it is true (`holds`) or where it is false, with
-  // SQL's NULLs: IN is true where x is one of the members (a NULL x is none of them), and false
-  // where x and every member are known and x is none of them. NOT IN the other way round.
-  inList(e, ctx, holds) {
-    const v = this.dax(e.e, ctx), list = e.list.map(x => this.dax(x, ctx)), x = D.in(v, list);
-    const member = guard([[e.e, v]], x), none = guard([[e.e, v], ...e.list.map((s, i) => [s, list[i]])], D.not(x));
-    return holds !== !!e.not ? member : none;
-  }
-  // x [NOT] IN (SELECT ...) the same way: false where x is known and neither x nor a NULL is in
-  // the subquery's rows.
-  inSubquery(e, ctx, holds) {
-    const v = this.dax(e.e, ctx), set = this.inSet(e);
-    const member = guard([[e.e, v]], { k: 'in', e: v, set });
-    const none = guard([[e.e, v]], D.bin('&&', D.not({ k: 'in', e: v, set }), D.not({ k: 'in', e: D.call('BLANK'), set })));
-    return holds !== !!e.not ? member : none;
-  }
   inSet(e) {
     const sq = this.subquery(e.q, { distinct: true });
     if (sq.names.length !== 1) throw sqlSemantic(`IN (SELECT ...) has one column: ${e.src}`);
@@ -966,7 +900,6 @@ export class SqlTranslator {
     }
     const t = Object.create(this);
     t.scope = { rels };
-    t.sqlNulls = true;
     // A join's filters: each subquery's rows, on the columns its ON matches them to (of one
     // relation).
     const filters = semis.map(s => {

@@ -1,0 +1,2 @@
+// note: an IF whose branches are a fixed decimal and a decimal number, times a decimal number, inline (not a measure): its type
+EVALUATE SUMMARIZECOLUMNS('Date'[Year], "v", IF([Lines] > 0, MIN('Target'[Target]), [Sales Amount]) * 1.2345678)

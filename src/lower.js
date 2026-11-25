@@ -1341,7 +1341,8 @@ function mayBeBlank(x, i) {
       if (e?.k === 'col' && e.row === x.row) return mayBeBlank(x.src, typeof e.ref === 'number' ? e.ref : x.src.cols.findIndex(c => c.lineage === e.ref));
       return !e?.nn;
     }
-    case 'scan': return !(x.cols[i]?.lineage?.table === x.table);
+    // A column of its own table's rows: blank where the column holds blanks (a stored NULL).
+    case 'scan': { const c = x.cols[i]?.lineage; return !(c?.table === x.table) || mayHoldNull(c); }
     case 'union': case 'intersect': case 'except': return x.srcs.some(y => mayBeBlank(y, i));
   }
   return true;

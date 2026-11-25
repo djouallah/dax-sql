@@ -1,0 +1,2 @@
+// note: TOPN by a value that is blank in one row and negative in another: where the blank ranks
+EVALUATE TOPN(2, SELECTCOLUMNS({ 5, BLANK(), -2 }, "v", [Value]), [v], DESC)

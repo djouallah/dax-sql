@@ -117,10 +117,15 @@ function medianX(c, args, env) {
   return ir.agg('pctx_inc', src, row, arg, 'double', [ir.lit(0.5)]);
 }
 
-// The average of fixed decimals (currency) is one, rounded to four places.
+// The average of fixed decimals (currency) is one: their sum over their count, the exact quotient
+// rounded to four places, half away from zero (ir.op's fixed decimal over a whole number), as
+// Power BI has it (tpcds check-average-fixed-decimal-half: 409.59125 is 409.5913), not a double's
+// average rounded, which falls short of a half or not as its last bit does (DuckDB and Polars at
+// SF1 parted on 79 groups of tpcds fuzz-0013 so).
 const average = make => (c, args, env) => {
   const x = make('avg', dbl)(c, args, env);
-  return x.arg.t === 'decimal' ? ir.currency(x) : x;
+  if (x.arg.t !== 'decimal') return x;
+  return ir.op('div', { ...x, fn: 'sum', t: 'decimal' }, { ...x, fn: 'count', t: 'int' });
 };
 
 // --- the filter context ----------------------------------------------------------------

@@ -31,8 +31,9 @@ Nothing here blocks a release. DAX on DuckDB has nothing left; T-SQL is the last
 # The query plan
 
 - What the old emitter read off a level's groups the plan scans again: a total over what is selected
-  (`DIVIDE([m], CALCULATE([m], ALLSELECTED(t)))` next to the groups), and a subtotal level beside a
-  measure with a filter of its own (two scans of the fact where the emitter wrote one).
+  (`DIVIDE([m], CALCULATE([m], ALLSELECTED(t)))` next to the groups), and a subtotal level: its
+  aggregates scan the fact again, not read off the detail level's groups (two scans where the
+  emitter wrote one; one only beside a double's AVERAGE, which a fixed decimal's no longer is).
 
 `DAX → query plan → optimizer (every engine) → Substrait → engine passes (only what one needs) → SQL`.
 

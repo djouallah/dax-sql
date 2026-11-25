@@ -77,10 +77,10 @@ test('errors carry their codes', async () => {
 
 test('the SQL keeps its shape', async () => {
   const hc = await harness(bim, setup);
-  // A subtotal level's aggregates read the detail level's group: one scan of the sales. (A
-  // total over what is selected read off the groups is not yet the plan's: TODO.md.)
+  // A subtotal level scans the sales again, the detail level's groups not read off (TODO.md, the
+  // query plan); no more than that: one scan for each level.
   const scans = dax => hc.dax.compile(dax).sql.match(/FROM "Sales" AS t/g).length;
-  assert.equal(scans(`EVALUATE SUMMARIZECOLUMNS(Customer[City], ROLLUPADDISSUBTOTAL(Product[Color], "t"), "s", [Sales Amount], "a", AVERAGE(Sales[Amount]))`), 1);
+  assert.equal(scans(`EVALUATE SUMMARIZECOLUMNS(Customer[City], ROLLUPADDISSUBTOTAL(Product[Color], "t"), "s", [Sales Amount], "a", AVERAGE(Sales[Amount]))`), 2);
   // Aggregates by the same keys whose filters differ on a joined table: one scan, a FILTER each.
   const red = `EVALUATE SUMMARIZECOLUMNS(Customer[City], "r", CALCULATE([Sales Amount], Product[Color] = "Red"), "b", CALCULATE([Sales Amount], Product[Color] = "Blue"))`;
   assert.equal(scans(red), 1);

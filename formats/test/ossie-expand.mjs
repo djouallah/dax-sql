@@ -20,6 +20,9 @@
 //     (a GAPS entry no query hits must leave the list);
 //   blank row: by design (README, no blank row), the rows but an outer join's group of facts
 //     whose key the dimension lacks;
+//   blank rule: by design (README: DAX's blanks, whatever the language), other rows where a NULL
+//     is in play (the query reads a field that holds one, or the expander's rows have one): a
+//     blank compared as 0 or "", BLANK + 1 is 1, x / BLANK() infinite, a blank key meeting one;
 //   skipped: the expander cannot expand the query (its own limits) or its SQL does not run.
 // --report: every query, its outcome and both SQLs, as JSON. --only: one model.
 // --python: the command that runs Python with the expander importable (default: uv run --quiet
@@ -347,12 +350,17 @@ for (const [i, m] of models().entries()) {
     results.push({ model: m.label, id: `${m.label}: the model`, template: 'model', sql: '', outcome: 'gap', detail: e.message.split('\n')[0] });
     continue;
   }
-  loaded.push({ m, con, dax, doc, queries: grid(doc.name, sh, 1000 + i), expanderYaml: forExpander(doc, sh) });
+  // The fields that hold a NULL: where the query reads one, DAX's blanks may answer otherwise.
+  const nullable = sh.datasets.flatMap(d => d.fields.filter(f => f.nulls > 0).map(f => f.name.toLowerCase()));
+  loaded.push({ m, con, dax, doc, nullable, queries: grid(doc.name, sh, 1000 + i), expanderYaml: forExpander(doc, sh) });
 }
 const requests = loaded.flatMap(({ doc, expanderYaml, queries }) => [{ model: doc.name, yaml: expanderYaml }, ...queries.map(q => ({ sql: q.sql }))]);
 const answers = expandAll(requests);
 let at = 0;
-for (const { m, con, dax, doc, queries } of loaded) {
+// Whether a NULL is in play: the query names a field that holds one, or a row of the expander's has one.
+const reads = sql => new Set([...sql.matchAll(/"((?:[^"]|"")+)"|([A-Za-z_][A-Za-z0-9_]*)/g)].map(m => (m[1] ?? m[2]).replace(/""/g, '"').toLowerCase()));
+const nullInPlay = (sql, nullable, want) => { const names = reads(sql); return nullable.some(n => names.has(n)) || want.rows.some(row => row.some(v => v === null || v === undefined)); };
+for (const { m, con, dax, doc, nullable, queries } of loaded) {
   const def = answers[at++];
   for (const [k, q] of queries.entries()) {
     const ans = answers[at++];
@@ -376,6 +384,7 @@ for (const { m, con, dax, doc, queries } of loaded) {
         const kept = { ...want, rows: want.rows.filter(w => !padded.every(i => w[i] === null || w[i] === undefined)) };
         if (kept.rows.length < want.rows.length && !compare(got, kept, ordered(q.sql))) Object.assign(r, { outcome: 'blank row', detail: diff });
       }
+      if (r.outcome === 'fail' && nullInPlay(q.sql, nullable, want)) Object.assign(r, { outcome: 'blank rule', detail: diff });
     } catch (e) {
       Object.assign(r, { outcome: 'gap', detail: `${e.code ? `${e.code}: ` : ''}${e.message.split('\n')[0]}` });
     }
@@ -398,11 +407,11 @@ for (const g of GAPS) if (!hit.has(g)) bad.push(`GAPS ${g.error} matches no quer
 const labels = [...new Set(results.map(r => r.model))];
 const count = (rs, o) => rs.filter(r => r.outcome === o).length;
 const summary = [
-  `### dax-sql against Ossie's view expander: ${count(results, 'match')} of ${results.length - count(results, 'skipped')} match (${count(results, 'blank row')} no blank row, by design; ${count(results, 'skipped')} the expander does not answer)`, '',
-  '| model | queries | match | fail | gap | blank row | skipped |', '|---|---|---|---|---|---|---|',
-  ...labels.map(l => { const rs = results.filter(r => r.model === l); return `| ${l} | ${rs.length} | ${count(rs, 'match')} | ${count(rs, 'fail')} | ${count(rs, 'gap')} | ${count(rs, 'blank row')} | ${count(rs, 'skipped')} |`; }),
-  '', '| template | match | fail | gap | blank row | skipped |', '|---|---|---|---|---|---|',
-  ...[...new Set(results.map(r => r.template))].map(t => { const rs = results.filter(r => r.template === t); return `| ${t} | ${count(rs, 'match')} | ${count(rs, 'fail')} | ${count(rs, 'gap')} | ${count(rs, 'blank row')} | ${count(rs, 'skipped')} |`; }),
+  `### dax-sql against Ossie's view expander: ${count(results, 'match')} of ${results.length - count(results, 'skipped')} match (${count(results, 'blank row')} no blank row and ${count(results, 'blank rule')} DAX's blanks, by design; ${count(results, 'skipped')} the expander does not answer)`, '',
+  '| model | queries | match | fail | gap | blank row | blank rule | skipped |', '|---|---|---|---|---|---|---|---|',
+  ...labels.map(l => { const rs = results.filter(r => r.model === l); return `| ${l} | ${rs.length} | ${count(rs, 'match')} | ${count(rs, 'fail')} | ${count(rs, 'gap')} | ${count(rs, 'blank row')} | ${count(rs, 'blank rule')} | ${count(rs, 'skipped')} |`; }),
+  '', '| template | match | fail | gap | blank row | blank rule | skipped |', '|---|---|---|---|---|---|---|',
+  ...[...new Set(results.map(r => r.template))].map(t => { const rs = results.filter(r => r.template === t); return `| ${t} | ${count(rs, 'match')} | ${count(rs, 'fail')} | ${count(rs, 'gap')} | ${count(rs, 'blank row')} | ${count(rs, 'blank rule')} | ${count(rs, 'skipped')} |`; }),
   '',
 ].join('\n');
 console.log(summary);

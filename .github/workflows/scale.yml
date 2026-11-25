@@ -2,13 +2,17 @@ name: Scale
 
 # The tpcds queries of the suite on TPC-DS at a scale factor (conformance/tools/tpcds/scale.mjs,
 # DuckDB's dsdgen in the model's shape: SF1, 2.9 million store sales and 1.4 million catalog
-# sales; SF10 ten times that), each compiled and run on DuckDB (tools/tpcds/scale-run.mjs): the SQL
-# as it behaves on real volumes, which the suite's small data never shows. It fails when a query
-# fails or takes more than the timeout, or the compiler refuses one Power BI answers: on a push
-# and a release (publish.yml) at SF1, 120 s each. Polars and DataFusion run the same queries on the
-# same data, each answer held to DuckDB's (tools/tpcds/scale-engine.mjs; answers of more than
-# 100,000 rows left out): a measure, not a gate; DataFusion on a push and a release, Polars by hand. By hand: the scale factor, the timeout and the
-# engines are inputs.
+# sales; SF10 ten times that), on each engine, for the SQL as it behaves on real volumes and the
+# engines' times side by side:
+#   data     the tables (a DuckDB file and a model folder of CSVs, cached by scale factor) and
+#            DuckDB's answers, each a count of rows and a hash (tools/tpcds/scale-run.mjs
+#            --answers), every engine's answer held to them;
+#   engines  each engine on the same data, a job of its own: DuckDB (tools/tpcds/scale-run.mjs
+#            --gate, the release gate: a query that fails, takes more than the timeout, or is
+#            refused where Power BI answers it fails it), DataFusion, and Polars by hand
+#            (tools/tpcds/scale-engine.mjs, answers of more than 100,000 rows left out), not gates;
+#   compare  the engines' times and answers in one table (tools/tpcds/scale-compare.mjs).
+# On a push and a release (publish.yml): SF1, 120 s, DuckDB and DataFusion.
 
 on:
   push:
@@ -46,9 +50,9 @@ permissions:
   contents: read
 
 jobs:
-  duckdb:
+  data:
     runs-on: ubuntu-latest
-    timeout-minutes: 300
+    timeout-minutes: 120
     steps:
       # Named, so that called from another workflow it still checks out this repository.
       - uses: actions/checkout@v4
@@ -59,33 +63,35 @@ jobs:
           node-version: "24"
           cache: npm
       - run: npm ci --no-audit --no-fund
-      - name: TPC-DS at SF${{ env.SF }}
-        run: node conformance/tools/tpcds/scale.mjs "$SF" "$RUNNER_TEMP/tpcds.duckdb"
-      - name: The tpcds queries at SF${{ env.SF }} on DuckDB
-        run: |
-          node conformance/tools/tpcds/scale-run.mjs "$RUNNER_TEMP/tpcds.duckdb" --no-agree --timeout "$TIMEOUT" \
-            --gate --report "$RUNNER_TEMP/duckdb.json" --answers "$RUNNER_TEMP/answers.json"
-      - uses: actions/upload-artifact@v4
-        if: always()
+      - name: The tables, cached
+        id: cache
+        uses: actions/cache@v4
         with:
-          name: duckdb
-          path: |
-            ${{ runner.temp }}/duckdb.json
-            ${{ runner.temp }}/answers.json
+          path: ${{ runner.temp }}/tpcds
+          key: tpcds-sf${{ env.SF }}-${{ hashFiles('conformance/tools/tpcds/scale.mjs', 'conformance/models/tpcds/model.bim') }}
+      - name: TPC-DS at SF${{ env.SF }}
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: node conformance/tools/tpcds/scale.mjs "$SF" "$RUNNER_TEMP/tpcds/tpcds.duckdb" --model-dir "$RUNNER_TEMP/tpcds/model"
+      - name: DuckDB's answers
+        run: |
+          node conformance/tools/tpcds/scale-run.mjs "$RUNNER_TEMP/tpcds/tpcds.duckdb" --no-agree --timeout "$TIMEOUT" \
+            --answers "$RUNNER_TEMP/answers.json"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: answers
+          path: ${{ runner.temp }}/answers.json
 
-  # The other engines: the tables again (dsdgen is deterministic) as a model folder, each engine's
-  # adapter as the suite's, DuckDB's answers from the job above.
   engines:
-    needs: duckdb
-    if: ${{ always() && inputs.engines != 'duckdb only' }}
-    continue-on-error: true
+    needs: data
     runs-on: ubuntu-latest
     timeout-minutes: 300
+    # DuckDB's job is the gate; the others are a measure.
+    continue-on-error: ${{ matrix.engine != 'duckdb' }}
     strategy:
       fail-fast: false
       matrix:
-        # Polars by hand only (its SF1 run takes most of half an hour): a push and a release, DataFusion.
-        engine: ${{ fromJSON(inputs.engines == 'polars' && '["polars"]' || inputs.engines == 'polars and datafusion' && '["polars","datafusion"]' || '["datafusion"]') }}
+        # Polars by hand only (its SF1 run takes most of half an hour).
+        engine: ${{ fromJSON(inputs.engines == 'duckdb only' && '["duckdb"]' || inputs.engines == 'polars' && '["duckdb","polars"]' || inputs.engines == 'polars and datafusion' && '["duckdb","datafusion","polars"]' || '["duckdb","datafusion"]') }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -96,6 +102,7 @@ jobs:
           cache: npm
       - run: npm ci --no-audit --no-fund
       - uses: actions/setup-python@v5
+        if: matrix.engine != 'duckdb'
         with:
           python-version: "3.12"
       - name: Polars 2.2.0
@@ -104,13 +111,23 @@ jobs:
       - name: DataFusion
         if: matrix.engine == 'datafusion'
         run: pip install -q -r conformance/engines/dax-sql-datafusion/requirements.txt
+      - name: The tables
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ runner.temp }}/tpcds
+          key: tpcds-sf${{ env.SF }}-${{ hashFiles('conformance/tools/tpcds/scale.mjs', 'conformance/models/tpcds/model.bim') }}
+          fail-on-cache-miss: true
       - uses: actions/download-artifact@v4
         with:
-          name: duckdb
+          name: answers
           path: ${{ runner.temp }}/duck
-      - name: TPC-DS at SF${{ env.SF }}, as a model folder
-        run: node conformance/tools/tpcds/scale.mjs "$SF" "$RUNNER_TEMP/tpcds.duckdb" --model-dir "$RUNNER_TEMP/tpcds"
+      - name: The tpcds queries at SF${{ env.SF }} on DuckDB
+        if: matrix.engine == 'duckdb'
+        run: |
+          node conformance/tools/tpcds/scale-run.mjs "$RUNNER_TEMP/tpcds/tpcds.duckdb" --no-agree --timeout "$TIMEOUT" \
+            --gate --report "$RUNNER_TEMP/duckdb.json"
       - name: The tpcds queries at SF${{ env.SF }} on ${{ matrix.engine }}
+        if: matrix.engine != 'duckdb'
         env:
           PY: python
           DATAFUSION_PYTHON: python
@@ -119,10 +136,29 @@ jobs:
         run: |
           export POLARS_TIMEOUT_MS=$((TIMEOUT * 1000)) DATAFUSION_TIMEOUT=$TIMEOUT
           node conformance/tools/tpcds/scale-engine.mjs --adapter "node conformance/engines/dax-sql-${{ matrix.engine }}/adapter.mjs ." \
-            --label "${{ matrix.engine }}" --model-dir "$RUNNER_TEMP/tpcds" --answers "$RUNNER_TEMP/duck/answers.json" \
+            --label "${{ matrix.engine }}" --model-dir "$RUNNER_TEMP/tpcds/model" --answers "$RUNNER_TEMP/duck/answers.json" \
             --report "$RUNNER_TEMP/${{ matrix.engine }}.json"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: ${{ matrix.engine }}
+          name: report-${{ matrix.engine }}
           path: ${{ runner.temp }}/${{ matrix.engine }}.json
+
+  compare:
+    needs: engines
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: djouallah/dax-sql
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: report-*
+          merge-multiple: true
+          path: ${{ runner.temp }}/reports
+      - name: The engines side by side
+        run: node conformance/tools/tpcds/scale-compare.mjs "$RUNNER_TEMP/reports"

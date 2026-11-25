@@ -159,6 +159,5 @@
   {"id":"edges/fuzz3/fuzz3-0119","reason":"not supported yet: an inline IF of a fixed decimal and a decimal number, multiplied, keeps the branch's fixed decimal in Power BI (rounded to four places; a measure's IF is a decimal number)"},
   {"id":"edges/iterators/iterators-if-fixed-decimal-branch-times-double","reason":"not supported yet: an inline IF of a fixed decimal and a decimal number, multiplied, keeps the branch's fixed decimal in Power BI (rounded to four places; a measure's IF is a decimal number)"},
   {"id":"patterns/fuzz3/fuzz3-0007","reason":"not supported yet: SUMMARIZE's group filter under LASTNONBLANK of a CALCULATE: Power BI takes each product's last date with inventory in any year (context-summarize-year-lastnonblank-inventory)"},
-  {"id":"patterns/context/context-summarize-year-lastnonblank-inventory","reason":"not supported yet: SUMMARIZE's group filter under LASTNONBLANK of a CALCULATE: Power BI takes each product's last date with inventory in any year (its other two columns match)"},
-  {"id":"patterns/fuzz3/fuzz3-0006","reason":"slow: past the 30 s a query has on PostgreSQL (SUMMARIZE of a TOTALYTD and an INDEX per title and color: answered on DuckDB, T-SQL and Polars)"}
+  {"id":"patterns/context/context-summarize-year-lastnonblank-inventory","reason":"not supported yet: SUMMARIZE's group filter under LASTNONBLANK of a CALCULATE: Power BI takes each product's last date with inventory in any year (its other two columns match)"}
 ]

@@ -2,6 +2,20 @@
 
 Nothing here blocks a release. DAX on DuckDB has nothing left; T-SQL is the last wave.
 
+# DAX not supported yet (on the known lists, with their queries)
+
+- [ ] SUMMARIZE's group filter on a many-to-many column: Power BI filters by the tuple of the
+  groups, the plan by each column alone (edges `fuzz3-0063`, `fuzz3-0098`).
+- [ ] An inline IF of a fixed decimal and a decimal number, multiplied: Power BI keeps the branch's
+  fixed decimal (rounded to four places); a measure's IF is a decimal number. More probes first
+  (`iterators-if-fixed-decimal-branch-times-double`, edges `fuzz3-0119`).
+- [ ] SUMMARIZE's group filter under LASTNONBLANK of a CALCULATE: Power BI takes each product's
+  last date with inventory in any year (`context-summarize-year-lastnonblank-inventory`,
+  patterns `fuzz3-0007`).
+- [ ] A value of two kinds typed per row (DuckDB's VARIANT), not text: Power BI keeps each row's
+  number a number (the 4 variant-as-text queries).
+- [ ] A value of two kinds compared with a number (contoso `fuzz3-0104`).
+
 # Wave 2: T-SQL
 
 - **The unnested plan on Fabric** (`tsql.yml`'s second step): the queries the compiled SQL takes

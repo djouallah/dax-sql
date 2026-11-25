@@ -305,7 +305,10 @@ unnest. It is a second decorrelation, beside the optimizer's, and is top down (N
 A correlated EXISTS is a count of its rows (> 0). Each apply, from the top, has its right pushed
 down operator by operator. A condition `F = x` binds the outer column F to the rows' own x, with
 no D. Where nothing binds F, D = δ(π_F L) is joined in at the operator that reads it, on the
-condition when that is a range. A grouping of no key is grouped by F and left-joined from L, a
+condition when that is a range. D is read off the relations inside L that have its values; a
+join with columns of F on both sides is read itself, not its sides' values crossed: those are
+their sizes multiplied (1,097 dates × 16 titles × 47 colors × 4 currencies, where the rows had
+some thousands, took PostgreSQL past 5 minutes). A grouping of no key is grouped by F and left-joined from L, a
 count over no rows 0. An apply inside the right is pushed into its left and unnested there, its
 D carrying the columns of every level. Nothing stays an apply. Then joins, outer joins, fusion,
 sharing, inlining, renames and pruning. CI holds it to the contract (`operators.mjs`) and runs

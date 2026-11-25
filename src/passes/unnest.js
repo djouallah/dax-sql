@@ -367,12 +367,14 @@ function bind(c, F, dc) {
 // The relations inside L with L's distinct values of F, or more, crossed: down a projection
 // that passes them on, a distinct, a window, a grouping by them, a filter (its rows' values and
 // more), the side of a join that has them (a left join's left keeps each of its rows; an inner
-// join's side has its values and maybe more), both sides of an inner or cross join that each has
-// some (a cross join's values are its sides' crossed; an inner join's, some of them), a
-// definition's rows. More values than L's are no harm: each row R' has for a value L has not is
+// join's side has its values and maybe more), both sides of a cross join no filter is over (its
+// values are its sides' crossed), a definition's rows. A join with values of F on both sides is
+// a part itself. More values than L's are no harm: each row R' has for a value L has not is
 // dropped by the join to L. [{ rel, map: F -> its column there }].
 function domain(L, F) {
-  const walk = (r, map) => {
+  // filtered: below a filter, whose rows a cross join's sides crossed are not (a σ over × is a
+  // join the joins pass has not made yet).
+  const walk = (r, map, filtered = false) => {
     for (;;) {
       const cols = [...map.values()];
       const through = (src, m) => (cols.every(c => src.cols.includes(m.get(c) ?? c)) ? { src, m } : null);
@@ -380,16 +382,21 @@ function domain(L, F) {
       if (r.k === 'project' || r.k === 'aggregate') {
         const by = new Map((r.k === 'project' ? r.items : r.keys).map(i => [i.col, i.expr]));
         if (cols.every(c => by.get(c)?.k === 'ref')) next = through(r.src, new Map(cols.map(c => [c, by.get(c).col])));
-      } else if (r.k === 'distinct' || r.k === 'window' || r.k === 'select') next = through(r.src, new Map());
-      else if (r.k === 'join') {
+      } else if (r.k === 'distinct' || r.k === 'window' || r.k === 'select') {
+        next = through(r.src, new Map());
+        if (r.k === 'select') filtered = true;
+      } else if (r.k === 'join') {
         next = through(r.left, new Map()) ?? (r.kind === 'left' ? null : through(r.right, new Map()));
         if (!next) {
           const side = rel => new Map([...map].filter(([, c]) => rel.cols.includes(c)));
           const a = side(r.left), b = side(r.right);
           // A left join's right: its values, and a blank (a left row it has none for).
-          const right = r.kind === 'left' ? walk(r.right, b).map(p => ({ ...p, blank: true })) : null;
+          const right = r.kind === 'left' ? walk(r.right, b, filtered).map(p => ({ ...p, blank: true })) : null;
           if (!a.size && right) return right;
-          if (a.size && b.size && a.size + b.size === map.size) return [...walk(r.left, a), ...(right ?? walk(r.right, b))];
+          // Values of both sides: the join's own (each side's crossed are as many as their sizes
+          // multiplied: 1,097 dates × 16 titles × 47 colors × 4 currencies where the rows have
+          // some thousands), but a cross join's, which are its sides' crossed.
+          if (r.kind === 'cross' && !filtered && a.size && b.size && a.size + b.size === map.size) return [...walk(r.left, a), ...walk(r.right, b)];
         }
       } else if (r.k === 'shared') next = through(r.def.rel, new Map(r.cols.map((c, i) => [c, r.picks[i]])));
       if (!next) return [{ rel: r, map }];

@@ -1383,7 +1383,9 @@ export class SqlTranslator {
 
     // ORDER BY: a SELECT item (its name, its position, or the same expression), or an
     // aggregate on the result's rows.
-    const outRef = it => it.col && !it.renamed ? D.col(it.col) : D.ref(it.name);
+    // Under the SELECTCOLUMNS that names the result's columns, a column is its name there: the
+    // model column is not one of the result's (Power BI: "a single value ... cannot be determined").
+    const outRef = it => (same && it.col && !it.renamed ? D.col(it.col) : D.ref(it.name));
     // ORDER BY ALL: by every item's position.
     const orderBy = q.orderAll
       ? items.map((_, i) => ({ e: { k: 'num', v: String(i + 1), src: String(i + 1) }, ...q.orderAll }))

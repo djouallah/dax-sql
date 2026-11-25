@@ -1,3 +1,3 @@
 // note: Apache Ossie query compliance B20 (b20_having_on_one_side_measure.ost): HAVING on a "one"-side measure that the join fans out. As dax-sql's SQL front end writes its SQL in DAX:
 // SELECT e.job, AGG(d.dept_count) AS dept_count FROM scott_model.emp AS e JOIN scott_model.dept AS d ON e.deptno = d.deptno GROUP BY e.job HAVING AGG(d.dept_count) > 1 ORDER BY e.job
-EVALUATE SELECTCOLUMNS(CALCULATETABLE(FILTER(SUMMARIZECOLUMNS('emp'[job], "__rows", COUNTROWS(emp), "dept_count", CALCULATE('dept'[dept_count], emp)), (COALESCE([dept_count], 0) > 1)), NOT(ISBLANK('dept'[deptno]))), "job", 'emp'[job], "dept_count", COALESCE([dept_count], 0)) ORDER BY 'emp'[job]
+EVALUATE SELECTCOLUMNS(CALCULATETABLE(FILTER(SUMMARIZECOLUMNS('emp'[job], "__rows", COUNTROWS(emp), "dept_count", CALCULATE('dept'[dept_count], emp)), (COALESCE([dept_count], 0) > 1)), NOT(ISBLANK('dept'[deptno]))), "job", 'emp'[job], "dept_count", COALESCE([dept_count], 0)) ORDER BY [job]

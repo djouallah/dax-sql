@@ -1259,6 +1259,8 @@ npm test
   (NULLs, joins, `IN` and `LIKE`, `CAST`, `%`, `WITH TIES`).
 - `views.test.js`: semantic views' statements, run on DuckDB.
 - `explain.test.js`: the query plan as drawn, and its SQL answering as the compiled SQL does.
+- `dialects.test.js`: every conformance query is PostgreSQL, Polars and DataFusion SQL, or a
+  `DaxError`; every plan draws (as lowered, correlated, unnested, optimized).
 - `errors.test.js`: any text is SQL or a `DaxError`: every function and modifier with 0 to 4
   arguments of each kind on every dialect (too few is DAX's error, `minArgs` in
   `functions/index.js`), the suite's queries broken on purpose (`conformance/tools/mutate.mjs`),
@@ -1282,7 +1284,11 @@ In CI:
   column read one its inputs have, no DAX operator left after `standard`); its `substrait` job
   parses every plan with Substrait main's protos, and reads each back and writes it again, the
   same plan (`conformance/tools/substrait-roundtrip.mjs`). Its `coverage` job and `test.yml`
-  report what of `src/` the suite and the unit tests reach (c8). `postgres.yml`'s `plan` job
+  report what of `src/` the suite and the unit tests reach (c8). Its `agree` job
+  (`conformance/tools/agree.mjs`, and `agree-daily.yml` with the date as its seed) holds
+  dax-sql to itself with no Power BI: random queries (`fuzz-grammar.mjs`) over every model, each
+  compiled and run four ways on DuckDB (the same rows or the same failure) and written for every
+  dialect, and queries broken on purpose, SQL or a `DaxError` everywhere. `postgres.yml`'s `plan` job
   runs the optimized and unnested plans on PostgreSQL.
 - `perf.yml` (`conformance/engines/dax-sql/bench.mjs`): every query timed by the commit and by
   the one before, on one runner, the fastest of three rounds each: more than 10% slower in all,

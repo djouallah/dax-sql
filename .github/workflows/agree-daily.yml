@@ -1,0 +1,44 @@
+name: Agree (daily)
+
+# conformance/tools/agree.mjs every morning with the day's date as its seed: new random queries
+# each day, dax-sql held to itself (its four plans on DuckDB, its five dialects), no Power BI.
+# A failure prints its seed and queries: minimize one by hand and add it to the suite.
+
+on:
+  schedule:
+    - cron: "17 4 * * *"
+  workflow_dispatch:
+    inputs:
+      seed:
+        description: "The seed (default: today's date, YYYYMMDD)"
+        required: false
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  contents: read
+
+jobs:
+  agree:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      DAXSQL_CHECK: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Every plan and dialect agrees
+        run: |
+          seed="${{ inputs.seed }}"; seed="${seed:-$(date -u +%Y%m%d)}"
+          echo "seed $seed" | tee -a "$GITHUB_STEP_SUMMARY"
+          node conformance/tools/agree.mjs --count 400 --seed "$seed" --mutations 600 --report "$RUNNER_TEMP/agree.json"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: agree-report
+          path: ${{ runner.temp }}/agree.json

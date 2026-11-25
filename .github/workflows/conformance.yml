@@ -161,3 +161,30 @@ jobs:
           DAXSQL_PLAN=1 run optimized
       - name: Coverage of the suite
         run: node conformance/tools/coverage.mjs "$RUNNER_TEMP/cov/coverage-summary.json" "Coverage of the conformance suite (compile, unnested, optimized)"
+
+  # dax-sql against itself, no Power BI (conformance/tools/agree.mjs): random queries over every
+  # model, each compiled and run four ways on DuckDB (the same rows or the same failure), written
+  # for every other dialect, every pass's plan checked; and queries broken on purpose, SQL or a
+  # DaxError on every dialect. A fixed seed here; agree-daily.yml runs it every morning with the
+  # date as its seed.
+  agree:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      DAXSQL_CHECK: "1"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: djouallah/dax-sql
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Every plan and dialect agrees
+        run: node conformance/tools/agree.mjs --count 200 --seed 20261125 --mutations 300 --report "$RUNNER_TEMP/agree.json"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: agree-report
+          path: ${{ runner.temp }}/agree.json

@@ -1066,9 +1066,11 @@ class Fusion {
     // the iterator is a key too (`outer`), its value read where the iterator is. Nothing else
     // may read one.
     const outerBind = f => this.ofRows && f.kind === 'bind' && !f.guard && f.val.k === 'col' && f.val.row && f.val.row !== this.keyRow && !!this.outerRows?.has(f.val.row.id);
+    // (A row only a scan's filter reads where it reaches no table of that scan is idle there: the
+    // year-to-date dates of an iterator's month, under a group's brand and city.)
     for (const id of ir.freeRows(x)) {
       if (id === kid) continue;
-      for (const f of S.ctx.filters) if (!outerBind(f) && !idle(f) && reads(f).has(id)) return null;
+      for (const f of S.ctx.filters) if (!outerBind(f) && !idle(f) && reads(f).has(id) && rowsThatFilter(f, lw.model).has(id)) return null;
     }
     for (const part of [x.arg, ...(x.a ?? []), ...(x.order ?? []).map(o => o.expr)]) {
       if (!part) continue;
@@ -1107,8 +1109,8 @@ class Fusion {
     let readsKeys = false;
     const mapped = [];
     for (const f of rest) {
-      const free = reads(f);
-      for (const id of free) if (id !== kid) return null;
+      const free = reads(f), filtering = rowsThatFilter(f, lw.model);
+      for (const id of free) if (id !== kid && filtering.has(id)) return null;
       if (!free.size) continue;
       // The keys whose values change the filter's rows: not one only a scan's filter reads that
       // reaches no table of that scan (TOTALYTD's dates under a group's color: the date table's,
@@ -1358,13 +1360,16 @@ function blankFails(x) {
 // The keys of key row kid that x (an IR table, a filter) reads where they decide its rows: a
 // read in a scan's filter counts only when that filter reaches the scan's table (one on a table
 // that filters no table of the scan is idle there).
-function keysThatFilter(x, kid, model) {
+function keysThatFilter(x, kid, model) { return walkFiltering(x, model, kid); }
+// The rows x reads where they decide its rows (as keysThatFilter, every row's id).
+function rowsThatFilter(x, model) { return walkFiltering(x, model, null); }
+function walkFiltering(x, model, kid) {
   const out = new Set(), seen = new Set();
   const walk = y => {
     if (!y || typeof y !== 'object' || seen.has(y)) return;
     seen.add(y);
     if (Array.isArray(y)) { y.forEach(walk); return; }
-    if (y.k === 'col' && y.row?.id === kid) { out.add(y.ref); return; }
+    if (y.k === 'col' && y.row) { if (kid == null) out.add(y.row.id); else if (y.row.id === kid) out.add(y.ref); return; }
     for (const [k, v] of Object.entries(y)) {
       if (k === 'row' || k === 'lrow' || k === 'cols' || k === 'table' || k === 'base' || k === 'lineage') continue;
       if (k === 'ctx' && v?.filters) {

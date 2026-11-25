@@ -978,7 +978,7 @@ export class SqlTranslator {
         if (!edge && c.k === 'bin' && c.op === '=' && c.l.k === 'name' && c.r.k === 'name') {
           const a = colRel(c.l.parts), b = colRel(c.r.parts);
           const other = a && b && (a.r === r) !== (b.r === r) ? (a.r === r ? b.r : a.r) : null;
-          const rel = other && list.indexOf(other) < i ? this.model.relationships.find(x => x.active && !x.self
+          const rel = other && list.indexOf(other) < i ? this.model.relationships.find(x => !x.self
             && x.fromCard === 'many' && x.toCard === 'one' && ((x.from === a.c && x.to === b.c) || (x.from === b.c && x.to === a.c))) : null;
           if (rel) {
             const many = rel.from === a.c ? a.r : b.r;
@@ -1021,12 +1021,17 @@ export class SqlTranslator {
         measure: (r, d, t) => {
           if (!ms.includes(r)) return d;
           const cond = extra.get(r);
-          return D.call('CALCULATE', d, matched(r), ...(cond ? [D.call('KEEPFILTERS', t.dax(cond, { mode: 'where' }))] : []));
+          // An inactive relationship (catalog_sales' ship address): the measure's USERELATIONSHIP, which
+          // makes it the one between its tables.
+          const rel = edges[ms.indexOf(r)].rel;
+          const use = rel.active ? [] : [D.call('USERELATIONSHIP', D.col(rel.from), D.col(rel.to))];
+          return D.call('CALCULATE', d, matched(r), ...use, ...(cond ? [D.call('KEEPFILTERS', t.dax(cond, { mode: 'where' }))] : []));
         },
       };
     }
     // A star: a LEFT JOIN adds a one side, and no ON says more than its relationship's columns.
-    if (extra.size || edges.some(e => e.type === 'left' && e.one !== e.added)) return null;
+    // (A star's relationships are the active ones: an inactive one would be the measures' USERELATIONSHIP and the groups' too.)
+    if (extra.size || edges.some(e => (e.type === 'left' && e.one !== e.added) || !e.rel.active)) return null;
     const roots = list.filter(r => !edges.some(e => e.one === r));
     if (roots.length !== 1 || list.some(r => edges.filter(e => e.one === r).length > 1)) return null;
     const [root] = roots;

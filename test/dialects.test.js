@@ -1,7 +1,7 @@
 // Every dialect, as text: every conformance query compiles to its SQL, or is refused with a
 // DaxError (the dialect can't write it), never with an exception of the compiler's own; and its
 // query plan draws, every way it can be made. Whether the answers are DAX's is the conformance
-// suite's, on each engine (postgres.yml, polars.yml, datafusion.yml, tsql.yml); T-SQL's shapes
+// suite's, on each engine (polars.yml, datafusion.yml, tsql.yml); T-SQL's shapes
 // are tsql.test.js's.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -19,7 +19,7 @@ const compilerFor = dialect => {
   };
 };
 
-for (const dialect of ['postgres', 'polars', 'datafusion']) {
+for (const dialect of ['polars', 'datafusion']) {
   test(`${dialect}: every conformance query is its SQL, or refused with a DaxError`, () => {
     const of = compilerFor(dialect), raw = [];
     let compiled = 0;

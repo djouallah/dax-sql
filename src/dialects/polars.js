@@ -3,12 +3,12 @@
 // EXISTS subqueries and LATERAL over a table, but reads no outer row in a derived table of a
 // correlated subquery or a LATERAL (pola-rs/polars#31059, #31067), which the correlated plan
 // writes (polars.yml measures both plans).
-// What it writes differently from PostgreSQL's:
-// - WITH has no MATERIALIZED (a CTE is a lazy frame, computed once where it is read).
-// - A blank-safe key is IS NOT DISTINCT FROM (no ARRAY = ARRAY, no ROW()::record): a join on it
-//   as fast as one on = since pola-rs/polars#31049.
-// - A value is written where it is read, not bound in a subquery's row: that row reads the outer
-//   row by its columns' names alone, which Polars does not find (pola-rs/polars#31067).
+// As postgres.js writes it, for Polars: WITH has no MATERIALIZED (a CTE is a lazy frame, computed
+// once where it is read); each relation a SELECT reads a CTE of its own (the suite in 111.6 s so,
+// 125.9 s nested); a blank-safe key is IS NOT DISTINCT FROM (as fast as = since
+// pola-rs/polars#31049); a value is written where it is read (a subquery's row reads the outer row
+// by its columns' names alone, which Polars does not find: pola-rs/polars#31067); a series whose
+// bounds are a row's reads them by scalar subqueries. What it writes differently:
 // - An interval is of a fixed length only (n * INTERVAL '1 day', no months): a date moved by
 //   months is made of its parts (the month's first day, the day, the month's last at most).
 // - ROUND's places a constant; log10 is log10; a sum in no order (SUM takes no ORDER BY).
@@ -47,25 +47,12 @@ export class PolarsDialect extends PostgresDialect {
   name = 'polars';
   // Polars has no function of a character's code: UNICODE as the plan defines it.
   nativeFns = new Set();
-  session = [];
-  materialized = '';
-  subqueryInCase = true;
-  // A CASE's branches no row takes are computed too: DAX's runtime errors are blanks.
-  computesEveryBranch = true;
-
-  // A blank-safe key (pola-rs/polars#31049 joins on it as fast as on =).
-  isNotDistinct(a, b) { return `(${a} IS NOT DISTINCT FROM ${b})`; }
 
   // A date: a TIMESTAMP (a cast to one at midnight), a constant one too.
   type(t) { return t === 'date' ? 'TIMESTAMP' : super.type(t); }
   cast(sql, t) { return t === 'date' ? `CAST(CAST(${sql} AS DATE) AS TIMESTAMP)` : super.cast(sql, t); }
   datetime(v) { return /\d:\d/.test(v) ? `TIMESTAMP ${this.str(v)}` : `TIMESTAMP ${this.str(`${v} 00:00:00`)}`; }
   blankOf(t) { return t === 'datetime' || t === 'date' ? "TIMESTAMP '1899-12-30 00:00:00'" : super.blankOf(t); }
-  // Each relation a SELECT reads a CTE of its own: not for Polars' parser (2.2 nests deep), for its
-  // speed: the suite in 111.6 s so, 125.9 s with relations nested (polars.yml, the same queries).
-  flatSql = true;
-  keysTogether = null;
-  bind(vals, body) { return body(...vals); }
   // generate_series as a table (its scalar form is a list); dates by a step of n days
   // (pola-rs/polars#31054).
   series(start, end, step, t) {
@@ -73,10 +60,6 @@ export class PolarsDialect extends PostgresDialect {
     if (t === 'int') return `(SELECT * FROM generate_series(CAST(${start} AS BIGINT), CAST(${end} AS BIGINT), CAST(${step} AS BIGINT)) AS r(v))`;
     return super.series(start, end, step, t);
   }
-
-  // A series whose bounds are a row's: read off that row by scalar subqueries (through LATERAL,
-  // DATE_TRUNC of the outer row has no type: pola-rs/polars#31067).
-  seriesBoundsAsSubqueries = true;
 
   fn(name, a, nodes = []) {
     // What Polars SQL has no function for: a factorial, the time in a zone (timezone()).

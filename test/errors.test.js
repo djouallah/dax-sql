@@ -17,7 +17,7 @@ import { loadQueries, readBim } from '../conformance/tools/suite.mjs';
 import { mutations } from '../conformance/tools/mutate.mjs';
 import { bim } from './fixtures/contoso.js';
 
-const DIALECTS = ['duckdb', 'tsql', 'postgres', 'polars', 'datafusion'];
+const DIALECTS = ['duckdb', 'tsql', 'polars', 'datafusion'];
 const compilers = Object.fromEntries(DIALECTS.map(d => [d, createCompiler(tmslToModel(bim), { dialect: d })]));
 // What a text compiles to: 'sql', a DaxError's code, or the exception that is neither.
 const outcome = (c, q) => {

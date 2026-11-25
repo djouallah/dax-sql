@@ -1,5 +1,0 @@
-[
-  {"id":"edges/filters/filters-calcgroup-item-as-calculate-filter","reason":"slow: past 10 min on PostgreSQL, a subquery of each group the mapping does not reach yet, run as a loop (TODO.md); the query plan answers it (it has no such subquery)"},
-  {"id":"patterns/segmentation/segmentation-cumulative-calc-group","reason":"slow: past 10 min on PostgreSQL, a subquery of each group the mapping does not reach yet, run as a loop (TODO.md); the query plan answers it (it has no such subquery)"},
-  {"id":"patterns/segmentation/segmentation-customer-bands-calc-group","reason":"slow: past 10 min on PostgreSQL, a subquery of each group the mapping does not reach yet, run as a loop (TODO.md); the query plan answers it (it has no such subquery)"}
-]

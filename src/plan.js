@@ -64,7 +64,7 @@ export const not = x => pop('not', [x]);
 export const same = (l, r) => ({ k: 'op', op: 'eqs', a: [l, r], t: 'bool', nn: true });
 // =: NULL matching nothing (a relationship's join).
 export const eq = (l, r) => pop('eq', [l, r]);
-// ≡ as a join's key (a printer writes it as its engine hashes it: PostgreSQL's arrays).
+// ≡ as a join's key (IS NOT DISTINCT FROM, or as the engine joins on it).
 export const key = (l, r) => pop('key', [l, r]);
 export const notNull = x => pop('notnull', [x]);
 export const isNull = x => pop('isnull', [x]);

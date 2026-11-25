@@ -241,7 +241,7 @@ DAX's runtime errors are in the plan: a fixed decimal past its range, several va
 is expected (a scalar subquery's table), a percentile's rank outside 1..n are an `error` call
 in the branch of a CASE that takes them. Substrait has no error function: it is a named lambda
 whose body casts the message (a text no number reads as) to a number, which fails. Each dialect
-writes its own (DuckDB's `error()`, a failing cast on T-SQL and PostgreSQL); Polars and
+writes its own (DuckDB's `error()`, a failing cast on T-SQL); Polars and
 DataFusion compute a CASE's branches no row takes, so there it is a blank (their known lists). The optimizer's last pass (`passes/standard.js`) writes DAX's operators,
 functions and aggregates with those: a blank compared as 0 is a COALESCE, DIVIDE a NULLIF, a count of no rows
 a NULLIF of COUNT, DISTINCTCOUNT a COUNT(DISTINCT) and a count of the blank, a fixed decimal a
@@ -305,14 +305,17 @@ unnest. It is a second decorrelation, beside the optimizer's, and is top down (N
 A correlated EXISTS is a count of its rows (> 0). Each apply, from the top, has its right pushed
 down operator by operator. A condition `F = x` binds the outer column F to the rows' own x, with
 no D. Where nothing binds F, D = δ(π_F L) is joined in at the operator that reads it, on the
-condition when that is a range. D is read off the relations inside L that have its values; a
-join with columns of F on both sides is read itself, not its sides' values crossed: those are
-their sizes multiplied (1,097 dates × 16 titles × 47 colors × 4 currencies, where the rows had
-some thousands, took PostgreSQL past 5 minutes). A grouping of no key is grouped by F and left-joined from L, a
-count over no rows 0. An apply inside the right is pushed into its left and unnested there, its
+condition when that is a range. D is read off the relations inside L that have its values: down
+projections, filters and groupings, an inner or cross join's two sides crossed, but a left join
+with columns of F on both sides read itself (a fact's rows to its dimensions: their values
+crossed are their sizes multiplied, 1,097 dates × 16 titles × 47 colors × 4 currencies where the
+rows have some thousands). `EXISTS(σ a ≡ x (R))`, x the row's column and R reading nothing else
+of the row, is a join to R's distinct values of a, not a count of R for each row (a
+LASTNONBLANK's date matched to each rate row: R computed once for each value of D, not for each
+pair). A grouping of no key is grouped by F and left-joined from L, a count over no rows 0. An apply inside the right is pushed into its left and unnested there, its
 D carrying the columns of every level. Nothing stays an apply. Then joins, outer joins, fusion,
 sharing, inlining, renames and pruning. CI holds it to the contract (`operators.mjs`) and runs
-the suite through it on DuckDB, PostgreSQL, Fabric, Polars and DataFusion.
+the suite through it on DuckDB, Fabric, Polars and DataFusion.
 
 **Substrait is the plan the SQL is written from** (`substrait.js`, `substrait-read.js`):
 `planSql` writes the plan as Substrait (the specification on main) and reads it back, and every
@@ -650,7 +653,7 @@ SELECT * FROM (SHOW SEMANTIC METRICS IN sales) WHERE ...;   -- each one reads as
 | Option | |
 |---|---|
 | `tableSource` | `(table) => SQL` naming a model table's rows. Default: its partition's entity, `"schema"."entity"`. |
-| `dialect` | `'duckdb'` (default), `'tsql'` (the Fabric SQL endpoint and Warehouse; see T-SQL below), `'postgres'` (PostgreSQL; see below), or an instance of a `Dialect` subclass. |
+| `dialect` | `'duckdb'` (default), `'tsql'` (the Fabric SQL endpoint and Warehouse; see T-SQL below), `'polars'` (Polars SQL; see below), `'datafusion'` (Apache DataFusion; see below), or an instance of a `Dialect` subclass. |
 | `columnNames` | `'short'` (default): the column's or the expression's name. `'dax'`: `Table[Column]`, `[Measure]`. |
 | `castOutput` | `true` (default): whole numbers as `BIGINT`, other numbers as `DOUBLE`. Or an object, by the column's type (`int`, `double`, `decimal`, `datetime`, `string`, `bool`), of a function of its SQL: `{ int: s => \`CAST(${s} AS INTEGER)\` }`; a type it leaves out is not cast. |
 | `assumeIntegrity` | `true`: every relationship relies on referential integrity, so a dimension key is read off the fact's foreign key without a join. By default only relationships whose `assumeIntegrity` is set (TMSL's `relyOnReferentialIntegrity`) are treated this way. |
@@ -1075,7 +1078,7 @@ SELECT m.*, p.n FROM m JOIN (SELECT "Color", COUNT(*) AS n FROM "Product" GROUP 
 | `passes/` | the optimizer: passes over the query plan (`decorrelate.js`, `fuse.js`, `fuse-applies.js`, `joins.js`, `outer.js`, `standard.js`, `exact.js`, `share.js`, `inline.js`, `renames.js`, `prune.js`) |
 | `plan-sql.js`, `explain.js` | the query plan as SQL; drawn as a tree |
 | `format.js` | FORMAT's patterns, read into what a dialect writes |
-| `dialects/` | what differs between SQL engines: `base.js` (the interface), `duckdb.js`, `duckdb-format.js`, `tsql.js`, `tsql-format.js`, `postgres.js`, `postgres-format.js` |
+| `dialects/` | what differs between SQL engines: `base.js` (the interface), `duckdb.js`, `duckdb-format.js`, `tsql.js`, `tsql-format.js`, `postgres.js` and `postgres-format.js` (PostgreSQL's SQL, which Polars and DataFusion read), `polars.js`, `datafusion.js` |
 | `errors.js` | `DaxError` and its codes |
 
 The SQL it writes:
@@ -1168,35 +1171,21 @@ the tables a model reads, run by Fabric's distributed engine. It has its own dri
 package depends on nothing new. `tsql.yml` runs it on each push that changes the compiler or the
 suite, signed in as the Oracle is (an OIDC federated login); a query has 30 s to answer.
 
-### PostgreSQL
+### PostgreSQL's SQL
 
-`dialect: 'postgres'` writes PostgreSQL's SQL (tested on 17). It has what DuckDB has but `QUALIFY`
-(a SELECT around the window) and lists (an array, or a value bound in a subquery's row), and it
-runs a correlated subquery as a loop, as Fabric does, so it is given the plan unnested, as T-SQL
-is. Where PostgreSQL differs from DuckDB:
+`dialects/postgres.js` writes PostgreSQL's SQL as Polars and DataFusion read it; it is not a
+dialect of its own. It has what DuckDB has but `QUALIFY` (a SELECT around the window) and lists;
+each relation a SELECT reads is a CTE of its own (no `MATERIALIZED`), a value is written where it
+is read, and a blank-safe key is `IS NOT DISTINCT FROM`. Where it differs from DuckDB's:
 
-- A blank-safe join key is `ARRAY[CAST(a AS t)] = ARRAY[CAST(b AS t)]` (an array's `=` takes NULL
-  for equal to NULL, and is hashed): `IS NOT DISTINCT FROM` it joins in a loop.
 - A constant is computed when the query is planned, in a branch never taken too: `ERROR`'s
   failing cast reads its message under `random()`.
 - `/` of two whole numbers is a whole number and a division by zero an error: both are written
   out (a double's division; infinity or NaN for zero, as on DuckDB).
-- A NULL in a subquery's column is TEXT, which no UNION arm of a number matches: a blank where a
+- A NULL in a subquery's column is text, which no UNION arm of a number matches: a blank where a
   column is (a subtotal's key, a measure blank at a level) is cast to the column's type.
 - An aggregate belongs to the query whose columns it reads, so one over a subquery that reads an
   outer row is over a SELECT of it.
-- Text is compared and sorted as the database's collation does: `C` gives DuckDB's code-point
-  order.
-
-`conformance/engines/dax-sql-postgres` runs the suite on a PostgreSQL server, the data copied in
-from DuckDB's reading of the CSVs (the same values, of the same types), with its own known list
-(DuckDB's, an expression of blanks only that PostgreSQL types as text, and three queries past
-10 min: a subquery of each group the mapping does not reach yet, as on Fabric). `postgres.yml`
-runs it on each push that changes the compiler or the suite, on a `postgres:17` service with
-`--locale=C`: the answers are checked, and the slowest queries reported (a query has 5 min).
-Its `plan` jobs run the suite through the optimized and the unnested plans (30 s a query), which
-answer the three queries the compiled SQL takes past 10 min for (`known-compile.json`, read by
-the compiled SQL's job alone).
 
 ### Polars
 
@@ -1245,7 +1234,7 @@ npm test
   (NULLs, joins, `IN` and `LIKE`, `CAST`, `%`, `WITH TIES`).
 - `views.test.js`: semantic views' statements, run on DuckDB.
 - `explain.test.js`: the query plan as drawn, and its SQL answering as the compiled SQL does.
-- `dialects.test.js`: every conformance query is PostgreSQL, Polars and DataFusion SQL, or a
+- `dialects.test.js`: every conformance query is Polars and DataFusion SQL, or a
   `DaxError`; every plan draws (as lowered, correlated, unnested, optimized).
 - `errors.test.js`: any text is SQL or a `DaxError`: every function and modifier with 0 to 4
   arguments of each kind on every dialect (too few is DAX's error, `minArgs` in
@@ -1274,8 +1263,7 @@ In CI:
   (`conformance/tools/agree.mjs`, and `agree-daily.yml` with the date as its seed) holds
   dax-sql to itself with no Power BI: random queries (`fuzz-grammar.mjs`) over every model, each
   compiled and run four ways on DuckDB (the same rows or the same failure) and written for every
-  dialect, and queries broken on purpose, SQL or a `DaxError` everywhere. `postgres.yml`'s `plan` job
-  runs the optimized and unnested plans on PostgreSQL.
+  dialect, and queries broken on purpose, SQL or a `DaxError` everywhere.
 - `perf.yml` (`conformance/engines/dax-sql/bench.mjs`): every query timed by the commit and by
   the one before, on one runner, the fastest of three rounds each: more than 10% slower in all,
   or a query 1.5 times as slow and 50 ms more, fails.
@@ -1297,8 +1285,6 @@ In CI:
   compiled by the code on main before it is published.
 - `tsql.yml` (a push that changes the compiler or the suite): the suite as T-SQL on the Fabric
   lakehouse's SQL endpoint, against its own known list, with the slowest queries in its summary.
-- `postgres.yml` (a push that changes the compiler or the suite): the suite on PostgreSQL 17,
-  against its own known list, with the slowest queries and the plans of those past 30 s.
 - `oracle.yml`, by hand: Power BI's answers for the suite's new or stale queries.
 - [analytics-as-code](https://github.com/djouallah/analytics-as-code) runs its model's measures
   and its dashboard's queries through this package on every push, and compares them with its

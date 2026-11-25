@@ -9,7 +9,8 @@
 // model.bim or an Apache Ossie model.
 // Options:
 //   dialect        'duckdb' (the default), 'tsql' (the Fabric SQL endpoint and Warehouse),
-//                  'postgres' (PostgreSQL), or a Dialect instance (see dialects/base.js)
+//                  'polars' (Polars SQL), 'datafusion' (Apache DataFusion), or a Dialect
+//                  instance (see dialects/base.js)
 //   tableSource    (table) => SQL that names a model table's rows; by default its source's
 //                  entity ("schema"."entity"), else its name
 //   columnNames    'short' (the default: the column or the expression's name) or 'dax'
@@ -29,7 +30,6 @@ import { Compiler } from './compiler.js';
 import { parseExpression } from './parser.js';
 import { DuckDBDialect } from './dialects/duckdb.js';
 import { TSqlDialect } from './dialects/tsql.js';
-import { PostgresDialect } from './dialects/postgres.js';
 import { PolarsDialect } from './dialects/polars.js';
 import { DataFusionDialect } from './dialects/datafusion.js';
 import { Dialect } from './dialects/base.js';
@@ -83,7 +83,6 @@ export { DaxError } from './errors.js';
 export { Dialect } from './dialects/base.js';
 export { DuckDBDialect } from './dialects/duckdb.js';
 export { TSqlDialect } from './dialects/tsql.js';
-export { PostgresDialect } from './dialects/postgres.js';
 export { PolarsDialect } from './dialects/polars.js';
 export { DataFusionDialect } from './dialects/datafusion.js';
 export { parseQuery, parseExpression } from './parser.js';
@@ -94,7 +93,7 @@ import { makeViews } from './views.js';
 export const createViews = options => makeViews(createCompiler, options);
 export { Model } from './model.js';
 
-const DIALECTS = { duckdb: () => new DuckDBDialect(), tsql: () => new TSqlDialect(), postgres: () => new PostgresDialect(), polars: () => new PolarsDialect(), datafusion: () => new DataFusionDialect() };
+const DIALECTS = { duckdb: () => new DuckDBDialect(), tsql: () => new TSqlDialect(), polars: () => new PolarsDialect(), datafusion: () => new DataFusionDialect() };
 
 // A query: its text (or, `tree`, the tree a DAX query parses to); anything else, a SYNTAX error.
 function query(q, tree = true) {

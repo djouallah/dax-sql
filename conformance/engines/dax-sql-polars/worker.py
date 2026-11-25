@@ -1,4 +1,4 @@
-# A model's data in a Polars SQLContext, answering SQL one query at a time, for probe.mjs.
+# A model's data in a Polars SQLContext, answering SQL one query at a time, for adapter.mjs.
 #   python worker.py <model dir> <name>
 # Each table of the model.bim read from data/<entity>.csv with the bim's types, registered as
 # <name>__<entity>. Prints {"ready": true}, then reads one JSON {"sql"} per line and answers each

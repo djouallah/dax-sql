@@ -17,7 +17,6 @@ const known = files => new Map(files.flatMap(f => read(join('conformance/engines
 const ENGINES = [
   { engine: 'DuckDB', path: 'correlated', artifact: 'plan-report', report: 'plan-correlated.json', known: ['dax-sql/known.json'] },
   { engine: 'Fabric DWH', path: 'unnested by the compiler', artifact: 'tsql-report', report: 'tsql-unnest.json', known: ['dax-sql-tsql/known.json', 'dax-sql-tsql/known-unnest.json'] },
-  { engine: 'PostgreSQL 17', path: 'unnested by the compiler', artifact: 'postgres-plan-report-unnest', report: 'postgres-plan.json', known: ['dax-sql-postgres/known.json'] },
   { engine: 'Polars (main)', path: 'unnested by the compiler', artifact: 'polars-report', report: 'polars.json', known: ['dax-sql-polars/known.json', 'dax-sql/known.json'] },
   { engine: 'DataFusion 55', path: 'unnested by the compiler', artifact: 'datafusion-report', report: 'datafusion.json', known: ['dax-sql-datafusion/known.json', 'dax-sql/known.json'] },
 ];

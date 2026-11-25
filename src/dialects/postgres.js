@@ -1,11 +1,12 @@
-// PostgreSQL (tested on 17): booleans, IS NOT DISTINCT FROM, LATERAL, FILTER on an aggregate,
-// WITH RECURSIVE and MATERIALIZED, as DuckDB; no QUALIFY (a SELECT around the window), no list
-// (an array, or a value bound in a subquery's row), / of two whole numbers a whole number, a
-// division by zero an error, and its own names for the date functions. It runs a correlated
-// subquery as a loop, as Fabric does: the plan fuses and writes once what it can.
+// PostgreSQL's SQL, which Polars (polars.js) and DataFusion (datafusion.js) read: not a dialect of
+// its own. Booleans, IS NOT DISTINCT FROM, FILTER on an aggregate, as DuckDB; no QUALIFY (a SELECT
+// around the window), no list (an array), / of two whole numbers a whole number, a division by
+// zero an error, and its own names for the date functions. Each relation a SELECT reads is a CTE
+// of its own (no MATERIALIZED), a value is written where it is read, a blank-safe key is
+// IS NOT DISTINCT FROM.
 import { Dialect } from './base.js';
 import { semantic } from '../errors.js';
-import { formatNumber, formatDate, generalNumber, generalDate, dateSerial, serialDate, bindAs, sqlAggregates, e14 } from './postgres-format.js';
+import { formatNumber, formatDate, generalNumber, generalDate, dateSerial, serialDate, e14 } from './postgres-format.js';
 
 const UNIT_SQL = { day: 'DAY', week: 'WEEK', month: 'MONTH', quarter: 'QUARTER', year: 'YEAR', hour: 'HOUR', minute: 'MINUTE', second: 'SECOND' };
 const fl = x => `CAST(${x} AS DOUBLE PRECISION)`;
@@ -15,54 +16,27 @@ const int = v => `CAST(round(CAST(${v} AS NUMERIC)) AS INTEGER)`;
 const g15 = v => `CAST(CAST(${e14(v)} AS NUMERIC) AS DOUBLE PRECISION)`;
 const part = (f, x) => `CAST(EXTRACT(${f} FROM ${x}) AS INTEGER)`;
 const ERR_FIXED = 'DAX: the result of a conversion or arithmetic operation is too large or too small for a fixed decimal number';
-// SQL that is a column of a row or a constant, which bind() names as it is.
-const plain = v => /^\w+\.(?:"(?:[^"]|"")*"|\w+)$/.test(v) || /^-?\d+(?:\.\d+)?(?:e[-+]?\d+)?$/i.test(v) || /^'(?:[^']|'')*'$/.test(v) || v === 'NULL';
-
 export class PostgresDialect extends Dialect {
-  name = 'postgres';
-  // The plan's defined functions PostgreSQL has its own of (UNICODE: ascii(), of any character).
+  // The plan's defined functions it has its own of (UNICODE: ascii(), of any character).
   nativeFns = new Set(['unicode']);
-  // Postgres estimates the rows of a deep query (a definition read through several groupings and
-  // filters) at one or so, and loops over thousands where a hash or merge join is at hand
-  // (SAMEPERIODLASTYEAR over a rollup: past 30 s, 2 s with no loop). A loop is still taken where
-  // no other join can be (a range).
-  session = ['SET enable_nestloop = off'];
-  materialized = 'MATERIALIZED ';
-  // A subquery in a CASE's branch is run for each row, as Fabric does: the branches' values a row.
-  subqueryInCase = false;
-
-  // IS NOT DISTINCT FROM is no join key Postgres hashes (a loop over both sides: a currency's
-  // groups past 30 s); an array's = takes a NULL element for equal to a NULL, and is hashed. Its
-  // elements are of one type: both cast to the key's (a date and time to TIMESTAMP, which a DATE
-  // column and a date moved by an interval both are), where it is known.
-  isNotDistinct(a, b, t) {
-    const T = this.keyType(t);
-    return T ? `ARRAY[CAST(${a} AS ${T})] = ARRAY[CAST(${b} AS ${T})]` : super.isNotDistinct(a, b);
-  }
-  keyType(t) { return t === 'date' || t === 'datetime' ? 'TIMESTAMP' : this.type(t); }
-  // Several keys as one: two records' = (not row constructors') takes a NULL field for equal to a
-  // NULL, and is one condition, its matches estimated once (several arrays' =, each estimated
-  // apart, multiply to a row or so: the planner loops over thousands).
-  keysTogether(ks) {
-    const row = side => `ROW(${ks.map(k => `CAST(${k[side]} AS ${this.keyType(k.t)})`).join(', ')})::record`;
-    return `${row('a')} = ${row('b')}`;
-  }
+  materialized = '';
+  flatSql = true;
+  subqueryInCase = true;
+  // A CASE's branches no row takes are computed too: DAX's runtime errors are blanks.
+  computesEveryBranch = true;
+  // A series whose bounds are a row's: read off that row by scalar subqueries.
+  seriesBoundsAsSubqueries = true;
+  isNotDistinct(a, b) { return `(${a} IS NOT DISTINCT FROM ${b})`; }
 
   type(t) { return t === 'string' ? 'TEXT' : t === 'date' ? 'DATE' : super.type(t); }
   // A NULL in a subquery's column is TEXT, which no UNION arm of a number matches: typed.
   literal(v, t) { return v === null ? this.nullOf(t) : super.literal(v, t); }
   nullOf(t) { return this.type(t) ? `CAST(NULL AS ${this.type(t)})` : 'NULL'; }
 
-  // A value more than a column or a constant, written once in a row the body reads:
-  // (SELECT body FROM (SELECT x AS "v0") AS b1). One that aggregates or windows the rows around
-  // it is written in place (a subquery's COUNT(*) would count its own row).
-  bind(vals, body) {
-    const at = vals.map((v, i) => (v == null || plain(v) ? -1 : i)).filter(i => i >= 0);
-    if (!at.length || !this.alias || vals.some(v => v != null && sqlAggregates(v))) return body(...vals);
-    const b = this.alias('b');
-    const refs = vals.map((v, i) => (at.includes(i) ? `${b}.${this.ident(`v${i}`)}` : v));
-    return `(SELECT ${body(...refs)} FROM (SELECT ${at.map(i => `${vals[i]} AS ${this.ident(`v${i}`)}`).join(', ')}) AS ${b})`;
-  }
+  // A value is written where it is read, not bound in a subquery's row (which reads the outer
+  // row by its columns' names alone: pola-rs/polars#31067; a correlated subquery DataFusion does
+  // not unnest).
+  bind(vals, body) { return body(...vals); }
 
   // An error that has the type of the branch it is in: a cast that fails, its text the message.
   // A constant is computed when the query is planned, in a branch never taken too: the message

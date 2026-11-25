@@ -51,8 +51,16 @@ function marks(r) {
       // The conditions with no EXISTS are tested first, below the counts.
       const own = [], rest = [];
       for (const c of conjuncts(r.pred)) (existsOf(c).some(e => free(e).size) ? rest : own).push(c);
-      const below = own.length ? P.select(r.src, P.and(own)) : r.src;
-      const pred = conv(P.and(rest));
+      let below = own.length ? P.select(r.src, P.and(own)) : r.src;
+      // EXISTS(σ a ≡ x (R)), x the row's and R reading nothing else of it: a join to R's
+      // values of a (R computed for each value of the rows around, not for each row).
+      const counted = [];
+      for (const c of rest) {
+        const j = semi(below, c);
+        if (j) below = j; else counted.push(c);
+      }
+      if (!counted.length) return below;
+      const pred = conv(P.and(counted));
       const src = ms.reduce((s, m) => P.apply(s, m), below);
       return P.select(src, pred);
     }
@@ -86,6 +94,32 @@ function toMarks(x, ms) {
     return P.cmp('gt', P.ref(c), ZERO);
   });
 }
+// src ⋈ δ(π_a R) on x ≡ a (or =), under src's columns, for the condition EXISTS(σ a ≡ x ∧ rest
+// (R)) of src's rows: x a column of theirs, a of R's, R and rest reading none of theirs (a
+// column of the rows around them, they may). Null when the condition is not of that kind.
+function semi(src, c) {
+  if (c.k !== 'exists' || c.rel.k !== 'select') return null;
+  const mine = new Set(src.cols), R = c.rel.src, theirs = new Set(R.cols);
+  const cs = conjuncts(c.rel.pred);
+  const side = (x, set) => x.k === 'ref' && set.has(x.col);
+  const ofR = x => !existsOf(x).length && refsOf(x).size > 0 && [...refsOf(x)].every(col => theirs.has(col));
+  for (let i = 0; i < cs.length; i++) {
+    const e = cs[i];
+    const m = e.k === 'op' && e.op === 'eqs' ? P.key : e.k === 'pop' && (e.op === 'eq' || e.op === 'key') ? (e.op === 'eq' ? P.eq : P.key) : null;
+    if (!m) continue;
+    const [l, r] = e.a;
+    const [x, a] = side(l, mine) && ofR(r) ? [l, r] : side(r, mine) && ofR(l) ? [r, l] : [null, null];
+    if (!x) continue;
+    const rest = cs.filter((_, k) => k !== i);
+    const inner = rest.length ? P.select(R, P.and(rest)) : R;
+    if ([...free(inner)].some(col => mine.has(col))) continue;
+    const vals = P.distinct(P.project(marks(inner), [{ name: x.col.name, expr: a, t: x.col.t }]));
+    const j = P.join('inner', src, vals, m(P.ref(x.col), P.ref(vals.cols[0])));
+    return P.projectAs(j, src.cols.map(col => ({ col, expr: P.ref(col) })));
+  }
+  return null;
+}
+
 // Uncorrelated EXISTS: their relations' own EXISTS.
 const markRels = x => mapScalar(x, y => (y.k === 'exists' ? { ...y, rel: marks(y.rel) } : null));
 
@@ -367,14 +401,12 @@ function bind(c, F, dc) {
 // The relations inside L with L's distinct values of F, or more, crossed: down a projection
 // that passes them on, a distinct, a window, a grouping by them, a filter (its rows' values and
 // more), the side of a join that has them (a left join's left keeps each of its rows; an inner
-// join's side has its values and maybe more), both sides of a cross join no filter is over (its
-// values are its sides' crossed), a definition's rows. A join with values of F on both sides is
-// a part itself. More values than L's are no harm: each row R' has for a value L has not is
-// dropped by the join to L. [{ rel, map: F -> its column there }].
+// join's side has its values and maybe more), both sides of an inner or cross join that each has
+// some (a cross join's values are its sides' crossed; an inner join's, some of them), a
+// definition's rows. A left join with values of F on both sides is a part itself. More values than L's are no harm: each row R' has for a value L has not is dropped by the join
+// to L. [{ rel, map: F -> its column there }].
 function domain(L, F) {
-  // filtered: below a filter, whose rows a cross join's sides crossed are not (a σ over × is a
-  // join the joins pass has not made yet).
-  const walk = (r, map, filtered = false) => {
+  const walk = (r, map) => {
     for (;;) {
       const cols = [...map.values()];
       const through = (src, m) => (cols.every(c => src.cols.includes(m.get(c) ?? c)) ? { src, m } : null);
@@ -382,21 +414,20 @@ function domain(L, F) {
       if (r.k === 'project' || r.k === 'aggregate') {
         const by = new Map((r.k === 'project' ? r.items : r.keys).map(i => [i.col, i.expr]));
         if (cols.every(c => by.get(c)?.k === 'ref')) next = through(r.src, new Map(cols.map(c => [c, by.get(c).col])));
-      } else if (r.k === 'distinct' || r.k === 'window' || r.k === 'select') {
-        next = through(r.src, new Map());
-        if (r.k === 'select') filtered = true;
-      } else if (r.k === 'join') {
+      } else if (r.k === 'distinct' || r.k === 'window' || r.k === 'select') next = through(r.src, new Map());
+      else if (r.k === 'join') {
         next = through(r.left, new Map()) ?? (r.kind === 'left' ? null : through(r.right, new Map()));
         if (!next) {
           const side = rel => new Map([...map].filter(([, c]) => rel.cols.includes(c)));
           const a = side(r.left), b = side(r.right);
           // A left join's right: its values, and a blank (a left row it has none for).
-          const right = r.kind === 'left' ? walk(r.right, b, filtered).map(p => ({ ...p, blank: true })) : null;
+          const right = r.kind === 'left' ? walk(r.right, b).map(p => ({ ...p, blank: true })) : null;
           if (!a.size && right) return right;
-          // Values of both sides: the join's own (each side's crossed are as many as their sizes
-          // multiplied: 1,097 dates × 16 titles × 47 colors × 4 currencies where the rows have
-          // some thousands), but a cross join's, which are its sides' crossed.
-          if (r.kind === 'cross' && !filtered && a.size && b.size && a.size + b.size === map.size) return [...walk(r.left, a), ...walk(r.right, b)];
+          // A left join's values of both sides: its own, not its sides' crossed (a fact's rows to
+          // its dimensions: the dimensions' sizes multiplied, 1,097 dates × 16 titles × 47 colors
+          // × 4 currencies where the rows have some thousands; a date's values crossed with the
+          // fact's others, millions of rows for a range on dates).
+          if (!right && a.size && b.size && a.size + b.size === map.size) return [...walk(r.left, a), ...walk(r.right, b)];
         }
       } else if (r.k === 'shared') next = through(r.def.rel, new Map(r.cols.map((c, i) => [c, r.picks[i]])));
       if (!next) return [{ rel: r, map }];

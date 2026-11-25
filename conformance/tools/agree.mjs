@@ -2,7 +2,7 @@
 // model and its data, each compiled every way its SQL can be written and run on DuckDB:
 //   - compile() (the correlated plan, as DuckDB is given it), and planSql's correlated, unnested
 //     and optimized plans: the same rows (rows.mjs), or the same failure;
-//   - the T-SQL, PostgreSQL, Polars and DataFusion SQL: written, or refused with a DaxError;
+//   - the T-SQL, Polars and DataFusion SQL: written, or refused with a DaxError;
 //   - with DAXSQL_CHECK set, every pass's plan checked (src/check.js);
 //   - queries broken on purpose (mutate.mjs): SQL or a DaxError on every dialect.
 // A query that disagrees fails the run; it is kept (minimized by hand) as a query of the suite,
@@ -21,7 +21,7 @@ const opt = (name, d) => { const i = args.indexOf(`--${name}`); return i >= 0 ? 
 const COUNT = Number(opt('count', 300)), SEED = Number(opt('seed', 1)), MUTATIONS = Number(opt('mutations', 300));
 const MODELS = opt('models', Object.keys(CONFIG).join(',')).split(',');
 const MODES = { correlated: { correlated: true }, unnest: { unnest: true }, optimized: {} };
-const OTHER = ['tsql', 'postgres', 'polars', 'datafusion'];
+const OTHER = ['tsql', 'polars', 'datafusion'];
 
 const e = await engine(join(ROOT, '..'));
 const { DaxError } = await import(new URL('../../src/index.js', import.meta.url));

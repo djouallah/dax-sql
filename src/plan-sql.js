@@ -192,27 +192,8 @@ export class PlanSql {
   // A value as a column of type col.t: a blank typed as its column (a UNION reads it).
   val(v, col) { return v.k === 'lit' && v.v === null ? this.d.nullOf(col.t) : this.scalar(v, EMPTY); }
 
-  // A join's condition. Its blank-safe keys, each a value of the left's columns and one of the
-  // right's, as one where the dialect has it (Postgres estimates each key's matches apart: a join
-  // of several keys for a row or so, and loops over thousands).
-  on(r) {
-    if (!this.d.keysTogether) return this.scalar(r.on, EMPTY, true);
-    const cs = [], flat = c => (c.k === 'pop' && c.op === 'and' ? c.a.forEach(flat) : cs.push(c));
-    flat(r.on);
-    const L = new Set(r.left.cols), R = new Set(r.right.cols);
-    const within = (x, side) => { const f = refsOf(x); return f.size > 0 && [...f].every(c => side.has(c)); };
-    const keys = [];
-    for (const c of cs) {
-      if (c.k !== 'pop' || c.op !== 'key' || !this.d.keyType(c.a[0].t)) continue;
-      const [x, y] = c.a;
-      if (within(x, L) && within(y, R)) keys.push({ c, l: x, r: y });
-      else if (within(y, L) && within(x, R)) keys.push({ c, l: y, r: x });
-    }
-    if (keys.length < 2) return this.scalar(r.on, EMPTY, true);
-    const together = this.d.keysTogether(keys.map(k => ({ a: this.scalar(k.l, EMPTY), b: this.scalar(k.r, EMPTY), t: k.c.a[0].t })));
-    const used = new Set(keys.map(k => k.c));
-    return `(${[together, ...cs.filter(c => !used.has(c)).map(c => this.scalar(c, EMPTY, true))].join(' AND ')})`;
-  }
+  // A join's condition.
+  on(r) { return this.scalar(r.on, EMPTY, true); }
 
   // --- the plan's own scalars ----------------------------------------------------------------
 
@@ -264,7 +245,7 @@ export class PlanSql {
 
   // A standard function, as the dialect writes it.
   call(name, a, nodes, t) {
-    const d = this.d, [x, y, z] = a, df = d.name === 'datafusion', pg = d.name === 'postgres' || d.name === 'polars' || df, ts = d.name === 'tsql';
+    const d = this.d, [x, y, z] = a, df = d.name === 'datafusion', pg = d.name === 'polars' || df, ts = d.name === 'tsql';
     // The last day of a month (EOMONTH, the end of a period: the month's start, q months on, a day
     // back) as DuckDB's last_day, which it pushes below a join as a condition on the column
     // (the month ends of SAMEPERIODLASTYEAR: 1.2 million rows tested after a join, 39 thousand so).
@@ -281,7 +262,7 @@ export class PlanSql {
       case 'error': return d.computesEveryBranch ? `CAST(NULL AS ${d.type(t)})` : d.err ? d.err(x, t) : d.fn('error', a, nodes);
       // (T-SQL: CHARINDEX finds no empty text, which is at 1.)
       case 'strpos': return ts ? `CASE WHEN DATALENGTH(${y}) = 0 THEN 1 ELSE CHARINDEX(${y}, ${x}) END` : pg ? `strpos(${x}, ${y})` : `instr(${x}, ${y})`;
-      case 'substring_from': return ts ? `SUBSTRING(${x}, ${y}, LEN(${x}))` : d.name === 'postgres' ? `substr(${x}, CAST(${y} AS INTEGER))` : `substring(${x}, ${y})`;
+      case 'substring_from': return ts ? `SUBSTRING(${x}, ${y}, LEN(${x}))` : `substring(${x}, ${y})`;
       case 'regexp_replace': return `regexp_replace(${x}, ${y}, ${z}, 'g')`;
       case 'extract_dow': return ts ? `(DATEPART(weekday, ${x}) - 1)` : pg ? `CAST(EXTRACT(DOW FROM ${x}) AS BIGINT)` : `dayofweek(${x})`;
       case 'make_date': return ts ? `DATEFROMPARTS(${a.join(', ')})` : pg ? `make_date(${a.map(v => `CAST(${v} AS INTEGER)`).join(', ')})` : `make_date(${a.join(', ')})`;

@@ -1,11 +1,9 @@
 // Apache DataFusion's SQL (tested on 55): PostgreSQL's SQL, as DataFusion reads it, over the
 // query plan unnested (planSql { unnest: true }: DataFusion unnests correlated subqueries of a
-// few forms only). What it writes differently from PostgreSQL's:
-// - No session settings, and WITH has no MATERIALIZED.
-// - Each relation a SELECT reads is a CTE of its own: DataFusion's parser nests only so deep.
-// - A blank-safe key is IS NOT DISTINCT FROM, which DataFusion joins on as on = (no arrays, no
-//   ROW()::record).
-// - A value is written where it is read, not bound in a subquery's row (a correlated subquery).
+// few forms only). As postgres.js writes it, for DataFusion: each relation a SELECT reads a CTE of
+// its own (DataFusion's parser nests only so deep); a blank-safe key IS NOT DISTINCT FROM, which
+// DataFusion joins on as on =; a value written where it is read (not bound in a subquery's row: a
+// correlated subquery). What it writes differently:
 // - An interval of n units is cast from text ('n days'): no make_interval.
 // - generate_series is a table (its rows' column `value`); a series whose bounds are a row's
 //   reads them by scalar subqueries (no LATERAL).
@@ -25,18 +23,8 @@ export const SERIES_STEPS = 1000000;
 
 export class DataFusionDialect extends PostgresDialect {
   name = 'datafusion';
-  session = [];
-  materialized = '';
-  subqueryInCase = true;
-  flatSql = true;
-  // A CASE's branches no row takes are computed too: DAX's runtime errors are blanks.
-  computesEveryBranch = true;
-  seriesBoundsAsSubqueries = true;
-  keysTogether = null;
 
-  isNotDistinct(a, b) { return `(${a} IS NOT DISTINCT FROM ${b})`; }
   type(t) { return t === 'string' ? 'VARCHAR' : t === 'double' ? 'DOUBLE' : super.type(t); }
-  bind(vals, body) { return body(...vals); }
 
   // generate_series takes constants only: bounds of a row (CALENDARAUTO's) the steps of a series
   // of constants (SERIES_STEPS at most) that the bounds keep.

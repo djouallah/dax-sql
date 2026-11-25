@@ -23,12 +23,7 @@ Nothing here blocks a release. DAX on DuckDB has nothing left; T-SQL is the last
   Left: `segmentation-bands-matrix-two-totals` near 30 s (26 s alone; the compiled SQL 10 s),
   a measure's grouping read 8 times, which Fabric computes at each read.
 
-# Wave 3: PostgreSQL
-
-- The optimized and unnested plans answer the 3 queries the compiled SQL takes past 10 min
-  (`known-compile.json`).
-
-# Wave 4: Polars
+# Wave 3: Polars
 
 - Polars 2.2.0 (pip), the suite in `polars.yml` through the unnested plan; the correlated plan
   beside it waits on pola-rs/polars#31059 and #31067 (an outer row read in a derived table).
@@ -49,7 +44,7 @@ as every engine does. DAX's runtime errors are in the plan (an `error` lambda in
    suite answers through `planSql` on DuckDB as it does through `compile`.
 2. Done: **decorrelation**, the correlated plan unnested top down (`unnest.js`,
    `{ unnest: true }`): no apply left on the suite; D read from the base rows, not the levels
-   below (Fabric computes a CTE at each read). Its answers on DuckDB, PostgreSQL, Fabric, Polars
+   below (Fabric computes a CTE at each read). Its answers on DuckDB, Fabric, Polars
    and DataFusion in CI.
 3. **The emitter's rewrites as passes**, one at a time, each checked against the plan as it
    is: fusion, filters on the scan, grouping below joins, sharing.

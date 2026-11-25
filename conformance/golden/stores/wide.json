@@ -1,0 +1,123 @@
+{
+ "wide-a16-1": {
+  "hash": "d17d507cfa9b8f33e4f3554edd362fbc02fb4ea8",
+  "columns": [
+   "[brand]",
+   "[year]",
+   "[c1]",
+   "[present]"
+  ],
+  "rows": [
+   [
+    "Acme",
+    2023,
+    125,
+    1
+   ],
+   [
+    "Acme",
+    2024,
+    200,
+    1
+   ],
+   [
+    "Beta",
+    2024,
+    90,
+    1
+   ]
+  ]
+ },
+ "wide-a16-2": {
+  "hash": "7a709e5660594167b56557127c1b0190cabd888a",
+  "columns": [
+   "[brand]",
+   "[year]",
+   "[c1]",
+   "[present]"
+  ],
+  "rows": [
+   [
+    "Acme",
+    2023,
+    10,
+    1
+   ],
+   [
+    "Beta",
+    2024,
+    5,
+    1
+   ]
+  ]
+ },
+ "wide-a17": {
+  "hash": "7de0b6dbae4910e2353cf2dc8350440b292a7fa9",
+  "columns": [
+   "[region]",
+   "[total_sales]"
+  ],
+  "rows": [
+   [
+    null,
+    65
+   ],
+   [
+    "EAST",
+    150
+   ],
+   [
+    "WEST",
+    200
+   ]
+  ]
+ },
+ "wide-a18": {
+  "hash": "eef15718a1dc4142ee5244091e19b4c714f9f0e9",
+  "columns": [
+   "[brand]",
+   "[state]",
+   "[total_sales]"
+  ],
+  "rows": [
+   [
+    "Acme",
+    "CA",
+    325
+   ],
+   [
+    "Beta",
+    "NY",
+    90
+   ]
+  ]
+ },
+ "wide-a19": {
+  "hash": "cdb1bd2f416114e7d39bf185fb12c3d86d955286",
+  "columns": [
+   "[year]",
+   "[total_sales]"
+  ],
+  "rows": [
+   [
+    2023,
+    125
+   ],
+   [
+    2024,
+    290
+   ]
+  ]
+ },
+ "wide-a20": {
+  "hash": "a7d44d67c026332684dabfd62ede0fd6716c6564",
+  "columns": [
+   "[total_sales]"
+  ],
+  "rows": [
+   [
+    290
+   ]
+  ]
+ }
+}

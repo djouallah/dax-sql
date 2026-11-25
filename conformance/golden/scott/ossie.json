@@ -58,6 +58,40 @@
    ]
   ]
  },
+ "ossie-a12-1": {
+  "hash": "a54dd68b0bac8572e8f5d438395a500c44de3b38",
+  "columns": [
+   "[deptno]",
+   "[dept_sal]"
+  ],
+  "rows": [
+   [
+    20,
+    10875.0
+   ],
+   [
+    30,
+    9400.0
+   ],
+   [
+    10,
+    8750.0
+   ]
+  ]
+ },
+ "ossie-a12-2": {
+  "hash": "0eda64b06ade15caf72aa3c11e5b898e6f0018f1",
+  "columns": [
+   "['avg salary per emp']",
+   "[avg_sal]"
+  ],
+  "rows": [
+   [
+    "avg salary per emp",
+    2073.214285714286
+   ]
+  ]
+ },
  "ossie-a14": {
   "hash": "044e68fb5842554e64377d8be2550538db9cea6c",
   "columns": [

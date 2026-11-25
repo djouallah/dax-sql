@@ -1,0 +1,4519 @@
+{
+ "grid-0001": {
+  "hash": "fa8abb547884804318616592eb7c2af30439ec6b",
+  "columns": [
+   "[v]"
+  ],
+  "rows": [
+   [
+    3
+   ]
+  ]
+ },
+ "grid-0002": {
+  "hash": "fde4575ec10efae3fbf04e143f27ccb99e884da1",
+  "columns": [
+   "[customer_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "C1",
+    1
+   ],
+   [
+    "C2",
+    1
+   ],
+   [
+    "C3",
+    1
+   ]
+  ]
+ },
+ "grid-0003": {
+  "hash": "94e795acddc8c1be534ea9b1e6b3a3e00ccaf3df",
+  "columns": [
+   "[customer_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "C1",
+    1
+   ],
+   [
+    "C3",
+    1
+   ]
+  ]
+ },
+ "grid-0004": {
+  "hash": "8702ad27b94f320ffd1cc5154b6633fc89c4fee9",
+  "columns": [
+   "[customer_id]",
+   "[v]"
+  ],
+  "rows": []
+ },
+ "grid-0005": {
+  "hash": "9ad22b9a8b206822bad7b46c49c1fec394c58e39",
+  "columns": [
+   "[customer_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "C2",
+    1
+   ],
+   [
+    "C3",
+    1
+   ]
+  ]
+ },
+ "grid-0006": {
+  "hash": "acb03b8227acf4c3b23ba76db3846f976a247386",
+  "columns": [
+   "[v]"
+  ],
+  "rows": [
+   [
+    2
+   ]
+  ]
+ },
+ "grid-0007": {
+  "hash": "d692eed2f5361db9077102dba77e43923e18bcf4",
+  "columns": [
+   "[customer_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "C1",
+    1
+   ],
+   [
+    "C2",
+    1
+   ],
+   [
+    "C3",
+    1
+   ]
+  ]
+ },
+ "grid-0008": {
+  "hash": "17fabb40e802db7cfd8c58f7666290e1ca99fc18",
+  "columns": [
+   "[customer_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "C1",
+    1
+   ],
+   [
+    "C2",
+    1
+   ],
+   [
+    "C3",
+    1
+   ]
+  ]
+ },
+ "grid-0009": {
+  "hash": "aa74f30c31db8507817fcab800ade3d8171f022b",
+  "columns": [
+   "[customer_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "C1",
+    1
+   ],
+   [
+    "C2",
+    1
+   ],
+   [
+    "C3",
+    1
+   ]
+  ]
+ },
+ "grid-0010": {
+  "hash": "272ca816197e5c5341871a4dbdaa77b2a1b8769f",
+  "columns": [
+   "[customer_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "C1",
+    1
+   ],
+   [
+    "C2",
+    1
+   ],
+   [
+    "C3",
+    1
+   ]
+  ]
+ },
+ "grid-0011": {
+  "hash": "7e67cb342448cb9523165b6f7dfc4591f6fc7f02",
+  "columns": [
+   "[customer_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "C1",
+    1
+   ],
+   [
+    "C2",
+    1
+   ],
+   [
+    "C3",
+    1
+   ]
+  ]
+ },
+ "grid-0012": {
+  "hash": "01799be8bcee7eee6e89cdc26f01b94d3c33da60",
+  "columns": [
+   "[customer_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "C1",
+    1
+   ],
+   [
+    "C2",
+    1
+   ],
+   [
+    "C3",
+    1
+   ],
+   [
+    null,
+    3
+   ]
+  ]
+ },
+ "grid-0013": {
+  "hash": "9eb7148c4141d3b6dec8f453e513414ebbd363e7",
+  "columns": [
+   "[customer_id]",
+   "[a]",
+   "[b]",
+   "[c]"
+  ],
+  "rows": [
+   [
+    "C1",
+    2,
+    2,
+    1
+   ],
+   [
+    "C2",
+    2,
+    2,
+    1
+   ],
+   [
+    "C3",
+    2,
+    2,
+    1
+   ]
+  ]
+ },
+ "grid-0014": {
+  "hash": "e2b4064e8bc809c1d0539e1bf2ad14d2ec0708e4",
+  "columns": [
+   "[customer_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "C1",
+    1
+   ],
+   [
+    "C2",
+    1
+   ]
+  ]
+ },
+ "grid-0015": {
+  "hash": "accbffddacb6bdfd6d11e69efd84917162ebbfa3",
+  "columns": [
+   "[customer_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "C1",
+    1
+   ],
+   [
+    "C2",
+    1
+   ],
+   [
+    "C3",
+    1
+   ]
+  ]
+ },
+ "grid-0016": {
+  "hash": "7e7c20fc8eff696c67694f5f82d595be2f847f7a",
+  "columns": [
+   "[customer_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "C3",
+    1
+   ]
+  ]
+ },
+ "grid-0017": {
+  "hash": "0c640c8811d0f7107f04be9586e3e26d80d264bf",
+  "columns": [
+   "[customer_id]",
+   "[v]"
+  ],
+  "rows": []
+ },
+ "grid-0018": {
+  "hash": "b405f09030a425db611f613d00e8ec230a17f27c",
+  "columns": [
+   "[customer_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "C1",
+    1
+   ],
+   [
+    "C2",
+    1
+   ]
+  ]
+ },
+ "grid-0019": {
+  "hash": "27ef318dd845ed866d9f9988693b892c37219f43",
+  "columns": [
+   "[v]"
+  ],
+  "rows": [
+   [
+    3
+   ]
+  ]
+ },
+ "grid-0020": {
+  "hash": "011770ee167f54bddea3fa9cbb27c26dc90d58a9",
+  "columns": [
+   "[customer_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "C3",
+    1
+   ]
+  ]
+ },
+ "grid-0021": {
+  "hash": "e6a9217b32b1f81eecb9f7e5b36266bddaa31a70",
+  "columns": [
+   "[region]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    null,
+    1
+   ],
+   [
+    "EAST",
+    1
+   ],
+   [
+    "WEST",
+    1
+   ]
+  ]
+ },
+ "grid-0022": {
+  "hash": "3989d6aba7666f11aa5586450504dc87d529392a",
+  "columns": [
+   "[region]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "EAST",
+    1
+   ],
+   [
+    "WEST",
+    1
+   ]
+  ]
+ },
+ "grid-0023": {
+  "hash": "992c746910ab4d5c80b70ed0ec87379e5f309dc9",
+  "columns": [
+   "[region]",
+   "[v]"
+  ],
+  "rows": []
+ },
+ "grid-0024": {
+  "hash": "514638e98d10ffee4aa2d50362c27a01c326c86e",
+  "columns": [
+   "[region]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "EAST",
+    1
+   ],
+   [
+    "WEST",
+    1
+   ]
+  ]
+ },
+ "grid-0025": {
+  "hash": "1db07b90b4e21a075fe86f4f6e0220cd329c705c",
+  "columns": [
+   "[region]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    null,
+    1
+   ],
+   [
+    "EAST",
+    1
+   ],
+   [
+    "WEST",
+    1
+   ]
+  ]
+ },
+ "grid-0026": {
+  "hash": "ab5ade840b8d7cbf22ff718421dfaf6223de1b1c",
+  "columns": [
+   "[region]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    null,
+    1
+   ],
+   [
+    "EAST",
+    1
+   ],
+   [
+    "WEST",
+    1
+   ]
+  ]
+ },
+ "grid-0027": {
+  "hash": "8f344557413667ccb4045c1169a319b477177968",
+  "columns": [
+   "[region]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    null,
+    1
+   ],
+   [
+    "EAST",
+    1
+   ],
+   [
+    "WEST",
+    1
+   ]
+  ]
+ },
+ "grid-0028": {
+  "hash": "2d3eb8333be41901bc93310fcae001a1e950fddb",
+  "columns": [
+   "[region]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    null,
+    1
+   ],
+   [
+    "EAST",
+    1
+   ],
+   [
+    "WEST",
+    1
+   ]
+  ]
+ },
+ "grid-0029": {
+  "hash": "30aa39bf12a832d099c9836be919a9a817f1d1f5",
+  "columns": [
+   "[region]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    null,
+    1
+   ],
+   [
+    "EAST",
+    1
+   ],
+   [
+    "WEST",
+    1
+   ]
+  ]
+ },
+ "grid-0030": {
+  "hash": "52cf8706f522451de4fb2f00a17c1fdbdb2f76cd",
+  "columns": [
+   "[region]",
+   "[a]",
+   "[b]",
+   "[c]"
+  ],
+  "rows": [
+   [
+    null,
+    2,
+    2,
+    1
+   ],
+   [
+    "EAST",
+    2,
+    2,
+    1
+   ],
+   [
+    "WEST",
+    2,
+    2,
+    1
+   ]
+  ]
+ },
+ "grid-0031": {
+  "hash": "8212471570f90fa5273679b8e56bc612fb536542",
+  "columns": [
+   "[region]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "EAST",
+    1
+   ],
+   [
+    "WEST",
+    1
+   ]
+  ]
+ },
+ "grid-0032": {
+  "hash": "26da02fe6618e87cb4404aa6f90302b40abe1368",
+  "columns": [
+   "[region]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    null,
+    1
+   ],
+   [
+    "EAST",
+    1
+   ],
+   [
+    "WEST",
+    1
+   ]
+  ]
+ },
+ "grid-0033": {
+  "hash": "cb6e5d180e6e0036e31acc2dab6ca53b5e3be0cf",
+  "columns": [
+   "[region]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    null,
+    1
+   ],
+   [
+    "EAST",
+    1
+   ]
+  ]
+ },
+ "grid-0034": {
+  "hash": "ae24c60668601cc7e2098c4f55dd5c9ee0406594",
+  "columns": [
+   "[region]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "EAST",
+    1
+   ],
+   [
+    "WEST",
+    1
+   ]
+  ]
+ },
+ "grid-0035": {
+  "hash": "8d4891784cc72492b4f650d124f1d5cf409465ff",
+  "columns": [
+   "[region]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    null,
+    1
+   ],
+   [
+    "WEST",
+    1
+   ]
+  ]
+ },
+ "grid-0036": {
+  "hash": "f9d7ed82d734d0c861f14902e450de3aaa36c915",
+  "columns": [
+   "[v]"
+  ],
+  "rows": [
+   [
+    2
+   ]
+  ]
+ },
+ "grid-0037": {
+  "hash": "132d587547859ff17198f74894441fe3f26bd566",
+  "columns": [
+   "[region]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "EAST",
+    1
+   ],
+   [
+    "WEST",
+    1
+   ]
+  ]
+ },
+ "grid-0038": {
+  "hash": "cad468b47002fb1f4f45830e94f8a3db8669f6f3",
+  "columns": [
+   "[region]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    null,
+    1
+   ],
+   [
+    "EAST",
+    1
+   ],
+   [
+    "WEST",
+    1
+   ]
+  ]
+ },
+ "grid-0039": {
+  "hash": "9555553ff294e42740128f63011227e6f5d8670b",
+  "columns": [
+   "[region]",
+   "[v]"
+  ],
+  "rows": []
+ },
+ "grid-0040": {
+  "hash": "7219bff2b5084528bf951ac78021becffcc557d8",
+  "columns": [
+   "[region]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "EAST",
+    1
+   ],
+   [
+    "WEST",
+    1
+   ]
+  ]
+ },
+ "grid-0041": {
+  "hash": "39ebaea6d6d872dabece97c0bd2fe4915b4f7a1e",
+  "columns": [
+   "[v]"
+  ],
+  "rows": [
+   [
+    2
+   ]
+  ]
+ },
+ "grid-0042": {
+  "hash": "bf9a615b0bebb400c70fcb6b877ff1def9869239",
+  "columns": [
+   "[region]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    null,
+    1
+   ],
+   [
+    "WEST",
+    1
+   ]
+  ]
+ },
+ "grid-0043": {
+  "hash": "9733e4a3b4d14ce9f8e901cc36a8da96b3085d57",
+  "columns": [
+   "[region]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "WEST",
+    1
+   ]
+  ]
+ },
+ "grid-0044": {
+  "hash": "8f24bc00c835caf0cfe72c3e3bb4a6c9d4defa09",
+  "columns": [
+   "[region]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "EAST",
+    1
+   ],
+   [
+    "WEST",
+    1
+   ]
+  ]
+ },
+ "grid-0045": {
+  "hash": "7bec837861b8104f882cccfe6061bb03fdc0e117",
+  "columns": [
+   "[v]"
+  ],
+  "rows": [
+   [
+    2
+   ]
+  ]
+ },
+ "grid-0046": {
+  "hash": "89c638bf844eb299db169e47d308234194ab5498",
+  "columns": [
+   "[region]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    null,
+    1
+   ],
+   [
+    "EAST",
+    1
+   ],
+   [
+    "WEST",
+    1
+   ]
+  ]
+ },
+ "grid-0047": {
+  "hash": "30aea09fccf739a24281ccbebf8b7719efc24387",
+  "columns": [
+   "[v]"
+  ],
+  "rows": [
+   [
+    415
+   ]
+  ]
+ },
+ "grid-0048": {
+  "hash": "f67124c3a6fbba8337dc138330793119cfd4253e",
+  "columns": [
+   "[sale_date_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "D2023",
+    125
+   ],
+   [
+    "D2024a",
+    290
+   ]
+  ]
+ },
+ "grid-0049": {
+  "hash": "f4c5dedca2bc307e4cb7bd728622646863059b42",
+  "columns": [
+   "[sale_date_id]",
+   "[customer_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "D2023",
+    null,
+    25
+   ],
+   [
+    "D2023",
+    "C1",
+    100
+   ],
+   [
+    "D2024a",
+    "C1",
+    50
+   ],
+   [
+    "D2024a",
+    "C2",
+    200
+   ],
+   [
+    "D2024a",
+    "C3",
+    40
+   ]
+  ]
+ },
+ "grid-0050": {
+  "hash": "335b46abd1805f3ef3347a7b258869522248c552",
+  "columns": [
+   "[sale_date_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "D2023",
+    125
+   ]
+  ]
+ },
+ "grid-0051": {
+  "hash": "b7527879a46ef7b2fc3306549faa8f594526f820",
+  "columns": [
+   "[sale_date_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "D2023",
+    25
+   ],
+   [
+    "D2024a",
+    40
+   ]
+  ]
+ },
+ "grid-0052": {
+  "hash": "d2ae48be9e40b4880e780cc22e414c1bdceb5811",
+  "columns": [
+   "[sale_date_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "D2023",
+    125
+   ],
+   [
+    "D2024a",
+    290
+   ]
+  ]
+ },
+ "grid-0053": {
+  "hash": "970b2ba7d536e735c9bd552c091d82dcc5125a43",
+  "columns": [
+   "[v]"
+  ],
+  "rows": [
+   [
+    415
+   ]
+  ]
+ },
+ "grid-0054": {
+  "hash": "40b17713c7d7282f0f74538c7c7991a5670da6ab",
+  "columns": [
+   "[sale_date_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "D2023",
+    125
+   ],
+   [
+    "D2024a",
+    290
+   ]
+  ]
+ },
+ "grid-0055": {
+  "hash": "a43a5f834a715d03ed0b551d24eb45c194b14202",
+  "columns": [
+   "[sale_date_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "D2023",
+    125
+   ],
+   [
+    "D2024a",
+    290
+   ]
+  ]
+ },
+ "grid-0056": {
+  "hash": "5badaf62f1cd8511824b50408b0049ccf3a0c6f2",
+  "columns": [
+   "[sale_date_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "D2023",
+    125
+   ],
+   [
+    "D2024a",
+    290
+   ]
+  ]
+ },
+ "grid-0057": {
+  "hash": "cd822c247ab61e55c4d8507a4182ee94e46002be",
+  "columns": [
+   "[sale_date_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "D2024a",
+    290
+   ],
+   [
+    "D2023",
+    125
+   ]
+  ]
+ },
+ "grid-0058": {
+  "hash": "57586a761eb428a9113532f23958f9fe1762f095",
+  "columns": [
+   "[sale_date_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "D2023",
+    125
+   ],
+   [
+    "D2024a",
+    290
+   ]
+  ]
+ },
+ "grid-0059": {
+  "hash": "b2908b6a782972e02d33f8bca4feec9ee68bfd1d",
+  "columns": [
+   "[item_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "I1",
+    325
+   ],
+   [
+    "I2",
+    90
+   ],
+   [
+    null,
+    415
+   ]
+  ]
+ },
+ "grid-0060": {
+  "hash": "227355bbf5ff03a24398de29a7d9aade2f22b359",
+  "columns": [
+   "[sale_date_id]",
+   "[a]",
+   "[b]",
+   "[c]"
+  ],
+  "rows": [
+   [
+    "D2023",
+    250,
+    126,
+    125
+   ],
+   [
+    "D2024a",
+    580,
+    291,
+    290
+   ]
+  ]
+ },
+ "grid-0061": {
+  "hash": "a54b9d5a2af1fdcb7e5e8c02bdd1f9891f98422c",
+  "columns": [
+   "[sale_date_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "D2023",
+    125
+   ],
+   [
+    "D2024a",
+    290
+   ]
+  ]
+ },
+ "grid-0062": {
+  "hash": "094d35bb6f965cc325eed3b3e15f84586e4d72ae",
+  "columns": [
+   "[sale_date_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "D2023",
+    125
+   ],
+   [
+    "D2024a",
+    290
+   ]
+  ]
+ },
+ "grid-0063": {
+  "hash": "d74e868d7185884442409400a49603ff3cf7a2a1",
+  "columns": [
+   "[customer_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    null,
+    25
+   ],
+   [
+    "C1",
+    150
+   ],
+   [
+    "C2",
+    200
+   ],
+   [
+    "C3",
+    40
+   ]
+  ]
+ },
+ "grid-0064": {
+  "hash": "3e647c92e9cd127e6a155b2f6ad18981e3bd7cb8",
+  "columns": [
+   "[customer_id]",
+   "[item_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    null,
+    "I1",
+    25
+   ],
+   [
+    "C1",
+    "I1",
+    100
+   ],
+   [
+    "C1",
+    "I2",
+    50
+   ],
+   [
+    "C2",
+    "I1",
+    200
+   ],
+   [
+    "C3",
+    "I2",
+    40
+   ]
+  ]
+ },
+ "grid-0065": {
+  "hash": "2ff4405485d1d739f1deeb180c52a8bf18687994",
+  "columns": [
+   "[customer_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "C1",
+    50
+   ]
+  ]
+ },
+ "grid-0066": {
+  "hash": "3282f97bfd4984dbb8ded8d253c4a638309601f7",
+  "columns": [
+   "[customer_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    null,
+    25
+   ]
+  ]
+ },
+ "grid-0067": {
+  "hash": "aa1a514697f6168d72c41895c4a05cc0658c2cbb",
+  "columns": [
+   "[customer_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    null,
+    25
+   ],
+   [
+    "C1",
+    150
+   ],
+   [
+    "C2",
+    200
+   ],
+   [
+    "C3",
+    40
+   ]
+  ]
+ },
+ "grid-0068": {
+  "hash": "8f8f3f87198b72d04d0b38dc2bf2cfc4a174e094",
+  "columns": [
+   "[v]"
+  ],
+  "rows": [
+   [
+    215
+   ]
+  ]
+ },
+ "grid-0069": {
+  "hash": "9d2b6da2e2b99ca2f51695bf3c0173dd89930bb3",
+  "columns": [
+   "[customer_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    null,
+    25
+   ],
+   [
+    "C1",
+    150
+   ],
+   [
+    "C2",
+    200
+   ],
+   [
+    "C3",
+    40
+   ]
+  ]
+ },
+ "grid-0070": {
+  "hash": "c2f3257986e4546bbc16d5f8beb14386168e2afd",
+  "columns": [
+   "[customer_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    null,
+    25
+   ],
+   [
+    "C1",
+    150
+   ],
+   [
+    "C2",
+    200
+   ],
+   [
+    "C3",
+    40
+   ]
+  ]
+ },
+ "grid-0071": {
+  "hash": "cca949510df1510bed3bb37dcd6b47a0b49054a6",
+  "columns": [
+   "[customer_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    null,
+    25
+   ],
+   [
+    "C1",
+    150
+   ],
+   [
+    "C2",
+    200
+   ],
+   [
+    "C3",
+    40
+   ]
+  ]
+ },
+ "grid-0072": {
+  "hash": "e48caab544170162d701495780c2cbfe7e77f7eb",
+  "columns": [
+   "[customer_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "C2",
+    200
+   ],
+   [
+    "C1",
+    150
+   ],
+   [
+    "C3",
+    40
+   ],
+   [
+    null,
+    25
+   ]
+  ]
+ },
+ "grid-0073": {
+  "hash": "8ff562638b3284e3c1a42a5c7fdfb64f687f1337",
+  "columns": [
+   "[customer_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    null,
+    25
+   ],
+   [
+    "C1",
+    150
+   ],
+   [
+    "C2",
+    200
+   ],
+   [
+    "C3",
+    40
+   ]
+  ]
+ },
+ "grid-0074": {
+  "hash": "8669feeba0aa5163df1b61cf69b896b687c099ce",
+  "columns": [
+   "[sale_date_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "D2023",
+    125
+   ],
+   [
+    "D2024a",
+    290
+   ],
+   [
+    null,
+    415
+   ]
+  ]
+ },
+ "grid-0075": {
+  "hash": "4e8e22054dc7c76c9322bbf61038661d7d70a55d",
+  "columns": [
+   "[customer_id]",
+   "[a]",
+   "[b]",
+   "[c]"
+  ],
+  "rows": [
+   [
+    null,
+    50,
+    26,
+    25
+   ],
+   [
+    "C1",
+    300,
+    151,
+    150
+   ],
+   [
+    "C2",
+    400,
+    201,
+    200
+   ],
+   [
+    "C3",
+    80,
+    41,
+    40
+   ]
+  ]
+ },
+ "grid-0076": {
+  "hash": "5dc8ff667b72713cb488df7c9c0373d0575ca752",
+  "columns": [
+   "[customer_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    null,
+    25
+   ]
+  ]
+ },
+ "grid-0077": {
+  "hash": "c97e4a9c4635b2b200c076e055136181b8a094ba",
+  "columns": [
+   "[customer_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    null,
+    25
+   ],
+   [
+    "C1",
+    150
+   ],
+   [
+    "C2",
+    200
+   ],
+   [
+    "C3",
+    40
+   ]
+  ]
+ },
+ "grid-0078": {
+  "hash": "f54318131511b5ab74233047ca662f7e0c4e0e81",
+  "columns": [
+   "[customer_id]",
+   "[sale_date_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    null,
+    "D2023",
+    25
+   ],
+   [
+    "C1",
+    "D2023",
+    100
+   ],
+   [
+    "C1",
+    "D2024a",
+    50
+   ],
+   [
+    "C2",
+    "D2024a",
+    200
+   ],
+   [
+    "C3",
+    "D2024a",
+    40
+   ]
+  ]
+ },
+ "grid-0079": {
+  "hash": "2a6a31db528bc782b102bc94d34f8f904ad0652e",
+  "columns": [
+   "[customer_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "C1",
+    50
+   ],
+   [
+    "C3",
+    40
+   ]
+  ]
+ },
+ "grid-0080": {
+  "hash": "d05587c70311b179d612c8eb858abace15f737ae",
+  "columns": [
+   "[customer_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "C1",
+    100
+   ]
+  ]
+ },
+ "grid-0081": {
+  "hash": "6a24c07d93274c5a9b0cfbc1a2397ceda802e896",
+  "columns": [
+   "[customer_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    null,
+    25
+   ],
+   [
+    "C1",
+    150
+   ],
+   [
+    "C2",
+    200
+   ],
+   [
+    "C3",
+    40
+   ]
+  ]
+ },
+ "grid-0082": {
+  "hash": "dfde07493772cb32bd2676d9ce3c2e1f26988dfa",
+  "columns": [
+   "[v]"
+  ],
+  "rows": [
+   [
+    415
+   ]
+  ]
+ },
+ "grid-0083": {
+  "hash": "c9a2b4bd08aff6b8a5ff4368f379f3fbc9ef012e",
+  "columns": [
+   "[store_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "S1",
+    325
+   ],
+   [
+    "S2",
+    90
+   ],
+   [
+    null,
+    415
+   ]
+  ]
+ },
+ "grid-0084": {
+  "hash": "ea26d89622ed1a1fc63c1ba34bb8789c00142f26",
+  "columns": [
+   "[customer_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    null,
+    25
+   ],
+   [
+    "C1",
+    150
+   ],
+   [
+    "C2",
+    200
+   ],
+   [
+    "C3",
+    40
+   ]
+  ]
+ },
+ "grid-0085": {
+  "hash": "5d4fffc45d9e725a7335d22c4ad1433f51a70b53",
+  "columns": [
+   "[customer_id]",
+   "[sales_amount]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    null,
+    25,
+    25
+   ],
+   [
+    "C3",
+    40,
+    40
+   ],
+   [
+    "C1",
+    50,
+    50
+   ],
+   [
+    "C1",
+    100,
+    100
+   ],
+   [
+    "C2",
+    200,
+    200
+   ]
+  ]
+ },
+ "grid-0086": {
+  "hash": "bbabea5fe972473a9e2cfc840b025309b01221d2",
+  "columns": [
+   "[customer_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    null,
+    25
+   ],
+   [
+    "C1",
+    100
+   ],
+   [
+    "C2",
+    200
+   ]
+  ]
+ },
+ "grid-0087": {
+  "hash": "76748d92ed44af090e0479457026c244845e9c35",
+  "columns": [
+   "[customer_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "C1",
+    50
+   ],
+   [
+    "C3",
+    40
+   ]
+  ]
+ },
+ "grid-0088": {
+  "hash": "2bacccda57b34cda519c442ac5c1f9d6645f0cd1",
+  "columns": [
+   "[customer_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    null,
+    25
+   ],
+   [
+    "C1",
+    150
+   ],
+   [
+    "C2",
+    200
+   ],
+   [
+    "C3",
+    40
+   ]
+  ]
+ },
+ "grid-0089": {
+  "hash": "5f2248d140d4daaf5d2dd82af3814d5b713fb224",
+  "columns": [
+   "[v]"
+  ],
+  "rows": [
+   [
+    225
+   ]
+  ]
+ },
+ "grid-0090": {
+  "hash": "b9117e695129bb0c5a8e008da72655f097f52795",
+  "columns": [
+   "[customer_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    null,
+    25
+   ],
+   [
+    "C1",
+    100
+   ]
+  ]
+ },
+ "grid-0091": {
+  "hash": "b5e174c6740067f2ed2a386bb0caad718a5f0078",
+  "columns": [
+   "[sale_date_id]",
+   "[item_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "D2023",
+    "I1",
+    125
+   ],
+   [
+    "D2024a",
+    "I1",
+    200
+   ],
+   [
+    "D2024a",
+    "I2",
+    90
+   ]
+  ]
+ },
+ "grid-0092": {
+  "hash": "df560de1db923e5eb1ba025532dd279e8eaf808a",
+  "columns": [
+   "[sale_date_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "D2023",
+    125
+   ],
+   [
+    "D2024a",
+    200
+   ]
+  ]
+ },
+ "grid-0093": {
+  "hash": "02382d358c1f7d09f41de61171a2768c2c26e391",
+  "columns": [
+   "[sale_date_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "D2023",
+    125
+   ],
+   [
+    "D2024a",
+    90
+   ]
+  ]
+ },
+ "grid-0094": {
+  "hash": "ad6bc8b40012d171c1e44d3ba7f31302a6e9a748",
+  "columns": [
+   "[sale_date_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "D2023",
+    125
+   ],
+   [
+    "D2024a",
+    290
+   ]
+  ]
+ },
+ "grid-0095": {
+  "hash": "e16d0609c4424098e27912b18fe9ed6b12dc76d2",
+  "columns": [
+   "[v]"
+  ],
+  "rows": [
+   [
+    25
+   ]
+  ]
+ },
+ "grid-0096": {
+  "hash": "01b752b49d3cf16f7f47aea41ca9053bd588fddd",
+  "columns": [
+   "[sale_date_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "D2023",
+    125
+   ],
+   [
+    "D2024a",
+    200
+   ]
+  ]
+ },
+ "grid-0097": {
+  "hash": "dc43c5fd72be59dfbb242512ea1878cb51cd0829",
+  "columns": [
+   "[item_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "I1",
+    325
+   ],
+   [
+    "I2",
+    90
+   ]
+  ]
+ },
+ "grid-0098": {
+  "hash": "98c2afac5cfccaa9bf2fda4c3dccb2dfd17d0af4",
+  "columns": [
+   "[item_id]",
+   "[sale_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "I1",
+    "SS1",
+    100
+   ],
+   [
+    "I1",
+    "SS2",
+    200
+   ],
+   [
+    "I2",
+    "SS3",
+    50
+   ],
+   [
+    "I1",
+    "SS4",
+    25
+   ],
+   [
+    "I2",
+    "SS5",
+    40
+   ]
+  ]
+ },
+ "grid-0099": {
+  "hash": "66ac3450542465cb715f94deeef39991dcdd8f1b",
+  "columns": [
+   "[item_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "I1",
+    325
+   ],
+   [
+    "I2",
+    90
+   ]
+  ]
+ },
+ "grid-0100": {
+  "hash": "cb3b9e24cb06e4f6649be82ce137d76c35879c08",
+  "columns": [
+   "[item_id]",
+   "[v]"
+  ],
+  "rows": []
+ },
+ "grid-0101": {
+  "hash": "b702e42ad7e9c670890c00608fe929757ad17be9",
+  "columns": [
+   "[item_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "I1",
+    325
+   ],
+   [
+    "I2",
+    90
+   ]
+  ]
+ },
+ "grid-0102": {
+  "hash": "9b8b2b8ea0d29e3f37a6511e27b0814e2174955c",
+  "columns": [
+   "[v]"
+  ],
+  "rows": [
+   [
+    290
+   ]
+  ]
+ },
+ "grid-0103": {
+  "hash": "22be1d97510847646213fdc90ae8499fb48eab11",
+  "columns": [
+   "[item_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "I1",
+    325
+   ],
+   [
+    "I2",
+    90
+   ]
+  ]
+ },
+ "grid-0104": {
+  "hash": "4023d5609495759ef5809d0d9fc14cd5d0375083",
+  "columns": [
+   "[item_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "I1",
+    325
+   ],
+   [
+    "I2",
+    90
+   ]
+  ]
+ },
+ "grid-0105": {
+  "hash": "637c681e9bca285a2b069f1d3a2a219af0653b13",
+  "columns": [
+   "[item_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "I1",
+    325
+   ],
+   [
+    "I2",
+    90
+   ]
+  ]
+ },
+ "grid-0106": {
+  "hash": "1dd1c71a37f0282faf6568e12ed8d488faa61bc4",
+  "columns": [
+   "[item_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "I1",
+    325
+   ],
+   [
+    "I2",
+    90
+   ]
+  ]
+ },
+ "grid-0107": {
+  "hash": "c62e552637cebe9888e468c02cccc1bf10b807bc",
+  "columns": [
+   "[item_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "I1",
+    325
+   ],
+   [
+    "I2",
+    90
+   ]
+  ]
+ },
+ "grid-0108": {
+  "hash": "42f7fac4acbc69715a1bf1109dbca9fcecd1e496",
+  "columns": [
+   "[sales_amount]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    25,
+    25
+   ],
+   [
+    40,
+    40
+   ],
+   [
+    50,
+    50
+   ],
+   [
+    100,
+    100
+   ],
+   [
+    200,
+    200
+   ],
+   [
+    null,
+    415
+   ]
+  ]
+ },
+ "grid-0109": {
+  "hash": "d3d332e8a07c0ca9ebfa3a07927cdbf5dd573ca2",
+  "columns": [
+   "[item_id]",
+   "[a]",
+   "[b]",
+   "[c]"
+  ],
+  "rows": [
+   [
+    "I1",
+    650,
+    326,
+    325
+   ],
+   [
+    "I2",
+    180,
+    91,
+    90
+   ]
+  ]
+ },
+ "grid-0110": {
+  "hash": "8b6864b95f77465ba67b88d5d24e62db9d051a9b",
+  "columns": [
+   "[item_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "I1",
+    125
+   ]
+  ]
+ },
+ "grid-0111": {
+  "hash": "8281cca7b497605e2c83caaa5e891b81d2f29145",
+  "columns": [
+   "[item_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "I1",
+    325
+   ],
+   [
+    "I2",
+    90
+   ]
+  ]
+ },
+ "grid-0112": {
+  "hash": "9dba3ca11ffc8039a1fe72760a0755818620579c",
+  "columns": [
+   "[v]"
+  ],
+  "rows": [
+   [
+    15
+   ]
+  ]
+ },
+ "grid-0113": {
+  "hash": "06b5e2ffa7d52a07f1077b4e674b2f71b71bb2c7",
+  "columns": [
+   "[return_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "SR1",
+    10
+   ],
+   [
+    "SR2",
+    5
+   ]
+  ]
+ },
+ "grid-0114": {
+  "hash": "ff902709e9d3976903c045d79674f53b98e2d318",
+  "columns": [
+   "[return_id]",
+   "[item_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "SR1",
+    "I1",
+    10
+   ],
+   [
+    "SR2",
+    "I2",
+    5
+   ]
+  ]
+ },
+ "grid-0115": {
+  "hash": "2dc061900dbc2bf287544a530131ff144c1f6156",
+  "columns": [
+   "[return_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "SR1",
+    10
+   ]
+  ]
+ },
+ "grid-0116": {
+  "hash": "a2941ae7615fa23dfee683bbcc91fd9b9f4c21dd",
+  "columns": [
+   "[return_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "SR1",
+    10
+   ]
+  ]
+ },
+ "grid-0117": {
+  "hash": "9ab8a6149ed8fdb7bebde00b5fba439fa79630ea",
+  "columns": [
+   "[return_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "SR2",
+    5
+   ]
+  ]
+ },
+ "grid-0118": {
+  "hash": "ada3ffc6a1a1a98d046bf5149d5d1b458811db17",
+  "columns": [
+   "[v]"
+  ],
+  "rows": [
+   [
+    15
+   ]
+  ]
+ },
+ "grid-0119": {
+  "hash": "61b7e9d427293bd2bc342114c9ca40c2bc88a818",
+  "columns": [
+   "[return_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "SR1",
+    10
+   ],
+   [
+    "SR2",
+    5
+   ]
+  ]
+ },
+ "grid-0120": {
+  "hash": "ab5f7bd703783fcb553f3bedd60861d4ce205c5e",
+  "columns": [
+   "[return_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "SR1",
+    10
+   ],
+   [
+    "SR2",
+    5
+   ]
+  ]
+ },
+ "grid-0121": {
+  "hash": "8cf384b4e3a4eff3223f34c6ce34e91df80fea37",
+  "columns": [
+   "[return_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "SR1",
+    10
+   ],
+   [
+    "SR2",
+    5
+   ]
+  ]
+ },
+ "grid-0122": {
+  "hash": "79a6e2cd2b160b4f709e7542ebe7f19c6bac0878",
+  "columns": [
+   "[return_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "SR1",
+    10
+   ],
+   [
+    "SR2",
+    5
+   ]
+  ]
+ },
+ "grid-0123": {
+  "hash": "37278ded333fe6e1d9afd2717355217de745819a",
+  "columns": [
+   "[return_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "SR1",
+    10
+   ],
+   [
+    "SR2",
+    5
+   ]
+  ]
+ },
+ "grid-0124": {
+  "hash": "8cc7ba14e7aa5f252eb706826deb1ae31258ac32",
+  "columns": [
+   "[return_date_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "D2023",
+    10
+   ],
+   [
+    "D2024a",
+    5
+   ],
+   [
+    null,
+    15
+   ]
+  ]
+ },
+ "grid-0125": {
+  "hash": "544ac4029150b0592fe7541caeeae239697f07ed",
+  "columns": [
+   "[return_id]",
+   "[a]",
+   "[b]",
+   "[c]"
+  ],
+  "rows": [
+   [
+    "SR1",
+    20,
+    11,
+    10
+   ],
+   [
+    "SR2",
+    10,
+    6,
+    5
+   ]
+  ]
+ },
+ "grid-0126": {
+  "hash": "72705fdc2a3a6e94de1345dbc544132219e5c3ea",
+  "columns": [
+   "[return_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "SR1",
+    10
+   ]
+  ]
+ },
+ "grid-0127": {
+  "hash": "9ffd738d84ab22b40ce7c8818e22f48233565798",
+  "columns": [
+   "[return_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "SR1",
+    10
+   ],
+   [
+    "SR2",
+    5
+   ]
+  ]
+ },
+ "grid-0128": {
+  "hash": "fbb388348e91b636b16951c744c997e3a06b9d6d",
+  "columns": [
+   "[return_amount]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    5,
+    5
+   ],
+   [
+    10,
+    10
+   ]
+  ]
+ },
+ "grid-0129": {
+  "hash": "a8e5e5c984abe1927e9eafbcfab1a7e4e8f7af9a",
+  "columns": [
+   "[return_amount]",
+   "[return_date_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    5,
+    "D2024a",
+    5
+   ],
+   [
+    10,
+    "D2023",
+    10
+   ]
+  ]
+ },
+ "grid-0130": {
+  "hash": "72f2a7ef0113616e6823c81dc7929a09da0f2507",
+  "columns": [
+   "[return_amount]",
+   "[v]"
+  ],
+  "rows": []
+ },
+ "grid-0131": {
+  "hash": "fbd97ff3c448b3b1433bcae2db6186665478828b",
+  "columns": [
+   "[return_amount]",
+   "[v]"
+  ],
+  "rows": []
+ },
+ "grid-0132": {
+  "hash": "c5aaeb8af7ef03be88bf60cd6ffc137f1ba091fa",
+  "columns": [
+   "[return_amount]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    5,
+    5
+   ]
+  ]
+ },
+ "grid-0133": {
+  "hash": "5861bf3e0bf61033c24e9c5fe48cbc9c4f83d592",
+  "columns": [
+   "[v]"
+  ],
+  "rows": [
+   [
+    15
+   ]
+  ]
+ },
+ "grid-0134": {
+  "hash": "f7e09aaacc51b335dc23e19383170eba5670f25a",
+  "columns": [
+   "[return_amount]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    5,
+    5
+   ],
+   [
+    10,
+    10
+   ]
+  ]
+ },
+ "grid-0135": {
+  "hash": "7e9bbe82ed6d07608b4a8c9cb87e9ee9576baead",
+  "columns": [
+   "[return_amount]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    5,
+    5
+   ],
+   [
+    10,
+    10
+   ]
+  ]
+ },
+ "grid-0136": {
+  "hash": "8d82a282d185ff234c02895b5bfe28ddd551f976",
+  "columns": [
+   "[return_amount]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    5,
+    5
+   ],
+   [
+    10,
+    10
+   ]
+  ]
+ },
+ "grid-0137": {
+  "hash": "226d176f201937622995d1a1b6c4523bb3708ac4",
+  "columns": [
+   "[return_amount]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    10,
+    10
+   ],
+   [
+    5,
+    5
+   ]
+  ]
+ },
+ "grid-0138": {
+  "hash": "bb79fa5e5aaa892894bfd7f7dc743781e5826d25",
+  "columns": [
+   "[return_amount]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    5,
+    5
+   ],
+   [
+    10,
+    10
+   ]
+  ]
+ },
+ "grid-0139": {
+  "hash": "66ea38e91680f458add7996c21d3bb082fb21483",
+  "columns": [
+   "[return_amount]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    5,
+    5
+   ],
+   [
+    10,
+    10
+   ],
+   [
+    null,
+    15
+   ]
+  ]
+ },
+ "grid-0140": {
+  "hash": "dfbe7a6af16106eb10d5d1467d8f69d60598984d",
+  "columns": [
+   "[return_amount]",
+   "[a]",
+   "[b]",
+   "[c]"
+  ],
+  "rows": [
+   [
+    5,
+    10,
+    6,
+    5
+   ],
+   [
+    10,
+    20,
+    11,
+    10
+   ]
+  ]
+ },
+ "grid-0141": {
+  "hash": "972c4176e7946f68e39002d6e5ce455aa1dd76c3",
+  "columns": [
+   "[return_amount]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    5,
+    5
+   ]
+  ]
+ },
+ "grid-0142": {
+  "hash": "73f59a99b37917095f59be2f5d3c932ed35d6f89",
+  "columns": [
+   "[return_amount]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    5,
+    5
+   ],
+   [
+    10,
+    10
+   ]
+  ]
+ },
+ "grid-0143": {
+  "hash": "997d9348dbdec0ccd48e176804ab6b24e45a5018",
+  "columns": [
+   "[return_amount]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    5,
+    5
+   ]
+  ]
+ },
+ "grid-0144": {
+  "hash": "fa4bc74debf169292a91d2122050e4980e8b3420",
+  "columns": [
+   "[return_amount]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    10,
+    10
+   ]
+  ]
+ },
+ "grid-0145": {
+  "hash": "488944cc6282bad302262958a4139cf198bae6c9",
+  "columns": [
+   "[return_amount]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    5,
+    5
+   ],
+   [
+    10,
+    10
+   ]
+  ]
+ },
+ "grid-0146": {
+  "hash": "2d47485829df49b6e5a04d7429c8991c743951c1",
+  "columns": [
+   "[return_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "SR1",
+    10
+   ],
+   [
+    "SR2",
+    5
+   ],
+   [
+    null,
+    15
+   ]
+  ]
+ },
+ "grid-0147": {
+  "hash": "62d9806d6444f8a75acb0a6e356ee21a311b08bc",
+  "columns": [
+   "[return_amount]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    10,
+    10
+   ]
+  ]
+ },
+ "grid-0148": {
+  "hash": "f9b64ec64b07ea12b5cf5bf183c048fec7249b04",
+  "columns": [
+   "[return_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "SR2",
+    5
+   ]
+  ]
+ },
+ "grid-0149": {
+  "hash": "16af7c06be957a43e55a8858b78a155b789f2bcb",
+  "columns": [
+   "[return_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "SR1",
+    10
+   ]
+  ]
+ },
+ "grid-0150": {
+  "hash": "98ba85b770a7a035582be764005409c4f7e6d4df",
+  "columns": [
+   "[return_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "SR1",
+    10
+   ],
+   [
+    "SR2",
+    5
+   ]
+  ]
+ },
+ "grid-0151": {
+  "hash": "b8af99a9d3f324065fe70e773bcaf65a60edb675",
+  "columns": [
+   "[v]"
+  ],
+  "rows": [
+   [
+    10
+   ]
+  ]
+ },
+ "grid-0152": {
+  "hash": "b2c7b40b4642c3650b732930d0175c03b1e91095",
+  "columns": [
+   "[return_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "SR1",
+    10
+   ],
+   [
+    "SR2",
+    5
+   ]
+  ]
+ },
+ "grid-0153": {
+  "hash": "009d4b6e1a766502ab50a7838b2f0b12280c3de3",
+  "columns": [
+   "[return_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "SR1",
+    10
+   ],
+   [
+    "SR2",
+    5
+   ]
+  ]
+ },
+ "grid-0154": {
+  "hash": "7527c17fbab020674b216fca8ee64a9cad0348bb",
+  "columns": [
+   "[return_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "SR1",
+    10
+   ],
+   [
+    "SR2",
+    5
+   ]
+  ]
+ },
+ "grid-0155": {
+  "hash": "f53c1d7c397aa095c19530e3134dada78a034909",
+  "columns": [
+   "[return_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "SR1",
+    10
+   ],
+   [
+    "SR2",
+    5
+   ]
+  ]
+ },
+ "grid-0156": {
+  "hash": "0578b62d986e2d1b84fd7721290a23d4cc0831ea",
+  "columns": [
+   "[v]"
+  ],
+  "rows": [
+   [
+    10
+   ]
+  ]
+ },
+ "grid-0157": {
+  "hash": "536c630e146f6e753b9d2096b0bbea3b7d6c1b49",
+  "columns": [
+   "[return_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "SR1",
+    10
+   ],
+   [
+    "SR2",
+    5
+   ]
+  ]
+ },
+ "grid-0158": {
+  "hash": "db69e4b36b7a00587458a1e5d846a9d120828fc6",
+  "columns": [
+   "[return_id]",
+   "[return_amount]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "SR1",
+    10,
+    10
+   ],
+   [
+    "SR2",
+    5,
+    5
+   ]
+  ]
+ },
+ "grid-0159": {
+  "hash": "11e27e42f8f9b1af215d14d8ee48e0509434a418",
+  "columns": [
+   "[return_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "SR1",
+    10
+   ],
+   [
+    "SR2",
+    5
+   ]
+  ]
+ },
+ "grid-0160": {
+  "hash": "e0f84175bb65a9532372800e4b88dce763ff1447",
+  "columns": [
+   "[return_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "SR2",
+    5
+   ]
+  ]
+ },
+ "grid-0161": {
+  "hash": "c19cd3ebbfdca25564940b8e262a19d03f902577",
+  "columns": [
+   "[return_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "SR1",
+    10
+   ],
+   [
+    "SR2",
+    5
+   ]
+  ]
+ },
+ "grid-0162": {
+  "hash": "9e7b32aa337057572527a33e81890351f2ec9142",
+  "columns": [
+   "[v]"
+  ],
+  "rows": [
+   [
+    5
+   ]
+  ]
+ },
+ "grid-0163": {
+  "hash": "75b768b13bfa7cc8e72134a738e7d1c8500b0b72",
+  "columns": [
+   "[return_id]",
+   "[v]"
+  ],
+  "rows": []
+ },
+ "grid-0164": {
+  "hash": "ea67396eea9dd690986ad455f899196927771a2f",
+  "columns": [
+   "[item_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "I1",
+    325
+   ],
+   [
+    "I2",
+    90
+   ]
+  ]
+ },
+ "grid-0165": {
+  "hash": "74c8d1e411301c30c68fddd05dd4f78684ee63f2",
+  "columns": [
+   "[item_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "I1",
+    325
+   ],
+   [
+    "I2",
+    90
+   ]
+  ]
+ },
+ "grid-0166": {
+  "hash": "a76badce1b533ae47c43d4583361523bdd2cebec",
+  "columns": [
+   "[item_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "I1",
+    100
+   ],
+   [
+    "I2",
+    50
+   ]
+  ]
+ },
+ "grid-0167": {
+  "hash": "e1fc9a2d29d3929ecc86366cb72bbe7efb8c6cb6",
+  "columns": [
+   "[item_id]",
+   "[customer_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "I1",
+    null,
+    25
+   ],
+   [
+    "I1",
+    "C1",
+    100
+   ],
+   [
+    "I2",
+    "C1",
+    50
+   ],
+   [
+    "I1",
+    "C2",
+    200
+   ],
+   [
+    "I2",
+    "C3",
+    40
+   ]
+  ]
+ },
+ "grid-0168": {
+  "hash": "b4803b10d5698f2ab7cb69fdfc76d06a94a84ef3",
+  "columns": [
+   "[v]"
+  ],
+  "rows": [
+   [
+    415
+   ]
+  ]
+ },
+ "grid-0169": {
+  "hash": "4c0a92eb67059f51d9b1c540e543a3e69c9d8b80",
+  "columns": [
+   "[brand]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "Acme",
+    325
+   ],
+   [
+    "Beta",
+    90
+   ]
+  ]
+ },
+ "grid-0170": {
+  "hash": "37633a89ebfd87254d43e281b011ba30d7074605",
+  "columns": [
+   "[brand]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "Acme",
+    325
+   ]
+  ]
+ },
+ "grid-0171": {
+  "hash": "618600c9854d0cafca4093315fcfea7b4b1f19b6",
+  "columns": [
+   "[brand]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "Acme",
+    100
+   ],
+   [
+    "Beta",
+    50
+   ]
+  ]
+ },
+ "grid-0172": {
+  "hash": "c132dbf31e08d216a61b8f67cce04928d2161ef6",
+  "columns": [
+   "[brand]",
+   "[sale_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "Acme",
+    "SS1",
+    100
+   ],
+   [
+    "Acme",
+    "SS2",
+    200
+   ],
+   [
+    "Beta",
+    "SS3",
+    50
+   ],
+   [
+    "Acme",
+    "SS4",
+    25
+   ],
+   [
+    "Beta",
+    "SS5",
+    40
+   ]
+  ]
+ },
+ "grid-0173": {
+  "hash": "f0578d9834efff54d74cc0ed8e866f1b7df02ec4",
+  "columns": [
+   "[item_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "I2",
+    90
+   ]
+  ]
+ },
+ "grid-0174": {
+  "hash": "2d15334c2514d0e00fd7b65b46907b736f07224c",
+  "columns": [
+   "[item_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "I1",
+    200
+   ],
+   [
+    "I2",
+    90
+   ]
+  ]
+ },
+ "grid-0175": {
+  "hash": "77c43e527f0a4158113178f43617b68d5ca22892",
+  "columns": [
+   "[item_id]",
+   "[sales_amount]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "I1",
+    25,
+    25
+   ],
+   [
+    "I2",
+    40,
+    40
+   ],
+   [
+    "I2",
+    50,
+    50
+   ],
+   [
+    "I1",
+    100,
+    100
+   ],
+   [
+    "I1",
+    200,
+    200
+   ]
+  ]
+ },
+ "grid-0176": {
+  "hash": "e39ba53beb7019a03223dea4f042a914ecf9ba72",
+  "columns": [
+   "[date_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "D2023",
+    125
+   ],
+   [
+    "D2024a",
+    290
+   ]
+  ]
+ },
+ "grid-0177": {
+  "hash": "68cacb17553fc2a7a589f2fcf37ac08bef76054b",
+  "columns": [
+   "[date_id]",
+   "[v]"
+  ],
+  "rows": []
+ },
+ "grid-0178": {
+  "hash": "1ba8cec5541a158d78cc1b9e7f6f15254ce74689",
+  "columns": [
+   "[date_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "D2023",
+    100
+   ]
+  ]
+ },
+ "grid-0179": {
+  "hash": "22bbede89fcae17f445586f762d2118abe44a2c8",
+  "columns": [
+   "[date_id]",
+   "[item_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "D2023",
+    "I1",
+    125
+   ],
+   [
+    "D2024a",
+    "I1",
+    200
+   ],
+   [
+    "D2024a",
+    "I2",
+    90
+   ]
+  ]
+ },
+ "grid-0180": {
+  "hash": "e294623681ef9ee9e0d92dc33280de5dc37c3a00",
+  "columns": [
+   "[v]"
+  ],
+  "rows": [
+   [
+    415
+   ]
+  ]
+ },
+ "grid-0181": {
+  "hash": "4733146d3d8dd6066df8b34bee7f0e7b0d1feaf7",
+  "columns": [
+   "[date_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "D2023",
+    125
+   ],
+   [
+    "D2024a",
+    290
+   ]
+  ]
+ },
+ "grid-0182": {
+  "hash": "9aa820fa6f2ea35e767ce00cc41d87e030a2151e",
+  "columns": [
+   "[date_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "D2023",
+    125
+   ]
+  ]
+ },
+ "grid-0183": {
+  "hash": "95ec11f0051afd9f139e26a252962268491a8f7f",
+  "columns": [
+   "[date_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "D2023",
+    100
+   ],
+   [
+    "D2024a",
+    200
+   ]
+  ]
+ },
+ "grid-0184": {
+  "hash": "0298275ac1c1ca03cc9b3cfbc7f3d1c42b17527d",
+  "columns": [
+   "[date_id]",
+   "[sales_amount]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "D2023",
+    25,
+    25
+   ],
+   [
+    "D2024a",
+    40,
+    40
+   ],
+   [
+    "D2024a",
+    50,
+    50
+   ],
+   [
+    "D2023",
+    100,
+    100
+   ],
+   [
+    "D2024a",
+    200,
+    200
+   ]
+  ]
+ },
+ "grid-0185": {
+  "hash": "7a59df72adbe5bb501107e11738c28dd48b6d43f",
+  "columns": [
+   "[v]"
+  ],
+  "rows": [
+   [
+    415
+   ]
+  ]
+ },
+ "grid-0186": {
+  "hash": "64a7820985a795ffda2db0a496edf98338b700ba",
+  "columns": [
+   "[date_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "D2024a",
+    290
+   ]
+  ]
+ },
+ "grid-0187": {
+  "hash": "af2d8d852d6b52d5b2a7a236883de57831199fc9",
+  "columns": [
+   "[date_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "D2023",
+    100
+   ]
+  ]
+ },
+ "grid-0188": {
+  "hash": "4143f1dfea9356bb950a4101b92292ce33fbb425",
+  "columns": [
+   "[date_id]",
+   "[customer_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "D2023",
+    null,
+    25
+   ],
+   [
+    "D2023",
+    "C1",
+    100
+   ],
+   [
+    "D2024a",
+    "C1",
+    50
+   ],
+   [
+    "D2024a",
+    "C2",
+    200
+   ],
+   [
+    "D2024a",
+    "C3",
+    40
+   ]
+  ]
+ },
+ "grid-0189": {
+  "hash": "b4091b2dbe8800694955f66db71b953d0624443d",
+  "columns": [
+   "[store_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "S1",
+    325
+   ],
+   [
+    "S2",
+    90
+   ]
+  ]
+ },
+ "grid-0190": {
+  "hash": "499c3831f59a3ff06c68b38f88bf52cc6c392cf5",
+  "columns": [
+   "[store_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "S2",
+    90
+   ]
+  ]
+ },
+ "grid-0191": {
+  "hash": "36ef445be1eb73c622188db92825410b92f6fa63",
+  "columns": [
+   "[store_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "S1",
+    325
+   ],
+   [
+    "S2",
+    90
+   ]
+  ]
+ },
+ "grid-0192": {
+  "hash": "55b7cd06046f2c1aeb3ba3c226b3ca9b211322aa",
+  "columns": [
+   "[store_id]",
+   "[item_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "S1",
+    "I1",
+    325
+   ],
+   [
+    "S2",
+    "I2",
+    90
+   ]
+  ]
+ },
+ "grid-0193": {
+  "hash": "db3e560cd4761e41f7d306aa52499891433eba54",
+  "columns": [
+   "[v]"
+  ],
+  "rows": [
+   [
+    415
+   ]
+  ]
+ },
+ "grid-0194": {
+  "hash": "de139d3b1b8a4b8850bb9b3c8811ced4136dc14f",
+  "columns": [
+   "[state]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "CA",
+    325
+   ],
+   [
+    "NY",
+    90
+   ]
+  ]
+ },
+ "grid-0195": {
+  "hash": "efa4da554449ee2fa3a2ba1106086011d19aab27",
+  "columns": [
+   "[state]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "NY",
+    90
+   ]
+  ]
+ },
+ "grid-0196": {
+  "hash": "198fa7907076b5f75a0652a9dd0532d482da1e31",
+  "columns": [
+   "[state]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "CA",
+    325
+   ]
+  ]
+ },
+ "grid-0197": {
+  "hash": "9db776697f4597c1849af9b5df88dcb7180d097c",
+  "columns": [
+   "[state]",
+   "[item_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "CA",
+    "I1",
+    325
+   ],
+   [
+    "NY",
+    "I2",
+    90
+   ]
+  ]
+ },
+ "grid-0198": {
+  "hash": "251d89581a24cb7a6af519e56623bee20bc78569",
+  "columns": [
+   "[store_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "S1",
+    325
+   ],
+   [
+    "S2",
+    90
+   ]
+  ]
+ },
+ "grid-0199": {
+  "hash": "cdf81517075759967b92ed8e20dc5613aafc88ff",
+  "columns": [
+   "[store_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "S2",
+    90
+   ]
+  ]
+ },
+ "grid-0200": {
+  "hash": "31363a9b1288ba757eaf73cef1c33c6888b7c248",
+  "columns": [
+   "[store_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "S1",
+    200
+   ]
+  ]
+ },
+ "grid-0201": {
+  "hash": "43e830e7e7dfba8538f09008faa9f8b95616064e",
+  "columns": [
+   "[store_id]",
+   "[customer_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "S1",
+    null,
+    25
+   ],
+   [
+    "S1",
+    "C1",
+    100
+   ],
+   [
+    "S2",
+    "C1",
+    50
+   ],
+   [
+    "S1",
+    "C2",
+    200
+   ],
+   [
+    "S2",
+    "C3",
+    40
+   ]
+  ]
+ },
+ "grid-0202": {
+  "hash": "e045cd46c113cc8c3e5f4c3ada12ffe83d56df3e",
+  "columns": [
+   "[v]"
+  ],
+  "rows": [
+   [
+    415
+   ]
+  ]
+ },
+ "grid-0203": {
+  "hash": "e64f3d1635cc85664ad3cc566049b1f89372b884",
+  "columns": [
+   "[region]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    null,
+    40
+   ],
+   [
+    "EAST",
+    150
+   ],
+   [
+    "WEST",
+    200
+   ]
+  ]
+ },
+ "grid-0204": {
+  "hash": "d45aa0c30aef8b14923257a7dfbb526aeeebf4d1",
+  "columns": [
+   "[region]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    null,
+    40
+   ],
+   [
+    "WEST",
+    200
+   ]
+  ]
+ },
+ "grid-0205": {
+  "hash": "3c33493e92b2f03384beac3dc0726fdf53fc3fea",
+  "columns": [
+   "[region]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    null,
+    40
+   ],
+   [
+    "EAST",
+    150
+   ],
+   [
+    "WEST",
+    200
+   ]
+  ]
+ },
+ "grid-0206": {
+  "hash": "781eba21ad4755f8cd801ed5c8b8a0cf5a5dd9d6",
+  "columns": [
+   "[region]",
+   "[sale_date_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "EAST",
+    "D2023",
+    100
+   ],
+   [
+    null,
+    "D2024a",
+    40
+   ],
+   [
+    "EAST",
+    "D2024a",
+    50
+   ],
+   [
+    "WEST",
+    "D2024a",
+    200
+   ]
+  ]
+ },
+ "grid-0207": {
+  "hash": "bb4e75b2f9841baacef6522bab960eb70e1753b9",
+  "columns": [
+   "[v]"
+  ],
+  "rows": [
+   [
+    390
+   ]
+  ]
+ },
+ "grid-0208": {
+  "hash": "1404c234727a0d3607de461ee44da30ba2418967",
+  "columns": [
+   "[region]",
+   "[a]",
+   "[b]"
+  ],
+  "rows": [
+   [
+    null,
+    40,
+    1
+   ],
+   [
+    "EAST",
+    150,
+    1
+   ],
+   [
+    "WEST",
+    200,
+    1
+   ]
+  ]
+ },
+ "grid-0209": {
+  "hash": "fb774e1202f63c275f95f3eeff6794d4520a6b21",
+  "columns": [
+   "[region]",
+   "[a]",
+   "[b]"
+  ],
+  "rows": [
+   [
+    null,
+    1,
+    40
+   ],
+   [
+    "EAST",
+    1,
+    150
+   ],
+   [
+    "WEST",
+    1,
+    200
+   ]
+  ]
+ },
+ "grid-0210": {
+  "hash": "6dfeb0538f9ae5d9f3e96bbd2cbc1fcc56db40a0",
+  "columns": [
+   "[item_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "I1",
+    2
+   ],
+   [
+    "I2",
+    2
+   ]
+  ]
+ },
+ "grid-0211": {
+  "hash": "c0f12a35e6b635356c6395a76308020a36c3b808",
+  "columns": [
+   "[region]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    null,
+    65
+   ],
+   [
+    "EAST",
+    150
+   ],
+   [
+    "WEST",
+    200
+   ]
+  ]
+ },
+ "grid-0212": {
+  "hash": "d14d9d3f8609645450a97d01fe1b0b7787cee450",
+  "columns": [
+   "[region]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "EAST",
+    150
+   ]
+  ]
+ },
+ "grid-0213": {
+  "hash": "c5c2a2f427a06e94be6ed23742a333f0df17b760",
+  "columns": [
+   "[region]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    null,
+    40
+   ],
+   [
+    "EAST",
+    50
+   ]
+  ]
+ },
+ "grid-0214": {
+  "hash": "4852e9252df9481409aad6aa13703d360a1f8cbf",
+  "columns": [
+   "[region]",
+   "[store_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    null,
+    "S1",
+    25
+   ],
+   [
+    "EAST",
+    "S1",
+    100
+   ],
+   [
+    "WEST",
+    "S1",
+    200
+   ],
+   [
+    null,
+    "S2",
+    40
+   ],
+   [
+    "EAST",
+    "S2",
+    50
+   ]
+  ]
+ },
+ "grid-0215": {
+  "hash": "9ba513693646fde1dfbf4abe9413be4fb3ea012d",
+  "columns": [
+   "[v]"
+  ],
+  "rows": [
+   [
+    415
+   ]
+  ]
+ },
+ "grid-0216": {
+  "hash": "055dd4548f3399e1cc6258ee1ad7af7112911382",
+  "columns": [
+   "[customer_id]",
+   "[a]",
+   "[b]"
+  ],
+  "rows": [
+   [
+    null,
+    25,
+    0
+   ],
+   [
+    "C1",
+    150,
+    1
+   ],
+   [
+    "C2",
+    200,
+    1
+   ],
+   [
+    "C3",
+    40,
+    1
+   ]
+  ]
+ },
+ "grid-0217": {
+  "hash": "7b570dc2b0b4f49990209994d2937c491f3390d9",
+  "columns": [
+   "[customer_id]",
+   "[a]",
+   "[b]"
+  ],
+  "rows": [
+   [
+    "C1",
+    1,
+    150
+   ],
+   [
+    "C2",
+    1,
+    200
+   ],
+   [
+    "C3",
+    1,
+    40
+   ]
+  ]
+ },
+ "grid-0218": {
+  "hash": "ab587a0eaa14de40ca4de81cc0fc5b4ba4d4ac01",
+  "columns": [
+   "[sales_amount]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    25,
+    0
+   ],
+   [
+    40,
+    1
+   ],
+   [
+    50,
+    1
+   ],
+   [
+    100,
+    1
+   ],
+   [
+    200,
+    1
+   ]
+  ]
+ },
+ "grid-0219": {
+  "hash": "7ab3f6db8712b0d2112c51bf7ceb25fae2ed6cd0",
+  "columns": [
+   "[customer_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    null,
+    25
+   ],
+   [
+    "C1",
+    150
+   ],
+   [
+    "C2",
+    200
+   ],
+   [
+    "C3",
+    40
+   ]
+  ]
+ },
+ "grid-0220": {
+  "hash": "37b57df4255ca2c2d4d877a86c8afa1306bc32bf",
+  "columns": [
+   "[customer_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    null,
+    25
+   ],
+   [
+    "C3",
+    40
+   ]
+  ]
+ },
+ "grid-0221": {
+  "hash": "7071dbe449ff0a26d33007c2a30a6238a0485961",
+  "columns": [
+   "[customer_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    null,
+    25
+   ],
+   [
+    "C1",
+    100
+   ],
+   [
+    "C2",
+    200
+   ]
+  ]
+ },
+ "grid-0222": {
+  "hash": "3b8bbaecdb45c3ece8c259a04d53af982cfe7fe0",
+  "columns": [
+   "[customer_id]",
+   "[many_side]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    null,
+    null,
+    25
+   ],
+   [
+    "C1",
+    "C1",
+    150
+   ],
+   [
+    "C2",
+    "C2",
+    200
+   ],
+   [
+    "C3",
+    "C3",
+    40
+   ]
+  ]
+ },
+ "grid-0223": {
+  "hash": "9634de58179ef9126f153273bc08dd252a533983",
+  "columns": [
+   "[region]",
+   "[a]",
+   "[b]"
+  ],
+  "rows": [
+   [
+    null,
+    65,
+    1
+   ],
+   [
+    "EAST",
+    150,
+    1
+   ],
+   [
+    "WEST",
+    200,
+    1
+   ]
+  ]
+ },
+ "grid-0224": {
+  "hash": "3158c44567f6e512ca55fb41ce8128ff64404df7",
+  "columns": [
+   "[store_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "S1",
+    2
+   ],
+   [
+    "S2",
+    2
+   ]
+  ]
+ },
+ "grid-0225": {
+  "hash": "66db44b1841968ec1a8dbf3ebf19cc7f11f6d131",
+  "columns": [
+   "[brand]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "Acme",
+    10
+   ],
+   [
+    "Beta",
+    5
+   ]
+  ]
+ },
+ "grid-0226": {
+  "hash": "ca2bb7f1449e28a9f98d7f5cfb8c51c600fba4b3",
+  "columns": [
+   "[brand]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "Acme",
+    10
+   ],
+   [
+    "Beta",
+    5
+   ]
+  ]
+ },
+ "grid-0227": {
+  "hash": "2acb6e696705558636e7b5af77c71b3ed3f437b5",
+  "columns": [
+   "[brand]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "Acme",
+    10
+   ],
+   [
+    "Beta",
+    5
+   ]
+  ]
+ },
+ "grid-0228": {
+  "hash": "f29fe825343cbf53861496fec23057ac29a26ffa",
+  "columns": [
+   "[brand]",
+   "[item_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "Acme",
+    "I1",
+    10
+   ],
+   [
+    "Beta",
+    "I2",
+    5
+   ]
+  ]
+ },
+ "grid-0229": {
+  "hash": "4a681bfe020c6c9dffddd363ec05e5e54ee222f7",
+  "columns": [
+   "[v]"
+  ],
+  "rows": [
+   [
+    15
+   ]
+  ]
+ },
+ "grid-0230": {
+  "hash": "232cee16ab5be0410421fb2a8decf92080aee08d",
+  "columns": [
+   "[brand]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "Acme",
+    10
+   ],
+   [
+    "Beta",
+    5
+   ]
+  ]
+ },
+ "grid-0231": {
+  "hash": "d576c90e3cb377338043a8401d2999bee5812cbc",
+  "columns": [
+   "[brand]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "Acme",
+    10
+   ]
+  ]
+ },
+ "grid-0232": {
+  "hash": "8885e59327f1c8c84818cfd74ad31bdaa28243fb",
+  "columns": [
+   "[brand]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "Acme",
+    10
+   ]
+  ]
+ },
+ "grid-0233": {
+  "hash": "5a6034efa6d3c35a9bdfc20c350fa6b3f5105e06",
+  "columns": [
+   "[brand]",
+   "[item_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "Acme",
+    "I1",
+    10
+   ],
+   [
+    "Beta",
+    "I2",
+    5
+   ]
+  ]
+ },
+ "grid-0234": {
+  "hash": "5e2cf46a5d2c2c17ea802ab17816195b584b2a76",
+  "columns": [
+   "[v]"
+  ],
+  "rows": [
+   [
+    15
+   ]
+  ]
+ },
+ "grid-0235": {
+  "hash": "589c39d507848acdba81b7efd9d0e08ade3ba2fc",
+  "columns": [
+   "[item_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "I1",
+    10
+   ],
+   [
+    "I2",
+    5
+   ]
+  ]
+ },
+ "grid-0236": {
+  "hash": "3fbaec9705f2d7c76fcc6fa65c294d58e614f06d",
+  "columns": [
+   "[item_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "I2",
+    5
+   ]
+  ]
+ },
+ "grid-0237": {
+  "hash": "612bd88f1ace200bb14382f2b8d2b8eefb5f8c29",
+  "columns": [
+   "[item_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "I2",
+    5
+   ]
+  ]
+ },
+ "grid-0238": {
+  "hash": "b2b6165f9c1249638b6c9a7adbb90824f5f1bb06",
+  "columns": [
+   "[item_id]",
+   "[return_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "I1",
+    "SR1",
+    10
+   ],
+   [
+    "I2",
+    "SR2",
+    5
+   ]
+  ]
+ },
+ "grid-0239": {
+  "hash": "e5fa755be4441b8b84ba3bf245209ebcefd86df6",
+  "columns": [
+   "[date_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "D2023",
+    10
+   ],
+   [
+    "D2024a",
+    5
+   ]
+  ]
+ },
+ "grid-0240": {
+  "hash": "e7582e731a391a67c62924c2e1800c712609f422",
+  "columns": [
+   "[date_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "D2023",
+    10
+   ],
+   [
+    "D2024a",
+    5
+   ]
+  ]
+ },
+ "grid-0241": {
+  "hash": "d7f70fbbf2bc7274f11007c60489fac953029f21",
+  "columns": [
+   "[date_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "D2024a",
+    5
+   ]
+  ]
+ },
+ "grid-0242": {
+  "hash": "207c7d5d2675e3aaffc62c825399d1e84f506771",
+  "columns": [
+   "[date_id]",
+   "[return_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "D2023",
+    "SR1",
+    10
+   ],
+   [
+    "D2024a",
+    "SR2",
+    5
+   ]
+  ]
+ },
+ "grid-0243": {
+  "hash": "994fd2cd4632d5feb6af6d78e65069da25b1014e",
+  "columns": [
+   "[v]"
+  ],
+  "rows": [
+   [
+    15
+   ]
+  ]
+ },
+ "grid-0244": {
+  "hash": "ceb1a68bfe9d2d068fc5fc2a2768772a3f7f89f0",
+  "columns": [
+   "[date_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "D2023",
+    10
+   ],
+   [
+    "D2024a",
+    5
+   ]
+  ]
+ },
+ "grid-0245": {
+  "hash": "a0115d53651d1c6af2fea64f04208d5de85f8b2f",
+  "columns": [
+   "[date_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "D2023",
+    10
+   ],
+   [
+    "D2024a",
+    5
+   ]
+  ]
+ },
+ "grid-0246": {
+  "hash": "eb0a01b4a435366a07e7b3c7b6808443fae9b1af",
+  "columns": [
+   "[date_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "D2024a",
+    5
+   ]
+  ]
+ },
+ "grid-0247": {
+  "hash": "0259a8098a12ca03f45f1e2da98e1ef52abf1588",
+  "columns": [
+   "[date_id]",
+   "[return_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "D2023",
+    "SR1",
+    10
+   ],
+   [
+    "D2024a",
+    "SR2",
+    5
+   ]
+  ]
+ },
+ "grid-0248": {
+  "hash": "19062156dccbdf69cd3e59118de032d0c1294e12",
+  "columns": [
+   "[v]"
+  ],
+  "rows": [
+   [
+    15
+   ]
+  ]
+ },
+ "grid-0249": {
+  "hash": "0788de8ab0e34218068b970dc77b62ba1ac5eab9",
+  "columns": [
+   "[date_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "D2023",
+    10
+   ],
+   [
+    "D2024a",
+    5
+   ]
+  ]
+ },
+ "grid-0250": {
+  "hash": "156ee332089d48f0c51b43915e24dd71f676d68f",
+  "columns": [
+   "[date_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "D2024a",
+    5
+   ]
+  ]
+ },
+ "grid-0251": {
+  "hash": "4b425040dfdb9f3fc7491b961cd55c21bd1f43b0",
+  "columns": [
+   "[date_id]",
+   "[return_date_id]",
+   "[v]"
+  ],
+  "rows": [
+   [
+    "D2023",
+    "D2023",
+    10
+   ],
+   [
+    "D2024a",
+    "D2024a",
+    5
+   ]
+  ]
+ },
+ "grid-0252": {
+  "hash": "f759e96bb2f69a663698d662f59970d954ea951c",
+  "error": "Query (4, 50) The syntax for '<ccon>item</ccon>' is incorrect. (<ccon>// note: the view expander's grid (tools/ossie/grid.mjs), chasm: its SQL as dax-sql's SQL front end writes it in DAX:"
+ },
+ "grid-0253": {
+  "hash": "63f31a541f470d3196b2d3a37ef5774fc472d961",
+  "columns": [
+   "[date_id]",
+   "[x]",
+   "[y]"
+  ],
+  "rows": [
+   [
+    "D2023",
+    10,
+    125
+   ],
+   [
+    "D2024a",
+    5,
+    290
+   ],
+   [
+    "D2024b",
+    null,
+    null
+   ]
+  ]
+ }
+}

@@ -101,15 +101,20 @@ function dateAdd(c, args, env, ast) {
   out.push(ir.filter(moved, mrow, { k: 'insub', e: [ir.col(mrow, 0)], src: all, t: 'bool', nn: true }));
   if (unit === 'month' || unit === 'quarter' || unit === 'year') {
     // The rest of the moved month after the moved end of a month whose day before is visible:
-    // for each such end, the column's dates after it to the end of its month.
+    // for each such end, its moved date's next days to the end of that month, where the column
+    // has them. Three at most (a month is 28 to 31 days): each a date of its own, not a range
+    // over the column's dates (a join on a range, which an engine without a range join, Polars,
+    // computes as every date against every end: tpcds fuzz3-0038, 2 to 3 s each at SF1).
     const erow = ir.rowOf(visible, 'table'), e = ir.col(erow, 0);
     const ends = ir.filter(visible, erow, and(ir.op('eq', e, endOf(e, 'month')), { k: 'insub', e: [shift(e, -1, 'day')], src: visible, t: 'bool', nn: true }));
-    const lrow = ir.rowOf(ends, 'table'), to = shift(ir.col(lrow, 0), n, unit);
-    const arow = ir.rowOf(all, 'table'), d = ir.col(arow, 0);
-    const right = ir.filter(all, arow, and(ir.op('gt', d, to), ir.op('le', d, endOf(to, 'month'))));
-    const gen = { k: 'generate', left: ends, lrow, right, outer: false, cols: [...ends.cols, ...right.cols], base: null };
-    const grow = ir.rowOf(gen, 'table');
-    out.push(ir.project(gen, grow, [{ name: col.name, expr: ir.col(grow, 1), lineage: col, t: 'datetime' }]));
+    for (const k of [1, 2, 3]) {
+      const lrow = ir.rowOf(ends, 'table'), to = shift(ir.col(lrow, 0), n, unit), next = shift(to, k, 'day');
+      const day = ir.project(ends, lrow, [{ name: col.name, expr: next, lineage: col, t: 'datetime' }, { name: 'end', expr: endOf(to, 'month'), lineage: null, t: 'datetime' }]);
+      const drow = ir.rowOf(day, 'table'), dv = ir.col(drow, 0);
+      const kept = ir.filter(day, drow, and(ir.op('le', dv, ir.col(drow, 1)), { k: 'insub', e: [dv], src: all, t: 'bool', nn: true }));
+      const krow = ir.rowOf(kept, 'table');
+      out.push(ir.project(kept, krow, [{ name: col.name, expr: ir.col(krow, 0), lineage: col, t: 'datetime' }]));
+    }
   }
   const cols = [{ name: col.name, lineage: col, t: 'datetime' }];
   return ir.distinct(out.length === 1 ? out[0] : { k: 'union', srcs: out, cols, base: null });

@@ -59,6 +59,8 @@ export function exact(root) {
     kids(r).forEach(visit);
     if (r.k === 'shared') visit(r.def.rel);
     scalarsOf(r).forEach(mark);
+    // A ranking (TOPN's ties, RANK's) compares the values it orders by: each of their sums exact.
+    if (r.k === 'window') for (const f of r.fns) for (const o of f.order) for (const g of sums(o.expr)) g.extra = { ...g.extra, exact: true };
   };
   for (const d of root.defs ?? []) visit(d.rel);
   visit(root.src);

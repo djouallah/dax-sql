@@ -1,0 +1,2 @@
+// note: a text (computed, not a literal) compared with a number: "0" > 1000 (true if any text is above any number, false if compared as numbers or as texts)
+EVALUATE ROW("x", CONCATENATE("0", "") > 1000)

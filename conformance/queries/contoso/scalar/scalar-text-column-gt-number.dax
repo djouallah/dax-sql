@@ -1,0 +1,2 @@
+// note: a text column's value compared with a number, by color
+EVALUATE SUMMARIZECOLUMNS('Product'[Color], "x", MAX('Product'[Color]) > 1000)

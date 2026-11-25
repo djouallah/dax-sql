@@ -1,0 +1,2 @@
+// note: SUMMARIZE of sales by year: a last-nonblank inventory measure, the dates each product's group reaches, and LASTNONBLANK's on-hand per product
+EVALUATE SUMMARIZE('Sales', 'Date'[Year], "x", [Inventory Last Per Product], "n", SUMX(VALUES('Product'[ProductKey]), CALCULATE(COUNTROWS(VALUES('Date'[Date])))), "l", SUMX(VALUES('Product'[ProductKey]), CALCULATE(SUM('Inventory'[On Hand]), LASTNONBLANK('Date'[Date], 1))))

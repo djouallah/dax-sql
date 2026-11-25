@@ -177,7 +177,8 @@ function summarize(c, args, env) {
     const rows = ir.filter(src, frow, same.reduce((a, b) => ir.op('and', a, b), ir.TRUE));
     let ctx = c.transitionRow(env.ctx, grow);
     for (const f of [c.tableFilter(rows, env.ctx)].flat().filter(Boolean)) ctx = ctx.add({ ...f, group: grow });
-    const inner = { ...c.iter(env, grow), ctx, rolledUp };
+    // ISINSCOPE: the columns this level groups by (a subtotal's rolled-up ones not among them).
+    const inner = { ...c.iter(env, grow), ctx, rolledUp, grouped: new Set(on.map(k => k.lineage).filter(Boolean)) };
     return { grouped, on, grow, items: ext.map(([n, x]) => item(c, n, x, inner)) };
   };
   if (!levels) {
@@ -343,8 +344,20 @@ function addMissingItems(c, args, env) {
   return { k: 'union', srcs: [t, added], cols: t.cols, base: null };
 }
 
+// Two columns of one name in a table CROSSJOIN or GENERATE makes: DAX's error. A model column's name
+// is itself (its table and name); a column the query names, its name.
+function noDupes(fn, cols) {
+  const seen = new Set();
+  for (const x of cols) {
+    const own = x.lineage && String(x.name).toLowerCase() === String(x.lineage.name).toLowerCase();
+    const k = own ? x.lineage.id : `[${String(x.name).toLowerCase()}]`;
+    if (seen.has(k)) throw semantic(`Function ${fn} does not allow two columns with the same name ${own ? `'${x.lineage.table.name}'[${x.lineage.name}]` : `[${x.name}]`}`);
+    seen.add(k);
+  }
+}
 function crossJoin(c, args, env) {
   const srcs = args.map(a => c.table(a, env));
+  noDupes('CROSSJOIN', srcs.flatMap(s => s.cols));
   // Rows of one value each: one row of all of them; before other tables, a prefix of theirs.
   const ones = srcs.findIndex(s => !(s.k === 'onerow' && s.cols.every(x => x.lineage)));
   const head = ones < 0 ? srcs : srcs.slice(0, ones), rest = ones < 0 ? [] : srcs.slice(ones);
@@ -395,6 +408,7 @@ function generate(outer) {
   return (c, args, env) => {
     const left = c.table(args[0], env), lrow = ir.rowOf(left);
     const right = c.table(args[1], c.iter(env, lrow));
+    noDupes(outer ? 'GENERATEALL' : 'GENERATE', [...left.cols, ...right.cols]);
     return { k: 'generate', left, lrow, right, outer, cols: [...left.cols, ...right.cols], base: null };
   };
 }

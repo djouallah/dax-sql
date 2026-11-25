@@ -1,0 +1,2 @@
+// note: a text (computed) equal to a number: "1000" = 1000
+EVALUATE ROW("x", CONCATENATE("1000", "") = 1000)

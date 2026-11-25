@@ -10,7 +10,7 @@
 //     `model Model`), as Fabric publishes a semantic view;
 //   - a folder (a PBIP's `definition/`): its files' texts, as an array or as { path: text },
 //     each holding objects at its root (`tables/Sales.tmdl`, `relationships.tmdl`, `roles/*.tmdl`).
-// Read: tables (columns, measures and their annotations, partitions, hierarchies, a calculation
+// Read: tables (columns, measures and theirs and the tables' annotations, partitions, hierarchies, a calculation
 // group and its items), relationships, roles (a table's filter, object-level security) and
 // expressions, with their properties as written. Left out: lineage tags, perspectives, cultures.
 
@@ -208,6 +208,8 @@ function table(n) {
     hierarchies: some(kidsOf(n, 'hierarchy').map(hierarchy)),
     partitions: some(kidsOf(n, 'partition').map(partition)),
     calculationGroup: group ? calculationGroup(group) : undefined,
+    // A table's annotations (a key of several columns: formats/ossie.js's PrimaryKey).
+    annotations: some(kidsOf(n, 'annotation').map(a => ({ name: a.name, value: a.value ?? '' }))),
   };
 }
 function relationship(n) {

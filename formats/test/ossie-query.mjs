@@ -7,8 +7,9 @@
 // read with formats/ossie.js, and the query compiled as a host compiles one: compile(), or, for
 // SQL with a model SELECT in it, compileStatement(). Rows are compared as ossie-compare.mjs does.
 // Outcomes: match, fail (other rows), unsupported (dax-sql's UNSUPPORTED), error (any other).
-// A fail always fails the run. PENDING lists the cases not answered yet: those may be
-// unsupported or an error, and one that matches must leave the list.
+// A fail always fails the run, unless BY_DESIGN says why (DAX's blanks, as Power BI answers).
+// PENDING lists the cases not answered yet: those may be unsupported or an error, and one that
+// matches must leave the list.
 import { readFileSync, readdirSync, appendFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { DuckDBInstance } from '@duckdb/node-api';
@@ -18,6 +19,12 @@ import { ossieToModel } from '../ossie.js';
 import { table, ordered, compare, rows } from './ossie-compare.mjs';
 
 const PENDING = new Set([]);
+// The cases whose rows are other by design, as dax-sql has DAX's blanks (README): their rows are
+// Power BI's (models/scott's query of the case, conformance/golden/scott/ossie.json). One that
+// matches must leave the list.
+const BY_DESIGN = new Map([
+  ['B8a', "DAX's blank equals a blank: the JOIN's ON p.empno = e.mgr pairs the pet with no owner (TRAMP) with the employee with no manager (KING), as Power BI does (scott/ossie/ossie-b8a)"],
+]);
 // The joins along the model's relationships, from many to one (a star): their query is
 // SUMMARIZECOLUMNS, not the joined rows. Each case's path is in the report.
 const STAR = new Set(['B1', 'B2', 'B4', 'B10a', 'B14', 'B15', 'B16', 'B17', 'B18', 'B20']);
@@ -102,8 +109,8 @@ const results = [];
       sql = compileCase(c.query);
       const got = await rows(con, sql);
       const diff = compare(got, c.expected, ordered(c.query), { round: true });
-      outcome = diff ? 'fail' : 'match';
-      detail = diff ?? '';
+      outcome = diff ? (BY_DESIGN.has(c.id) ? 'by design' : 'fail') : 'match';
+      detail = outcome === 'by design' ? `${BY_DESIGN.get(c.id)}: ${diff}` : diff ?? '';
     } catch (e) {
       outcome = e.code === 'UNSUPPORTED' ? 'unsupported' : 'error';
       detail = `${e.code ? `${e.code}: ` : ''}${e.message.split('\n')[0]}`;
@@ -120,12 +127,15 @@ const bad = [];
 for (const r of results) {
   if (r.outcome === 'fail') bad.push(`${r.id}: wrong rows: ${r.detail}`);
   else if (r.outcome === 'match' && PENDING.has(r.id)) bad.push(`${r.id} matches now: take it off PENDING`);
+  else if (r.outcome === 'match' && BY_DESIGN.has(r.id)) bad.push(`${r.id} matches now: take it off BY_DESIGN`);
+  else if (r.outcome === 'by design') continue;
   else if (r.outcome !== 'match' && !PENDING.has(r.id)) bad.push(`${r.id}: ${r.outcome}, ${r.detail}`);
   if (STAR.has(r.id) && r.path !== 'SUMMARIZECOLUMNS') bad.push(`${r.id}: a star join, answered by the joined rows`);
 }
 for (const id of STAR) if (!results.some(r => r.id === id)) bad.push(`${id} is on STAR but no case has that id`);
 const ids = new Set(results.map(r => r.id));
 for (const id of PENDING) if (!ids.has(id)) bad.push(`${id} is on PENDING but no case has that id`);
+for (const id of BY_DESIGN.keys()) if (!ids.has(id)) bad.push(`${id} is on BY_DESIGN but no case has that id`);
 
 const counts = Object.groupBy(results, r => r.outcome);
 const summary = [

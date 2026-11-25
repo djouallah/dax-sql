@@ -52,6 +52,7 @@ const table = (t, d) => obj(d, 'table', t.name, null, t, [
   ...(t.columns ?? []).map(c => column(c, d + 1)),
   ...(t.measures ?? []).map(m => measure(m, d + 1)),
   ...(t.partitions ?? []).map(p => partition(p, d + 1)),
+  ...(t.annotations ?? []).map(a => obj(d + 1, 'annotation', a.name, a.value)),
 ]);
 const relationship = (r, i, d) => obj(d, 'relationship', r.name ?? `rel${i}`, null,
   { ...r, fromTable: undefined, toTable: undefined, fromColumn: `${q(r.fromTable)}.${q(r.fromColumn)}`, toColumn: `${q(r.toTable)}.${q(r.toColumn)}` });

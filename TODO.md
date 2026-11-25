@@ -15,6 +15,11 @@ Nothing here blocks a release. DAX on DuckDB has nothing left; T-SQL is the last
 - [ ] A value of two kinds typed per row (DuckDB's VARIANT), not text: Power BI keeps each row's
   number a number (the 4 variant-as-text queries).
 - [ ] A value of two kinds compared with a number (contoso `fuzz3-0104`).
+- [ ] The blank row where facts are measured by a dimension's columns: the fact rows whose key the
+  dimension lacks as one more group, its columns blank, as Power BI has it; a dimension alone keeps
+  none. Cheap where the measures are one grouping of the fact (its join to the dimension outer, no
+  other scan); a measure that is not (`ALL` of the dimension, time intelligence, another fact)
+  keeps none, on the known list. Then take those of the 89 "no blank row" entries it answers off.
 
 # Wave 2: T-SQL
 

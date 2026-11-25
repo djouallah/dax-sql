@@ -57,12 +57,12 @@ async function loadEngines() {
     const r = await fetch('results.json', { cache: 'no-cache' });
     engines = (await r.json()).engines;
   } catch {
-    body.innerHTML = '<tr><td colspan="7">No results yet: CI writes them when the site is deployed.</td></tr>';
+    body.innerHTML = '<tr><td colspan="6">No results yet: CI writes them when the site is deployed.</td></tr>';
     return;
   }
   body.innerHTML = engines.map((e, i) => {
     const t = e.total;
-    return `<tr data-i="${i}"><td><b>${esc(e.engine)}</b></td><td>${esc(e.path)}</td>
+    return `<tr data-i="${i}"><td><b>${esc(e.engine)}</b></td>
       <td class="n"><b>${t.match}</b></td><td class="n">${t.fail}</td><td class="n">${t.error}</td><td class="n">${t.unsupported}</td><td class="n">${t.known}</td></tr>`;
   }).join('');
   for (const tr of body.querySelectorAll('tr')) tr.addEventListener('click', () => engDetail(+tr.dataset.i));
@@ -82,7 +82,7 @@ function engDetail(i) {
     const ms = e.misses.filter(m => m.outcome === o).sort((a, b) => a.known - b.known);
     return ms.length ? `<p class="sub"><b>${title} (${ms.length})</b></p><ul>${ms.map(m => item(m).replace('<code>', m.known ? '<code>' : '<b>not on its known list</b> <code>')).join('')}</ul>` : '';
   });
-  $('#eng-detail').innerHTML = `<h4>${esc(e.engine)}, ${esc(e.path)}: the ${e.misses.length} queries it does not answer as Power BI does</h4>${groups.join('')}`;
+  $('#eng-detail').innerHTML = `<h4>${esc(e.engine)}: the ${e.misses.length} queries it does not answer as Power BI does</h4>${groups.join('')}`;
 }
 addEventListener('hashchange', () => { show(); scrollTo({ top: 0 }); });
 addEventListener('resize', moveInd);

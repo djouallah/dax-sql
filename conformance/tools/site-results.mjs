@@ -17,7 +17,7 @@ const known = files => new Map(files.flatMap(f => read(join('conformance/engines
 const ENGINES = [
   { engine: 'DuckDB', path: 'correlated', artifact: 'plan-report', report: 'plan-correlated.json', known: ['dax-sql/known.json'] },
   { engine: 'Fabric DWH', path: 'unnested by the compiler', artifact: 'tsql-report', report: 'tsql-unnest.json', known: ['dax-sql-tsql/known.json', 'dax-sql-tsql/known-unnest.json'] },
-  { engine: 'Polars (main)', path: 'unnested by the compiler', artifact: 'polars-report', report: 'polars.json', known: ['dax-sql-polars/known.json', 'dax-sql/known.json'] },
+  { engine: 'Polars', path: 'unnested by the compiler', artifact: 'polars-report', report: 'polars.json', known: ['dax-sql-polars/known.json', 'dax-sql/known.json'] },
   { engine: 'DataFusion 55', path: 'unnested by the compiler', artifact: 'datafusion-report', report: 'datafusion.json', known: ['dax-sql-datafusion/known.json', 'dax-sql/known.json'] },
 ];
 
@@ -33,9 +33,11 @@ for (const e of ENGINES) {
       .map(q => ({ id: q.id, outcome: q.outcome, known: q.known, reason: q.known ? reasons.get(q.id) ?? null : String(q.detail ?? '').split('\n')[0].slice(0, 300) })),
   });
 }
-// Power BI first: the answers the others are held to (its own, every one).
+// Power BI first: the answers the others are held to (its own, every one): the queries it answered
+// when the first engine's report was made (not one still pending, nor one it refused), so that
+// every row is of the same queries.
 if (rows.length) {
-  const n = rows[0].queries;
+  const t = rows[0].total, n = t.match + t.fail + t.error + t.unsupported;
   rows.unshift({ engine: 'Power BI', path: 'n/a', reference: true, total: { match: n, fail: 0, error: 0, unsupported: 0, known: 0 }, queries: n, misses: [] });
 }
 writeFileSync(out, JSON.stringify({ built: new Date().toISOString(), engines: rows }));

@@ -7,7 +7,7 @@ name: Scale
 # fails or takes more than the timeout, or the compiler refuses one Power BI answers: on a push
 # and a release (publish.yml) at SF1, 120 s each. Polars and DataFusion run the same queries on the
 # same data, each answer held to DuckDB's (tools/tpcds/scale-engine.mjs; answers of more than
-# 100,000 rows left out): a measure, not a gate. By hand: the scale factor, the timeout and the
+# 100,000 rows left out): a measure, not a gate; DataFusion on a push and a release, Polars by hand. By hand: the scale factor, the timeout and the
 # engines are inputs.
 
 on:
@@ -29,11 +29,11 @@ on:
       engines:
         description: "Engines beside DuckDB"
         type: choice
-        default: polars and datafusion
+        default: datafusion
         options:
+          - datafusion
           - polars and datafusion
           - polars
-          - datafusion
           - duckdb only
   workflow_call:
 
@@ -84,7 +84,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        engine: ${{ fromJSON(inputs.engines == 'polars' && '["polars"]' || inputs.engines == 'datafusion' && '["datafusion"]' || '["polars","datafusion"]') }}
+        # Polars by hand only (its SF1 run takes most of half an hour): a push and a release, DataFusion.
+        engine: ${{ fromJSON(inputs.engines == 'polars' && '["polars"]' || inputs.engines == 'polars and datafusion' && '["polars","datafusion"]' || '["datafusion"]') }}
     steps:
       - uses: actions/checkout@v4
         with:

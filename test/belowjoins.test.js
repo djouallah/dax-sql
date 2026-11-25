@@ -1,6 +1,6 @@
 // A fact table's sums and counts by columns of the tables it reaches over many-to-one relationships:
 // the answer is a GROUP BY over the joins' rows; a sale whose customer isn't in Customer counts in
-// the total, in no group.
+// the blank group, Power BI's blank row.
 import { test, before } from 'node:test';
 import assert from 'node:assert/strict';
 import { harness, sorted } from './helpers.js';
@@ -9,15 +9,15 @@ import { bim, setup } from './fixtures/contoso.js';
 let h;
 before(async () => { h = await harness(bim, setup); });
 
-test("by a column of a table one join away: grouped by the key first, no blank group", async () => {
+test("by a column of a table one join away: grouped by the key first, the blank group too", async () => {
   const q = `EVALUATE SUMMARIZECOLUMNS(Customer[City], "s", [Sales Amount], "q", [Quantity], "o", [Orders])`;
   h.dax.compile(q);
   const got = sorted(await h.run(q));
-  // No blank row (by design): customer 99, with sales and no row in Customer, is in no group.
+  // The blank row: customer 99, with sales and no row in Customer, is in the blank group.
   const want = sorted(await h.sql(`SELECT c."City" AS "City", SUM(s."Amount") AS s, SUM(s."Qty") AS q, COUNT(*) AS o
-    FROM "Sales" s JOIN "Customer" c ON c."CustomerKey" = s."CustomerKey" GROUP BY 1`));
+    FROM "Sales" s LEFT JOIN "Customer" c ON c."CustomerKey" = s."CustomerKey" GROUP BY 1`));
   assert.deepEqual(got.map(Object.values), want.map(Object.values));
-  assert.ok(!got.some(r => r[Object.keys(r)[0]] == null), "no blank group");
+  assert.ok(got.some(r => r[Object.keys(r)[0]] == null), "the blank group");
 });
 
 test("by a column two joins away (Sales > Product > Category), and a min and a max", async () => {

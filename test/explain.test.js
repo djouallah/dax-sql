@@ -12,7 +12,7 @@ const Q = 'EVALUATE SUMMARIZECOLUMNS(Category[Category], TREATAS({2024}, \'Date\
 test('explain draws the query plan: the groups, the measure one grouping joined to them (inner: the blank rows are dropped), TREATAS a list of its values', () => {
   const tree = h.dax.explain(Q);
   assert.doesNotMatch(tree, /Apply|∃/);
-  // The groups are the grouping's keys that are categories (no blank row), as the compiler's.
+  // The groups are the grouping's keys (a sale with no category in the blank one), as the compiler's.
   assert.match(tree, /^π {2}Category, Sales = sum\n└─ ⋈ {2}\(g0 ≡ Category\) ∧ sum ≠ BLANK\n.*├─ δ {2}Distinct\n.*└─ π {2}Category = g0\n/);
   // The sales grouped by their keys first, those groups by category.
   assert.match(tree, /γ {2}by g0 = Category\.Category; SUM\(sum\) → sum\n.*└─ σ {2}Date\.Year IN \{2024\}\n/);

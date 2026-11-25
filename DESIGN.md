@@ -155,17 +155,16 @@ filters on its expanded table's columns only.
 
 ### The blank row
 
-There is none (a departure from DAX). Power BI adds a row of blanks to a table on the one side
-of a relationship when the other side has keys it lacks, and lists it in `VALUES`, `ALL` and
-the groups of SUMMARIZECOLUMNS. Knowing whether it is there takes a scan of every such fact
-table for the keys the dimension lacks, in every query that lists a dimension's values: 3,908
-checks over the conformance queries, a third of their SQL. A dimension is expected to hold
-every key its facts use; `VALUES` and `ALL` are its rows.
-
-Fact rows with a key the dimension lacks are still read: they count in totals, and in no
-group by the dimension's columns. Where the groups are read off the measures' own grouped rows
-(fused, the joins to the one side `LEFT JOIN`s), a group's key of another table is one that
-table has (`EXISTS`): fused or not, the groups are the same.
+Power BI adds a row of blanks to a table on the one side of a relationship when the other side
+has keys it lacks, and lists it in `VALUES`, `ALL` and the groups of SUMMARIZECOLUMNS. Knowing
+whether it is there takes a scan of every such fact table for the keys the dimension lacks, in
+every query that lists a dimension's values: 3,908 checks over the conformance queries, a third
+of their SQL. So it is there only where it costs nothing: where SUMMARIZECOLUMNS' groups are read
+off the measures' own grouping of a fact (fused, the joins to the one side `LEFT JOIN`s), the
+fact's rows whose key the dimension lacks are a group, its columns blank, as Power BI's. Anywhere
+else (a departure from DAX) there is none: `VALUES` and `ALL` are the dimension's rows, and the
+groups of a level whose measures are not one grouping of a fact (`ALL` of the dimension, time
+intelligence, another table's rows) are the dimension's values.
 
 A blank in a table filter must match the fact rows that have no row of the table, and a NULL
 stored in a column, so membership (`member`) is null-safe where both sides can be blank
@@ -783,11 +782,12 @@ and gives each aggregate the filters that reach its table.
   - Filter tables, `ROLLUPADDISSUBTOTAL`/`ROLLUPGROUP`, and `ISINSCOPE` are supported.
   - A filter table wrapped in `NONVISUAL` filters the groups and the expressions, but is not
     part of the selection: `ALLSELECTED` removes it.
-- **No blank row** (a departure from DAX): when some rows of a fact table have a key that
-  matches no row of a dimension, DAX adds a blank row to the dimension. Here `VALUES`, `ALL`,
-  `ALLSELECTED` and the groups of SUMMARIZECOLUMNS are the dimension's own rows, so
-  `ALLNOBLANKROW` is `ALL` and `DISTINCT` is `VALUES`. Such fact rows still count in a total,
-  and in no group by the dimension's columns. A blank in a table
+- **The blank row, where it is cheap** (otherwise a departure from DAX): when some rows of a
+  fact table have a key that matches no row of a dimension, DAX adds a blank row to the
+  dimension. Here SUMMARIZECOLUMNS' groups read off a fact's grouping have it (those rows, their
+  dimension columns blank); `VALUES`, `ALL`, `ALLSELECTED` and the other groups are the
+  dimension's own rows, so `ALLNOBLANKROW` is `ALL` and `DISTINCT` is `VALUES`. Such fact
+  rows always count in a total. A blank in a table
   filter matches a NULL stored in a column (`TREATAS({BLANK()}, Sales[CustomerKey])` keeps the
   sales with no customer key).
 - **Dates as numbers:** a date plus or minus whole days is a date; plus any other number, a

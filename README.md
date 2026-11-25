@@ -12,4 +12,4 @@ DAX is tested against Power BI's answers ([conformance/](conformance/README.md))
 
 - Text is compared as the engine's collation does it (`"red"` is not `"Red"` on DuckDB) and keeps its trailing spaces.
 - A column mixing numbers and text comes back as text; a date minus a date as days; `IFERROR` returns its first argument. Values come back unformatted; `FORMAT` is en-US, with a constant pattern. `PATH` walks at most 32 levels: a deeper row's path is blank.
-- No blank row: a dimension must hold every key its facts use; fact rows with a missing key still count in totals.
+- The blank row only where a fact's measures are grouped by a dimension's columns (its rows whose key the dimension lacks); `VALUES` and `ALL` of a dimension have none.

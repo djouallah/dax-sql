@@ -664,7 +664,7 @@ export class Lowerer {
       const full = g => g.keys.length === active.length && !g.outside;
       if (supports.every(sp => sp && [...sp].every(full)) && supports.some(sp => sp.size)) {
         from = [...new Set(supports.flatMap(sp => [...sp]))];
-        kb.from = own(fusion.keysOf(from, x, L, scope));
+        kb.from = own(fusion.keysOf(from));
       } else {
         const kc = this.keyCombinations(x, L, scope);
         kb.from = P.projectAs(kc.rel, active.map(ki => ({ col: keyCol.get(ki), expr: kc.refs.get(ki) })));
@@ -1218,30 +1218,15 @@ class Fusion {
     }
   }
 
-  // The level's keys from groups gs (each by every active key): each group's keys, those of a
-  // table other than its scan's one of that table's rows (no blank row: a group of the fact's
-  // rows whose key the dimension lacks is no group), all of them once.
-  keysOf(gs, x, L, scope) {
+  // The level's keys from groups gs (each by every active key): each group's keys, all of them
+  // once. A group of the fact's rows whose key a dimension lacks is one (its columns blank: the
+  // fact's join to the dimension is outer), Power BI's blank row, read off the grouping, no other
+  // scan.
+  keysOf(gs) {
     const lw = this.lw;
-    const byTable = new Map();
-    for (const ki of this.active) {
-      const t = this.keyCols[ki].table;
-      if (!byTable.has(t)) byTable.set(t, []);
-      byTable.get(t).push(ki);
-    }
     const parts = gs.map(g => {
       const rd = lw.shared(g, () => clone(this.relOf(g)).rel);
-      const kc = this.active.map(ki => rd.cols[g.keys.indexOf(ki)]);
-      const has = [];
-      for (const [t, kis] of byTable) {
-        if (t === g.table) continue;
-        const b = lw.isolated(() => lw.scanBlock(t, new Ctx([], x.ctx0.mods), scope));
-        b.setOut(kis.map(ki => ({ name: this.keyCols[ki].name, lineage: this.keyCols[ki] })), kis.map(ki => b.res.meta(this.keyCols[ki])));
-        const v = lw.exact(b.render());
-        has.push(P.exists(P.select(v, P.and(kis.map((ki, j) => P.key(P.ref(v.cols[j]), P.ref(kc[this.active.indexOf(ki)])))))));
-      }
-      const r = has.length ? P.select(rd, P.and(has)) : rd;
-      return P.project(r, this.active.map((ki, j) => ({ name: this.keyCols[ki].name, expr: P.ref(kc[j]), lineage: this.keyCols[ki] })));
+      return P.project(rd, this.active.map(ki => ({ name: this.keyCols[ki].name, expr: P.ref(rd.cols[g.keys.indexOf(ki)]), lineage: this.keyCols[ki] })));
     });
     return P.distinct(parts.length === 1 ? parts[0] : P.union(parts));
   }

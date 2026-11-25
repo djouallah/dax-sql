@@ -1,0 +1,57 @@
+name: Scale debug
+
+# By hand: the tpcds queries matching a regex at TPC-DS SF1 on DuckDB and on Polars or
+# DataFusion (conformance/tools/tpcds/scale-diff.mjs): each one's answer on both, the rows one has
+# and the other not, the engine's error and SQL (an artifact).
+
+on:
+  workflow_dispatch:
+    inputs:
+      queries:
+        description: "Queries (a regex of family/id, e.g. fuzz-0013$|fuzz3-0126$)"
+        required: true
+      engine:
+        description: "polars or datafusion"
+        default: polars
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  contents: read
+
+jobs:
+  diff:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: The engine
+        run: |
+          if [ "${{ inputs.engine }}" = polars ]; then pip install -q "polars==2.2.0"; else pip install -q -r conformance/engines/dax-sql-datafusion/requirements.txt; fi
+      - name: TPC-DS at SF1
+        run: node conformance/tools/tpcds/scale.mjs 1 "$RUNNER_TEMP/sf1.duckdb" --model-dir "$RUNNER_TEMP/sf1"
+      - name: The queries on DuckDB and on ${{ inputs.engine }}
+        env:
+          PY: python
+          DATAFUSION_PYTHON: python
+          POLARS_TIMEOUT_MS: "300000"
+          DATAFUSION_TIMEOUT: "300"
+          DATAFUSION_MEMORY: "6000000000"
+        run: |
+          node conformance/tools/tpcds/scale-diff.mjs --grep '${{ inputs.queries }}' --duckdb "$RUNNER_TEMP/sf1.duckdb" \
+            --model-dir "$RUNNER_TEMP/sf1" --dialect ${{ inputs.engine }} --out "$RUNNER_TEMP/sql" \
+            --adapter "node conformance/engines/dax-sql-${{ inputs.engine }}/adapter.mjs ."
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sql
+          path: ${{ runner.temp }}/sql

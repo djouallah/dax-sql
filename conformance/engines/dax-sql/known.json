@@ -164,5 +164,8 @@
   {"id":"stores/grid/grid-0219","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"},
   {"id":"stores/grid/grid-0220","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"},
   {"id":"stores/grid/grid-0221","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"},
-  {"id":"stores/grid/grid-0222","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"}
+  {"id":"stores/grid/grid-0222","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"},
+  {"id":"edges/grid/grid-0199","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"},
+  {"id":"edges/grid/grid-0200","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"},
+  {"id":"edges/grid/grid-0202","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"}
 ]

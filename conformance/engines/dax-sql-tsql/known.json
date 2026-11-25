@@ -169,5 +169,14 @@
   {"id":"stores/grid/grid-0219","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"},
   {"id":"stores/grid/grid-0220","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"},
   {"id":"stores/grid/grid-0221","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"},
-  {"id":"stores/grid/grid-0222","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"}
+  {"id":"stores/grid/grid-0222","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"},
+  {"id":"edges/grid/grid-0199","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"},
+  {"id":"edges/grid/grid-0200","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"},
+  {"id":"edges/grid/grid-0202","reason":"by design: no blank row (Power BI adds a blank member to a dimension whose keys some fact rows lack)"},
+  {"id":"aac/grid/grid-0072","reason":"by design: T-SQL has no infinity, so x / 0 is blank, not infinity (or NaN for 0 / 0)"},
+  {"id":"aac/grid/grid-0128","reason":"by design: T-SQL has no infinity, so x / 0 is blank, not infinity (or NaN for 0 / 0)"},
+  {"id":"aac/grid/grid-0344","reason":"by design: T-SQL has no infinity, so x / 0 is blank, not infinity (or NaN for 0 / 0)"},
+  {"id":"edges/grid/grid-0102","reason":"by design: T-SQL has no infinity, so x / 0 is blank, not infinity (or NaN for 0 / 0)"},
+  {"id":"scott/grid/grid-0044","reason":"by design: T-SQL has no infinity, so x / 0 is blank, not infinity (or NaN for 0 / 0)"},
+  {"id":"scott/grid/grid-0072","reason":"by design: T-SQL has no infinity, so x / 0 is blank, not infinity (or NaN for 0 / 0)"}
 ]

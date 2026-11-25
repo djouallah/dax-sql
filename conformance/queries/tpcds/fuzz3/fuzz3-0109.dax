@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 109)
+EVALUATE SUMMARIZECOLUMNS('promotion'[p_promo_name], KEEPFILTERS(TREATAS({ "GA" }, 'customer_address'[ca_state])), "m0", RANKX(ALL('item'[i_class]), ROUND(MIN('store_sales'[ss_quantity]), 2), , DESC, Dense))

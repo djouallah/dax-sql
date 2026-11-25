@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 53)
+EVALUATE TOPN(3, ADDCOLUMNS(VALUES('Category'[Category]), "m0", CALCULATE(CALCULATE(SUM('Returns'[ReturnQty]), USERELATIONSHIP('Sales'[ShipDate], 'Date'[Date]), DATESINPERIOD('Date'[Date], DATE(2023, 10, 17), -12, MONTH)), PARALLELPERIOD('Date'[Date], -1, QUARTER))), [m0], DESC, 'Category'[Category], ASC)

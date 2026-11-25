@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 136)
+EVALUATE ROW("m0", IF(HASONEVALUE('item'[i_category]), IF(ISBLANK([Archive Files]), 0, SUM('store_sales'[ss_net_profit]))), "m1", CALCULATE(ROUND([Store Distinct Customers], 0), ALLSELECTED('customer_demographics'[cd_marital_status])), "m2", LEN(LEFT(UPPER(CONCATENATEX(VALUES('item'[i_current_price]), 'item'[i_current_price], "|", 'item'[i_current_price], ASC)), 2)))

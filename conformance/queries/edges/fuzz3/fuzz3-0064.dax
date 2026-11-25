@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 64)
+EVALUATE SUMMARIZE('Target', 'Date'[Month], 'Date'[Year], "m0", DIVIDE(IF(HASONEVALUE('Store'[Store]), DISTINCTCOUNT('Customer'[Segment])), CALCULATE(MIN('Sales'[Quantity]), ALL('StoreProfile'[Format]))))

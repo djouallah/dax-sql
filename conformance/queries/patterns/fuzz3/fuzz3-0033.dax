@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 33)
+EVALUATE ADDCOLUMNS(CROSSJOIN(VALUES('Customer'[Gender]), VALUES('Customer'[City])), "m0", TOTALYTD(COUNTROWS(FILTER(VALUES('Category'[Category]), [Sales Moving Avg 3M] > 1000)), 'Date'[Date]))

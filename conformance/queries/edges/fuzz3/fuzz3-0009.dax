@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 9)
+EVALUATE ROW("m0", IF(HASONEVALUE('Date'[Year]), MAX('Sales'[Unit Price])), "m1", TOTALYTD(RANKX(ALL('Country'[Country]), [Customers No Blank]), 'Date'[Date]), "m2", ROUND(LEN(LEFT(UPPER(CONCATENATEX(VALUES('Date'[Weekend]), 'Date'[Weekend], "|", 'Date'[Weekend], ASC)), 4)), 2))

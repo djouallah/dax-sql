@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 73)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('date_dim'[d_year], "m0", COUNTROWS(FILTER(VALUES('date_dim'[d_year]), AVERAGE('store_sales'[ss_net_profit]) > 1)), "m1", MAXX(VALUES('item'[i_class]), [Catalog Net Profit])), NOT('date_dim'[d_qoy] IN { 1 }))

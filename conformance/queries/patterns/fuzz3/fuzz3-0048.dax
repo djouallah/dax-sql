@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 48)
+EVALUATE ROW("m0", [Orders], "m1", CALCULATE(COUNTROWS(FILTER(VALUES('Date'[Month]), [Customers To Date] > 1000)), ALLSELECTED('Date'[Day Name])), "m2", IF(ISBLANK(SWITCH(TRUE(), [Customers Repeat] > 100, COUNTROWS('Sales'), MIN('Sales'[Quantity]) < 10, [Basket Orders With Bikes], AVERAGE('Inventory'[On Hand]))), 0, [Inventory Avg Month End]))

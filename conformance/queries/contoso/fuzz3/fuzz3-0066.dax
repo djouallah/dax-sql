@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 66)
+EVALUATE TOPN(1, SUMMARIZECOLUMNS('Category'[Category], "m0", LEN(LEFT(UPPER(CONCATENATEX(VALUES('Customer'[City]), 'Customer'[City], "|", 'Customer'[City], ASC)), 6))), [m0], ASC)

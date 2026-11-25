@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 59)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('ship_mode'[sm_type], 'item'[i_current_price], "m0", MIN('store_sales'[ss_quantity])), 'item'[i_current_price] = 40.25)

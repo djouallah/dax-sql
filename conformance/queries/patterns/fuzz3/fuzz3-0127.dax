@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 127)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('Product'[Brand], "m0", [Customers Recovered 90d], "m1", CALCULATE(AVERAGEX(VALUES('Product'[Price Band]), [Segment Product Count]), PARALLELPERIOD('Date'[Date], -4, MONTH), ALLEXCEPT('Subcategory', 'Subcategory'[Subcategory]))), 'Product'[Color] <> "Black")

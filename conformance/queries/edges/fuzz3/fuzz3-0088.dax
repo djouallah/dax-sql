@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 88)
+EVALUATE TOPN(1, ADDCOLUMNS(VALUES('Customer'[City]), "m0", IF(IF(ISINSCOPE('Product'[Product]), TOTALYTD(AVERAGE('Target'[Target]), 'Date'[Date]), IF(HASONEVALUE('Customer'[Segment]), COUNTROWS('Sales'))) > 1, COUNTROWS(UNION(VALUES('Country'[Country]), VALUES('Country'[Country]))), CALCULATE(RANKX(ALL('Customer'[Segment]), DISTINCTCOUNT('Date'[Year])), PARALLELPERIOD('Date'[Date], -1, YEAR)))), [m0], DESC, 'Customer'[City], ASC)

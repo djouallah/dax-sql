@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 93)
+EVALUATE SUMMARIZECOLUMNS("m0", DISTINCTCOUNT('Customer'[Customer]), "m1", TOTALYTD(SUMX(SUMMARIZE('Sales', 'Product'[PriceBand]), [Sales Amount]), 'Date'[Date]), "m2", IF(CALCULATE([All Sales], DATESBETWEEN('Date'[Date], DATE(2023, 11, 27), DATE(2023, 7, 7))) > 10, COALESCE([Quantity], 0), CALCULATE([Avg Price], INDEX(2, ALL('Date'[Quarter]), ORDERBY('Date'[Quarter], DESC)))))

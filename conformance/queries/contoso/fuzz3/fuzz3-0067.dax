@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 67)
+EVALUATE SUMMARIZE('Returns', 'Date'[Year], "m0", IF(ISINSCOPE('Product'[Price]), DISTINCTCOUNT('Category'[Category]), [Quantity]), "m1", CALCULATE(MAX('Sales'[Amount]), PARALLELPERIOD('Date'[Date], -4, QUARTER)))

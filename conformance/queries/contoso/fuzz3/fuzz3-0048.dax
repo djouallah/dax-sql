@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 48)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('Date'[Quarter], "m0", IF(SELECTEDVALUE('Customer'[Customer]) = "Chloe", ABS(CALCULATE(SUM('Sales'[Amount]), FILTER(VALUES('Customer'[City]), DIVIDE(MAX('Sales'[Qty]), CALCULATE([All Sales], ALL('Product'[Color]))) > 0))), ABS(IF(AND([Avg Price] > 1, NOT(ISBLANK([Orders]))), [Red Sales Kept], MIN('Returns'[ReturnQty])))), "m1", DISTINCTCOUNT('Product'[Price])), REMOVEFILTERS('Customer'))

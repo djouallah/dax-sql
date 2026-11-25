@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 51)
+EVALUATE SUMMARIZE('Target', 'Customer'[Segment], "m0", CALCULATE(RANKX(ALL('StoreProfile'[Format]), ROUND(COUNTROWS('Product'), 1)), 'Product'[Color] >= "Céladon", KEEPFILTERS('Date'[Weekend] IN { TRUE() })))

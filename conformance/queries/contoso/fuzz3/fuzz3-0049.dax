@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 49)
+EVALUATE SUMMARIZE('Returns', 'Product'[PriceBand], "m0", CALCULATE(RANKX(ALL('Date'[Quarter]), ROUND(COUNTROWS('Returns'), 1)), 'Product'[Color] >= "Black", KEEPFILTERS('Date'[Month] IN { 6 })))

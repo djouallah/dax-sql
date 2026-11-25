@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 78)
+EVALUATE SUMMARIZECOLUMNS("m0", (IF(ISBLANK(DIVIDE(SUM('Sales'[Quantity]), [Avg Per Customer])), 0, IF(OR([Total Quantity] > 1000, NOT(ISBLANK([Total Weight]))), [Total Weight], MAX('Target'[Target]))) + MAX(LEN(LEFT(UPPER(CONCATENATEX(VALUES('Customer'[City]), 'Customer'[City], "|", 'Customer'[City], ASC)), 2)), [Lines])), "m1", CALCULATE(IF(ABS([Total Weight]) > 1, VAR v = [Sales PY] RETURN v * 2 + SUM('Target'[Target]), MIN('Target'[Target])), ALLSELECTED('Product'[Color])))

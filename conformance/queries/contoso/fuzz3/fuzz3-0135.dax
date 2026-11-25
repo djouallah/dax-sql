@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 135)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('Product'[Name], 'Product'[Color], "m0", COALESCE(COUNTROWS('Product'), 0), "m1", CALCULATE(MIN('Sales'[Qty]), INDEX(2, ALL('Date'[Quarter]), ORDERBY('Date'[Quarter], DESC)))), ALL('Customer'[City]))

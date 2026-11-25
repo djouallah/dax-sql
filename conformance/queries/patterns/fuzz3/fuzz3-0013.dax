@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 13)
+EVALUATE SUMMARIZE('Sales', 'Date'[Month], 'Category'[Category], "m0", COALESCE(IF(HASONEVALUE('Subcategory'[Subcategory]), COUNTROWS(FILTER(VALUES('Category'[Category]), [Basket Orders With Bikes] > 100))), 0))

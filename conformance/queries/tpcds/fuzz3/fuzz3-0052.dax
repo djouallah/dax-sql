@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 52)
+EVALUATE SUMMARIZE('catalog_sales', 'item'[i_current_price], "m0", CALCULATE(RANKX(ALL('ship_mode'[sm_type]), ROUND(COUNTROWS('catalog_sales'), 1)), 'item'[i_class] >= "classical", KEEPFILTERS('date_dim'[d_moy] IN { 6 })))

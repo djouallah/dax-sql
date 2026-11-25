@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 101)
+EVALUATE SUMMARIZECOLUMNS('Product'[Color], 'Customer'[Country], 'Product'[Product], "m0", [Segment Customer Count AOV], "m1", COUNTROWS('Inventory'))

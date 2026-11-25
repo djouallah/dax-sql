@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 11)
+EVALUATE SUMMARIZECOLUMNS("m0", CALCULATE([Customers Avg Active Months], 'Date'[Quarter] IN { 1 }, KEEPFILTERS('Category'[Category] IN { "Bikes", "Clothing" })))

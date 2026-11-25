@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 1)
+EVALUATE ROW("m0", [Customers No Blank], "m1", ROUND(AVERAGE('Sales'[Unit Price]), 2), "m2", COUNTROWS(CROSSJOIN(VALUES('Region'[Region]), VALUES('Region'[Region]))))

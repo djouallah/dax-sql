@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 92)
+EVALUATE SUMMARIZECOLUMNS('date_dim'[d_year], "m0", CALCULATE([Store Distinct Customers], REMOVEFILTERS('store_sales')), "m1", ROUND([Store Revenue Same Period LY], 0))

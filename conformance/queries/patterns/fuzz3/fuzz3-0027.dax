@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 27)
+EVALUATE ROW("m0", CALCULATE(LEN(CONCATENATEX(VALUES('Date'[Year]), 'Date'[Year], ",")), USERELATIONSHIP('Sales'[Delivery Date], 'Date'[Date]), PARALLELPERIOD('Date'[Date], 1, QUARTER)), "m1", CALCULATE(DIVIDE(CALCULATE([Budget at Valid Grain], INDEX(1, ALL('Currency'[Currency]), ORDERBY('Currency'[Currency], ASC))), IF(ISBLANK([Customers]), 0, AVERAGE('Inventory'[On Hand]))), 'Currency'[Currency] = "Australian Dollar"))

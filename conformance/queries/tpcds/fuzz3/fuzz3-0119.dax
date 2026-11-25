@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 119)
+EVALUATE SUMMARIZECOLUMNS('date_dim'[d_year], 'item'[i_brand], "m0", COUNTROWS('store'))

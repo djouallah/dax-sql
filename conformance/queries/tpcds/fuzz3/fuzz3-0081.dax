@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 81)
+EVALUATE ADDCOLUMNS(VALUES('customer_address'[ca_state]), "m0", LEN(CONCATENATEX(VALUES('ship_mode'[sm_type]), 'ship_mode'[sm_type], ",")))

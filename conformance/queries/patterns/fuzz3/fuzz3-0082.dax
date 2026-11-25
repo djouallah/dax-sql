@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 82)
+EVALUATE ADDCOLUMNS(CROSSJOIN(VALUES('Category'[Category]), VALUES('Product'[Color])), "m0", [Sales Ordered and Delivered in Period])

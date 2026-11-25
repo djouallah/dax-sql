@@ -1,0 +1,3 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 45)
+// roles: RedOnly
+EVALUATE ADDCOLUMNS(VALUES('Customer'[City]), "m0", CALCULATE((AVERAGE('Returns'[ReturnQty]) * IF(SELECTEDVALUE('Product'[Color]) = "Black", AVERAGE('Sales'[Amount]), [Returned])), INDEX(2, ALL('Customer'[Customer]), ORDERBY('Customer'[Customer], DESC))), "m1", DISTINCTCOUNT('Product'[Price]))

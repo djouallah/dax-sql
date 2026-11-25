@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 141)
+EVALUATE ADDCOLUMNS(VALUES('Currency'[Currency]), "m0", IF(AND(CALCULATE(MIN('Sales'[Quantity]), DATESBETWEEN('Date'[Date], DATE(1999, 1, 1), DATE(2024, 8, 7))) > 0, NOT(ISBLANK(IF(HASONEVALUE('Product'[Price Band]), [ABC Product Cumulative %])))), CALCULATE([Sales via Account Iteration], 'Employee'[Title] <> "VP Sales", ALLSELECTED('Product')), [Sales Fiscal PY Manual]))

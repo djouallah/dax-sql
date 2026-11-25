@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 26)
+EVALUATE SUMMARIZECOLUMNS('Date'[Quarter], 'Product'[PriceBand], 'Product'[Color], "m0", IF(ISBLANK([Return Rate]), 0, COUNTROWS(GENERATE(VALUES('Product'[PriceBand]), TOPN(1, VALUES('Product'[Name]), COUNTROWS(GENERATE(VALUES('Product'[Price]), TOPN(1, VALUES('Product'[Price]), AVERAGE('Returns'[ReturnQty])))))))))

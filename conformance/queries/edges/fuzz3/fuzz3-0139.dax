@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 139)
+EVALUATE SUMMARIZECOLUMNS('Product'[Product], 'Product'[Color], 'Customer'[Segment], FILTER(ALL('Date'[Weekend]), 'Date'[Weekend] <> TRUE()), TREATAS({ "Desk Fan ", "Free Sample" }, 'Product'[Product]), "m0", SUMX(SUMMARIZE('Sales', 'StoreProfile'[Format]), MIN('Sales'[Discount])))

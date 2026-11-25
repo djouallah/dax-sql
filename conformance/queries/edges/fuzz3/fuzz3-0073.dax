@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 73)
+EVALUATE TOPN(2, SUMMARIZECOLUMNS('Product'[Brand], "m0", [Sales YTD]), [m0], ASC)

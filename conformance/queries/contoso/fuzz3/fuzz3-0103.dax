@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 103)
+EVALUATE ROW("m0", CALCULATE([Returned], DATESINPERIOD('Date'[Date], DATE(2023, 8, 10), -1, DAY)))

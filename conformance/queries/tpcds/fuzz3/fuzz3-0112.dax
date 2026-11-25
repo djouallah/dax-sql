@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 112)
+EVALUATE SUMMARIZE('store_sales', 'store'[s_city], 'item'[i_color], "m0", SUMX(VALUES('store'[s_state]), IF(ISBLANK(MAX('catalog_sales'[cs_ext_sales_price])), 0, MAX([Catalog Sales Same Period LY], COUNTROWS('store')))), "m1", [Store Profit % by Item Category])

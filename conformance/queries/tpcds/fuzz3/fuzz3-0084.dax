@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 84)
+EVALUATE SUMMARIZE('catalog_sales', 'store'[s_store_name], 'store'[s_state], "m0", VAR v = CALCULATE([Catalog Revenue], DATESINPERIOD('date_dim'[d_date], DATE(2024, 12, 29), -3, MONTH)) RETURN v * 2 + RANKX(ALL('ship_mode'[sm_type]), MIN('store_sales'[ss_ext_sales_price])), "m1", [Store Revenue YoY])

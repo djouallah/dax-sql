@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 138)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('Product'[Color], "m0", DIVIDE(DISTINCTCOUNT('Date'[Month]), AVERAGE('Sales'[Qty]))), ALL('Customer'[City]))

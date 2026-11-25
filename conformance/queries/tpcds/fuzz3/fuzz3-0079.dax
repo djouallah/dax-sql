@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 79)
+EVALUATE TOPN(1, SUMMARIZECOLUMNS('customer_address'[ca_state], "m0", [Store Revenue YTD]), [m0], DESC)

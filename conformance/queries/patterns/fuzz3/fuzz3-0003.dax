@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 3)
+EVALUATE TOPN(2, SUMMARIZECOLUMNS('Date'[Day Name], "m0", CALCULATE(IF(MAX('Budget'[Budget]) > 100, [Segment Product Count], [Budget Allocated by Day]), DATESINPERIOD('Date'[Date], DATE(2024, 1, 1), -12, MONTH))), [m0], ASC)

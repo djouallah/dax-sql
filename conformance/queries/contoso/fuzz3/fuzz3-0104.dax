@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 104)
+EVALUATE SUMMARIZECOLUMNS('Time Calc'[Time Calc], "m0", IF(ISBLANK(CALCULATE([Avg Price], DATESBETWEEN('Date'[Date], DATE(1999, 1, 1), DATE(2024, 1, 18)))), 0, SWITCH(TRUE(), [Share of Category] > 1000, [All Sales], COUNTROWS('Customer') < 0, AVERAGE('Sales'[Qty]), [Customers])))

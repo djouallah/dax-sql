@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 45)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('Date'[Weekend], 'Product'[Color], "m0", MIN('Sales'[Quantity])), REMOVEFILTERS('Sales'))

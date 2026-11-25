@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 47)
+EVALUATE ROW("m0", [Sales Amount], "m1", CALCULATE(COUNTROWS(FILTER(VALUES('Date'[Year]), [Red Sales Kept] > 1000)), ALLSELECTED('Date'[Month])), "m2", IF(ISBLANK(SWITCH(TRUE(), [Red Sales Kept] > 100, COUNTROWS('Sales'), MIN('Sales'[Qty]) < 10, [Share of Category], AVERAGE('Returns'[ReturnQty]))), 0, [Target Total]))

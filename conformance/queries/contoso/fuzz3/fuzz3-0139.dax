@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 139)
+EVALUATE TOPN(3, ADDCOLUMNS(VALUES('Date'[Quarter]), "m0", IF(OR(SWITCH(TRUE(), [Avg Price] > 0, [Line Value], [Share of Category] < 10, [Sales PY], [Share of Category]) > 1, NOT(ISBLANK(MAX([Share of Category], [Quantity])))), DISTINCTCOUNT('Product'[Price]), CALCULATE([Return Rate], INDEX(-1, ALL('Customer'[City]), ORDERBY('Customer'[City], ASC))))), [m0], DESC, 'Date'[Quarter], ASC)

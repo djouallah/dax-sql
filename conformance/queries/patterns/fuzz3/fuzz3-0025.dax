@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 25)
+EVALUATE TOPN(2, ADDCOLUMNS(VALUES('Date'[Day Name]), "m0", MINX(VALUES('Product'[Color]), [Customers Avg Active Months])), [m0], DESC, 'Date'[Day Name], ASC)

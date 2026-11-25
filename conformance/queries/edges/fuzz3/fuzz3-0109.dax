@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 109)
+EVALUATE TOPN(4, ADDCOLUMNS(VALUES('Customer'[City]), "m0", MIN('Sales'[Discount])), [m0], DESC, 'Customer'[City], ASC)

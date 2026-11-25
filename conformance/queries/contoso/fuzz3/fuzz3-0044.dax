@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 44)
+EVALUATE TOPN(3, ADDCOLUMNS(VALUES('Customer'[Customer]), "m0", COUNTROWS(FILTER(VALUES('Product'[Price]), IF(HASONEVALUE('Date'[Month]), COALESCE(COUNTROWS('Customer'), 0)) > 100))), [m0], DESC, 'Customer'[Customer], ASC)

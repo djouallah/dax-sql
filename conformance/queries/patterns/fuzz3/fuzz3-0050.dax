@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 50)
+EVALUATE SUMMARIZE('Inventory', 'Subcategory'[Subcategory], "m0", CALCULATE(RANKX(ALL('Currency'[Currency]), ROUND(COUNTROWS('Product'), 1)), 'Product'[Brand] >= "Fabrikam", KEEPFILTERS('Employee'[Title] IN { "VP Online" })))

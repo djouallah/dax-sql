@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 115)
+EVALUATE SUMMARIZECOLUMNS('Product'[PriceBand], 'Category'[Category], "m0", (AVERAGE('Sales'[Qty]) - MIN('Sales'[Amount])), "m1", IF(ISBLANK(MIN('Sales'[Qty])), 0, DISTINCTCOUNT('Date'[Year])), "m2", [Target Total])

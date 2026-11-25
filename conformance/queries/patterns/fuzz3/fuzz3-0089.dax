@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 89)
+EVALUATE ADDCOLUMNS(VALUES('Employee'[Title]), "m0", IF(SELECTEDVALUE('Subcategory'[Subcategory]) = "Helmets", RANKX(ALL('Date'[Year]), AVERAGE('Sales'[Net Price])), [Sales ISO Week PY]))

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 85)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('StoreProfile'[Format], 'Date'[Month], "m0", IF(ISBLANK(CALCULATE(AVERAGE('Sales'[Quantity]), INDEX(-1, ALL('Date'[Month]), ORDERBY('Date'[Month], ASC)))), 0, VAR v = MAX('Sales'[Unit Price]) RETURN v * 2 + COUNTROWS('Store'))), SAMEPERIODLASTYEAR('Date'[Date]))

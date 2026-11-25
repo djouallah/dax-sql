@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 144)
+EVALUATE SUMMARIZECOLUMNS('Region'[Region], 'StoreProfile'[Format], 'Store'[Store], "m0", [Share In Scope], "m1", MAX('Sales'[Discount]))

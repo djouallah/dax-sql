@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 88)
+EVALUATE ROW("m0", CALCULATE(IF(DIVIDE([Segment Customer Sales Fixed], [Context Level]) > 1, DIVIDE([Sales Prior Month To Date], SUM('Sales'[Line Amount])), [Customer Distinct Products]), 'Product'[Price Band] <> "zz-none"))

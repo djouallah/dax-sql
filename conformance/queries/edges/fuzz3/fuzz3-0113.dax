@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 113)
+EVALUATE SUMMARIZECOLUMNS('Adjust'[Adjust], 'Product'[Color], "m0", SUM('Target'[Target]))

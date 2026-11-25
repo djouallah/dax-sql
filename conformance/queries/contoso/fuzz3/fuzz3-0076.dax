@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 76)
+EVALUATE SUMMARIZECOLUMNS('Date'[Quarter], 'Product'[Name], "m0", CALCULATE(VAR v = [Return Rate] RETURN v * 2 + COUNTROWS('Product'), DATESINPERIOD('Date'[Date], DATE(2024, 4, 6), -3, MONTH)))

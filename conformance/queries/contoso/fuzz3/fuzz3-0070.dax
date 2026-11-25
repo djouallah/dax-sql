@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 70)
+EVALUATE TOPN(1, SUMMARIZECOLUMNS('Customer'[Customer], "m0", MAXX(VALUES('Product'[PriceBand]), SUMX(VALUES('Date'[Year]), AVERAGE('Returns'[ReturnQty])))), [m0], ASC)

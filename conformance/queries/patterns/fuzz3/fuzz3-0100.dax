@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 100)
+EVALUATE ADDCOLUMNS(VALUES('Product'[Product]), "m0", ([Sales Last Day With Sales] + SUM('Inventory'[On Hand])))

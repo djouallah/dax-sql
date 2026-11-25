@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 117)
+EVALUATE SUMMARIZECOLUMNS('Product'[Color], 'Category'[Category], 'Currency'[Currency], FILTER(VALUES('Customer'[Country]), 'Customer'[Country] IN { "zz-none", "Germany" }), KEEPFILTERS(TREATAS({ "Germany", "United States" }, 'Customer'[Country])), "m0", COUNTROWS(FILTER(VALUES('Product'[Product]), COUNTROWS(FILTER(VALUES('Customer'[Country]), MIN('Sales'[Quantity]) > 1)) > 1)), "m1", [Cumulative Sales All Dates])

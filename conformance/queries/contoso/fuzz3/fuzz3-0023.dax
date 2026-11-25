@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 23)
+EVALUATE SUMMARIZECOLUMNS('Time Calc'[Time Calc], "m0", VAR v = [Line Value] RETURN v * 2 + [Products Sold])

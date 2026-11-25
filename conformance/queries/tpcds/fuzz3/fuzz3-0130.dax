@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 130)
+EVALUATE TOPN(4, ADDCOLUMNS(VALUES('store'[s_state]), "m0", IF(ISINSCOPE('promotion'[p_promo_name]), MAX('store_sales'[ss_net_profit]), CALCULATE(MAX('catalog_sales'[cs_quantity]), DATESINPERIOD('date_dim'[d_date], DATE(2024, 11, 15), -12, MONTH)))), [m0], DESC, 'store'[s_state], ASC)

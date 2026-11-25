@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 133)
+EVALUATE SUMMARIZE('Returns', 'Date'[Quarter], 'Customer'[City], "m0", [Sales Amount], "m1", DISTINCTCOUNT('Date'[Year]))

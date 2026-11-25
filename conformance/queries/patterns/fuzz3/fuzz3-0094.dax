@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 94)
+EVALUATE TOPN(4, ADDCOLUMNS(VALUES('Product'[Color]), "m0", MAX('Sales'[Line Amount])), [m0], DESC, 'Product'[Color], ASC)

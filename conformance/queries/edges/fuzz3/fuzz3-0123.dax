@@ -1,0 +1,3 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 123)
+// roles: Retail
+EVALUATE TOPN(1, SUMMARIZECOLUMNS('Date'[Year], "m0", SWITCH(TRUE(), IF([Sales YoY %] > 1000, MAX('Sales'[Quantity]), [Big Customers]) > 1, CALCULATE([Share In Scope], ALLSELECTED('Region'[Region])), RANKX(ALL('Date'[Month]), AVERAGE('Sales'[Quantity]), , DESC, Dense) < 10, [Total Quantity], AVERAGE('Sales'[Quantity]))), [m0], ASC)

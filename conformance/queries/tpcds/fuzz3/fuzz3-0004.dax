@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 4)
+EVALUATE SUMMARIZECOLUMNS('date_dim'[d_qoy], "m0", CALCULATE(TOTALYTD([Store Revenue Same Period LY], 'date_dim'[d_date]), ALLSELECTED('promotion'[p_promo_name])))

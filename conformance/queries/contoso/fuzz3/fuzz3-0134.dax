@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 134)
+EVALUATE TOPN(4, SUMMARIZECOLUMNS('Product'[Price], "m0", IF(SELECTEDVALUE('Date'[Quarter]) = 2, MAX(SWITCH(TRUE(), [All Sales] > 10, SUM('Returns'[ReturnQty]), MAX('Sales'[Qty]) < 0, [Sales YTD], AVERAGE('Returns'[ReturnQty])), ABS(MIN('Sales'[Qty]))), COUNTROWS(UNION(VALUES('Date'[Year]), VALUES('Date'[Year]))))), [m0], ASC)

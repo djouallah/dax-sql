@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 116)
+EVALUATE TOPN(3, SUMMARIZECOLUMNS('item'[i_color], "m0", COALESCE(DIVIDE(MIN('store_sales'[ss_ext_sales_price]), CALCULATE(AVERAGE('catalog_sales'[cs_net_profit]), ALL('item'[i_class]))), 0)), [m0], ASC)

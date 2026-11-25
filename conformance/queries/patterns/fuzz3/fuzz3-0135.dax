@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 135)
+EVALUATE ADDCOLUMNS(VALUES('Date'[Quarter]), "m0", IF(SELECTEDVALUE('Customer'[Country]) = "United States", CALCULATE([Customers Avg Days Between Orders], DATESINPERIOD('Date'[Date], DATE(2024, 2, 12), -1, MONTH)), CALCULATE(MAX('Budget'[Budget]), ALLSELECTED('Subcategory'[Subcategory]))), "m1", IF(ISBLANK(SUM('Sales'[Line Amount])), 0, CALCULATE([Pareto 80 Customer Count], DATESBETWEEN('Date'[Date], DATE(2024, 12, 21), DATE(2024, 10, 14)))))

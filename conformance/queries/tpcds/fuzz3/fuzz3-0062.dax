@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 62)
+EVALUATE SUMMARIZE('catalog_sales', 'customer_address'[ca_state], "m0", [Catalog Net Profit], "m1", COUNTROWS(CROSSJOIN(VALUES('store'[s_city]), VALUES('date_dim'[d_qoy]))))

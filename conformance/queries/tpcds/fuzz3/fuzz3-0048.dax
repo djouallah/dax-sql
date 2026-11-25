@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 48)
+EVALUATE ADDCOLUMNS(CROSSJOIN(VALUES('date_dim'[d_year]), VALUES('item'[i_category])), "m0", [Catalog Net Profit])

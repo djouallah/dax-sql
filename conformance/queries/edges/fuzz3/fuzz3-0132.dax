@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 132)
+EVALUATE ADDCOLUMNS(VALUES('Date'[Quarter]), "m0", CALCULATE(CALCULATE(IF(ISBLANK(MAX('Sales'[Discount])), 0, COUNTROWS('Store')), INDEX(1, ALL('Store'[Store]), ORDERBY('Store'[Store], DESC))), TREATAS({ "Blue" }, 'Product'[Color])))

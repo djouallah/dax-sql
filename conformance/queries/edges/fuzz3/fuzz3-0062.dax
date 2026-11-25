@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 62)
+EVALUATE TOPN(4, SUMMARIZECOLUMNS('StoreProfile'[Format], "m0", DISTINCTCOUNT('Product'[Product])), [m0], DESC)

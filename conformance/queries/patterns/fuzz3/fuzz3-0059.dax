@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 59)
+EVALUATE SUMMARIZE('Inventory', 'Date'[Day Name], 'Date'[Month], "m0", MAX('Inventory'[On Hand]))

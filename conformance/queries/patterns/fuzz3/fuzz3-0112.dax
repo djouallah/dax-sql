@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 112)
+EVALUATE TOPN(4, ADDCOLUMNS(VALUES('Product'[Product]), "m0", [Basket Bike Attach %]), [m0], DESC, 'Product'[Product], ASC)

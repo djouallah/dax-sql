@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 11)
+EVALUATE SUMMARIZECOLUMNS("m0", CALCULATE([Red Sales Kept], 'Date'[Year] IN { 2023 }, KEEPFILTERS('Product'[Price] IN { 20, 50, 60 })))

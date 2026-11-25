@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 56)
+EVALUATE SUMMARIZECOLUMNS('ship_mode'[sm_type], "m0", MAX(LEN(CONCATENATEX(VALUES('store'[s_city]), 'store'[s_city], ",")), COUNTROWS(FILTER(VALUES('item'[i_brand]), CALCULATE([Store Revenue YTD], ALLSELECTED('date_dim'[d_moy])) > 1000))))

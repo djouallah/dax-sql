@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 69)
+EVALUATE SUMMARIZECOLUMNS('date_dim'[d_qoy], 'date_dim'[d_year], "m0", IF(SELECTEDVALUE('item'[i_brand]) = "amalgcorp #6", DISTINCTCOUNT('item'[i_class]), [Catalog Sales Quantity]), "m1", CALCULATE([Store Revenue YoY], ALLEXCEPT('customer_demographics', 'customer_demographics'[cd_education_status]), PREVIOUSMONTH('date_dim'[d_date])), "m2", IF(ISBLANK(SUM('store_sales'[ss_net_profit])), 0, [Store Revenue YoY]))

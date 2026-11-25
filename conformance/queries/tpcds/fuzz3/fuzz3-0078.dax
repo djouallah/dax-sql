@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 78)
+EVALUATE SUMMARIZE('catalog_sales', 'item'[i_color], 'store'[s_city], "m0", DIVIDE(COUNTROWS('store'), CALCULATE([Catalog Sales Quantity], ALL('date_dim'[d_moy]))), "m1", [Catalog Sales Same Period LY])

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 62)
+EVALUATE SUMMARIZE('Sales', 'Date'[Year], 'Product'[Brand], "m0", MIN('Budget'[Budget]), "m1", [Customers Via Expanded Sales])

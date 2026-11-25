@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 7)
+EVALUATE SUMMARIZE('Sales', 'Customer'[Customer], 'Customer'[City], "m0", VAR v = DIVIDE(IF([Target Total] > 1, AVERAGE('Sales'[Amount]), MAX('Returns'[ReturnQty])), COALESCE([Target Total], 0)) RETURN v * 2 + IF(ISINSCOPE('Customer'[Customer]), ROUND([Products Sold], 1), COUNTROWS(CROSSJOIN(VALUES('Product'[Price]), VALUES('Category'[Category])))))

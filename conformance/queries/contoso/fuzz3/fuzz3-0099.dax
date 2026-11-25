@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 99)
+EVALUATE SUMMARIZECOLUMNS('Time Calc'[Time Calc], 'Product'[PriceBand], "m0", RANKX(ALL('Customer'[Customer]), CALCULATE(SUM('Returns'[ReturnQty]), DATESINPERIOD('Date'[Date], DATE(2024, 10, 6), -12, MONTH))))

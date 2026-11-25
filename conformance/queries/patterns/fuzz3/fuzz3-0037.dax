@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 37)
+EVALUATE ADDCOLUMNS(VALUES('Date'[Day Name]), "m0", CALCULATE(COUNTROWS('Product'), 'Employee'[Title] = "Associate"))

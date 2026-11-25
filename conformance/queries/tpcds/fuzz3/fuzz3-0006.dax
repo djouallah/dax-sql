@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 6)
+EVALUATE TOPN(5, ADDCOLUMNS(VALUES('item'[i_brand]), "m0", [Catalog Sales Same Period LY]), [m0], DESC, 'item'[i_brand], ASC)

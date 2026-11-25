@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 122)
+EVALUATE TOPN(5, ADDCOLUMNS(VALUES('Product'[Name]), "m0", CALCULATE(SWITCH(TRUE(), [Red Sales] > 1, MAX('Sales'[Amount]), SUM('Returns'[ReturnQty]) < 10, AVERAGE('Returns'[ReturnQty]), [Line Value Column]), TREATAS({ 10, 11 }, 'Date'[Month]), SAMEPERIODLASTYEAR('Date'[Date]))), [m0], DESC, 'Product'[Name], ASC)

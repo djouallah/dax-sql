@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 149)
+EVALUATE TOPN(1, ADDCOLUMNS(VALUES('Customer'[City]), "m0", CALCULATE(DISTINCTCOUNT('Category'[Category]), ALLSELECTED('Product'[Price Band]))), [m0], DESC, 'Customer'[City], ASC)

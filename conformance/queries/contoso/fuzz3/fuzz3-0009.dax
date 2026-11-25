@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 9)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('Date'[Month], 'Date'[Year], "m0", IF(ISINSCOPE('Product'[Price]), IF(ISBLANK([Sales by Ship Date]), 0, SUMX(SUMMARIZE('Sales', 'Product'[Price]), [Sales Amount])), MAX(IF(HASONEVALUE('Customer'[City]), [Sales by Ship Date]), ROUND(COUNTROWS('Customer'), 1))), "m1", COUNTROWS(UNION(VALUES('Date'[Year]), VALUES('Date'[Year])))), KEEPFILTERS('Date'[Quarter] IN { 4, 3 }))

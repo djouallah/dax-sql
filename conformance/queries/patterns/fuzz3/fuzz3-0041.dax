@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 41)
+EVALUATE ROW("m0", [Cumulative Sales Delivered], "m1", MAX('Budget'[Budget]), "m2", MIN('Sales'[Line Amount]))

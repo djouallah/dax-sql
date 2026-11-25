@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 125)
+EVALUATE SUMMARIZE('Target', 'StoreProfile'[Format], 'Region'[Region], "m0", [Margin], "m1", DISTINCTCOUNT('Date'[Quarter]))

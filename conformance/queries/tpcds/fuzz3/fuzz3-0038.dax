@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 38)
+EVALUATE TOPN(1, SUMMARIZECOLUMNS('ship_mode'[sm_type], "m0", CALCULATE(ABS(CALCULATE([Catalog Sales YoY], INDEX(1, ALL('item'[i_class]), ORDERBY('item'[i_class], ASC)))), ALLSELECTED('date_dim'[d_moy]), DATEADD('date_dim'[d_date], -1, QUARTER))), [m0], DESC)

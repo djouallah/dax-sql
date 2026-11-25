@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 89)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('StoreProfile'[Format], "m0", IF([Sales YoY %] > 1, ROUND(DISTINCTCOUNT('Product'[Product]), 1), AVERAGE('Sales'[Unit Price])), "m1", CALCULATE(CALCULATE([Sales YTD], DATESBETWEEN('Date'[Date], DATE(2023, 4, 24), DATE(2023, 7, 26))), FILTER(ALL('Date'[Year]), 'Date'[Year] <> 2023), PARALLELPERIOD('Date'[Date], -4, MONTH))), KEEPFILTERS('Country'[Country] = "Côte d'Ivoire"))

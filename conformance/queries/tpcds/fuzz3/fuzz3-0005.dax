@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 5)
+EVALUATE SUMMARIZECOLUMNS('store'[s_store_name], 'item'[i_class], "m0", CALCULATE(DISTINCTCOUNT('item'[i_category]), DATESINPERIOD('date_dim'[d_date], DATE(1999, 1, 1), -12, MONTH)))

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 31)
+EVALUATE SUMMARIZECOLUMNS('Date'[Year], "m0", CALCULATE(IF(HASONEVALUE('Date'[Quarter]), [Target Total]), TREATAS({ 7, 8 }, 'Date'[Month])), "m1", AVERAGEX(VALUES('Product'[Color]), CALCULATE([Best Customer Sales], FILTER(ALL('Customer'[City]), 'Customer'[City] <> "London"), TREATAS({ "Jersey" }, 'Product'[Name]))))

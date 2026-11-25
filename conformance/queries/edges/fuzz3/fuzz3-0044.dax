@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 44)
+EVALUATE SUMMARIZECOLUMNS('Customer'[City], 'Store'[Store], "m0", CALCULATE(MAX(SWITCH(TRUE(), COUNTROWS('Sales') > 0, [Margin], COUNTROWS('Product') < 100, [Sales PY], [Sales YoY %]), CALCULATE(MIN('Target'[Target]), ALLSELECTED('Date'[Month]))), ALLSELECTED('Product'), ALLSELECTED('Sales')), "m1", IF(ISBLANK([Share In Scope]), 0, LEN(CONCATENATEX(VALUES('Product'[Product]), 'Product'[Product], ","))))

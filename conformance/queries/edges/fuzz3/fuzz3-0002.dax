@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 2)
+EVALUATE ADDCOLUMNS(VALUES('Date'[Quarter]), "m0", [Shipped Amount], "m1", [Sales vs Target])

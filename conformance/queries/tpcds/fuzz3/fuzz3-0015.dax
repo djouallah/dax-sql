@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 15)
+EVALUATE ADDCOLUMNS(CROSSJOIN(VALUES('item'[i_category]), VALUES('customer_demographics'[cd_education_status])), "m0", COUNTROWS(FILTER(VALUES('item'[i_current_price]), CALCULATE(CALCULATE([Catalog Net Profit], 'store'[s_city] IN { "Fairview", "Oak Grove" }, USERELATIONSHIP('catalog_sales'[cs_ship_addr_sk], 'customer_address'[ca_address_sk])), DATESINPERIOD('date_dim'[d_date], DATE(2026, 10, 7), -1, MONTH)) > 1)))

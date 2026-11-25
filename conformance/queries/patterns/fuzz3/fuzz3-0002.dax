@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 2)
+EVALUATE ADDCOLUMNS(VALUES('Date'[Quarter]), "m0", [Sales YoY % DateAdd], "m1", [Inventory Opening Quarter])

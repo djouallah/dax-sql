@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 146)
+EVALUATE ROW("m0", SWITCH(TRUE(), [Store Distinct Customers] > 1, LEN(CONCATENATEX(VALUES('ship_mode'[sm_type]), 'ship_mode'[sm_type], ",")), MINX(VALUES('store'[s_store_name]), COUNTROWS('catalog_sales')) < 100, MAX('store_sales'[ss_ext_sales_price]), MIN('store_sales'[ss_quantity])), "m1", CALCULATE(CALCULATE(MAX('store_sales'[ss_net_profit]), DATESINPERIOD('date_dim'[d_date], DATE(2026, 2, 24), -3, MONTH)), KEEPFILTERS('date_dim'[d_moy] = 5)))

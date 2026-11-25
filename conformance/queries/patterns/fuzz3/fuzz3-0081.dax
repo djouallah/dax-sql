@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 81)
+EVALUATE TOPN(4, SUMMARIZECOLUMNS('Date'[Day Name], "m0", [Sales PY Parallel]), [m0], DESC)

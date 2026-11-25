@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 38)
+EVALUATE TOPN(2, ADDCOLUMNS(VALUES('Date'[Month]), "m0", RANKX(ALL('Customer'[City]), ([Avg Price] + IF(OR([Return Rate] > 1000, NOT(ISBLANK([Target Total]))), [Returned], MAX('Sales'[Qty]))))), [m0], DESC, 'Date'[Month], ASC)

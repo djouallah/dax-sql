@@ -1,0 +1,3 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 100)
+// roles: Paris
+EVALUATE TOPN(3, ADDCOLUMNS(VALUES('Customer'[City]), "m0", COUNTROWS(UNION(VALUES('Product'[Name]), VALUES('Product'[Name])))), [m0], DESC, 'Customer'[City], ASC)

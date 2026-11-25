@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 56)
+EVALUATE TOPN(1, SUMMARIZECOLUMNS('Employee'[Title], "m0", IF(DIVIDE(MAX(AVERAGE('Budget'[Budget]), [Subcategory Rank In Scope]), CALCULATE(CALCULATE(SUM('Sales'[Line Amount]), TREATAS({ "Associate" }, 'Employee'[Title])), ALL('Product'[Price Band]))) > 0, MIN('Sales'[Quantity]), IF(HASONEVALUE('Subcategory'[Subcategory]), IF(HASONEVALUE('Currency'[Currency]), [Inventory Closing Fiscal Year])))), [m0], ASC)

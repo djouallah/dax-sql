@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 97)
+EVALUATE ADDCOLUMNS(VALUES('Product'[Color]), "m0", IF(ISBLANK(DIVIDE([Sales Rolling 12M Manual], CALCULATE(SUM('Sales'[Line Amount]), ALL('Date'[Year])))), 0, IF(OR([Context Level] > 1000, NOT(ISBLANK([Inventory Last Date]))), COUNTROWS('Inventory'), [Segment Customer Sales Fixed])), "m1", DIVIDE(IF(ISINSCOPE('Date'[Quarter]), [Customers Repeat], DISTINCTCOUNT('Subcategory'[Subcategory])), LEN(CONCATENATEX(VALUES('Category'[Category]), 'Category'[Category], ","))))

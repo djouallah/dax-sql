@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 149)
+EVALUATE SUMMARIZE('store_sales', 'customer_address'[ca_state], "m0", [Archive Source Rows], "m1", IF(OR(CALCULATE((DISTINCTCOUNT('customer_demographics'[cd_marital_status]) + [Catalog Sales Quantity]), DATESINPERIOD('date_dim'[d_date], DATE(2026, 10, 30), -1, MONTH)) > 1000, NOT(ISBLANK([Catalog Revenue]))), AVERAGE('store_sales'[ss_ext_sales_price]), [Store Revenue Same Period LY]))

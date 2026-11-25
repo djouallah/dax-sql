@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 49)
+EVALUATE ROW("m0", [Margin], "m1", CALCULATE(COUNTROWS(FILTER(VALUES('Date'[Month]), [Customers No Blank] > 1000)), ALLSELECTED('Date'[Month])), "m2", IF(ISBLANK(SWITCH(TRUE(), [Customers No Blank] > 100, COUNTROWS('Sales'), MIN('Sales'[Quantity]) < 10, [Total Weight], AVERAGE('Target'[Target]))), 0, [Sales vs Target]))

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 103)
+EVALUATE SUMMARIZECOLUMNS('Time Intelligence'[Time Intelligence], "m0", IF(ISBLANK(CALCULATE([Customers New Static], DATESBETWEEN('Date'[Date], DATE(1999, 1, 1), DATE(2023, 7, 28)))), 0, SWITCH(TRUE(), [Customer Distinct Products] > 1000, [Cumulative Customers Distinct], COUNTROWS('Inventory') < 0, AVERAGE('Sales'[Net Price]), [Customer Sales Rank Skip])))

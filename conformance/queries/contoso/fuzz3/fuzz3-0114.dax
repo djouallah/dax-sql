@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 114)
+EVALUATE ROW("m0", DIVIDE(COUNTROWS('Sales'), [Target Total]), "m1", [Red Sales], "m2", RANKX(ALL('Customer'[Customer]), [Target Total]))

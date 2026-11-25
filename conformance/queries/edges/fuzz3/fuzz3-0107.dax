@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 107)
+EVALUATE SUMMARIZECOLUMNS('Customer'[Segment], 'Store'[Store], "m0", (AVERAGE('Sales'[Quantity]) - MIN('Sales'[Discount])), "m1", IF(ISBLANK(MIN('Sales'[Quantity])), 0, DISTINCTCOUNT('Date'[Quarter])), "m2", [Sales vs Target])

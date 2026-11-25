@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 79)
+EVALUATE SUMMARIZECOLUMNS('Customer'[City], 'Date'[Month], "m0", SWITCH(TRUE(), [Margin] > 100, MIN('Sales'[Quantity]), [Total Weight] < 0, [Total Quantity], [Unshipped Lines]))

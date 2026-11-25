@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 39)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('customer_demographics'[cd_marital_status], "m0", [Catalog Revenue], "m1", SUM('store_sales'[ss_quantity])), FILTER(VALUES('customer_demographics'[cd_marital_status]), [Catalog Sales Quantity] > 1000))

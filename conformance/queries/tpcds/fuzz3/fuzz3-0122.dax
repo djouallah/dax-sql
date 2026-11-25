@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 122)
+EVALUATE TOPN(2, SUMMARIZECOLUMNS('item'[i_class], "m0", [Archive Files]), [m0], DESC)

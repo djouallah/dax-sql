@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 41)
+EVALUATE ADDCOLUMNS(VALUES('Customer'[Segment]), "m0", SUMX(SUMMARIZE('Sales', 'Date'[Quarter]), LEN(CONCATENATEX(VALUES('Product'[Product]), 'Product'[Product], ","))), "m1", DISTINCTCOUNT('Date'[Year]))

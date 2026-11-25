@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 83)
+EVALUATE SUMMARIZECOLUMNS('Date'[Year], 'Product'[Name], TREATAS({ -1, 2024 }, 'Date'[Year]), KEEPFILTERS(TREATAS({ "Rome", "London", "Berlin" }, 'Customer'[City])), "m0", LEN(CONCATENATEX(VALUES('Product'[PriceBand]), 'Product'[PriceBand], ",")))

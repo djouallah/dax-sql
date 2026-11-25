@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 149)
+EVALUATE SUMMARIZECOLUMNS('Adjust'[Adjust], 'Country'[Country], "m0", [Total Weight])

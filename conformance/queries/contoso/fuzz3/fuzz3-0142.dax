@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 142)
+EVALUATE ADDCOLUMNS(VALUES('Date'[Quarter]), "m0", IF(AND(CALCULATE(MIN('Sales'[Qty]), DATESBETWEEN('Date'[Date], DATE(1999, 1, 1), DATE(2024, 9, 25))) > 0, NOT(ISBLANK(IF(HASONEVALUE('Product'[PriceBand]), [Orders])))), CALCULATE([Best Customer Sales], 'Date'[Quarter] <> 4, ALLSELECTED('Product')), [Sales by Ship Date]))

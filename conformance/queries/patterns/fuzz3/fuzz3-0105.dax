@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 105)
+EVALUATE SUMMARIZE('Sales', 'Date'[Quarter], 'Subcategory'[Subcategory], "m0", CALCULATE(SWITCH(TRUE(), COUNTROWS('Inventory') > 10, [Inventory Closing Month], MAX('Budget'[Budget]) < 100, [Inventory Avg Month End], [Customer Distinct Products]), KEEPFILTERS('Currency'[Currency] = "Euro")))

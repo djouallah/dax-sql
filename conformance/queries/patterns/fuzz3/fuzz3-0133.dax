@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 133)
+EVALUATE TOPN(4, SUMMARIZECOLUMNS('Category'[Category], "m0", IF(SELECTEDVALUE('Currency'[Currency]) = "Euro", MAX(SWITCH(TRUE(), [Cumulative Customers Distinct] > 10, SUM('Budget'[Budget]), MAX('Sales'[Quantity]) < 0, [Sales PY DateAdd], AVERAGE('Budget'[Budget])), ABS(MIN('Sales'[Quantity]))), COUNTROWS(UNION(VALUES('Date'[Month]), VALUES('Date'[Month]))))), [m0], ASC)

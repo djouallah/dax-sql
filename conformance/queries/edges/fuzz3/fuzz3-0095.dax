@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 95)
+EVALUATE ROW("m0", CALCULATE([Target Amount], DATESINPERIOD('Date'[Date], DATE(2023, 8, 10), -1, DAY)))

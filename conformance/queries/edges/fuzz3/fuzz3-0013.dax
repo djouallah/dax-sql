@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 13)
+EVALUATE ADDCOLUMNS(CROSSJOIN(VALUES('Product'[Product]), VALUES('Product'[Color])), "m0", CALCULATE(ABS(SUM('Sales'[Quantity])), DATESINPERIOD('Date'[Date], DATE(2024, 10, 4), -1, MONTH)))

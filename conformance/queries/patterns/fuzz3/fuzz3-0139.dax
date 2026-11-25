@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 139)
+EVALUATE ADDCOLUMNS(VALUES('Date'[Quarter]), "m0", CALCULATE(CALCULATE(IF(ISBLANK(MAX('Sales'[Line Amount])), 0, COUNTROWS('Customer')), INDEX(1, ALL('Customer'[City]), ORDERBY('Customer'[City], DESC))), TREATAS({ "Contoso" }, 'Product'[Brand])))

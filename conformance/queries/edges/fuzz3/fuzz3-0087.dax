@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 87)
+EVALUATE SUMMARIZECOLUMNS('Date'[Year], 'Product'[Color], "m0", IF(IF(ISINSCOPE('Date'[Weekend]), DISTINCTCOUNT('Country'[Country]), [Target Amount]) > 1000, SUMX(VALUES('Store'[Store]), AVERAGE('Target'[Target])), IF([Sales YoY %] > 100, [Avg Per Customer], DISTINCTCOUNT('Customer'[Segment]))), "m1", CALCULATE([Sales PY], DATESBETWEEN('Date'[Date], DATE(2024, 3, 12), DATE(2024, 1, 18))), "m2", [Total Weight])

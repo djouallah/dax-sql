@@ -1,0 +1,3 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 4)
+// roles: France
+EVALUATE SUMMARIZECOLUMNS('Time Intelligence'[Time Intelligence], "m0", CALCULATE(DIVIDE(CALCULATE(COUNTROWS('Inventory'), ALLSELECTED('Employee'[Title])), CALCULATE(TOTALYTD([Customers Returning], 'Date'[Date]), ALL('Date'[Year]))), KEEPFILTERS('Product'[Price Band] IN { "zz-none" })))

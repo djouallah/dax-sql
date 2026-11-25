@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 7)
+EVALUATE SUMMARIZE('Sales', 'Customer'[Country], 'Date'[Year], "m0", VAR v = DIVIDE(IF([Inventory Closing Fiscal Year] > 1, AVERAGE('Sales'[Line Amount]), MAX('Inventory'[On Hand])), COALESCE([Inventory Last Per Product], 0)) RETURN v * 2 + IF(ISINSCOPE('Customer'[Country]), ROUND([List Price Amount Related], 1), COUNTROWS(CROSSJOIN(VALUES('Category'[Category]), VALUES('Customer'[Country])))))

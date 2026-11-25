@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 29)
+EVALUATE SUMMARIZECOLUMNS("m0", CALCULATE([Sales Amount], DATESBETWEEN('Date'[Date], DATE(2023, 11, 13), DATE(2023, 2, 4))), "m1", COUNTROWS(FILTER(VALUES('Category'[Category]), CALCULATE(IF(AND(MIN('Sales'[Amount]) > 1, NOT(ISBLANK(MAX('Sales'[Amount])))), [Target Total], [Big Orders]), DATESBETWEEN('Date'[Date], DATE(2024, 11, 1), DATE(2024, 10, 26))) > 1000)))

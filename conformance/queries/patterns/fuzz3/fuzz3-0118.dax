@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 118)
+EVALUATE ADDCOLUMNS(CROSSJOIN(VALUES('Customer'[Country]), VALUES('Currency'[Currency])), "m0", [Accounts Held Bridge])

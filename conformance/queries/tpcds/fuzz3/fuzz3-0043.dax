@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 43)
+EVALUATE ROW("m0", TOTALYTD(DIVIDE(IF([Catalog Sales Same Period LY] > 1000, [Store Revenue YoY], [Store Revenue Same Period LY]), CALCULATE(LEN(LEFT(UPPER(CONCATENATEX(VALUES('promotion'[p_promo_name]), 'promotion'[p_promo_name], "|", 'promotion'[p_promo_name], ASC)), 4)), ALL('item'[i_class]))), 'date_dim'[d_date]))

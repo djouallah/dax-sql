@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 40)
+EVALUATE TOPN(2, ADDCOLUMNS(VALUES('Date'[Weekend]), "m0", RANKX(ALL('Region'[Region]), ([Sales Amount] + IF(OR([Big Customers] > 1000, NOT(ISBLANK([Sales vs Target]))), [Target Amount], MAX('Sales'[Unit Price]))))), [m0], DESC, 'Date'[Weekend], ASC)

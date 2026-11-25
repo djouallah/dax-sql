@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 134)
+EVALUATE ADDCOLUMNS(VALUES('StoreProfile'[Format]), "m0", IF(AND(CALCULATE(MIN('Sales'[Quantity]), DATESBETWEEN('Date'[Date], DATE(1999, 1, 1), DATE(2024, 9, 25))) > 0, NOT(ISBLANK(IF(HASONEVALUE('Customer'[Segment]), [Total Quantity])))), CALCULATE([Sales YoY %], 'Date'[Weekend] <> TRUE(), ALLSELECTED('Product')), [Total Weight]))

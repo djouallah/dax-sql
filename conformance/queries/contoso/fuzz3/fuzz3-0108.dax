@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 108)
+EVALUATE ROW("m0", IF([Products Sold] > 1, [Return Rate], [Product Count]), "m1", CALCULATE([Returned], KEEPFILTERS('Date'[Year] = -1), ALLSELECTED('Category')), "m2", [Return Rate])

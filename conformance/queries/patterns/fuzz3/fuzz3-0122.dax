@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 122)
+EVALUATE ADDCOLUMNS(CROSSJOIN(VALUES('Customer'[Country]), VALUES('Date'[Day Name])), "m0", CALCULATE([Budget Amount], ALLSELECTED('Product'[Product])))

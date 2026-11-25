@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 75)
+EVALUATE TOPN(3, SUMMARIZECOLUMNS('Date'[Month], "m0", RANKX(ALL('Subcategory'[Subcategory]), CALCULATE(DIVIDE([Orders In Transit EOP], MAX('Sales'[Net Price])), FILTER(ALL('Product'[Product]), 'Product'[Product] <> "Road Bike B")))), [m0], DESC)

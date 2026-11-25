@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 85)
+EVALUATE SUMMARIZECOLUMNS("m0", IF(ABS(DIVIDE([Share of Category], [Best Customer Sales])) > 1, DIVIDE(COALESCE([Product Count], 0), ROUND(MAX('Returns'[ReturnQty]), 1)), DIVIDE(COALESCE([Avg Price], 0), TOTALYTD(MAX('Sales'[Qty]), 'Date'[Date]))), "m1", COUNTROWS(FILTER(VALUES('Date'[Month]), [Sales PY] > 1)), "m2", LEN(LEFT(UPPER(CONCATENATEX(VALUES('Category'[Category]), 'Category'[Category], "|", 'Category'[Category], ASC)), 3)))

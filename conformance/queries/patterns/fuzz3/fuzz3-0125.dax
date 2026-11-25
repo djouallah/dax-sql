@@ -1,0 +1,3 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 125)
+// roles: Bikes
+EVALUATE ADDCOLUMNS(CROSSJOIN(VALUES('Currency'[Currency]), VALUES('Employee'[Title])), "m0", RANKX(ALL('Customer'[City]), [Avg Daily Rate Relationship]))

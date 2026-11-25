@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 112)
+EVALUATE SUMMARIZE('Target', 'Date'[Year], "m0", [Avg Per Customer], "m1", [Total Cost])

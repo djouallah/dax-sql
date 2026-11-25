@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 29)
+EVALUATE TOPN(1, ADDCOLUMNS(VALUES('Customer'[City]), "m0", (IF(ISBLANK(SUM('Target'[Target])), 0, [Lines]) * IF(ISBLANK([Sales PY]), 0, [Sales YTD]))), [m0], DESC, 'Customer'[City], ASC)

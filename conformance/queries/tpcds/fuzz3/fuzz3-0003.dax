@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 3)
+EVALUATE ROW("m0", ABS([Catalog Sales Quantity]), "m1", LEN(LEFT(UPPER(CONCATENATEX(VALUES('ship_mode'[sm_type]), 'ship_mode'[sm_type], "|", 'ship_mode'[sm_type], ASC)), 5)), "m2", ABS([Catalog Revenue]))

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 19)
+EVALUATE TOPN(2, SUMMARIZECOLUMNS('store'[s_store_name], "m0", SUM('store_sales'[ss_ext_sales_price])), [m0], DESC)

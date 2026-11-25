@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 50)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('item'[i_current_price], 'item'[i_color], "m0", COUNTROWS('catalog_sales'), "m1", COUNTROWS('item')), ALLEXCEPT('store', 'store'[s_state]))

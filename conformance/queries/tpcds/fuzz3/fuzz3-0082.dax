@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 82)
+EVALUATE SUMMARIZE('catalog_sales', 'customer_address'[ca_state], "m0", CALCULATE(COUNTROWS(FILTER(VALUES('item'[i_class]), [Catalog Sales Quantity] > 100)), 'store'[s_state] <> "TX", DATEADD('date_dim'[d_date], -1, MONTH)))

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 47)
+EVALUATE ADDCOLUMNS(CROSSJOIN(VALUES('Product'[Price Band]), VALUES('Customer'[Gender])), "m0", COALESCE([Context Big Customer Sales], 0))

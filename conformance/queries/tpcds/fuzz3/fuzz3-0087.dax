@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 87)
+EVALUATE ADDCOLUMNS(VALUES('customer_demographics'[cd_education_status]), "m0", [Archive Files], "m1", CALCULATE(RANKX(ALL('date_dim'[d_moy]), SUMX(SUMMARIZE('catalog_sales', 'item'[i_brand]), MIN('store_sales'[ss_net_profit]))), PARALLELPERIOD('date_dim'[d_date], -1, QUARTER)))

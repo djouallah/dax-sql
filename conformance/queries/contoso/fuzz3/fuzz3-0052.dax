@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 52)
+EVALUATE SUMMARIZECOLUMNS('Time Calc'[Time Calc], 'Customer'[Customer], "m0", CALCULATE(CALCULATE([Red Sales Kept], ALLSELECTED('Product'[Color])), 'Category'[Category] <> "Bikes", ALLEXCEPT('Date', 'Date'[Year])))

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 85)
+EVALUATE SUMMARIZECOLUMNS('store'[s_city], "m0", SUM('store_sales'[ss_net_profit]), "m1", [Catalog Sales YoY], "m2", SUMX(VALUES('ship_mode'[sm_type]), [Store Revenue]))

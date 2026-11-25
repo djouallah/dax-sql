@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 106)
+EVALUATE ROW("m0", DIVIDE(COUNTROWS('Sales'), [Sales vs Target]), "m1", [Lines], "m2", RANKX(ALL('Region'[Region]), [Sales vs Target]))

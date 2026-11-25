@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 14)
+EVALUATE SUMMARIZECOLUMNS('Country'[Country], 'Customer'[City], FILTER(ALL('Date'[Month]), 'Date'[Month] <> 7), KEEPFILTERS(TREATAS({ "Americas" }, 'Region'[Region])), "m0", SUM('Sales'[Discount]))

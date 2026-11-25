@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 141)
+EVALUATE SUMMARIZECOLUMNS('Customer'[City], 'Date'[Quarter], 'Store'[Store], TREATAS({ "Retail" }, 'Customer'[Segment]), "m0", IF(ISBLANK(COUNTROWS(FILTER(VALUES('Product'[Color]), IF(AND([Total Cost] > 0, NOT(ISBLANK(COUNTROWS('Sales')))), MAX('Sales'[Quantity]), MAX('Target'[Target])) > 10))), 0, DIVIDE((SUM('Sales'[Discount]) + [Sales YTD]), ABS([Total Cost]))), "m1", [Total Cost], "m2", AVERAGE('Sales'[Quantity]))

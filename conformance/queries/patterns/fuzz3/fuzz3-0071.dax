@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 71)
+EVALUATE TOPN(1, SUMMARIZECOLUMNS('Customer'[Gender], "m0", MAXX(VALUES('Subcategory'[Subcategory]), SUMX(VALUES('Date'[Month]), AVERAGE('Budget'[Budget])))), [m0], ASC)

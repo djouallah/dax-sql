@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 96)
+EVALUATE SUMMARIZECOLUMNS('Customer'[Country], FILTER(VALUES('Subcategory'[Subcategory]), 'Subcategory'[Subcategory] IN { "Shorts", "Helmets" }), FILTER(VALUES('Employee'[Title]), 'Employee'[Title] IN { "CEO", "Director" }), "m0", ABS(CALCULATE(MIN('Inventory'[On Hand]), DATESBETWEEN('Date'[Date], DATE(2022, 11, 5), DATE(2024, 11, 19)))), "m1", IF([Sales without Account Bridge] > 1, ROUND(DISTINCTCOUNT('Product'[Product]), 1), AVERAGE('Sales'[Net Price])))

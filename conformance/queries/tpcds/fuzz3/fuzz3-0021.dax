@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 21)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('customer_demographics'[cd_marital_status], 'ship_mode'[sm_type], "m0", IF(SELECTEDVALUE('customer_demographics'[cd_marital_status]) = "M", MAXX(VALUES('store'[s_store_name]), IF(ISINSCOPE('item'[i_current_price]), COUNTROWS('item'), MIN('store_sales'[ss_net_profit]))), TOTALYTD([Catalog Sales YoY], 'date_dim'[d_date]))), 'item'[i_brand] IN { "scholaruniv #4", "scholaruniv #6" })

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 147)
+EVALUATE TOPN(1, SUMMARIZECOLUMNS('item'[i_color], "m0", MAXX(VALUES('promotion'[p_promo_name]), IF(OR(CALCULATE([Catalog Revenue], DATESINPERIOD('date_dim'[d_date], DATE(2024, 11, 17), -12, MONTH)) > 10, NOT(ISBLANK(CALCULATE(DISTINCTCOUNT('item'[i_current_price]), INDEX(2, ALL('item'[i_color]), ORDERBY('item'[i_color], ASC)))))), IF(ISBLANK([Catalog Sales Same Period LY]), 0, [Store Revenue]), ABS(COUNTROWS('item'))))), [m0], ASC)

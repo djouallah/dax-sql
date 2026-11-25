@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 121)
+EVALUATE SUMMARIZECOLUMNS('Scale'[Scale], 'Product'[Color], "m0", SUM('Returns'[ReturnQty]))

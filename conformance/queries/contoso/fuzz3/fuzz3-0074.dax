@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 74)
+EVALUATE TOPN(3, SUMMARIZECOLUMNS('Date'[Year], "m0", RANKX(ALL('Product'[Price]), CALCULATE(DIVIDE([Big Orders], MAX('Sales'[Qty])), FILTER(ALL('Product'[Name]), 'Product'[Name] <> "Mountain Bike")))), [m0], DESC)

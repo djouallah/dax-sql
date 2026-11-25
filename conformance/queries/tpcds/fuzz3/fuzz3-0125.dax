@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 125)
+EVALUATE SUMMARIZECOLUMNS('ship_mode'[sm_type], FILTER(VALUES('store'[s_city]), 'store'[s_city] IN { "Oak Grove", "Midway" }), FILTER(VALUES('promotion'[p_promo_name]), 'promotion'[p_promo_name] IN { "barought", "ese" }), "m0", [Catalog Sales Quantity])

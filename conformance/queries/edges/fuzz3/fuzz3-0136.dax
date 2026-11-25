@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 136)
+EVALUATE TOPN(5, ADDCOLUMNS(VALUES('Country'[Country]), "m0", COUNTROWS(UNION(VALUES('Product'[Product]), VALUES('Product'[Product])))), [m0], DESC, 'Country'[Country], ASC)

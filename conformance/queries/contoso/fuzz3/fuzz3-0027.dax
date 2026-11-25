@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 27)
+EVALUATE ROW("m0", IF(ISBLANK(MAX('Sales'[Amount])), 0, SUMX(VALUES('Customer'[Customer]), DISTINCTCOUNT('Product'[Price]))), "m1", [Sales YTD], "m2", [Red Sales Kept])

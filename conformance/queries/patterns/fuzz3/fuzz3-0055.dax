@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 55)
+EVALUATE ROW("m0", LEN(LEFT(UPPER(CONCATENATEX(VALUES('Subcategory'[Subcategory]), 'Subcategory'[Subcategory], "|", 'Subcategory'[Subcategory], ASC)), 4)))

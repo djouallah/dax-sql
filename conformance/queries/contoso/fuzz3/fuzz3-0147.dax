@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 147)
+EVALUATE SUMMARIZECOLUMNS('Product'[Name], 'Product'[Color], 'Product'[PriceBand], FILTER(ALL('Date'[Month]), 'Date'[Month] <> 7), TREATAS({ "Helmet", "Jersey" }, 'Product'[Name]), "m0", SUMX(SUMMARIZE('Sales', 'Date'[Quarter]), MIN('Sales'[Amount])))

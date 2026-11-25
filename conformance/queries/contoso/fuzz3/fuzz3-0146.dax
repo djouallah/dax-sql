@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 146)
+EVALUATE ADDCOLUMNS(CROSSJOIN(VALUES('Customer'[City]), VALUES('Date'[Year])), "m0", ABS(COUNTROWS(GENERATE(VALUES('Date'[Quarter]), TOPN(1, VALUES('Product'[Name]), CALCULATE([Return Rate], PARALLELPERIOD('Date'[Date], -1, QUARTER)))))))

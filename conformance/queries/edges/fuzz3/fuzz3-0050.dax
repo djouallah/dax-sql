@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 50)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('StoreProfile'[Format], "m0", IF(SELECTEDVALUE('Region'[Region]) = "Antarctica", ABS(CALCULATE(SUM('Sales'[Discount]), FILTER(VALUES('Date'[Year]), DIVIDE(MAX('Sales'[Quantity]), CALCULATE([Quantity Or Zero], ALL('Product'[Color]))) > 0))), ABS(IF(AND([Sales Amount] > 1, NOT(ISBLANK([Total Quantity]))), [Customers No Blank], MIN('Target'[Target])))), "m1", DISTINCTCOUNT('Customer'[City])), REMOVEFILTERS('Store'))

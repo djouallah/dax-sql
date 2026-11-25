@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 34)
+EVALUATE SUMMARIZECOLUMNS('Date'[Year], 'Product'[Name], 'Date'[Month], "m0", MAX([Target Total], CALCULATE([Sales by Ship Date], 'Date'[Quarter] <> -1, SAMEPERIODLASTYEAR('Date'[Date]))), "m1", SUMX(SUMMARIZE('Sales', 'Category'[Category]), MAX('Sales'[Qty])), "m2", [Sales PY])

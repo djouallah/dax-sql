@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 150)
+EVALUATE ROW("m0", MAX(IF(ISBLANK([Catalog Net Profit]), 0, [Store Revenue YTD]), DIVIDE([Catalog Sales Quantity], CALCULATE([Store Revenue Same Period LY], ALL('date_dim'[d_qoy])))))

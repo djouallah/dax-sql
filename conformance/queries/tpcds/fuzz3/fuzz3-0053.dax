@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 53)
+EVALUATE SUMMARIZECOLUMNS('customer_demographics'[cd_education_status], "m0", CALCULATE(IF(ISBLANK(CALCULATE(SUM('store_sales'[ss_net_profit]), PARALLELPERIOD('date_dim'[d_date], -1, QUARTER))), 0, IF(HASONEVALUE('item'[i_color]), [Store Revenue YTD])), ALLEXCEPT('item', 'item'[i_class]), REMOVEFILTERS('customer_address')))

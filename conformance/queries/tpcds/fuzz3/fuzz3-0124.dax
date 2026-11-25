@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 124)
+EVALUATE ADDCOLUMNS(CROSSJOIN(VALUES('customer_demographics'[cd_education_status]), VALUES('store'[s_store_name])), "m0", IF(SELECTEDVALUE('date_dim'[d_qoy]) = 2, COALESCE([Catalog Revenue], 0), CALCULATE(COUNTROWS('store'), PARALLELPERIOD('date_dim'[d_date], -1, QUARTER))))

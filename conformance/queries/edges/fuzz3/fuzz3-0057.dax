@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 57)
+EVALUATE TOPN(1, SUMMARIZECOLUMNS('Date'[Weekend], "m0", IF(DIVIDE(MAX(AVERAGE('Target'[Target]), [Quantity Or Zero]), CALCULATE(CALCULATE(SUM('Sales'[Unit Price]), TREATAS({ FALSE() }, 'Date'[Weekend])), ALL('Customer'[Segment]))) > 0, MIN('Sales'[Quantity]), IF(HASONEVALUE('Customer'[City]), IF(HASONEVALUE('StoreProfile'[Format]), [Sales vs Target])))), [m0], ASC)

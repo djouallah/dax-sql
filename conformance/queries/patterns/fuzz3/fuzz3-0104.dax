@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 104)
+EVALUATE SUMMARIZECOLUMNS('Category'[Category], 'Employee'[Title], 'Product'[Color], "m0", CALCULATE(CALCULATE(CALCULATE([Sales YoY % DateAdd], DATESBETWEEN('Date'[Date], DATE(2023, 6, 8), DATE(2023, 7, 17))), ALLSELECTED('Date'[Day Name])), DATESBETWEEN('Date'[Date], DATE(2023, 11, 2), DATE(2023, 11, 9))), "m1", MAX('Sales'[Line Amount]), "m2", ABS(ABS(COUNTROWS(FILTER(VALUES('Customer'[City]), [Cumulative Sales All Dates] > 1000)))))

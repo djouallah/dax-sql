@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 148)
+EVALUATE SUMMARIZECOLUMNS('Product'[Brand], 'Region'[Region], "m0", LEN(LEFT(UPPER(CONCATENATEX(VALUES('Date'[Weekend]), 'Date'[Weekend], "|", 'Date'[Weekend], ASC)), 2)))

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 54)
+EVALUATE TOPN(3, ADDCOLUMNS(VALUES('Customer'[City]), "m0", CALCULATE(CALCULATE(SUM('Inventory'[On Hand]), USERELATIONSHIP('Sales'[Delivery Date], 'Date'[Date]), DATESINPERIOD('Date'[Date], DATE(2023, 3, 10), -12, MONTH)), PARALLELPERIOD('Date'[Date], -1, QUARTER))), [m0], DESC, 'Customer'[City], ASC)

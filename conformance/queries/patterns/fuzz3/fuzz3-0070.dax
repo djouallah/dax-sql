@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 70)
+EVALUATE TOPN(3, SUMMARIZECOLUMNS('Product'[Brand], "m0", CALCULATE(DISTINCTCOUNT('Date'[Month]), 'Product'[Brand] IN { "Contoso", "Litware", "Northwind" }, PARALLELPERIOD('Date'[Date], -4, MONTH))), [m0], ASC)

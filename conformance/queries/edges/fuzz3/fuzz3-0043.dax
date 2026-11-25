@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 43)
+EVALUATE TOPN(5, ADDCOLUMNS(VALUES('Product'[Brand]), "m0", DIVIDE(ROUND(IF(ISBLANK([Sales YoY %]), 0, MAX('Sales'[Unit Price])), 2), ABS(CALCULATE([Sales PY], INDEX(1, ALL('Date'[Weekend]), ORDERBY('Date'[Weekend], ASC)))))), [m0], DESC, 'Product'[Brand], ASC)

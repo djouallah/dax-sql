@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 19)
+EVALUATE SUMMARIZECOLUMNS("m0", IF(SELECTEDVALUE('Product'[Color]) = "Silver", CALCULATE(MAX('Sales'[Line Amount]), 'Subcategory'[Subcategory] >= "Gloves"), [Sales PY DateAdd]), "m1", IF(HASONEVALUE('Date'[Month]), VAR v = ([Segment Customer Count] * DISTINCTCOUNT('Currency'[Currency])) RETURN v * 2 + MAX([Total Cost], DISTINCTCOUNT('Product'[Color]))))

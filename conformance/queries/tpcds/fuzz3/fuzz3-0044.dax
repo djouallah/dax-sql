@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 44)
+EVALUATE SUMMARIZE('store_sales', 'promotion'[p_promo_name], 'date_dim'[d_moy], "m0", COALESCE(COUNTROWS('store'), 0))

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 116)
+EVALUATE TOPN(4, ADDCOLUMNS(VALUES('Subcategory'[Subcategory]), "m0", MIN('Sales'[Line Amount])), [m0], DESC, 'Subcategory'[Subcategory], ASC)

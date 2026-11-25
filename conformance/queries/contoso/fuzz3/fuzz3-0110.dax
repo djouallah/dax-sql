@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 110)
+EVALUATE SUMMARIZECOLUMNS('Category'[Category], 'Product'[Name], 'Date'[Year], "m0", IF(MAX('Sales'[Amount]) > 1000, IF(SELECTEDVALUE('Customer'[Customer]) = "Dan", COUNTROWS('Returns'), [Best Customer Sales]), CALCULATE([Line Value Column], DATESBETWEEN('Date'[Date], DATE(1999, 1, 1), DATE(2024, 7, 14)))), "m1", [All Sales])

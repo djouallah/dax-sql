@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 141)
+EVALUATE TOPN(5, ADDCOLUMNS(VALUES('Category'[Category]), "m0", DISTINCTCOUNT('Customer'[City])), [m0], DESC, 'Category'[Category], ASC)

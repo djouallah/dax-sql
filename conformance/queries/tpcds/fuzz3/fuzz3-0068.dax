@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 68)
+EVALUATE TOPN(3, ADDCOLUMNS(VALUES('item'[i_class]), "m0", IF(OR([Store Revenue Same Period LY] > 1000, NOT(ISBLANK([Store Revenue YoY]))), AVERAGE('catalog_sales'[cs_quantity]), [Catalog Sales Quantity])), [m0], DESC, 'item'[i_class], ASC)

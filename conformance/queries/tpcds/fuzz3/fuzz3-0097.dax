@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 97)
+EVALUATE ADDCOLUMNS(CROSSJOIN(VALUES('store'[s_store_name]), VALUES('item'[i_brand])), "m0", DIVIDE([Archive Files], CALCULATE(COUNTROWS(FILTER(VALUES('item'[i_brand]), AVERAGE('catalog_sales'[cs_net_profit]) > 1)), ALL('ship_mode'[sm_type]))))

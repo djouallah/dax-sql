@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 105)
+EVALUATE TOPN(4, ADDCOLUMNS(VALUES('Product'[Product]), "m0", [Total Weight]), [m0], DESC, 'Product'[Product], ASC)

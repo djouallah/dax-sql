@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 90)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('store'[s_state], "m0", [Archive Files]), NOT('date_dim'[d_qoy] IN { 1 }))

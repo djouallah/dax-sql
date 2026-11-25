@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 61)
+EVALUATE SUMMARIZE('Sales', 'Customer'[City], 'Product'[Color], "m0", MIN('Returns'[ReturnQty]), "m1", [Avg Price])

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 51)
+EVALUATE ROW("m0", CALCULATE(TOTALYTD(SUM('Sales'[Qty]), 'Date'[Date]), DATESINPERIOD('Date'[Date], DATE(2023, 11, 17), -1, MONTH)))

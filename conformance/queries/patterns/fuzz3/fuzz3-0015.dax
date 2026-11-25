@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 15)
+EVALUATE ADDCOLUMNS(CROSSJOIN(VALUES('Customer'[City]), VALUES('Date'[Day Name])), "m0", COUNTROWS(GENERATE(VALUES('Product'[Color]), TOPN(1, VALUES('Subcategory'[Subcategory]), CALCULATE([Segment Customer Count], ALLSELECTED('Product'[Color]))))))

@@ -1,0 +1,3 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 96)
+// roles: Paris
+EVALUATE ROW("m0", ABS(MIN('Sales'[Amount])), "m1", SUM('Sales'[Amount]))

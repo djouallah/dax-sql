@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 146)
+EVALUATE SUMMARIZECOLUMNS('Product'[Product], 'Product'[Brand], 'Subcategory'[Subcategory], FILTER(ALL('Date'[Day Name]), 'Date'[Day Name] <> "Tuesday"), TREATAS({ "Glove C", "Jersey D" }, 'Product'[Product]), "m0", SUMX(SUMMARIZE('Sales', 'Currency'[Currency]), MIN('Inventory'[On Hand])))

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 95)
+EVALUATE ROW("m0", LEN(CONCATENATEX(VALUES('customer_demographics'[cd_education_status]), 'customer_demographics'[cd_education_status], ",")), "m1", CALCULATE([Catalog Sales Same Period LY], KEEPFILTERS('date_dim'[d_year] = 2025)), "m2", CALCULATE(DISTINCTCOUNT('customer_address'[ca_state]), INDEX(2, ALL('promotion'[p_promo_name]), ORDERBY('promotion'[p_promo_name], ASC))))

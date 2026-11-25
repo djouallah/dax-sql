@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 36)
+EVALUATE ADDCOLUMNS(VALUES('Date'[Month]), "m0", CALCULATE(COUNTROWS('Returns'), 'Date'[Month] = 1))

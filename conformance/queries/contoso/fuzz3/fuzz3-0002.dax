@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 2)
+EVALUATE ADDCOLUMNS(VALUES('Date'[Year]), "m0", [Sales YTD], "m1", [Target Total])

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 16)
+EVALUATE SUMMARIZECOLUMNS('date_dim'[d_qoy], 'date_dim'[d_year], KEEPFILTERS(TREATAS({ "zz-none", "M" }, 'customer_demographics'[cd_marital_status])), "m0", COALESCE(COUNTROWS(FILTER(VALUES('item'[i_current_price]), SUM('store_sales'[ss_net_profit]) > 1000)), 0))

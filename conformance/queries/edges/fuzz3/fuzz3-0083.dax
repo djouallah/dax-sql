@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 83)
+EVALUATE ROW("m0", IF(DIVIDE([Margin %], [Share In Scope]) > 1, DIVIDE([Shipped Amount], SUM('Sales'[Discount])), [Customers No Blank]))

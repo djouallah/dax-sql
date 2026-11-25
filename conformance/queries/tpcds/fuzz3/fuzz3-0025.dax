@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 25)
+EVALUATE ADDCOLUMNS(CROSSJOIN(VALUES('ship_mode'[sm_type]), VALUES('date_dim'[d_qoy])), "m0", MIN('catalog_sales'[cs_net_profit]))

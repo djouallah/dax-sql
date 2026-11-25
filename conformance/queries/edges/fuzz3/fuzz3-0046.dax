@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 46)
+EVALUATE TOPN(3, ADDCOLUMNS(VALUES('Region'[Region]), "m0", COUNTROWS(FILTER(VALUES('Customer'[Segment]), IF(HASONEVALUE('Date'[Weekend]), COALESCE(COUNTROWS('Customer'), 0)) > 100))), [m0], DESC, 'Region'[Region], ASC)

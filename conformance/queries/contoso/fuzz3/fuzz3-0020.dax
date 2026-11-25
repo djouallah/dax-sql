@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 20)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('Date'[Year], 'Category'[Category], "m0", COUNTROWS(FILTER(VALUES('Product'[Color]), [Sales PY] > 100)), "m1", IF(ISINSCOPE('Product'[PriceBand]), DIVIDE(IF(ISINSCOPE('Category'[Category]), [Orders], [Orders]), CALCULATE(SUM('Sales'[Qty]), ALL('Customer'[City]))), RANKX(ALL('Product'[Price]), IF(ISINSCOPE('Category'[Category]), COUNTROWS('Customer'), [Line Value Column])))), PARALLELPERIOD('Date'[Date], -1, QUARTER))

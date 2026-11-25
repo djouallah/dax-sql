@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 26)
+EVALUATE SUMMARIZECOLUMNS('Time Intelligence'[Time Intelligence], "m0", DISTINCTCOUNT('Date'[Month]))

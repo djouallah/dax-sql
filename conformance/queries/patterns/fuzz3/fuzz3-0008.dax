@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 8)
+EVALUATE TOPN(1, ADDCOLUMNS(VALUES('Date'[Quarter]), "m0", CALCULATE([Sales Fiscal YTD], DATESINPERIOD('Date'[Date], DATE(2023, 6, 17), -3, MONTH))), [m0], DESC, 'Date'[Quarter], ASC)

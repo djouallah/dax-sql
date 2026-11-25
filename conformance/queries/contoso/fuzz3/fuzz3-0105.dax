@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 105)
+EVALUATE SUMMARIZECOLUMNS('Product'[Price], 'Date'[Quarter], 'Product'[Color], "m0", CALCULATE(CALCULATE(CALCULATE([Sales YTD], DATESBETWEEN('Date'[Date], DATE(2023, 12, 16), DATE(2024, 1, 11))), ALLSELECTED('Date'[Month])), DATESBETWEEN('Date'[Date], DATE(2024, 3, 23), DATE(2024, 3, 28))), "m1", MAX('Sales'[Amount]), "m2", ABS(ABS(COUNTROWS(FILTER(VALUES('Category'[Category]), [All Sales] > 1000)))))

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 26)
+EVALUATE TOPN(2, ADDCOLUMNS(VALUES('Date'[Month]), "m0", MINX(VALUES('Product'[Brand]), [Customers No Blank])), [m0], DESC, 'Date'[Month], ASC)

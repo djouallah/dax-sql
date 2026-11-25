@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 5)
+EVALUATE ROW("m0", SWITCH(TRUE(), SUM('Sales'[Qty]) > 0, MIN('Returns'[ReturnQty]), SUM('Returns'[ReturnQty]) < 100, [Orders], SUM('Sales'[Amount])), "m1", ([Sales Amount] * [Customers]))

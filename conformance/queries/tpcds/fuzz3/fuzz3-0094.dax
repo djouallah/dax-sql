@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 94)
+EVALUATE ROW("m0", DIVIDE(TOTALYTD([Catalog Sales Quantity], 'date_dim'[d_date]), CALCULATE(ABS([Catalog Sales Quantity]), ALL('customer_demographics'[cd_marital_status]))), "m1", ABS(ABS(DISTINCTCOUNT('store'[s_state]))))

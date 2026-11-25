@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 36)
+EVALUATE ROW("m0", AVERAGEX(VALUES('item'[i_color]), CALCULATE(ABS([Catalog Sales Same Period LY]), TREATAS({ "importcorp #7" }, 'item'[i_brand]))), "m1", [Catalog Sales YoY], "m2", LEN(LEFT(UPPER(CONCATENATEX(VALUES('store'[s_state]), 'store'[s_state], "|", 'store'[s_state], ASC)), 4)))

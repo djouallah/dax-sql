@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 138)
+EVALUATE TOPN(3, ADDCOLUMNS(VALUES('Currency'[Currency]), "m0", IF(OR(SWITCH(TRUE(), [Customers with Sales Relationship] > 0, [Context Selected Colors Sales], [Basket Orders With Bikes] < 10, [Sales Rolling 12M Manual], [Basket Orders With Bikes]) > 1, NOT(ISBLANK(MAX([Customer Distinct Products], [Sales USD])))), DISTINCTCOUNT('Category'[Category]), CALCULATE([Visual Moving Avg 3M], INDEX(-1, ALL('Date'[Year]), ORDERBY('Date'[Year], ASC))))), [m0], DESC, 'Currency'[Currency], ASC)

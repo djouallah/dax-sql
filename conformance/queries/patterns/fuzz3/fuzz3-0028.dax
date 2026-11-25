@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 28)
+EVALUATE TOPN(1, ADDCOLUMNS(VALUES('Category'[Category]), "m0", (IF(ISBLANK(SUM('Budget'[Budget])), 0, [Cumulative Sales Delivered]) * IF(ISBLANK([Sales Ordered and Delivered in Period]), 0, [Sales Last Day With Sales]))), [m0], DESC, 'Category'[Category], ASC)

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 39)
+EVALUATE ROW("m0", CALCULATE(COUNTROWS(FILTER(VALUES('Date'[Year]), VAR v = DISTINCTCOUNT('Country'[Country]) RETURN v * 2 + MIN('Sales'[Discount]) > 100)), INDEX(1, ALL('Country'[Country]), ORDERBY('Country'[Country], ASC))))

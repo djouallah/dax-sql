@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 137)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('Product'[Brand], "m0", [Unshipped Lines], "m1", [Sales YTD]), TREATAS({ "Contoso" }, 'Product'[Brand]))

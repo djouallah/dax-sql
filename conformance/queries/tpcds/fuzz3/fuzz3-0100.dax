@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 100)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('store'[s_city], 'store'[s_store_name], "m0", ROUND([Store Revenue Same Period LY], 0)), USERELATIONSHIP('catalog_sales'[cs_ship_addr_sk], 'customer_address'[ca_address_sk]))

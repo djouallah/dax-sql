@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 30)
+EVALUATE TOPN(2, ADDCOLUMNS(VALUES('Date'[Month]), "m0", SUMX(VALUES('Category'[Category]), ROUND([Sales YTD], 2))), [m0], DESC, 'Date'[Month], ASC)

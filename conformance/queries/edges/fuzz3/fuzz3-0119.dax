@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 119)
+EVALUATE SUMMARIZECOLUMNS('Customer'[Segment], 'Date'[Quarter], "m0", (IF(AND(MAX(DISTINCTCOUNT('Country'[Country]), [Total Weight]) > 1000, NOT(ISBLANK(MAXX(VALUES('Product'[Product]), DISTINCTCOUNT('Store'[Store]))))), MIN('Target'[Target]), [Sales Amount]) * (RANKX(ALL('Date'[Month]), [Avg Per Customer]) - CALCULATE([Margin %], ALLSELECTED('StoreProfile'[Format])))))

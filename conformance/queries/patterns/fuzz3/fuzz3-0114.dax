@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 114)
+EVALUATE SUMMARIZECOLUMNS('Product'[Price Band], 'Customer'[City], "m0", (AVERAGE('Sales'[Quantity]) - MIN('Sales'[Line Amount])), "m1", IF(ISBLANK(MIN('Sales'[Net Price])), 0, DISTINCTCOUNT('Date'[Month])), "m2", [Inventory Avg Month End])

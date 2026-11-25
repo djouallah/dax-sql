@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 99)
+EVALUATE SUMMARIZECOLUMNS('Customer'[City], 'Category'[Category], 'Customer'[Gender], "m0", (LEN(CONCATENATEX(VALUES('Date'[Year]), 'Date'[Year], ",")) * LEN(CONCATENATEX(VALUES('Product'[Product]), 'Product'[Product], ","))), "m1", [Snapshots], "m2", MAX('Budget'[Budget]))

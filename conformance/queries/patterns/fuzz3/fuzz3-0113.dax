@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 113)
+EVALUATE ROW("m0", DIVIDE(COUNTROWS('Sales'), [Inventory Avg Month End]), "m1", [Customers New], "m2", RANKX(ALL('Customer'[Gender]), [Inventory Avg Month End]))

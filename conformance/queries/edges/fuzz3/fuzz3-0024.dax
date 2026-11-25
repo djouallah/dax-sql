@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 24)
+EVALUATE SUMMARIZECOLUMNS('Product'[Color], FILTER(VALUES('Product'[Brand]), 'Product'[Brand] IN { "Ünïcorn", "Fabrikam" }), "m0", TOTALYTD(CALCULATE([Margin %], ALLSELECTED('Region'[Region])), 'Date'[Date]), "m1", COUNTROWS('Store'), "m2", CALCULATE([Shipped Amount], 'StoreProfile'[Format] >= "Outlet", FILTER(ALL('Date'[Quarter]), 'Date'[Quarter] <> "Q3")))

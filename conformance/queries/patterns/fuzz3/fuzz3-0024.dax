@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 24)
+EVALUATE TOPN(2, SUMMARIZECOLUMNS('Subcategory'[Subcategory], "m0", COALESCE(MAX('Sales'[Line Amount]), 0)), [m0], DESC)

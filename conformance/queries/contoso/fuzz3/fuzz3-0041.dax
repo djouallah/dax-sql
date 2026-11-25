@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 41)
+EVALUATE TOPN(5, ADDCOLUMNS(VALUES('Product'[Name]), "m0", DIVIDE(ROUND(IF(ISBLANK([Best Customer Sales]), 0, MAX('Sales'[Amount])), 2), ABS(CALCULATE([Big Orders], INDEX(1, ALL('Date'[Month]), ORDERBY('Date'[Month], ASC)))))), [m0], DESC, 'Product'[Name], ASC)

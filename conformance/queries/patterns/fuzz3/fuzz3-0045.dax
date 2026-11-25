@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 45)
+EVALUATE TOPN(3, ADDCOLUMNS(VALUES('Customer'[Gender]), "m0", COUNTROWS(FILTER(VALUES('Subcategory'[Subcategory]), IF(HASONEVALUE('Employee'[Title]), COALESCE(COUNTROWS('Inventory'), 0)) > 100))), [m0], DESC, 'Customer'[Gender], ASC)

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 12)
+EVALUATE ROW("m0", IF(ISBLANK(CALCULATE(ABS([Archive Files]), PARALLELPERIOD('date_dim'[d_date], -1, QUARTER))), 0, IF(SELECTEDVALUE('store'[s_state]) = "TN", MIN('store_sales'[ss_ext_sales_price]), CALCULATE(MAX('catalog_sales'[cs_quantity]), DATESBETWEEN('date_dim'[d_date], DATE(1999, 1, 1), DATE(2025, 3, 12))))))

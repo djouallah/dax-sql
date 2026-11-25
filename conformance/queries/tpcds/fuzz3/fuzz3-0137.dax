@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 137)
+EVALUATE SUMMARIZECOLUMNS("m0", IF(HASONEVALUE('store'[s_city]), COUNTROWS('store')), "m1", CALCULATE(VAR v = [Store Distinct Customers] RETURN v * 2 + MAX('catalog_sales'[cs_ext_sales_price]), FILTER(VALUES('store'[s_city]), IF(SELECTEDVALUE('date_dim'[d_qoy]) = 1, AVERAGE('store_sales'[ss_net_profit]), DISTINCTCOUNT('item'[i_brand])) > 10)), "m2", [Archive Files])

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 25)
+EVALUATE TOPN(4, SUMMARIZECOLUMNS('Customer'[Customer], "m0", TOTALYTD(MIN('Returns'[ReturnQty]), 'Date'[Date])), [m0], DESC)

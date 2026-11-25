@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 11)
+EVALUATE SUMMARIZE('Target', 'Store'[Store], 'Date'[Year], "m0", ([Target Amount] - CALCULATE(COUNTROWS(FILTER(VALUES('StoreProfile'[Format]), [Sales YTD] > 100)), 'Product'[Product] >= "Naïve Notebook")), "m1", TOTALYTD(IF(ISINSCOPE('Date'[Weekend]), MAX(DISTINCTCOUNT('Product'[Color]), [Sales vs Target]), IF(SELECTEDVALUE('Product'[Product]) = "Café Crème Mug", [Total Cost], [Margin %])), 'Date'[Date]))

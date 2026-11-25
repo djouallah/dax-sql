@@ -1,0 +1,3 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 22)
+// roles: Retail
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('Date'[Quarter], 'StoreProfile'[Format], "m0", CALCULATE([Shipped Amount], DATESYTD('Date'[Date]), KEEPFILTERS('Date'[Month] = 4))), ALL('Date'[Year]))

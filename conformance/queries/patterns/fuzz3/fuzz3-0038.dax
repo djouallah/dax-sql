@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 38)
+EVALUATE ROW("m0", CALCULATE(COUNTROWS(FILTER(VALUES('Date'[Year]), VAR v = DISTINCTCOUNT('Customer'[Country]) RETURN v * 2 + MIN('Inventory'[On Hand]) > 100)), INDEX(1, ALL('Customer'[Country]), ORDERBY('Customer'[Country], ASC))))

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 97)
+EVALUATE SUMMARIZECOLUMNS('Store'[Store], 'Date'[Weekend], 'Product'[Brand], "m0", CALCULATE(CALCULATE(CALCULATE([Shipped Amount], DATESBETWEEN('Date'[Date], DATE(2023, 12, 16), DATE(2024, 1, 11))), ALLSELECTED('Date'[Weekend])), DATESBETWEEN('Date'[Date], DATE(2024, 3, 23), DATE(2024, 3, 28))), "m1", MAX('Sales'[Discount]), "m2", ABS(ABS(COUNTROWS(FILTER(VALUES('Store'[Store]), [Lines] > 1000)))))

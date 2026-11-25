@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 67)
+EVALUATE TOPN(1, SUMMARIZECOLUMNS('Customer'[City], "m0", LEN(LEFT(UPPER(CONCATENATEX(VALUES('Date'[Year]), 'Date'[Year], "|", 'Date'[Year], ASC)), 6))), [m0], ASC)

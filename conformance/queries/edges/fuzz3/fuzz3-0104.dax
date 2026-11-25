@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 104)
+EVALUATE ADDCOLUMNS(CROSSJOIN(VALUES('Date'[Weekend]), VALUES('Date'[Quarter])), "m0", DIVIDE(DIVIDE(IF([Customers] > 1000, [Big Customers], [Sales Amount]), CALCULATE([Total Cost], DATESINPERIOD('Date'[Date], DATE(2023, 7, 8), -3, MONTH))), ABS(LEN(LEFT(UPPER(CONCATENATEX(VALUES('Product'[Brand]), 'Product'[Brand], "|", 'Product'[Brand], ASC)), 4)))))

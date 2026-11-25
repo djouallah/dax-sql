@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 96)
+EVALUATE SUMMARIZECOLUMNS('customer_demographics'[cd_marital_status], 'date_dim'[d_qoy], 'promotion'[p_promo_name], TREATAS({ "2 yr Degree" }, 'customer_demographics'[cd_education_status]), "m0", CALCULATE(VAR v = DISTINCTCOUNT('customer_address'[ca_state]) RETURN v * 2 + [Catalog Sales Same Period LY], INDEX(-1, ALL('item'[i_class]), ORDERBY('item'[i_class], DESC))), "m1", [Archive Source Rows])

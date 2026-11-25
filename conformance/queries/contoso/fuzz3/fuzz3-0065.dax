@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 65)
+EVALUATE ADDCOLUMNS(CROSSJOIN(VALUES('Customer'[Customer]), VALUES('Category'[Category])), "m0", AVERAGE('Returns'[ReturnQty]))

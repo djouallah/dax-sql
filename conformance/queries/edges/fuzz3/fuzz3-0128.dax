@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 128)
+EVALUATE ADDCOLUMNS(VALUES('Date'[Quarter]), "m0", IF(SELECTEDVALUE('Country'[Country]) = "Netherlands", CALCULATE([Customers No Blank], DATESINPERIOD('Date'[Date], DATE(2024, 5, 30), -1, MONTH)), CALCULATE(MAX('Target'[Target]), ALLSELECTED('Customer'[City]))), "m1", IF(ISBLANK(SUM('Sales'[Discount])), 0, CALCULATE([Quantity Or Zero], DATESBETWEEN('Date'[Date], DATE(2024, 12, 25), DATE(2024, 11, 9)))))

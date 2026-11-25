@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 35)
+EVALUATE SUMMARIZECOLUMNS('Date'[Month], 'Product'[Product], 'Date'[Day Name], "m0", MAX([Inventory Closing Fiscal Year], CALCULATE([Sales ISO YTD], 'Currency'[Currency] <> "zz-none", SAMEPERIODLASTYEAR('Date'[Date]))), "m1", SUMX(SUMMARIZE('Sales', 'Customer'[Country]), MAX('Sales'[Quantity])), "m2", [Sales Moving Avg 3M])

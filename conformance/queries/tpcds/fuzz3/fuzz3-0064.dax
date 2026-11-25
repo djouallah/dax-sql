@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 64)
+EVALUATE SUMMARIZECOLUMNS('ship_mode'[sm_type], "m0", CALCULATE(ABS([Catalog Sales Quantity]), 'item'[i_current_price] IN { 41.92 }, TREATAS({ 3, 2 }, 'date_dim'[d_qoy])), "m1", ABS(DIVIDE(AVERAGE('catalog_sales'[cs_ext_sales_price]), AVERAGE('catalog_sales'[cs_net_profit]))), "m2", CALCULATE(COUNTROWS(FILTER(VALUES('customer_address'[ca_state]), SUM('store_sales'[ss_quantity]) > 100)), DATESBETWEEN('date_dim'[d_date], DATE(2024, 12, 27), DATE(2024, 5, 19))))

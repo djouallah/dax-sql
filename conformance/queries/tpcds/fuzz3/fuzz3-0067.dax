@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 67)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('item'[i_class], "m0", CALCULATE([Archive Files], USERELATIONSHIP('catalog_sales'[cs_ship_addr_sk], 'customer_address'[ca_address_sk]), REMOVEFILTERS('store_sales')), "m1", CALCULATE([Archive Source Rows], 'customer_address'[ca_state] <> "CA")), 'item'[i_brand] = "importcorp #1")

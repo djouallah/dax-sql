@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 107)
+EVALUATE ROW("m0", IF([Sales without Account Bridge] > 1, [Budget Amount], [Avg Daily Rate Relationship]), "m1", CALCULATE([Inventory Closing Month], KEEPFILTERS('Date'[Month] = -1), ALLSELECTED('Date')), "m2", [Budget at Valid Grain])

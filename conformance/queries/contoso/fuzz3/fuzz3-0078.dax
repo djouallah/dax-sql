@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 78)
+EVALUATE TOPN(5, ADDCOLUMNS(VALUES('Product'[Color]), "m0", LEN(CONCATENATEX(VALUES('Product'[Color]), 'Product'[Color], ","))), [m0], DESC, 'Product'[Color], ASC)

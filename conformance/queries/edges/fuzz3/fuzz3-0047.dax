@@ -1,0 +1,3 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 47)
+// roles: Europe
+EVALUATE ADDCOLUMNS(VALUES('Date'[Quarter]), "m0", CALCULATE((AVERAGE('Target'[Target]) * IF(SELECTEDVALUE('Product'[Color]) = "Black", AVERAGE('Sales'[Unit Price]), [Target Amount])), INDEX(2, ALL('Region'[Region]), ORDERBY('Region'[Region], DESC))), "m1", DISTINCTCOUNT('Customer'[City]))

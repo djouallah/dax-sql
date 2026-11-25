@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 28)
+EVALUATE SUMMARIZECOLUMNS("m0", [Red Sales], "m1", MAX([Avg Price], [Quantity]), "m2", (COUNTROWS('Customer') + COUNTROWS('Sales')))

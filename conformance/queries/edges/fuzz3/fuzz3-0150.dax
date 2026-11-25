@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 150)
+EVALUATE SUMMARIZECOLUMNS('Date'[Month], 'Country'[Country], 'Date'[Weekend], "m0", RANKX(ALL('Date'[Weekend]), IF(SELECTEDVALUE('Customer'[Segment]) = "Retail", COUNTROWS(UNION(VALUES('StoreProfile'[Format]), VALUES('StoreProfile'[Format]))), LEN(LEFT(UPPER(CONCATENATEX(VALUES('Product'[Color]), 'Product'[Color], "|", 'Product'[Color], ASC)), 5)))), "m1", MIN('Sales'[Discount]))

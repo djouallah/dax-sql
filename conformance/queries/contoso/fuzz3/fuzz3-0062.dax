@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 62)
+EVALUATE SUMMARIZE('Returns', 'Date'[Month], 'Customer'[City], "m0", DIVIDE(IF(HASONEVALUE('Category'[Category]), DISTINCTCOUNT('Product'[PriceBand])), CALCULATE(MIN('Sales'[Qty]), ALL('Date'[Quarter]))))

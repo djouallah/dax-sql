@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 58)
+EVALUATE ROW("m0", MAX('Sales'[Unit Price]), "m1", LEN(LEFT(UPPER(CONCATENATEX(VALUES('StoreProfile'[Format]), 'StoreProfile'[Format], "|", 'StoreProfile'[Format], ASC)), 3)), "m2", COUNTROWS(UNION(VALUES('Date'[Month]), VALUES('Date'[Month]))))

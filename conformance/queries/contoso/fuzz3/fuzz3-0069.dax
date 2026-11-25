@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 69)
+EVALUATE TOPN(3, SUMMARIZECOLUMNS('Product'[Color], "m0", CALCULATE(DISTINCTCOUNT('Date'[Year]), 'Product'[Color] IN { "Black", "Red" }, PARALLELPERIOD('Date'[Date], -4, MONTH))), [m0], ASC)

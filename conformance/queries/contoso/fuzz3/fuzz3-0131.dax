@@ -1,0 +1,3 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 131)
+// roles: Paris
+EVALUATE TOPN(1, SUMMARIZECOLUMNS('Customer'[City], "m0", SWITCH(TRUE(), IF([Best Customer Sales] > 1000, MAX('Sales'[Qty]), [Return Rate]) > 1, CALCULATE([Line Value], ALLSELECTED('Customer'[Customer])), RANKX(ALL('Date'[Year]), AVERAGE('Sales'[Qty]), , DESC, Dense) < 10, [Orders], AVERAGE('Sales'[Qty]))), [m0], ASC)

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 89)
+EVALUATE SUMMARIZECOLUMNS(KEEPFILTERS(TREATAS({ "blue", "coral", "zz-none" }, 'item'[i_color])), "m0", [Catalog Revenue], "m1", ABS([Catalog Sales YoY]), "m2", SUMX(VALUES('item'[i_class]), MIN('catalog_sales'[cs_net_profit])))

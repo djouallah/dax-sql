@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 150)
+EVALUATE SUMMARIZECOLUMNS('Currency'[Currency], 'Employee'[Title], FILTER(ALL('Product'[Color]), 'Product'[Color] <> "Yellow"), "m0", [Sales Delivered via Relationship])

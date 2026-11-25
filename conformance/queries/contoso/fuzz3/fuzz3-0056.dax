@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 56)
+EVALUATE ROW("m0", MAX('Sales'[Amount]), "m1", LEN(LEFT(UPPER(CONCATENATEX(VALUES('Date'[Quarter]), 'Date'[Quarter], "|", 'Date'[Quarter], ASC)), 3)), "m2", COUNTROWS(UNION(VALUES('Date'[Year]), VALUES('Date'[Year]))))

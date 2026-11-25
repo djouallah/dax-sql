@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 136)
+EVALUATE SUMMARIZE('Inventory', 'Customer'[Gender], "m0", [Customers New Static])

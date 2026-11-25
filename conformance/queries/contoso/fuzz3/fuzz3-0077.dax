@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 77)
+EVALUATE ADDCOLUMNS(VALUES('Product'[Price]), "m0", COUNTROWS('Sales'))

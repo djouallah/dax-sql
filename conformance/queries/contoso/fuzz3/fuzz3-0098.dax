@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 98)
+EVALUATE SUMMARIZECOLUMNS('Date'[Quarter], 'Category'[Category], 'Product'[Name], "m0", RANKX(ALL('Product'[PriceBand]), [Return Rate]), "m1", MAX([Best Customer Sales], CALCULATE([Quantity], DATESBETWEEN('Date'[Date], DATE(2024, 7, 30), DATE(2024, 7, 20)))))

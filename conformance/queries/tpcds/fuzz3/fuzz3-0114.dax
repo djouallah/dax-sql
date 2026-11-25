@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 114)
+EVALUATE SUMMARIZECOLUMNS('item'[i_category], 'date_dim'[d_moy], "m0", [Store Revenue YTD])

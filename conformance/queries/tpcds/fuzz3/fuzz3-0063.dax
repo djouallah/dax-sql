@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 63)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('date_dim'[d_qoy], 'promotion'[p_promo_name], "m0", (CALCULATE(DIVIDE(MAX('catalog_sales'[cs_net_profit]), CALCULATE(AVERAGE('store_sales'[ss_ext_sales_price]), ALL('store'[s_store_name]))), 'store'[s_state] <> "GA") - CALCULATE(DISTINCTCOUNT('date_dim'[d_qoy]), ALLSELECTED('item'[i_class])))), 'date_dim'[d_qoy] > 3)

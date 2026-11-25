@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 90)
+EVALUATE TOPN(3, SUMMARIZECOLUMNS('Product'[Color], "m0", CALCULATE(CALCULATE(MAX([Big Orders], DISTINCTCOUNT('Product'[PriceBand])), DATESINPERIOD('Date'[Date], DATE(2024, 2, 20), -6, YEAR), 'Category'[Category] IN { "Bikes", "Clothing" }), KEEPFILTERS('Product'[PriceBand] IN { "zz-none" }), 'Date'[Year] > 2024)), [m0], DESC)

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 64)
+EVALUATE ADDCOLUMNS(VALUES('Category'[Category]), "m0", TOTALYTD(SUM('Sales'[Net Price]), 'Date'[Date]))

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 57)
+EVALUATE ADDCOLUMNS(CROSSJOIN(VALUES('date_dim'[d_qoy]), VALUES('item'[i_category])), "m0", VAR v = IF(CALCULATE([Store Profit % by Item Category], 'customer_demographics'[cd_marital_status] IN { "S", "M" }, USERELATIONSHIP('catalog_sales'[cs_ship_addr_sk], 'customer_address'[ca_address_sk])) > 100, IF(ISBLANK([Store Revenue Same Period LY]), 0, COUNTROWS('item')), IF(ISBLANK([Store Revenue YTD]), 0, [Store Net Profit])) RETURN v * 2 + COALESCE(ROUND([Archive Source Rows], 1), 0))

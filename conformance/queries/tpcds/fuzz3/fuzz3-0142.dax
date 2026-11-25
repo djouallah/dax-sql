@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 142)
+EVALUATE SUMMARIZECOLUMNS('item'[i_color], 'item'[i_category], 'item'[i_brand], "m0", MAX(MIN('store_sales'[ss_quantity]), MAX('store_sales'[ss_ext_sales_price])), "m1", ABS(SUM('catalog_sales'[cs_ext_sales_price])))

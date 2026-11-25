@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 145)
+EVALUATE ADDCOLUMNS(CROSSJOIN(VALUES('Date'[Quarter]), VALUES('Date'[Month])), "m0", ABS(COUNTROWS(GENERATE(VALUES('Currency'[Currency]), TOPN(1, VALUES('Product'[Color]), CALCULATE([Budget Allocated by Day], PARALLELPERIOD('Date'[Date], -1, QUARTER)))))))

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 142)
+EVALUATE SUMMARIZE('Inventory', 'Customer'[City], "m0", COALESCE(SUM('Budget'[Budget]), 0))

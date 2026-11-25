@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 42)
+EVALUATE SUMMARIZECOLUMNS('Product'[Price], 'Category'[Category], "m0", CALCULATE(MAX(SWITCH(TRUE(), COUNTROWS('Sales') > 0, [Sales Amount], COUNTROWS('Returns') < 100, [Best Customer Sales], [Products Sold]), CALCULATE(MIN('Returns'[ReturnQty]), ALLSELECTED('Date'[Month]))), ALLSELECTED('Product'), ALLSELECTED('Date')), "m1", IF(ISBLANK([Line Value]), 0, LEN(CONCATENATEX(VALUES('Product'[Name]), 'Product'[Name], ","))))

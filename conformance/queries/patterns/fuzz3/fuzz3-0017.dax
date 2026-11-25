@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 17)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('Product'[Product], "m0", IF(MAX('Inventory'[On Hand]) > 0, SUM('Sales'[Line Amount]), MAX('Sales'[Line Amount]))), PARALLELPERIOD('Date'[Date], -1, QUARTER))

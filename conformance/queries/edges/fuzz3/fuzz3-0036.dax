@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 36)
+EVALUATE SUMMARIZECOLUMNS('Date'[Quarter], 'Product'[Product], 'Date'[Weekend], "m0", MAX([Sales vs Target], CALCULATE([Unshipped Lines], 'StoreProfile'[Format] <> "zz-none", SAMEPERIODLASTYEAR('Date'[Date]))), "m1", SUMX(SUMMARIZE('Sales', 'Country'[Country]), MAX('Sales'[Quantity])), "m2", [Shipped Amount])

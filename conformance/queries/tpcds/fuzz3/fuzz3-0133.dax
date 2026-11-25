@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 133)
+EVALUATE SUMMARIZECOLUMNS("m0", DISTINCTCOUNT('customer_address'[ca_state]), "m1", CALCULATE(AVERAGE('catalog_sales'[cs_net_profit]), NOT('date_dim'[d_qoy] IN { 2 }), PARALLELPERIOD('date_dim'[d_date], 1, YEAR)), "m2", [Catalog Net Profit])

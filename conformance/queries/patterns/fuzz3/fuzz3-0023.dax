@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 23)
+EVALUATE SUMMARIZECOLUMNS('Product'[Brand], FILTER(VALUES('Product'[Color]), 'Product'[Color] IN { "White", "Silver" }), "m0", TOTALYTD(CALCULATE([Segment Customer Sales], ALLSELECTED('Customer'[Gender])), 'Date'[Date]), "m1", COUNTROWS('Customer'), "m2", CALCULATE([Sales Moving Avg 3M], 'Currency'[Currency] >= "US Dollar", FILTER(ALL('Date'[Quarter]), 'Date'[Quarter] <> 3)))

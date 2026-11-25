@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 129)
+EVALUATE ROW("m0", [Store Net Profit], "m1", [Catalog Net Profit], "m2", CALCULATE(DISTINCTCOUNT('date_dim'[d_year]), DATESBETWEEN('date_dim'[d_date], DATE(2026, 7, 29), DATE(2024, 4, 14))))

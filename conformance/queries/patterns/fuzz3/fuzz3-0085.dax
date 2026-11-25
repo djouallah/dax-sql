@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 85)
+EVALUATE ADDCOLUMNS(VALUES('Date'[Quarter]), "m0", IF(HASONEVALUE('Product'[Product]), AVERAGE('Sales'[Quantity])))

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 6)
+EVALUATE SUMMARIZE('Sales', 'Employee'[Title], 'Product'[Color], "m0", CALCULATE([Sales USD], INDEX(1, ALL('Date'[Day Name]), ORDERBY('Date'[Day Name], ASC))), "m1", TOTALYTD(AVERAGE('Sales'[Quantity]), 'Date'[Date]))

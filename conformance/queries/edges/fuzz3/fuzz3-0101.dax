@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 101)
+EVALUATE SUMMARIZECOLUMNS('Customer'[City], "m0", DIVIDE([Avg Per Customer], CALCULATE([Sales vs Target], ALL('Region'[Region]))), "m1", VAR v = [Lines] RETURN v * 2 + COUNTROWS('Customer'), "m2", TOTALYTD(DISTINCTCOUNT('StoreProfile'[Format]), 'Date'[Date]))

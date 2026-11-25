@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 18)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('Country'[Country], 'Product'[Product], "m0", MAX('Sales'[Discount])), REMOVEFILTERS('Customer'))

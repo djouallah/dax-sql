@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 120)
+EVALUATE SUMMARIZECOLUMNS('item'[i_category], 'ship_mode'[sm_type], 'date_dim'[d_year], FILTER(VALUES('ship_mode'[sm_type]), 'ship_mode'[sm_type] IN { "REGULAR", "OVERNIGHT" }), KEEPFILTERS(TREATAS({ "zz-none" }, 'customer_demographics'[cd_education_status])), "m0", [Store Profit % by Item Category])

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 118)
+EVALUATE SUMMARIZECOLUMNS('Product'[Name], 'Product'[Price], 'Date'[Quarter], FILTER(VALUES('Category'[Category]), 'Category'[Category] IN { "zz-none", "Clothing" }), KEEPFILTERS(TREATAS({ "Clothing" }, 'Category'[Category])), "m0", COUNTROWS(FILTER(VALUES('Product'[Name]), COUNTROWS(FILTER(VALUES('Category'[Category]), MIN('Sales'[Qty]) > 1)) > 1)), "m1", [All Sales])

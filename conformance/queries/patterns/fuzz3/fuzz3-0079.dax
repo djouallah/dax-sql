@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 79)
+EVALUATE TOPN(5, ADDCOLUMNS(VALUES('Product'[Brand]), "m0", LEN(CONCATENATEX(VALUES('Product'[Brand]), 'Product'[Brand], ","))), [m0], DESC, 'Product'[Brand], ASC)

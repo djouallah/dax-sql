@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 47)
+EVALUATE SUMMARIZECOLUMNS('item'[i_color], 'customer_demographics'[cd_marital_status], "m0", COALESCE([Catalog Net Profit], 0), "m1", [Store Revenue Same Period LY], "m2", DIVIDE(CALCULATE([Catalog Net Profit], ALLSELECTED('date_dim'[d_moy])), RANKX(ALL('store'[s_state]), COUNTROWS('store_sales'))))

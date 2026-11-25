@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 1)
+EVALUATE ROW("m0", [Share of Category], "m1", ROUND(AVERAGE('Sales'[Amount]), 2), "m2", COUNTROWS(CROSSJOIN(VALUES('Customer'[City]), VALUES('Customer'[Customer]))))

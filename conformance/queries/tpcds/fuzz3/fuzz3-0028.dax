@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 28)
+EVALUATE ROW("m0", [Catalog Revenue], "m1", DIVIDE(DISTINCTCOUNT('date_dim'[d_qoy]), CALCULATE(CALCULATE([Catalog Sales Quantity], ALL('date_dim'[d_moy])), DATESBETWEEN('date_dim'[d_date], DATE(2025, 6, 1), DATE(2024, 7, 25)))), "m2", TOTALYTD(TOTALYTD(MIN('catalog_sales'[cs_ext_sales_price]), 'date_dim'[d_date]), 'date_dim'[d_date]))

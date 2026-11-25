@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 87)
+EVALUATE ROW("m0", CALCULATE(IF(DIVIDE([Quantity], [Line Value]) > 1, DIVIDE([Sales PY], SUM('Sales'[Amount])), [Share of Category]), 'Product'[PriceBand] <> "zz-none"))

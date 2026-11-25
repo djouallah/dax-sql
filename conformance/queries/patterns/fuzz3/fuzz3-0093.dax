@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 93)
+EVALUATE SUMMARIZECOLUMNS('Product'[Brand], 'Subcategory'[Subcategory], 'Product'[Product], "m0", COUNTROWS(FILTER(VALUES('Date'[Quarter]), DISTINCTCOUNT('Currency'[Currency]) > 100)), "m1", [Pareto Customer Cumulative Sales])

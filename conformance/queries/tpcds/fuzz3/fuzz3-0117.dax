@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 117)
+EVALUATE TOPN(3, ADDCOLUMNS(VALUES('item'[i_current_price]), "m0", CALCULATE(COUNTROWS('store_sales'), ALL('date_dim'[d_moy]))), [m0], DESC, 'item'[i_current_price], ASC)

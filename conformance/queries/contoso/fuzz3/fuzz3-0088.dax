@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 88)
+EVALUATE ADDCOLUMNS(VALUES('Date'[Month]), "m0", IF(SELECTEDVALUE('Product'[PriceBand]) = "zz-none", [All Sales], IF(ABS([Quantity]) > 10, CALCULATE(DISTINCTCOUNT('Category'[Category]), ALLSELECTED('Customer'[Customer])), CALCULATE(COUNTROWS('Sales'), ALLSELECTED('Product'[PriceBand])))))

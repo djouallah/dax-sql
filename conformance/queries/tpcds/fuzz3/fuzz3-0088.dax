@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 88)
+EVALUATE ADDCOLUMNS(CROSSJOIN(VALUES('item'[i_brand]), VALUES('promotion'[p_promo_name])), "m0", RANKX(ALL('date_dim'[d_moy]), VAR v = DISTINCTCOUNT('date_dim'[d_moy]) RETURN v * 2 + CALCULATE([Store Revenue], ALLSELECTED('store'[s_store_name]))))

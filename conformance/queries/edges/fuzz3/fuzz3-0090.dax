@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 90)
+EVALUATE SUMMARIZECOLUMNS('Product'[Color], 'Region'[Region], "m0", DIVIDE(AVERAGEX(VALUES('Date'[Quarter]), DISTINCTCOUNT('Customer'[City])), CALCULATE(LEN(CONCATENATEX(VALUES('Store'[Store]), 'Store'[Store], ",")), ALL('Date'[Quarter]))))

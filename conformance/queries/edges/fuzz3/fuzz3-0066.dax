@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 66)
+EVALUATE SUMMARIZE('Target', 'Product'[Brand], 'Date'[Year], "m0", (CALCULATE(COALESCE([Total Weight], 0), 'Product'[Brand] <> "Fabrikam") - [Sales vs Target]))

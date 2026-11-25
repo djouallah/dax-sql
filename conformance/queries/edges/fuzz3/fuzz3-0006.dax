@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 6)
+EVALUATE TOPN(2, ADDCOLUMNS(VALUES('Customer'[Segment]), "m0", VAR v = COUNTROWS('Product') RETURN v * 2 + [Unshipped Lines]), [m0], DESC, 'Customer'[Segment], ASC)

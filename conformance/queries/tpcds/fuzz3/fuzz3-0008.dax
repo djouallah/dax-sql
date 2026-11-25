@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 8)
+EVALUATE SUMMARIZECOLUMNS("m0", CALCULATE([Store Revenue Same Period LY], INDEX(2, ALL('item'[i_color]), ORDERBY('item'[i_color], DESC))), "m1", IF(AND(MAX('catalog_sales'[cs_net_profit]) > 0, NOT(ISBLANK([Catalog Sales Same Period LY]))), [Catalog Sales YoY], [Store Revenue Same Period LY]), "m2", LEN(LEFT(UPPER(CONCATENATEX(VALUES('date_dim'[d_year]), 'date_dim'[d_year], "|", 'date_dim'[d_year], ASC)), 6)))

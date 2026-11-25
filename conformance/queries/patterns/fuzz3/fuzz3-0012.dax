@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 12)
+EVALUATE ROW("m0", IF(ISBLANK(CALCULATE(ABS([Budget Allocated to Product]), PARALLELPERIOD('Date'[Date], -1, QUARTER))), 0, IF(SELECTEDVALUE('Customer'[City]) = "Melbourne", MIN('Sales'[Net Price]), CALCULATE(MAX('Sales'[Line Amount]), DATESBETWEEN('Date'[Date], DATE(1999, 1, 1), DATE(2023, 3, 13))))))

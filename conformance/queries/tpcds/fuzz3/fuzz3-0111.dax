@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 111)
+EVALUATE SUMMARIZECOLUMNS('date_dim'[d_year], "m0", TOTALYTD([Catalog Net Profit], 'date_dim'[d_date]), "m1", [Store Revenue Same Period LY])

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 93)
+EVALUATE SUMMARIZECOLUMNS('promotion'[p_promo_name], "m0", CALCULATE(AVERAGE('catalog_sales'[cs_quantity]), PARALLELPERIOD('date_dim'[d_date], -1, YEAR)))

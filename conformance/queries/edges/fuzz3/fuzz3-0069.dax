@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 69)
+EVALUATE SUMMARIZE('Target', 'Date'[Month], "m0", IF(ISINSCOPE('Customer'[City]), DISTINCTCOUNT('Store'[Store]), [Margin]), "m1", CALCULATE(MAX('Sales'[Unit Price]), PARALLELPERIOD('Date'[Date], -4, QUARTER)))

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 100)
+EVALUATE ROW("m0", IF([Sales YoY %] > 1, [Big Customers], [Total Cost]), "m1", CALCULATE([Sales vs Target], KEEPFILTERS('Date'[Quarter] = "zz-none"), ALLSELECTED('Date')), "m2", [Target Amount])

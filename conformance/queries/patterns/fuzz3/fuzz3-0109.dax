@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 109)
+EVALUATE SUMMARIZECOLUMNS('Customer'[City], 'Product'[Color], 'Date'[Month], "m0", IF(MAX('Sales'[Line Amount]) > 1000, IF(SELECTEDVALUE('Customer'[Gender]) = "M", COUNTROWS('Product'), [Sales via Account Iteration]), CALCULATE([Visual Running Sales], DATESBETWEEN('Date'[Date], DATE(1999, 1, 1), DATE(2024, 4, 20)))), "m1", [Cumulative Sales Window])

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 9)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('Date'[Day Name], 'Date'[Quarter], "m0", IF(ISINSCOPE('Category'[Category]), IF(ISBLANK([Sales ISO YTD]), 0, SUMX(SUMMARIZE('Sales', 'Category'[Category]), [Customers])), MAX(IF(HASONEVALUE('Date'[Year]), [Sales PY SPLY]), ROUND(COUNTROWS('Inventory'), 1))), "m1", COUNTROWS(UNION(VALUES('Date'[Month]), VALUES('Date'[Month])))), KEEPFILTERS('Currency'[Currency] IN { "US Dollar" }))

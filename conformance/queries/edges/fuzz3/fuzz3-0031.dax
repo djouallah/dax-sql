@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 31)
+EVALUATE SUMMARIZECOLUMNS('Adjust'[Adjust], "m0", VAR v = IF(ISBLANK([Sales YTD]), 0, [Customers]) RETURN v * 2 + CALCULATE(MAX('Sales'[Unit Price]), KEEPFILTERS('Date'[Weekend] IN { TRUE(), FALSE() })))

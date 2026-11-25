@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 132)
+EVALUATE ROW("m0", ROUND(ABS(AVERAGE('Sales'[Qty])), 2), "m1", SUMX(SUMMARIZE('Returns', 'Date'[Year]), SUM('Sales'[Qty])))

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 131)
+EVALUATE ROW("m0", ROUND(ABS(AVERAGE('Sales'[Quantity])), 2), "m1", SUMX(SUMMARIZE('Inventory', 'Date'[Month]), SUM('Sales'[Quantity])))

@@ -1,0 +1,3 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 130)
+// roles: France
+EVALUATE TOPN(1, SUMMARIZECOLUMNS('Date'[Year], "m0", SWITCH(TRUE(), IF([Sales via Account Iteration] > 1000, MAX('Sales'[Net Price]), [Budget Allocated by Day]) > 1, CALCULATE([Context Brand Rank], ALLSELECTED('Customer'[Gender])), RANKX(ALL('Date'[Month]), AVERAGE('Sales'[Net Price]), , DESC, Dense) < 10, [ABC Product Cumulative %], AVERAGE('Sales'[Quantity]))), [m0], ASC)

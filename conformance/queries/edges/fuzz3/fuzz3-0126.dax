@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 126)
+EVALUATE TOPN(4, SUMMARIZECOLUMNS('Customer'[City], "m0", IF(SELECTEDVALUE('StoreProfile'[Format]) = "Flagship", MAX(SWITCH(TRUE(), [Lines] > 10, SUM('Target'[Target]), MAX('Sales'[Quantity]) < 0, [Unshipped Lines], AVERAGE('Target'[Target])), ABS(MIN('Sales'[Quantity]))), COUNTROWS(UNION(VALUES('Date'[Month]), VALUES('Date'[Month]))))), [m0], ASC)

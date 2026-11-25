@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 12)
+EVALUATE ROW("m0", IF(ISBLANK(CALCULATE(ABS([Returned]), PARALLELPERIOD('Date'[Date], -1, QUARTER))), 0, IF(SELECTEDVALUE('Category'[Category]) = "Bikes", MIN('Sales'[Qty]), CALCULATE(MAX('Sales'[Amount]), DATESBETWEEN('Date'[Date], DATE(1999, 1, 1), DATE(2023, 10, 19))))))

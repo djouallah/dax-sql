@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 113)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('item'[i_class], 'item'[i_color], "m0", [Store Revenue YoY], "m1", CALCULATE(AVERAGEX(VALUES('item'[i_color]), [Store Distinct Customers]), PARALLELPERIOD('date_dim'[d_date], -4, MONTH), ALLEXCEPT('store', 'store'[s_store_name]))), 'item'[i_category] <> "Books")

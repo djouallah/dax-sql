@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 34)
+EVALUATE ADDCOLUMNS(CROSSJOIN(VALUES('Region'[Region]), VALUES('Store'[Store])), "m0", TOTALYTD(COUNTROWS(FILTER(VALUES('Customer'[City]), [Shipped Amount] > 1000)), 'Date'[Date]))

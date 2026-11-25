@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 83)
+EVALUATE ROW("m0", [Inventory Last Date], "m1", DIVIDE(MAX(COUNTROWS('Inventory'), SUM('Budget'[Budget])), MAX('Sales'[Net Price])))

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 109)
+EVALUATE SUMMARIZECOLUMNS('Product'[Price], "m0", DIVIDE([Line Value Column], CALCULATE([Target Total], ALL('Customer'[Customer]))), "m1", VAR v = [Red Sales] RETURN v * 2 + COUNTROWS('Customer'), "m2", TOTALYTD(DISTINCTCOUNT('Date'[Quarter]), 'Date'[Date]))

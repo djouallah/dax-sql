@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 70)
+EVALUATE TOPN(3, SUMMARIZECOLUMNS('store'[s_store_name], "m0", IF(MIN('catalog_sales'[cs_net_profit]) > 1000, [Catalog Sales Quantity], MIN('store_sales'[ss_net_profit]))), [m0], ASC)

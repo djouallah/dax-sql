@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 64)
+EVALUATE SUMMARIZE('Returns', 'Product'[Color], 'Customer'[City], "m0", (CALCULATE(COALESCE([Sales by Ship Date], 0), 'Product'[Color] <> "Blue") - [Target Total]))

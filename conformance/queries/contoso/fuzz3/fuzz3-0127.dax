@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 127)
+EVALUATE SUMMARIZECOLUMNS('Product'[PriceBand], 'Date'[Year], "m0", (IF(AND(MAX(DISTINCTCOUNT('Customer'[Customer]), [Sales by Ship Date]) > 1000, NOT(ISBLANK(MAXX(VALUES('Product'[Name]), DISTINCTCOUNT('Category'[Category]))))), MIN('Returns'[ReturnQty]), [Avg Price]) * (RANKX(ALL('Date'[Year]), [Line Value Column]) - CALCULATE([Quantity], ALLSELECTED('Date'[Quarter])))))

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 84)
+EVALUATE SUMMARIZECOLUMNS('Date'[Weekend], 'Product'[Product], "m0", IF(SELECTEDVALUE('Customer'[Segment]) = "Retail", [Sales YTD], AVERAGE('Sales'[Unit Price])), "m1", ABS([Margin %]))

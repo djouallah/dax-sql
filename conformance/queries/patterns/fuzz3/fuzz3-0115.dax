@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 115)
+EVALUATE ADDCOLUMNS(CROSSJOIN(VALUES('Customer'[Country]), VALUES('Date'[Day Name])), "m0", VAR v = MAX('Sales'[Quantity]) RETURN v * 2 + SWITCH(TRUE(), [Segment Customer Sales Fixed] > 10, CALCULATE([Orders], PARALLELPERIOD('Date'[Date], -1, YEAR)), DISTINCTCOUNT('Product'[Price Band]) < 10, MAX('Inventory'[On Hand]), TOTALYTD(MAX('Budget'[Budget]), 'Date'[Date])))

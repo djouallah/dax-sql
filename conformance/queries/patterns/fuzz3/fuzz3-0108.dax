@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 108)
+EVALUATE SUMMARIZECOLUMNS('Subcategory'[Subcategory], "m0", DIVIDE([Visual Category Rank], CALCULATE([Inventory Opening Quarter], ALL('Customer'[Gender]))), "m1", VAR v = [Cumulative Sales Delivered] RETURN v * 2 + COUNTROWS('Inventory'), "m2", TOTALYTD(DISTINCTCOUNT('Employee'[Title]), 'Date'[Date]))

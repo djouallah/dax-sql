@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 106)
+EVALUATE SUMMARIZECOLUMNS('date_dim'[d_moy], 'store'[s_store_name], 'item'[i_current_price], "m0", IF(ISINSCOPE('ship_mode'[sm_type]), ROUND(MAX('store_sales'[ss_quantity]), 1), DIVIDE(DISTINCTCOUNT('customer_demographics'[cd_marital_status]), [Store Revenue Same Period LY])), "m1", CALCULATE(DIVIDE(COUNTROWS('item'), CALCULATE(SUM('catalog_sales'[cs_net_profit]), ALL('date_dim'[d_year]))), FILTER(ALL('store'[s_store_name]), 'store'[s_store_name] <> "cally")))

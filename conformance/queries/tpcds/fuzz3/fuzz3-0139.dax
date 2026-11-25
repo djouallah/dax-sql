@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 139)
+EVALUATE SUMMARIZE('catalog_sales', 'customer_demographics'[cd_education_status], 'item'[i_class], "m0", LEN(CONCATENATEX(VALUES('store'[s_city]), 'store'[s_city], ",")), "m1", IF(ISBLANK(CALCULATE([Store Net Profit], ALL('ship_mode'[sm_type]))), 0, CALCULATE([Store Distinct Customers], PARALLELPERIOD('date_dim'[d_date], -1, YEAR))))

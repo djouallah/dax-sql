@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 26)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('item'[i_current_price], 'date_dim'[d_qoy], "m0", [Store Distinct Customers], "m1", COUNTROWS('item')), PARALLELPERIOD('date_dim'[d_date], 1, MONTH))

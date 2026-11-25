@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 6)
+EVALUATE SUMMARIZE('Sales', 'Date'[Quarter], 'Product'[Name], "m0", CALCULATE([Quantity], INDEX(1, ALL('Date'[Month]), ORDERBY('Date'[Month], ASC))), "m1", TOTALYTD(AVERAGE('Sales'[Qty]), 'Date'[Date]))

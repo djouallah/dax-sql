@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 102)
+EVALUATE ROW("m0", CALCULATE([Budget via Product Category], DATESINPERIOD('Date'[Date], DATE(2022, 11, 29), -1, DAY)))

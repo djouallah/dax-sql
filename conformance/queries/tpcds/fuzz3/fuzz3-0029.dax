@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 29)
+EVALUATE ROW("m0", SUM('catalog_sales'[cs_quantity]), "m1", IF(SELECTEDVALUE('item'[i_color]) = "blue", [Store Net Profit], AVERAGE('catalog_sales'[cs_ext_sales_price])), "m2", AVERAGE('store_sales'[ss_quantity]))

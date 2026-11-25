@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 106)
+EVALUATE TOPN(2, ADDCOLUMNS(VALUES('Date'[Year]), "m0", [Margin]), [m0], DESC, 'Date'[Year], ASC)

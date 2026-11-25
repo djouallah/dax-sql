@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 27)
+EVALUATE SUMMARIZECOLUMNS('item'[i_color], 'date_dim'[d_year], "m0", DIVIDE(DISTINCTCOUNT('customer_demographics'[cd_marital_status]), CALCULATE([Store Profit % by Item Category], ALL('date_dim'[d_year]))), "m1", COALESCE([Catalog Sales Same Period LY], 0), "m2", IF(ISINSCOPE('customer_demographics'[cd_education_status]), [Archive Files], COUNTROWS('store_sales')))

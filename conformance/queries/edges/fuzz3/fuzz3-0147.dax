@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 147)
+EVALUATE SUMMARIZE('Sales', 'Country'[Country], "m0", CALCULATE(MIN('Sales'[Discount]), PARALLELPERIOD('Date'[Date], -1, QUARTER)))

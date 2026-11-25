@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 10)
+EVALUATE ADDCOLUMNS(CROSSJOIN(VALUES('Date'[Month]), VALUES('Customer'[City])), "m0", IF(ISINSCOPE('Store'[Store]), CALCULATE(SUM('Sales'[Discount]), ALLEXCEPT('StoreProfile', 'StoreProfile'[Format])), COUNTROWS('Store')))

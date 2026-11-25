@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 140)
+EVALUATE ADDCOLUMNS(VALUES('Date'[Year]), "m0", CALCULATE(CALCULATE(IF(ISBLANK(MAX('Sales'[Amount])), 0, COUNTROWS('Product')), INDEX(1, ALL('Category'[Category]), ORDERBY('Category'[Category], DESC))), TREATAS({ "Black" }, 'Product'[Color])))

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 9)
+EVALUATE ADDCOLUMNS(CROSSJOIN(VALUES('customer_demographics'[cd_marital_status]), VALUES('ship_mode'[sm_type])), "m0", DIVIDE(COUNTROWS('store_sales'), CALCULATE([Store Revenue Same Period LY], DATESINPERIOD('date_dim'[d_date], DATE(2026, 1, 8), -3, MONTH))))

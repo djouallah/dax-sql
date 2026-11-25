@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 55)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('item'[i_class], 'customer_demographics'[cd_education_status], "m0", COUNTROWS(FILTER(VALUES('promotion'[p_promo_name]), IF(SUM('store_sales'[ss_net_profit]) > 100, MIN('store_sales'[ss_net_profit]), [Catalog Sales Quantity]) > 0))), ALL('item'[i_class]))

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 33)
+EVALUATE SUMMARIZECOLUMNS("m0", CALCULATE(COUNTROWS('Returns'), INDEX(1, ALL('Date'[Quarter]), ORDERBY('Date'[Quarter], DESC))))

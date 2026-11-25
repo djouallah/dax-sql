@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 126)
+EVALUATE SUMMARIZECOLUMNS('Subcategory'[Subcategory], 'Date'[Quarter], "m0", (IF(AND(MAX(DISTINCTCOUNT('Customer'[Country]), [Sales Fiscal YTD Manual]) > 1000, NOT(ISBLANK(MAXX(VALUES('Product'[Product]), DISTINCTCOUNT('Customer'[City]))))), MIN('Budget'[Budget]), [Customers with Sales Relationship]) * (RANKX(ALL('Date'[Month]), [Visual Level Label]) - CALCULATE([Segment Customer Sales], ALLSELECTED('Currency'[Currency])))))

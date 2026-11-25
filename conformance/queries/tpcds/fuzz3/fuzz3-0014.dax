@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 14)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('customer_demographics'[cd_education_status], 'store'[s_state], "m0", MAX(DISTINCTCOUNT('item'[i_brand]), [Archive Source Rows])), DATESYTD('date_dim'[d_date]))

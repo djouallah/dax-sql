@@ -1,0 +1,3 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 68)
+// roles: RedOnly
+EVALUATE SUMMARIZE('Sales', 'Product'[Name], 'Category'[Category], "m0", CALCULATE(AVERAGE('Sales'[Qty]), INDEX(1, ALL('Customer'[Customer]), ORDERBY('Customer'[Customer], ASC))))

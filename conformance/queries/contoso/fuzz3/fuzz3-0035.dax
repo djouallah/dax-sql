@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 35)
+EVALUATE SUMMARIZECOLUMNS('Product'[Color], "m0", MAX('Sales'[Qty]), "m1", VAR v = [Avg Price] RETURN v * 2 + SUM('Sales'[Amount]))

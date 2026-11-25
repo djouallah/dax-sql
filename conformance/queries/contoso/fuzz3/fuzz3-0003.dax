@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 3)
+EVALUATE TOPN(2, SUMMARIZECOLUMNS('Date'[Month], "m0", CALCULATE(IF(MAX('Returns'[ReturnQty]) > 100, [Orders], [Return Rate]), DATESINPERIOD('Date'[Date], DATE(2024, 5, 2), -12, MONTH))), [m0], ASC)

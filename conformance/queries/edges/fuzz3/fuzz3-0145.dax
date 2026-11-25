@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 145)
+EVALUATE SUMMARIZECOLUMNS('Store'[Store], KEEPFILTERS(TREATAS({ 2023, 2024 }, 'Date'[Year])), TREATAS({ TRUE() }, 'Date'[Weekend]), "m0", MAX(CALCULATE([Sales vs Target], INDEX(2, ALL('Customer'[City]), ORDERBY('Customer'[City], ASC))), IF(HASONEVALUE('Country'[Country]), [Shipped Amount])))

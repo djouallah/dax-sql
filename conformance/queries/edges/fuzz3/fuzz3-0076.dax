@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 76)
+EVALUATE SUMMARIZECOLUMNS('Product'[Product], 'Date'[Year], FILTER(ALL('Region'[Region]), 'Region'[Region] <> "Africa"), FILTER(ALL('Product'[Product]), 'Product'[Product] <> "Twin A"), "m0", (COUNTROWS(CROSSJOIN(VALUES('Region'[Region]), VALUES('Customer'[Segment]))) - CALCULATE(MAX('Sales'[Quantity]), USERELATIONSHIP('Sales'[Ship Date], 'Date'[Date]), PARALLELPERIOD('Date'[Date], 1, QUARTER))))

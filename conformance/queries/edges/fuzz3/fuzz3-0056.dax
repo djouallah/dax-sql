@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 56)
+EVALUATE ROW("m0", LEN(LEFT(UPPER(CONCATENATEX(VALUES('Customer'[Segment]), 'Customer'[Segment], "|", 'Customer'[Segment], ASC)), 4)))

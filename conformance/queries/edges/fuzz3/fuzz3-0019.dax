@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 19)
+EVALUATE SUMMARIZECOLUMNS('Date'[Quarter], "m0", CALCULATE(AVERAGE('Sales'[Unit Price]), DATESBETWEEN('Date'[Date], DATE(2024, 6, 23), DATE(2023, 11, 22))), "m1", MAX('Target'[Target]))

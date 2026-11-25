@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 83)
+EVALUATE SUMMARIZECOLUMNS('store'[s_state], 'item'[i_class], FILTER(ALL('store'[s_city]), 'store'[s_city] <> "Oak Grove"), KEEPFILTERS(TREATAS({ "amalguniv #7", "importpack #1" }, 'item'[i_brand])), "m0", SUM('catalog_sales'[cs_net_profit]), "m1", COUNTROWS('store_sales'))

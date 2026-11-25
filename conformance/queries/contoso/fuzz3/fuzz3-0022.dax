@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 22)
+EVALUATE SUMMARIZECOLUMNS('Date'[Year], "m0", [Best Customer Sales], "m1", CALCULATE(ROUND(DISTINCTCOUNT('Date'[Year]), 1), SAMEPERIODLASTYEAR('Date'[Date])), "m2", IF(ISBLANK([All Sales]), 0, (IF(SELECTEDVALUE('Product'[PriceBand]) = "zz-none", [Product Count], [Return Rate]) - CALCULATE([Products Sold], TREATAS({ "zz-none" }, 'Customer'[Customer]), 'Product'[Color] >= "Black"))))

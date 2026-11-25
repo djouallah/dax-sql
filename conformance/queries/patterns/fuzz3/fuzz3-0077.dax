@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 77)
+EVALUATE SUMMARIZECOLUMNS('Employee'[Title], 'Product'[Product], "m0", CALCULATE(VAR v = [Budget Allocated by Day] RETURN v * 2 + COUNTROWS('Customer'), DATESINPERIOD('Date'[Date], DATE(2023, 11, 23), -3, MONTH)))

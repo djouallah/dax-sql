@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 77)
+EVALUATE SUMMARIZECOLUMNS('customer_demographics'[cd_education_status], 'item'[i_brand], 'store'[s_state], "m0", DIVIDE(CALCULATE(CALCULATE(COUNTROWS('item'), ALLSELECTED('customer_demographics'[cd_marital_status])), USERELATIONSHIP('catalog_sales'[cs_ship_addr_sk], 'customer_address'[ca_address_sk]), DATESINPERIOD('date_dim'[d_date], DATE(2025, 9, 15), -6, YEAR)), CALCULATE([Store Profit % by Item Category], INDEX(2, ALL('item'[i_category]), ORDERBY('item'[i_category], DESC)))))

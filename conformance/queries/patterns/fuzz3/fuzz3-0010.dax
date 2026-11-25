@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 10)
+EVALUATE TOPN(4, ADDCOLUMNS(VALUES('Date'[Quarter]), "m0", SUM('Sales'[Quantity])), [m0], DESC, 'Date'[Quarter], ASC)

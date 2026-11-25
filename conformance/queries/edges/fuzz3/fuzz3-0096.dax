@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 96)
+EVALUATE SUMMARIZECOLUMNS('Adjust'[Adjust], "m0", IF(ISBLANK(CALCULATE([Sales Amount], DATESBETWEEN('Date'[Date], DATE(1999, 1, 1), DATE(2024, 1, 18)))), 0, SWITCH(TRUE(), [Customers No Blank] > 1000, [Lines], COUNTROWS('Customer') < 0, AVERAGE('Sales'[Unit Price]), [Quantity Or Zero])))

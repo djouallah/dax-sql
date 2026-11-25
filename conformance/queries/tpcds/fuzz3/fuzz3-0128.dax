@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 128)
+EVALUATE ADDCOLUMNS(CROSSJOIN(VALUES('store'[s_state]), VALUES('store'[s_city])), "m0", IF(HASONEVALUE('item'[i_current_price]), [Catalog Sales YoY]))

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 108)
+EVALUATE ADDCOLUMNS(CROSSJOIN(VALUES('Country'[Country]), VALUES('Date'[Month])), "m0", VAR v = MAX('Sales'[Quantity]) RETURN v * 2 + SWITCH(TRUE(), [Margin %] > 10, CALCULATE([Margin], PARALLELPERIOD('Date'[Date], -1, YEAR)), DISTINCTCOUNT('Product'[Color]) < 10, MAX('Sales'[Discount]), TOTALYTD(MAX('Target'[Target]), 'Date'[Date])))

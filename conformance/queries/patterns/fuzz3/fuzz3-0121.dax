@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 121)
+EVALUATE TOPN(5, ADDCOLUMNS(VALUES('Product'[Product]), "m0", CALCULATE(SWITCH(TRUE(), [Cumulative Sales Delivered] > 1, MAX('Sales'[Line Amount]), SUM('Budget'[Budget]) < 10, AVERAGE('Inventory'[On Hand]), [Visual Prev Month Sales]), TREATAS({ "Associate", "CEO" }, 'Employee'[Title]), SAMEPERIODLASTYEAR('Date'[Date]))), [m0], DESC, 'Product'[Product], ASC)

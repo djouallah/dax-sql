@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 16)
+EVALUATE TOPN(3, SUMMARIZECOLUMNS('Store'[Store], "m0", MAX('Sales'[Unit Price])), [m0], ASC)

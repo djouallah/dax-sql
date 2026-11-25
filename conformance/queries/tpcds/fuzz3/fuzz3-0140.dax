@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 140)
+EVALUATE ADDCOLUMNS(VALUES('date_dim'[d_year]), "m0", [Store Distinct Customers], "m1", LEN(CONCATENATEX(VALUES('item'[i_class]), 'item'[i_class], ",")))

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 65)
+EVALUATE SUMMARIZE('Inventory', 'Product'[Color], 'Date'[Quarter], "m0", (CALCULATE(COALESCE([Sales Fiscal YTD Manual], 0), 'Product'[Color] <> "Silver") - [Inventory Avg Month End]))

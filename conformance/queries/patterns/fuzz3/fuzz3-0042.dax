@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 42)
+EVALUATE TOPN(5, ADDCOLUMNS(VALUES('Product'[Color]), "m0", DIVIDE(ROUND(IF(ISBLANK([Sales USD Delivered Relationship]), 0, MAX('Sales'[Line Amount])), 2), ABS(CALCULATE([Sales Delivered via Relationship], INDEX(1, ALL('Employee'[Title]), ORDERBY('Employee'[Title], ASC)))))), [m0], DESC, 'Product'[Color], ASC)

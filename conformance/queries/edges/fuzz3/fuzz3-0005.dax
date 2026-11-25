@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 5)
+EVALUATE SUMMARIZECOLUMNS('Product'[Product], 'Date'[Month], FILTER(ALL('Date'[Month]), 'Date'[Month] <> 8), FILTER(VALUES('Product'[Product]), 'Product'[Product] IN { "zz-none", "Twin A" }), "m0", SUMX(SUMMARIZE('Sales', 'Product'[Product]), [Sales YoY %]))

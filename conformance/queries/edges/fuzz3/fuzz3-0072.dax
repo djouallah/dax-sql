@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 72)
+EVALUATE TOPN(1, SUMMARIZECOLUMNS('Region'[Region], "m0", MAXX(VALUES('Customer'[Segment]), SUMX(VALUES('Date'[Month]), AVERAGE('Target'[Target])))), [m0], ASC)

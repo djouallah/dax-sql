@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 86)
+EVALUATE SUMMARIZECOLUMNS("m0", IF(ABS(DIVIDE([Customer Distinct Products], [Sales Ordered and Delivered in Period])) > 1, DIVIDE(COALESCE([Exchange Rate], 0), ROUND(MAX('Budget'[Budget]), 1)), DIVIDE(COALESCE([Customers Via Expanded Sales], 0), TOTALYTD(MAX('Sales'[Net Price]), 'Date'[Date]))), "m1", COUNTROWS(FILTER(VALUES('Date'[Day Name]), [Sales Rolling 30D] > 1)), "m2", LEN(LEFT(UPPER(CONCATENATEX(VALUES('Customer'[City]), 'Customer'[City], "|", 'Customer'[City], ASC)), 3)))

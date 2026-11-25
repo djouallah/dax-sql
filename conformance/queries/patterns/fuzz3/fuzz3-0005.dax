@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 5)
+EVALUATE ROW("m0", SWITCH(TRUE(), SUM('Sales'[Quantity]) > 0, MIN('Budget'[Budget]), SUM('Budget'[Budget]) < 100, [ABC Product Class], SUM('Sales'[Line Amount])), "m1", ([Total Quantity] * [Product Sales Rank Skip]))

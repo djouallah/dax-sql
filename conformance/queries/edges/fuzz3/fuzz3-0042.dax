@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 42)
+EVALUATE ROW("m0", [Lines], "m1", MAX('Target'[Target]), "m2", MIN('Sales'[Discount]))

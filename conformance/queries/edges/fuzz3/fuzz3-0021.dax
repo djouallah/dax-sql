@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 21)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('Date'[Quarter], 'Store'[Store], "m0", COUNTROWS(FILTER(VALUES('Product'[Color]), [Sales YTD] > 100)), "m1", IF(ISINSCOPE('Customer'[Segment]), DIVIDE(IF(ISINSCOPE('Store'[Store]), [Total Quantity], [Margin %]), CALCULATE(SUM('Sales'[Quantity]), ALL('Region'[Region]))), RANKX(ALL('Store'[Store]), IF(ISINSCOPE('Store'[Store]), COUNTROWS('Customer'), [Avg Per Customer])))), PARALLELPERIOD('Date'[Date], -1, QUARTER))

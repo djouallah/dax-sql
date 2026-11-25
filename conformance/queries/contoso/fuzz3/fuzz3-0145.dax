@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 145)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('Product'[Color], "m0", [Sales by Ship Date], "m1", [Big Orders]), TREATAS({ "Black" }, 'Product'[Color]))

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 24)
+EVALUATE ROW("m0", [Catalog Sales YoY], "m1", IF(ISBLANK([Store Distinct Customers]), 0, CALCULATE(TOTALYTD([Store Revenue YTD], 'date_dim'[d_date]), DATESINPERIOD('date_dim'[d_date], DATE(1999, 1, 1), -1, MONTH))))

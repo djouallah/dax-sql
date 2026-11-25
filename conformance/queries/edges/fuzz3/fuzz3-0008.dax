@@ -1,0 +1,3 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 8)
+// roles: Europe
+EVALUATE TOPN(3, ADDCOLUMNS(VALUES('Country'[Country]), "m0", TOTALYTD(AVERAGEX(VALUES('Product'[Product]), [Total Quantity]), 'Date'[Date])), [m0], DESC, 'Country'[Country], ASC)

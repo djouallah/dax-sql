@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 17)
+EVALUATE TOPN(1, SUMMARIZECOLUMNS('date_dim'[d_qoy], "m0", [Catalog Revenue]), [m0], ASC)

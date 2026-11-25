@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 72)
+EVALUATE TOPN(2, SUMMARIZECOLUMNS('Product'[Brand], "m0", [Sales Last Day With Sales]), [m0], ASC)

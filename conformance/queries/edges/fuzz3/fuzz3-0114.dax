@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 114)
+EVALUATE TOPN(5, ADDCOLUMNS(VALUES('Product'[Product]), "m0", CALCULATE(SWITCH(TRUE(), [Lines] > 1, MAX('Sales'[Discount]), SUM('Target'[Target]) < 10, AVERAGE('Target'[Target]), [Avg Per Customer]), TREATAS({ FALSE() }, 'Date'[Weekend]), SAMEPERIODLASTYEAR('Date'[Date]))), [m0], DESC, 'Product'[Product], ASC)

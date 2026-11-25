@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 63)
+EVALUATE SUMMARIZE('Sales', 'Date'[Year], 'Product'[Color], "m0", MIN('Target'[Target]), "m1", [Sales Amount])

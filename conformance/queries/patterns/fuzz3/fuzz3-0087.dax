@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 87)
+EVALUATE ADDCOLUMNS(VALUES('Product'[Brand]), "m0", IF(AND([Inventory Last Date] > 0, NOT(ISBLANK(MIN('Sales'[Quantity])))), [Context Level], SUM('Budget'[Budget])), "m1", MAX([Sales without Account Bridge], COUNTROWS('Product')))

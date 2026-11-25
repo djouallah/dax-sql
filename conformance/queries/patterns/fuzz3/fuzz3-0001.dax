@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 1)
+EVALUATE ROW("m0", [Customer First Purchase], "m1", ROUND(AVERAGE('Sales'[Line Amount]), 2), "m2", COUNTROWS(CROSSJOIN(VALUES('Date'[Year]), VALUES('Customer'[Gender]))))

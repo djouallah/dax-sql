@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 55)
+EVALUATE TOPN(1, SUMMARIZECOLUMNS('Date'[Quarter], "m0", IF(DIVIDE(MAX(AVERAGE('Returns'[ReturnQty]), [Customers]), CALCULATE(CALCULATE(SUM('Sales'[Amount]), TREATAS({ 10 }, 'Date'[Month])), ALL('Product'[PriceBand]))) > 0, MIN('Sales'[Qty]), IF(HASONEVALUE('Product'[Price]), IF(HASONEVALUE('Date'[Quarter]), [Target Total])))), [m0], ASC)

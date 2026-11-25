@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 90)
+EVALUATE ADDCOLUMNS(CROSSJOIN(VALUES('Subcategory'[Subcategory]), VALUES('Currency'[Currency])), "m0", CALCULATE(CALCULATE(AVERAGE('Sales'[Quantity]), INDEX(-1, ALL('Date'[Day Name]), ORDERBY('Date'[Day Name], ASC))), ALLSELECTED('Date'[Day Name])))

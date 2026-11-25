@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 32)
+EVALUATE SUMMARIZECOLUMNS('Date'[Month], "m0", CALCULATE(IF(HASONEVALUE('Currency'[Currency]), [Inventory Last Per Product]), TREATAS({ "VP Online", "VP Sales" }, 'Employee'[Title])), "m1", AVERAGEX(VALUES('Product'[Brand]), CALCULATE([Sales USD Delivered Relationship], FILTER(ALL('Date'[Year]), 'Date'[Year] <> 2023), TREATAS({ "Mountain Bike A" }, 'Product'[Product]))))

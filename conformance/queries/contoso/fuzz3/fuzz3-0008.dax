@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 8)
+EVALUATE TOPN(1, ADDCOLUMNS(VALUES('Date'[Year]), "m0", CALCULATE([Share of Category], DATESINPERIOD('Date'[Date], DATE(2023, 12, 22), -3, MONTH))), [m0], DESC, 'Date'[Year], ASC)

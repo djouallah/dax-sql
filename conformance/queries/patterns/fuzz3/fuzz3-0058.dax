@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 58)
+EVALUATE ADDCOLUMNS(VALUES('Customer'[Country]), "m0", COALESCE(ROUND([Stock On Hand], 1), 0))

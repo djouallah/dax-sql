@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 146)
+EVALUATE SUMMARIZECOLUMNS("m0", CALCULATE(MAX(IF(ISINSCOPE('Product'[Brand]), [Unshipped Lines], [Sales YTD]), COUNTROWS('Sales')), 'Product'[Brand] = "Ünïcorn", KEEPFILTERS('Customer'[City] = "zz-none")), "m1", [Sales YTD], "m2", COALESCE(COALESCE(IF(ISBLANK([Sales YoY %]), 0, AVERAGE('Sales'[Unit Price])), 0), 0))

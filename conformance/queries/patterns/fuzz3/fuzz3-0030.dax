@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 30)
+EVALUATE SUMMARIZECOLUMNS('Time Intelligence'[Time Intelligence], "m0", VAR v = IF(ISBLANK([Sales By Delivery Date]), 0, [Customers New Sales]) RETURN v * 2 + CALCULATE(MAX('Sales'[Net Price]), KEEPFILTERS('Employee'[Title] IN { "Rep", "VP Sales", "CEO" })))

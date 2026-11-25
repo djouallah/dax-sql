@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 130)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('Product'[Brand], "m0", DIVIDE(DISTINCTCOUNT('Date'[Weekend]), AVERAGE('Sales'[Quantity]))), ALL('Date'[Year]))

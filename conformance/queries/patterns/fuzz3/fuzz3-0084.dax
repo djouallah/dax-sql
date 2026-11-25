@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 84)
+EVALUATE SUMMARIZECOLUMNS('Date'[Quarter], 'Product'[Color], TREATAS({ -1, 4 }, 'Date'[Quarter]), KEEPFILTERS(TREATAS({ 2024, 2023, 2022 }, 'Date'[Year])), "m0", LEN(CONCATENATEX(VALUES('Product'[Price Band]), 'Product'[Price Band], ",")))

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 37)
+EVALUATE SUMMARIZECOLUMNS('Product'[Brand], "m0", MAX('Sales'[Quantity]), "m1", VAR v = [Sales Amount] RETURN v * 2 + SUM('Sales'[Unit Price]))

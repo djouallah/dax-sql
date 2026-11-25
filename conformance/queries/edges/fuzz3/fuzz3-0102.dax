@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 102)
+EVALUATE SUMMARIZECOLUMNS('Store'[Store], 'Product'[Product], 'Date'[Quarter], "m0", IF(MAX('Sales'[Discount]) > 1000, IF(SELECTEDVALUE('Region'[Region]) = "Asia Pacific", COUNTROWS('Product'), [Sales YoY %]), CALCULATE([Avg Per Customer], DATESBETWEEN('Date'[Date], DATE(1999, 1, 1), DATE(2024, 7, 14)))), "m1", [Lines])

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 134)
+EVALUATE SUMMARIZECOLUMNS('store'[s_state], 'promotion'[p_promo_name], "m0", TOTALYTD(TOTALYTD(SUM('catalog_sales'[cs_quantity]), 'date_dim'[d_date]), 'date_dim'[d_date]))

@@ -1,0 +1,3 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 74)
+// roles: France
+EVALUATE TOPN(3, ADDCOLUMNS(VALUES('Product'[Brand]), "m0", IF(OR([Cumulative Sales Delivered] > 1000, NOT(ISBLANK([Customers Avg Active Months]))), AVERAGE('Sales'[Line Amount]), [Sales By Delivery Date])), [m0], DESC, 'Product'[Brand], ASC)

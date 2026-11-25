@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 33)
+EVALUATE SUMMARIZECOLUMNS('Date'[Month], "m0", CALCULATE(IF(HASONEVALUE('StoreProfile'[Format]), [Sales vs Target]), TREATAS({ TRUE() }, 'Date'[Weekend])), "m1", AVERAGEX(VALUES('Product'[Color]), CALCULATE([Sales YoY %], FILTER(ALL('Region'[Region]), 'Region'[Region] <> "Americas"), TREATAS({ "Naïve Notebook" }, 'Product'[Product]))))

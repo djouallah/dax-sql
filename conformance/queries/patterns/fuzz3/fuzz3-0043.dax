@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 43)
+EVALUATE SUMMARIZECOLUMNS('Subcategory'[Subcategory], 'Customer'[City], "m0", CALCULATE(MAX(SWITCH(TRUE(), COUNTROWS('Sales') > 0, [Orders], COUNTROWS('Product') < 100, [Orders in Transit Relationship], [List Price Amount Related]), CALCULATE(MIN('Budget'[Budget]), ALLSELECTED('Date'[Day Name]))), ALLSELECTED('Product'), ALLSELECTED('Sales')), "m1", IF(ISBLANK([Context Selected Colors Sales]), 0, LEN(CONCATENATEX(VALUES('Product'[Product]), 'Product'[Product], ","))))

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 37)
+EVALUATE ROW("m0", CALCULATE(COUNTROWS(FILTER(VALUES('Customer'[City]), VAR v = DISTINCTCOUNT('Category'[Category]) RETURN v * 2 + MIN('Sales'[Amount]) > 100)), INDEX(1, ALL('Category'[Category]), ORDERBY('Category'[Category], ASC))))

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 39)
+EVALUATE TOPN(2, ADDCOLUMNS(VALUES('Employee'[Title]), "m0", RANKX(ALL('Date'[Year]), ([Customers with Sales Relationship] + IF(OR([Budget Allocated by Day] > 1000, NOT(ISBLANK([Inventory Closing Month]))), [Inventory Closing Month], MAX('Sales'[Net Price]))))), [m0], DESC, 'Employee'[Title], ASC)

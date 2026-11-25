@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 61)
+EVALUATE SUMMARIZECOLUMNS('ship_mode'[sm_type], TREATAS({ "khaki" }, 'item'[i_color]), "m0", [Store Revenue])

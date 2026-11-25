@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 76)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('ship_mode'[sm_type], 'date_dim'[d_qoy], "m0", IF(ISBLANK(CALCULATE(AVERAGE('store_sales'[ss_quantity]), INDEX(-1, ALL('date_dim'[d_moy]), ORDERBY('date_dim'[d_moy], ASC)))), 0, VAR v = MAX('store_sales'[ss_net_profit]) RETURN v * 2 + COUNTROWS('item'))), SAMEPERIODLASTYEAR('date_dim'[d_date]))

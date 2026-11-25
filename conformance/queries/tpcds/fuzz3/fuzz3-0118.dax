@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 118)
+EVALUATE SUMMARIZECOLUMNS('item'[i_color], 'date_dim'[d_moy], FILTER(ALL('item'[i_category]), 'item'[i_category] <> "Books"), "m0", DIVIDE([Archive Source Rows], CALCULATE(MIN('store_sales'[ss_ext_sales_price]), ALL('customer_demographics'[cd_marital_status]))))

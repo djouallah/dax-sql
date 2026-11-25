@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 81)
+EVALUATE ADDCOLUMNS(CROSSJOIN(VALUES('Product'[Price]), VALUES('Product'[Name])), "m0", [Best Customer Sales])

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 35)
+EVALUATE SUMMARIZECOLUMNS('store'[s_city], "m0", LEN(LEFT(UPPER(CONCATENATEX(VALUES('ship_mode'[sm_type]), 'ship_mode'[sm_type], "|", 'ship_mode'[sm_type], ASC)), 4)))

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 144)
+EVALUATE ADDCOLUMNS(CROSSJOIN(VALUES('promotion'[p_promo_name]), VALUES('date_dim'[d_qoy])), "m0", CALCULATE(MIN('catalog_sales'[cs_ext_sales_price]), 'item'[i_brand] >= "exportcorp #7"))

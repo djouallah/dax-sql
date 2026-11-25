@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 140)
+EVALUATE TOPN(5, ADDCOLUMNS(VALUES('Customer'[City]), "m0", DISTINCTCOUNT('Date'[Year])), [m0], DESC, 'Customer'[City], ASC)

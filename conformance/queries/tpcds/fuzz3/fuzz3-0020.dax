@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 20)
+EVALUATE TOPN(4, SUMMARIZECOLUMNS('store'[s_store_name], "m0", CALCULATE(([Store Distinct Customers] * DISTINCTCOUNT('ship_mode'[sm_type])), DATESINPERIOD('date_dim'[d_date], DATE(2024, 7, 7), -12, MONTH))), [m0], DESC)

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 110)
+EVALUATE SUMMARIZECOLUMNS('Product'[Brand], 'Customer'[City], 'StoreProfile'[Format], FILTER(VALUES('Country'[Country]), 'Country'[Country] IN { "zz-none", "Netherlands" }), KEEPFILTERS(TREATAS({ "Netherlands", "United States" }, 'Country'[Country])), "m0", COUNTROWS(FILTER(VALUES('Product'[Product]), COUNTROWS(FILTER(VALUES('Country'[Country]), MIN('Sales'[Quantity]) > 1)) > 1)), "m1", [Quantity Or Zero])

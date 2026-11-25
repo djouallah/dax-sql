@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 104)
+EVALUATE ADDCOLUMNS(CROSSJOIN(VALUES('item'[i_color]), VALUES('item'[i_category])), "m0", CALCULATE(IF(SELECTEDVALUE('customer_demographics'[cd_marital_status]) = "S", MIN('catalog_sales'[cs_net_profit]), IF([Store Distinct Customers] > 0, [Archive Files], MIN('catalog_sales'[cs_net_profit]))), ALLSELECTED('customer_demographics'[cd_marital_status])))

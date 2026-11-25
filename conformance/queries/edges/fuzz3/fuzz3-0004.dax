@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 4)
+EVALUATE SUMMARIZECOLUMNS('Adjust'[Adjust], "m0", CALCULATE(DIVIDE(CALCULATE(COUNTROWS('Customer'), ALLSELECTED('Date'[Weekend])), CALCULATE(TOTALYTD([Customers], 'Date'[Date]), ALL('Region'[Region]))), KEEPFILTERS('Product'[Color] IN { "zz-none", "Blue", "Red" })))

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 72)
+EVALUATE SUMMARIZECOLUMNS('item'[i_color], "m0", VAR v = ROUND(CALCULATE(COUNTROWS('store_sales'), PARALLELPERIOD('date_dim'[d_date], 1, QUARTER)), 2) RETURN v * 2 + VAR v = [Store Revenue YTD] RETURN v * 2 + [Archive Files])

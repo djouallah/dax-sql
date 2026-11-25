@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 82)
+EVALUATE ROW("m0", [Target Total], "m1", DIVIDE(MAX(COUNTROWS('Customer'), SUM('Returns'[ReturnQty])), MAX('Sales'[Amount])))

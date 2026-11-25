@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 92)
+EVALUATE SUMMARIZECOLUMNS('Store'[Store], 'Region'[Region], "m0", (LEN(CONCATENATEX(VALUES('Date'[Year]), 'Date'[Year], ",")) * LEN(CONCATENATEX(VALUES('Product'[Product]), 'Product'[Product], ","))), "m1", [Target Amount], "m2", MAX('Target'[Target]))

@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 91)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('Customer'[City], 'Date'[Year], "m0", COALESCE(DIVIDE([Quantity], [Share of Category]), 0)), NOT('Product'[Price] IN { 1000, 800 }))

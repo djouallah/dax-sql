@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 3)
+EVALUATE TOPN(2, SUMMARIZECOLUMNS('Date'[Month], "m0", CALCULATE(IF(MAX('Target'[Target]) > 100, [Total Quantity], [Big Customers]), DATESINPERIOD('Date'[Date], DATE(2024, 5, 2), -12, MONTH))), [m0], ASC)

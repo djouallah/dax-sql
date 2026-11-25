@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 14)
+EVALUATE TOPN(5, ADDCOLUMNS(VALUES('Date'[Year]), "m0", [Inventory Last Per Product]), [m0], DESC, 'Date'[Year], ASC)

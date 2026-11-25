@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 7)
+EVALUATE TOPN(5, ADDCOLUMNS(VALUES('Store'[Store]), "m0", CALCULATE(SWITCH(TRUE(), [Sales YoY %] > 0, SUM('Sales'[Discount]), [Sales YTD] < 10, SUM('Target'[Target]), [Total Weight]), DATESBETWEEN('Date'[Date], DATE(2023, 12, 22), DATE(2023, 6, 17)))), [m0], DESC, 'Store'[Store], ASC)

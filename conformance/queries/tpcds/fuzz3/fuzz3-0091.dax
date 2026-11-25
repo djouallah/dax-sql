@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 91)
+EVALUATE SUMMARIZE('catalog_sales', 'store'[s_city], "m0", COUNTROWS(GENERATE(VALUES('item'[i_class]), TOPN(1, VALUES('item'[i_current_price]), COUNTROWS('store_sales')))), "m1", MAX('catalog_sales'[cs_quantity]))

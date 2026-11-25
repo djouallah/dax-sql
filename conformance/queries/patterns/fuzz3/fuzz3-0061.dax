@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 61)
+EVALUATE TOPN(4, SUMMARIZECOLUMNS('Currency'[Currency], "m0", DISTINCTCOUNT('Product'[Product])), [m0], DESC)

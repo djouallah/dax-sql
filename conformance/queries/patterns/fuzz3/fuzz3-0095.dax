@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs patterns 150 20261125 fuzz3, number 95)
+EVALUATE CALCULATETABLE(SUMMARIZECOLUMNS('Date'[Quarter], "m0", SUMX(VALUES('Product'[Price Band]), [Avg Daily Rate Relationship])), USERELATIONSHIP('Sales'[Delivery Date], 'Date'[Date]))

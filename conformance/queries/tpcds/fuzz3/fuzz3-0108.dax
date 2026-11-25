@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 108)
+EVALUATE ADDCOLUMNS(VALUES('date_dim'[d_qoy]), "m0", CALCULATE([Archive Files], 'customer_demographics'[cd_education_status] <> "College", USERELATIONSHIP('catalog_sales'[cs_ship_addr_sk], 'customer_address'[ca_address_sk])))

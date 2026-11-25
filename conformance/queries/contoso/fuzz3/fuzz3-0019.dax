@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 19)
+EVALUATE SUMMARIZECOLUMNS("m0", IF(SELECTEDVALUE('Product'[Name]) = "Jersey", CALCULATE(MAX('Sales'[Amount]), 'Product'[Price] > 20), [Sales YTD]), "m1", IF(HASONEVALUE('Date'[Year]), VAR v = ([Quantity] * DISTINCTCOUNT('Date'[Quarter])) RETURN v * 2 + MAX([Product Count], DISTINCTCOUNT('Product'[Color]))))

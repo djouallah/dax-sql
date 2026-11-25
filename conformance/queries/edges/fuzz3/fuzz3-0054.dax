@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs edges 150 20261125 fuzz3, number 54)
+EVALUATE SUMMARIZECOLUMNS('Adjust'[Adjust], 'Region'[Region], "m0", CALCULATE(CALCULATE([Customers No Blank], ALLSELECTED('Product'[Color])), 'Store'[Store] <> "New York 5th Ave", ALLEXCEPT('Date', 'Date'[Quarter])))

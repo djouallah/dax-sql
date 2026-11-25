@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs tpcds 150 20261125 fuzz3, number 23)
+EVALUATE SUMMARIZE('store_sales', 'customer_demographics'[cd_education_status], "m0", ROUND(CALCULATE(SWITCH(TRUE(), [Store Revenue] > 1000, SUM('catalog_sales'[cs_quantity]), AVERAGE('catalog_sales'[cs_net_profit]) < 0, [Store Net Profit], [Catalog Net Profit]), 'customer_demographics'[cd_marital_status] IN { "M", "S" }, 'store'[s_state] <> "TX"), 1))

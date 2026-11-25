@@ -1,0 +1,2 @@
+// note: a random query (conformance/tools/fuzz.mjs contoso 150 20261125 fuzz3, number 106)
+EVALUATE SUMMARIZE('Sales', 'Date'[Year], 'Product'[Price], "m0", CALCULATE(SWITCH(TRUE(), COUNTROWS('Customer') > 10, [Returned], MAX('Returns'[ReturnQty]) < 100, [Target Total], [Share of Category]), KEEPFILTERS('Date'[Quarter] = 2)))

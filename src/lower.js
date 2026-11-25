@@ -1123,8 +1123,10 @@ class Fusion {
       const scanned = tablesScanned(f), st = lw.model.state(S.ctx.mods);
       // With a calculation group's key among them, all (its item decides the filter, which no
       // table of it says).
-      const calc = all.some(i => this.keyCols[i].table.calcGroup);
-      const refs = calc && !used.size ? all : all.filter(i => used.has(i) || [...scanned].some(tb => tb === this.keyCols[i].table || lw.model.reaches(this.keyCols[i].table, tb, st)));
+      // A key of no model table (an iterator's column with no lineage) stays: the mapping below
+      // refuses it.
+      const calc = all.some(i => this.keyCols[i]?.table?.calcGroup);
+      const refs = calc && !used.size ? all : all.filter(i => { const t = this.keyCols[i]?.table; return !t || used.has(i) || [...scanned].some(tb => tb === t || lw.model.reaches(t, tb, st)); });
       if (refs.length && refs.every(i => keys.has(i))) { readsKeys = true; continue; }
       // The column the mapping is on: the filter's one column, or the key of the one table whose
       // columns it holds (FILTER(ALL('Date'), ...): the key says which row).

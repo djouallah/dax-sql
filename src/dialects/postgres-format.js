@@ -42,13 +42,14 @@ export const e14 = m => `trim(to_char(CAST(${m} AS DOUBLE PRECISION), '9.9999999
 // --- numbers ---------------------------------------------------------------------------
 
 // A value as DAX's General Number writes it (15 significant digits, 1E+20 beyond them): C's
-// %.15g, upper case.
-export function generalNumber(x, t) {
+// %.15g, upper case. inline: the value written where it is read, not bound in a row of its own
+// (Polars reads no outer row in a derived table: pola-rs/polars#31067).
+export function generalNumber(x, t, inline = false) {
   if (t === 'int') return `CAST(${x} AS TEXT)`;
   if (t === 'bool') return `CASE ${x} WHEN TRUE THEN 'True' WHEN FALSE THEN 'False' END`;
   const ex = `CAST(split_part(dax_ge, 'e', 2) AS INTEGER)`;
   const sci = `rtrim(rtrim(split_part(dax_ge, 'e', 1), '0'), '.') || 'E' || CASE WHEN ${ex} < 0 THEN '-' ELSE '+' END || lpad(CAST(abs(${ex}) AS TEXT), 2, '0')`;
-  return bind('dax_ge', e14(x), `CASE WHEN dax_ge IS NULL THEN NULL WHEN ${ex} < -4 OR ${ex} >= 15 THEN ${sci}
+  return (inline ? (n, v, body) => body.replaceAll(n, `(${v})`) : bind)('dax_ge', e14(x), `CASE WHEN dax_ge IS NULL THEN NULL WHEN ${ex} < -4 OR ${ex} >= 15 THEN ${sci}
     ELSE CAST(trim_scale(CAST(dax_ge AS NUMERIC)) AS TEXT) END`);
 }
 

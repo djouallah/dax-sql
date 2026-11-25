@@ -17,6 +17,7 @@
 //   hours: "`nanosecond` operation not supported for dtype `date`").
 // What each is for, on the Polars it runs on: conformance/engines/dax-sql-polars/repros.py.
 import { PostgresDialect } from './postgres.js';
+import { generalNumber } from './postgres-format.js';
 import { unsupported } from '../errors.js';
 
 // A whole number (64 bits: Polars computes a CASE's branches no row takes too).
@@ -61,7 +62,21 @@ export class PolarsDialect extends PostgresDialect {
     return super.series(start, end, step, t);
   }
 
+  // A number as text, written in place (Polars reads no outer row in the derived table that binds
+  // it: tpcds fuzz3-0136, CONCATENATEX of prices).
+  text(sql, t) { return t === 'double' || t === 'decimal' ? generalNumber(sql, t, true) : super.text(sql, t); }
+
+  // A quotient and an average are doubles, as DAX's are: Polars keeps a decimal's scale in a
+  // division by one (a double over a decimal too) and in its average, so that at scale the
+  // digits past it are lost (tpcds fuzz3-0126 at SF1: 111.77739, DuckDB 111.777384).
+  div(a, b) { return super.div(a, `CAST(${b} AS DOUBLE PRECISION)`); }
+  agg(fn, x, extra = {}) {
+    if (fn === 'avg' && !(extra.exact && extra.t === 'double')) return super.agg(fn, `CAST(${x} AS DOUBLE PRECISION)`, extra);
+    return super.agg(fn, x, extra);
+  }
+
   fn(name, a, nodes = []) {
+    if (name === 'divide') return super.fn(name, [a[0], `CAST(${a[1]} AS DOUBLE PRECISION)`, ...a.slice(2)], nodes);
     // What Polars SQL has no function for: a factorial, the time in a zone (timezone()).
     if (name === 'fact' || name === 'utcnow' || name === 'utctoday') throw unsupported(`${name.toUpperCase()} on Polars (no function of it in its SQL)`);
     // PostgreSQL's functions of a date that give a DATE: a TIMESTAMP.

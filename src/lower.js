@@ -14,7 +14,7 @@ import { Ctx, narrow, EMPTY_CTX } from './context.js';
 import { semantic, unsupported } from './errors.js';
 import { outputNames, daxName } from './plan-sql.js';
 import { canon, text } from './passes/fuse.js';
-import { free, subst } from './passes/decorrelate.js';
+import { free, subst, conjuncts } from './passes/decorrelate.js';
 import { clone } from './passes/clone.js';
 import { orphanHint, relSide } from './model.js';
 
@@ -1052,6 +1052,20 @@ export class Lowerer {
     // Not by a column that names one row (the table's key, the one side of a relationship).
     const unique = [table.key, ...this.model.oneSides(table).map(o => o.one)].filter(Boolean);
     if (cols.some(c => unique.includes(c.lineage))) return null;
+    // A condition on a table joined by one equality to a column of the scan's, that a blank fails
+    // and that reads nothing else (the dates of a DATESBETWEEN): the grouping has it too, as a
+    // semi-join, so it groups only the rows it keeps. The condition stays above.
+    for (const j of b.joins) {
+      const on = j.on;
+      if (on?.k !== 'pop' || on.op !== 'eq') continue;
+      const [to, fk] = on.a;
+      if (to.k !== 'ref' || fk.k !== 'ref' || !j.rel.cols.includes(to.col) || !base.has(fk.col)) continue;
+      const mine = new Set(j.rel.cols);
+      const cs = outer.filter(c => { const r = scalarReads(c); return r.cols.size && [...r.cols].every(x => mine.has(x)) && blankFails(c); });
+      if (!cs.length) continue;
+      const { rel, map: m } = clone(j.rel);
+      inner.push({ ...P.exists(P.select(rel, P.and([...cs.map(c => subst(c, m)), P.eq(P.ref(m.get(to.col)), fk)]))), member: true });
+    }
     const v = P.newCol(a.fn, col.t);
     const G = P.aggregate(inner.length ? P.select(b.from, P.and(inner)) : b.from,
       cols.map(c => ({ name: c.name, expr: P.ref(c), lineage: c.lineage })), [{ col: v, fn: a.fn, arg: a.arg, extra: a.extra }]);
@@ -1538,8 +1552,14 @@ Fusion.prototype.belowJoins = function belowJoins(g) {
 // ANDs of them (no OR, NOT, IS NULL, COALESCE or CASE, which can hold of a blank).
 // A DAX = of a column and a constant (an op, DAX's blank rules) fails for a blank too unless the
 // constant is one a blank equals (BLANK, 0, "", FALSE): Product[Color] = "Red", not = 0.
+// A membership (EXISTS of rows one of whose columns = the column, SQL's =: the dates of a
+// DATESBETWEEN) fails for a blank too: NULL = matches nothing.
 function blankFails(x) {
   if (x.k === 'ref' || x.k === 'lit') return true;
+  if (x.k === 'exists') {
+    const fr = free(x.rel);
+    return x.rel.k === 'select' && conjuncts(x.rel.pred).some(c => c.k === 'pop' && c.op === 'eq' && c.a.some(y => y.k === 'ref' && fr.has(y.col)));
+  }
   if (x.k === 'pop') return ['and', 'eq', 'ne', 'lt', 'le', 'gt', 'ge', 'in', 'notnull'].includes(x.op) && x.a.every(blankFails);
   if (x.k === 'op' && x.op === 'and') return x.a.every(blankFails);
   if (x.k === 'op' && x.op === 'eq' && x.a.length === 2) {

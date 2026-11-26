@@ -10,12 +10,13 @@
 // it, the file dax-sql's SQL runs on at scale), not the request's CSVs. HAND_TIMEOUT (seconds): a
 // query past it is interrupted. DAXSQL_TIMES: each query's time and its SQL's size, to that file.
 // A query with no file is unsupported.
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { engine, value } from '../dax-sql/db.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
+const models = readdirSync(here).filter(m => statSync(join(here, m)).isDirectory());
 const e = await engine(process.argv[2]);
 const request = JSON.parse(readFileSync(process.argv[3], 'utf8'));
 const timeout = Number(process.env.HAND_TIMEOUT ?? 0) * 1000;
@@ -26,8 +27,10 @@ const dbs = new Map();
 const times = [];
 for (const q of request.queries) {
   let answer;
-  const file = join(here, `${q.id}.sql`);
-  if (!existsSync(file)) answer = { id: q.id, error: 'no hand-written SQL', unsupported: true };
+  // The runner's ids name the model (tpcds/bench/<id>), tools/tpcds/scale-engine.mjs's do not
+  // (bench/<id>): the file under a model's folder.
+  const file = [q.id, ...models.map(m => `${m}/${q.id}`)].map(p => join(here, `${p}.sql`)).find(existsSync);
+  if (!file) answer = { id: q.id, error: 'no hand-written SQL', unsupported: true };
   else {
     const sql = readFileSync(file, 'utf8');
     let timer;

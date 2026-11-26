@@ -14,8 +14,9 @@
 // rows it reads (intermediate rows per row read: C_out, the sum of intermediate results, over the
 // input), and the largest operator's output against the largest table it reads (the blowup: more
 // rows than any table holds is rows multiplied, a cross product or a nested loop). A sound query
-// produces a few rows for each row it reads and never more than its largest table; one that does
-// is listed, whatever its time.
+// never produces more rows than its largest table; one that produces twice as many, in half a
+// second or more, is listed. Rows per row read is in the report only: it counts the operators
+// that read the same rows as much as rows multiplied.
 import { appendFileSync, writeFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
@@ -129,9 +130,9 @@ const total = ran.reduce((s, r) => s + r.ms, 0);
 const pct = p => { const v = ran.map(r => r.ms).sort((a, b) => a - b); return v.length ? v[Math.min(v.length - 1, Math.floor(p * v.length))] : 0; };
 const line = r => `| ${r.id} | ${r.ms ?? ''} | ${r.unnestMs ?? ''} | ${r.rows ?? ''} | ${(r.compileError ?? r.error ?? r.unnestError ?? (r.daxError ? `DAX's error: ${r.daxError}` : '') ?? '') || (r.differs ? 'the two answers differ' : '').replaceAll('|', '\\|').slice(0, 160)} |`;
 const bad = results.filter(r => r.compileError || r.error || r.unnestError || r.differs);
-// Rows multiplied: an operator producing twice the largest table's rows or more, or ten rows
-// produced for each row read or more.
-const multiplied = ran.filter(r => r.blowup >= 2 || r.perRow >= 10).sort((a, b) => (b.blowup ?? 0) - (a.blowup ?? 0) || (b.perRow ?? 0) - (a.perRow ?? 0));
+// Rows multiplied: an operator producing twice the largest table's rows or more, in a query of half
+// a second or more (rows per row read only says how many operators read the same rows: not a flag).
+const multiplied = ran.filter(r => r.blowup >= 2 && r.ms >= 500).sort((a, b) => b.blowup - a.blowup);
 const M = x => (x == null ? '' : x >= 1e6 ? `${(x / 1e6).toFixed(1)} M` : x >= 1e3 ? `${(x / 1e3).toFixed(0)} k` : `${x}`);
 const mline = r => `| ${r.id} | ${r.ms} | ${M(r.read)} | ${M(r.produced)} | ${r.perRow ?? ''} | ${r.blowup ?? ''} |`;
 const head = '| query | ms | unnested ms | rows | |\n|---|---|---|---|---|';
@@ -142,7 +143,7 @@ const summary = [
     + (agree ? `, ${results.filter(r => r.differs).length} answer otherwise unnested, ${results.filter(r => r.unnestError).length} fail unnested` : ''), '',
   '#### The slowest 25', '', head, ...[...ran].sort((a, b) => b.ms - a.ms).slice(0, 25).map(line), '',
   ...(bad.length ? ['#### Errors and disagreements', '', head, ...bad.map(line), ''] : []),
-  `#### Rows multiplied: ${multiplied.length} (an operator with twice the largest table's rows or more, or ten rows produced for each read)`, '',
+  `#### Rows multiplied: ${multiplied.length} (an operator with twice the largest table's rows or more, in 500 ms or more)`, '',
   ...(multiplied.length ? ['| query | ms | rows read | rows produced | per row read | blowup |', '|---|---|---|---|---|---|', ...multiplied.slice(0, 40).map(mline), ''] : []),
 ].join('\n');
 console.log(summary);

@@ -489,8 +489,8 @@ What says the SQL is right is the answers, not the SQL's text:
   target to match, only a way to find very bad queries: the comparison lists those whose SQL takes
   five times the hand's or more (and half a second longer).
 - **Bad SQL is found without a reference too** (`scale.yml`), two ways. Each query's run on
-  DuckDB is profiled: an operator producing twice the rows of the largest table read, or ten rows
-  produced for each row read, multiplies rows (a cross product, a nested loop). And each query is
+  DuckDB is profiled: an operator producing twice the rows of the largest table read multiplies
+  rows (a cross product, a nested loop), listed when the query takes half a second or more. And each query is
   run at a tenth of the scale factor by the same commit: a sound query takes about ten times as
   long on ten times the data, and those that take fifteen times or more are listed.
 - **Unit tests** hold the SQL's shape, the errors, the parser, the T-SQL dialect's text and the

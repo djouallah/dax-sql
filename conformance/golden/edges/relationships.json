@@ -1369,6 +1369,25 @@
    ]
   ]
  },
+ "relationships-sales-rows-blank-store-reaches-profile": {
+  "hash": "a17ac0de2ef8b736ba3ccabd1bbef0e2d72eb36c",
+  "columns": [
+   "[Order 9008 Floors]",
+   "[Order 9008 Profiles]",
+   "[Order 1 Floors]",
+   "[Blank Store Floors]",
+   "[All Sales Floors]"
+  ],
+  "rows": [
+   [
+    null,
+    null,
+    1,
+    2,
+    11
+   ]
+  ]
+ },
  "relationships-ship-date-blank-row": {
   "hash": "4fb99daa2b39f9aaea75e65ec125f51aa6b4652d",
   "columns": [
@@ -1740,6 +1759,36 @@
     33373.07,
     1315429.0300000012,
     4
+   ]
+  ]
+ },
+ "relationships-summarize-sales-blank-store-reaches-profile": {
+  "hash": "e825cfe5b20376f3f58728f25d29e4d75767cefa",
+  "columns": [
+   "Sales[Order Number]",
+   "[Floors]",
+   "[Profiles]"
+  ],
+  "rows": [
+   [
+    1,
+    1,
+    1
+   ],
+   [
+    2,
+    4,
+    1
+   ],
+   [
+    9008,
+    null,
+    null
+   ],
+   [
+    9009,
+    null,
+    null
    ]
   ]
  },

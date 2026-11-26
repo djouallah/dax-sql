@@ -1347,7 +1347,9 @@ class Fusion {
       // (Columns of one table without its key, an auto-exist pair (class, colour) of the group's: the
       // mapping is of the tuples, the scan's row joined on each of them.)
       const T = f.cols[0]?.table;
-      const c = f.cols.length === 1 ? f.cols[0] : !f.cols.every(y => y.table === T) ? null : T.key && f.cols.includes(T.key) ? T.key : !T.calc ? [...f.cols] : null;
+      // (Not the scanned table's own columns, a row matched by its identity: the semi-join of its
+      // rows, passes/semijoins.js, is that.)
+      const c = f.cols.length === 1 ? f.cols[0] : !f.cols.every(y => y.table === T) ? null : T.key && f.cols.includes(T.key) ? T.key : !T.calc && T !== S.table ? [...f.cols] : null;
       const cT = Array.isArray(c) ? c[0]?.table : c?.table;
       if (f.kind !== 'rel' || !c || via.length || !NULL_EMPTY.has(x.fn) || !exp.has(cT.name)
         || refs.some(i => !this.keyCols[i]?.table || !this.active.includes(i))) return null;

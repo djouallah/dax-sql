@@ -315,6 +315,16 @@ export class Model {
     return out;
   }
 
+  // Whether `table` may have DAX's blank row, given what the caller knows of the keys of each
+  // relationship (orphanHint: false when its many side holds no key the one side lacks): some
+  // relationship it is the one side of may hold one, or its many side may have a blank row
+  // itself (a sale of an unknown product is in the blank category too).
+  blankCapable(table, hint = () => undefined, seen = new Set()) {
+    if (seen.has(table)) return false;
+    const next = new Set(seen).add(table);
+    return this.oneSides(table).some(({ rel, one, many }) => hint(rel, one, many) !== false || this.blankCapable(many.table, hint, next));
+  }
+
   // Whether a filter on table `from` reaches table `to`.
   reaches(from, to, state) {
     if (from === to) return true;
@@ -369,6 +379,23 @@ function calcGroupOf(g, table) {
 // Whether a date column is the one filtered as a date table's: a column of a table marked
 // as a date table (dataCategory Time) that is its key, or the date-typed one side of a
 // relationship. A filter on it removes the filters on the rest of its table.
+// The caller's orphans option (index.js), memoized for one compilation: for a relationship, read
+// from its many side `many` to its one side `one`, true when the many side holds a key the one side
+// lacks (a NULL or empty one too), false when it holds none, undefined when it is not known.
+export function orphanHint(options) {
+  const f = options?.orphans;
+  if (typeof f !== 'function') return () => undefined;
+  const memo = new Map();
+  return (rel, one, many) => {
+    const k = `${rel.name}|${many.table.name}|${many.name}`;
+    if (!memo.has(k)) {
+      const v = f({ name: rel.name, many: { table: many.table.name, column: many.name }, one: { table: one.table.name, column: one.name } });
+      memo.set(k, v === true || v === false ? v : undefined);
+    }
+    return memo.get(k);
+  };
+}
+
 export function isDateKey(model, col) {
   if (col.type !== 'datetime') return false;
   if (col.table.dataCategory === 'Time' && (col.unique || col.table.key === col)) return true;

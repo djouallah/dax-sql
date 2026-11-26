@@ -16,6 +16,7 @@ import { outputNames, daxName } from './plan-sql.js';
 import { canon, text } from './passes/fuse.js';
 import { free, subst } from './passes/decorrelate.js';
 import { clone } from './passes/clone.js';
+import { orphanHint } from './model.js';
 
 const lc = s => String(s).toLowerCase();
 const withRow = (scope, row, res) => { const s = new Map(scope); s.set(row.id, res); return s; };
@@ -51,6 +52,7 @@ export class Lowerer {
     this.fusions = [];       // stack: the Fusion an aggregate goes to, or null (inside a table)
     this.fusedIn = new Map(); // a fused aggregate (its node) -> its group
     this.checks = 0;         // > 0 while writing whether a table has its blank row (orphans)
+    this.hint = orphanHint(options); // what the caller knows of each relationship's keys (index.js: orphans)
     this.reads = new Set();  // the model tables the statement scans, those checks aside
     this.blanks = false;     // whether a blank row was written
   }
@@ -244,7 +246,7 @@ export class Lowerer {
   // relationship whose many side holds keys the table lacks (model.oneSides). A statement that
   // reads one table only (a dimension listed alone) has none: knowing whether it is there takes
   // a scan of the tables related to it (index.js compiles such a statement again without it).
-  hasBlankRow(table) { return this.options.blankRows !== false && !this.options.assumeIntegrity && this.model.oneSides(table).length > 0; }
+  hasBlankRow(table) { return this.options.blankRows !== false && !this.options.assumeIntegrity && this.model.blankCapable(table, this.hint); }
 
   // The blank row under the filter context, when the table has one: a block over one row of
   // NULLs, which the filters hold of as of any row, and which is there when some row of a many
@@ -269,11 +271,16 @@ export class Lowerer {
     const parts = [];
     this.checks++;
     try {
-      for (const { one, many } of this.model.oneSides(table)) {
-        if (one.expr || many.expr) continue;
-        const M = this.source(many.table), O = this.source(one.table);
-        const mk = colOf(M, many), ok = colOf(O, one);
-        parts.push(P.exists(P.select(P.join('left', M, O, P.eq(P.ref(ok), P.ref(mk))), P.isNull(P.ref(ok)))));
+      for (const { rel, one, many } of this.model.oneSides(table)) {
+        // What the caller knows of the keys (orphans): some the table lacks, so the row is there;
+        // none, so no test of them (the many side's own blank row still counts).
+        const h = this.hint(rel, one, many);
+        if (h === true) return P.TRUE;
+        if (h !== false && !one.expr && !many.expr) {
+          const M = this.source(many.table), O = this.source(one.table);
+          const mk = colOf(M, many), ok = colOf(O, one);
+          parts.push(P.exists(P.select(P.join('left', M, O, P.eq(P.ref(ok), P.ref(mk))), P.isNull(P.ref(ok)))));
+        }
         if (!seen.has(many.table) && this.hasBlankRow(many.table)) parts.push(this.orphans(many.table, seen));
       }
     } finally { this.checks--; }
@@ -476,7 +483,8 @@ export class Lowerer {
     if (res?.blankRow) return true;
     if (c.table === table) return false;
     const path = this.model.expand(table, state, null, true).get(c.table.name);
-    return !path || !this.options.assumeIntegrity;
+    // Each step finds a row of its table unless its many side may hold a key the other lacks.
+    return !path || !this.options.assumeIntegrity && path.some(h => this.hint(h.rel, h.to, h.from) !== false);
   }
 
   // A block whose input row is its output: extend it, or wrap it if it is not.
@@ -1731,7 +1739,7 @@ class Res {
   // it references when the model is assumed whole (assumeIntegrity: no orphan key).
   via(path, m) {
     const last = path.at(-1);
-    if (last.to === m && this.lw.options.assumeIntegrity && last.rel.to === m)
+    if (last.to === m && (this.lw.options.assumeIntegrity || this.lw.hint(last.rel, last.to, last.from) === false) && last.rel.to === m)
       return path.length === 1 ? this.own(last.from) : this.via(path.slice(0, -1), last.from);
     return this.physical(this.join(path), m);
   }

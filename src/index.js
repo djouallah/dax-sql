@@ -18,9 +18,19 @@
 //   castOutput     true (the default): whole numbers as BIGINT, numbers as DOUBLE; or, by
 //                  the column's type, a function of its SQL ({ int: s => `CAST(${s} AS INTEGER)` })
 //   assumeIntegrity  true: every relationship relies on referential integrity, so a
-//                  dimension's key is read off the fact's foreign key with no join (by
-//                  default only those whose assumeIntegrity says so), and no table has DAX's
-//                  blank row (no check of the facts for keys a dimension lacks)
+//                  dimension's key is read off the fact's foreign key with no join, and no
+//                  table has DAX's blank row (no check of the facts for keys a dimension lacks):
+//                  a departure from DAX where some key has no row. A relationship's own flag
+//                  (TMSL's relyOnReferentialIntegrity) is DirectQuery's and changes nothing
+//   orphans        ({ name, many: { table, column }, one: { table, column } }) => true | false |
+//                  undefined: what the caller knows of a relationship's keys (read from its many
+//                  side to its one side), as the data holds them now. false: the many side holds
+//                  no key the one side lacks, a NULL or empty one included (checked by the
+//                  caller), so it gives no blank row and no test of its keys, and its foreign key
+//                  stands for the dimension's key; true: it holds one, so the blank row is there
+//                  with no test; undefined: tested in the SQL, as with no option. Not a
+//                  departure from DAX when it says what the data holds: a table with no orphan
+//                  key has no blank row in Power BI either
 //   user           the value of USERNAME() and USERPRINCIPALNAME()
 //   roles          the names of the model's roles to query as: every table's rows are those
 //                  some role keeps (row-level security), and what every role hides is no name

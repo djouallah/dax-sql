@@ -18,7 +18,7 @@
 import { parseExpression, parseQuery } from './parser.js';
 import { DaxError, semantic, unsupported } from './errors.js';
 import { Ctx, EMPTY_CTX, narrow } from './context.js';
-import { isDateKey, Model } from './model.js';
+import { isDateKey, Model, orphanHint } from './model.js';
 import * as ir from './ir.js';
 import { dateLit, rowsTable } from './ir.js';
 import { SCALAR, TABLE, MODIFIERS, minArgs } from './functions/index.js';
@@ -419,7 +419,8 @@ export class Compiler {
   // statement that reads one table only: index.js).
   blankRowRels(table) {
     if (this.options.blankRows === false || this.options.assumeIntegrity) return [];
-    return this.model.oneSides(table);
+    this.hint ??= orphanHint(this.options);
+    return this.model.blankCapable(table, this.hint) ? this.model.oneSides(table) : [];
   }
 
   // Context transition: each row context becomes filters on its columns.

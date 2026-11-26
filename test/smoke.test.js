@@ -148,6 +148,26 @@ test('the blank row: a dimension listed alone has none, with no scan of the fact
   assert.deepEqual(byCity.filter(r => Object.values(r)[0] == null).map(r => Object.values(r)[1]), [blank.s]);
 });
 
+test('orphans: what the caller knows of a relationship\'s keys stands for the test of them', async () => {
+  const { createCompiler } = await import('../src/index.js');
+  const { tmslToModel } = await import('../formats/tmsl.js');
+  const model = tmslToModel(bim);
+  const q = `EVALUATE ADDCOLUMNS(VALUES(Customer[City]), "s", [Sales Amount])`;
+  const exists = s => (s.match(/EXISTS/g) ?? []).length;
+  const base = h.dax.compile(q).sql, rows = sorted(await h.sql(base));
+  const asked = [];
+  const run = async orphans => { const { sql } = createCompiler(model, { orphans }).compile(q); return { sql, rows: sorted(await h.sql(sql)) }; };
+  // Customer 99 has sales and no row: true, the blank row with no test of the keys.
+  const yes = await run(rel => { asked.push(rel); return rel.name === 'sales_customer' ? true : undefined; });
+  assert.deepEqual(yes.rows, rows);
+  assert.ok(exists(yes.sql) < exists(base), yes.sql);
+  assert.deepEqual(asked.find(r => r.name === 'sales_customer'), { name: 'sales_customer', many: { table: 'Sales', column: 'CustomerKey' }, one: { table: 'Customer', column: 'CustomerKey' } });
+  // false: the caller says every key has its row, so there is no blank row, no test, no UNION.
+  const no = await run(rel => (rel.name === 'sales_customer' ? false : undefined));
+  assert.equal(no.rows.length, rows.length - 1);
+  assert.doesNotMatch(no.sql, /UNION|EXISTS/, no.sql);
+});
+
 test('text given as a date is the date it reads as', async () => {
   const [r] = await h.run(`EVALUATE ROW("y", YEAR("2024-03-05"), "m", MONTH("2024-03-05"), "d", DATEDIFF("2024-01-01", "2024-03-05", DAY), "w", WEEKDAY("2024-03-05"), "h", HOUR("2024-03-05 13:45:00"))`);
   assert.deepEqual(Object.values(r), [2024, 3, 64, 3, 13]);

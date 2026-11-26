@@ -1,0 +1,33 @@
+name: Pack
+
+# Packages from the real npm registry as tarballs, an artifact to download (gh run download) where
+# the registry cannot be reached or is a mirror that lags it: npm pack of each, on a runner.
+
+on:
+  workflow_dispatch:
+    inputs:
+      packages:
+        description: "Packages and versions, separated by spaces (@duckdb/node-api@2.0.1-r.1 ...)"
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  pack:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: npm pack
+        env:
+          PACKAGES: ${{ inputs.packages }}
+        run: |
+          mkdir packs && cd packs
+          for p in $PACKAGES; do npm pack "$p"; done
+          ls -l
+      - uses: actions/upload-artifact@v4
+        with:
+          name: packs
+          path: packs/*.tgz

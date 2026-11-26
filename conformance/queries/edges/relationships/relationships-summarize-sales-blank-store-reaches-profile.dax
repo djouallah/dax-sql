@@ -1,0 +1,9 @@
+// note: SUMMARIZE over Sales by order: each group's rows filter StoreProfile through Store (as tpcds fuzz3-0139's catalog groups reach store sales through shared dimensions); order 9008's lines have no store (Store's blank row), so does its group see StoreProfile's row of a key Store lacks (BER-01, 2 floors)?
+EVALUATE
+SUMMARIZE(
+    CALCULATETABLE(Sales, Sales[Order Number] IN { 1, 2, 9008, 9009 }),
+    Sales[Order Number],
+    "Floors", SUM(StoreProfile[Floors]),
+    "Profiles", COUNTROWS(StoreProfile)
+)
+ORDER BY Sales[Order Number]

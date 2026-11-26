@@ -1,0 +1,9 @@
+// note: a filter of Sales rows (FILTER over the fact, its expanded table) reaches StoreProfile through Store: order 9008's lines all lack a store (one key Store lacks, two NULL), so the store they reach is Store's blank row; does that blank row meet StoreProfile's row of a key Store lacks (BER-01, 2 floors)? Order 1 (SFO-01) and the blank row by its column are the controls
+EVALUATE
+ROW(
+    "Order 9008 Floors", CALCULATE(SUM(StoreProfile[Floors]), FILTER(Sales, Sales[Order Number] = 9008)),
+    "Order 9008 Profiles", CALCULATE(COUNTROWS(StoreProfile), FILTER(Sales, Sales[Order Number] = 9008)),
+    "Order 1 Floors", CALCULATE(SUM(StoreProfile[Floors]), FILTER(Sales, Sales[Order Number] = 1)),
+    "Blank Store Floors", CALCULATE(SUM(StoreProfile[Floors]), Store[Store] = BLANK()),
+    "All Sales Floors", CALCULATE(SUM(StoreProfile[Floors]), Sales)
+)

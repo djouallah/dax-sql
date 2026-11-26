@@ -29,7 +29,11 @@ export function share(root) {
   all(root.src);
 
   const defs = new Map();   // key -> definition
-  const worth = r => r.k !== 'shared' && !key(r).includes('@') && hasWork(r);
+  // Not a join at the top (through projections): its rows are as many as its tables' (a fact
+  // joined to its dimensions), written once they are read whole at each place, the conditions
+  // each place puts on them no longer below the join; what is shared inside it still is.
+  const top = r => (r.k === 'project' ? top(r.src) : r);
+  const worth = r => r.k !== 'shared' && !key(r).includes('@') && hasWork(r) && top(r).k !== 'join';
   // A node the tree holds twice (the same object) becomes one node, read twice.
   const memo = new Map();
   const S = r => {

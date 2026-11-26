@@ -1572,6 +1572,10 @@ function blankFails(x) {
   }
   if (x.k === 'pop') return ['and', 'eq', 'ne', 'lt', 'le', 'gt', 'ge', 'in', 'notnull'].includes(x.op) && x.a.every(blankFails);
   if (x.k === 'op' && x.op === 'and') return x.a.every(blankFails);
+  // DAX's IN of a column and constants, likewise: Item[Brand] IN {"a", "b"}.
+  if (x.k === 'op' && x.op === 'in' && x.a[0]?.k === 'ref' && x.a.length > 1) {
+    return x.a.slice(1).every(y => y.k === 'lit' && ![null, undefined, 0, '', false].includes(y.v) && !(typeof y.v === 'bigint' && y.v === 0n));
+  }
   if (x.k === 'op' && x.op === 'eq' && x.a.length === 2) {
     const lit = x.a.find(y => y.k === 'lit'), other = x.a.find(y => y !== lit);
     return !!lit && other?.k === 'ref' && ![null, undefined, 0, '', false].includes(lit.v) && !(typeof lit.v === 'bigint' && lit.v === 0n);

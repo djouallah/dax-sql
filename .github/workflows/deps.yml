@@ -1,0 +1,44 @@
+name: Dependency
+
+# Installs a package at a version on a runner, which reaches the real npm registry, and commits the
+# package.json and package-lock.json it writes to main. (A laptop behind a registry mirror that lags
+# the real one cannot write the lockfile of a version the mirror lacks.)
+
+on:
+  workflow_dispatch:
+    inputs:
+      package:
+        description: "The package and version, as npm install takes it (@duckdb/node-api@2.0.1-r.1)"
+        required: true
+      dev:
+        description: "A devDependency"
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: npm install ${{ inputs.package }}
+        env:
+          PKG: ${{ inputs.package }}
+          DEV: ${{ inputs.dev }}
+        run: |
+          if [ "$DEV" = "true" ]; then npm install --save-dev --no-audit --no-fund "$PKG"; else npm install --no-audit --no-fund "$PKG"; fi
+          git diff --stat
+      - name: Commit
+        env:
+          PKG: ${{ inputs.package }}
+        run: |
+          git diff --quiet && { echo "nothing to change"; exit 0; }
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "Dependency: $PKG (npm install on a runner, the real registry)"
+          git push

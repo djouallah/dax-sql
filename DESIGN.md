@@ -175,6 +175,12 @@ elsewhere. When the table reads no outer row, the null-safe form is
 with `IS NOT DISTINCT FROM`. A many-to-many relationship matches its columns' values the same
 way, a blank meeting a blank (`conds`, and the fused groups' join to its pairs).
 
+The blank row is one row whichever fact reaches it: a filter of one fact's rows (a SUMMARIZE
+group, a context transition, `FILTER(Sales, …)`) whose rows have no store reaches every row of
+another fact that has none, whatever their keys (NULL, empty, a key the store table lacks),
+as Power BI answers (edges `relationships-null-store-key-*`). A relationship's
+referential-integrity flag changes none of this; only `assumeIntegrity` does.
+
 ### Relationships
 
 `model.js` answers two questions under the relationship changes of the current context
@@ -794,14 +800,9 @@ and gives each aggregate the filters that reach its table.
   - Filter tables, `ROLLUPADDISSUBTOTAL`/`ROLLUPGROUP`, and `ISINSCOPE` are supported.
   - A filter table wrapped in `NONVISUAL` filters the groups and the expressions, but is not
     part of the selection: `ALLSELECTED` removes it.
-- **The blank row, where it is cheap** (otherwise a departure from DAX): when some rows of a
-  fact table have a key that matches no row of a dimension, DAX adds a blank row to the
-  dimension. Here SUMMARIZECOLUMNS' groups read off a fact's grouping have it (those rows, their
-  dimension columns blank); `VALUES`, `ALL`, `ALLSELECTED` and the other groups are the
-  dimension's own rows, so `ALLNOBLANKROW` is `ALL` and `DISTINCT` is `VALUES`. Such fact
-  rows always count in a total. A blank in a table
-  filter matches a NULL stored in a column (`TREATAS({BLANK()}, Sales[CustomerKey])` keeps the
-  sales with no customer key).
+- **No blank row in a statement that reads one table only** (a dimension listed alone): it
+  lists the dimension's own rows, without the scan of the facts that would tell whether DAX's
+  blank row is there (The blank row). Any statement that reads a fact has it as Power BI does.
 - **Dates as numbers:** a date plus or minus whole days is a date; plus any other number, a
   date and time (`DATE(2024, 1, 1) + 0.5` is noon). A date minus a date is the days between
   them, with the fraction a time makes (a departure from DAX, which types it a date and time

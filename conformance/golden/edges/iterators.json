@@ -1,6 +1,6 @@
 {
  "iterators-averagex-blank-vs-zero-segments": {
-  "hash": "edca9aac0ba918a8c756c8cb5b6856bddc012a35",
+  "hash": "824f20f5c8fc1b7e284de1a533721abdf90455e4",
   "columns": [
    "Customer[Segment]",
    "[Segment Is Blank]",
@@ -59,7 +59,7 @@
   ]
  },
  "iterators-averagex-months-target-gaps": {
-  "hash": "1993eb49162d69339fc7c030bac7c1df3a8c6cc2",
+  "hash": "cb3edaa24847a51d34ea5e17647585a10cf95a7d",
   "columns": [
    "Date[Year]",
    "Store[Store]",
@@ -316,7 +316,7 @@
   ]
  },
  "iterators-calc-group-maxx-over-items": {
-  "hash": "a912fbd31fb7c32d207be59f29c5538ede565f38",
+  "hash": "f7a2872358a0aeac0ae964071f4a68a7a2d3350e",
   "columns": [
    "Date[Year]",
    "[Sales]",
@@ -349,7 +349,7 @@
   ]
  },
  "iterators-concatenatex-names-blank-empty-spaces": {
-  "hash": "7fab71b6efd3ab7b5fc5b211198b5859ae841e35",
+  "hash": "e2c949e16cde16c22b7d28b72aad7497f0c5ccd4",
   "columns": [
    "Product[Brand]",
    "[Names]",
@@ -389,7 +389,7 @@
   ]
  },
  "iterators-concatenatex-numeric-looking-codes": {
-  "hash": "def1798cbbd31e0200c6332dd385d3cea3d806d0",
+  "hash": "95120cf3fd232a3a74ebf7e6ace531cd48e6bd43",
   "columns": [
    "[Codes Asc]",
    "[Codes Desc]",
@@ -408,7 +408,7 @@
   ]
  },
  "iterators-divide-zero-and-negative-lines": {
-  "hash": "d5781ba92d9a2da8437b55e4f02950b047fe3968",
+  "hash": "90225e6f9974323698dcbb69aa42c09562a14a34",
   "columns": [
    "[Order]",
    "[Line]",
@@ -1161,7 +1161,7 @@
   ]
  },
  "iterators-double-point-one-plus-point-two": {
-  "hash": "de80bc4b069244998f0d981a6e2e9b17f27f11d2",
+  "hash": "3dc5398e69c66b0ba6120df08c82488a396af5c3",
   "columns": [
    "[Price Sum]",
    "[Price Sum Is 0.3]",
@@ -1184,7 +1184,7 @@
   ]
  },
  "iterators-groupby-currentgroup-brand-extremes": {
-  "hash": "78986d0e58d04ef61eb4eca243a7e7f485ba53fd",
+  "hash": "a583aac6d8980e88debf94995f54a58f063bc856",
   "columns": [
    "Product[Brand]",
    "[Lines]",
@@ -1234,11 +1234,11 @@
   ]
  },
  "iterators-groupby-segment-countx-empty-strings": {
-  "hash": "6e84f24ef1882bb15af2d7c12ca114c8e1e439ab",
+  "hash": "ed6704e2b7d9ce6927042ea0f4e2f94bf4970921",
   "error": "Query (5, 5) Function 'GROUPBY' scalar expressions have to be Aggregation functions over CurrentGroup(). The expression of each Aggregation has to be either a constant or directly reference the columns in CurrentGroup()."
  },
  "iterators-if-fixed-decimal-branch-times-double": {
-  "hash": "854ff2c6aa9af5106a2acf326e7934d8ebec1c58",
+  "hash": "58c8a83428953b1bd5f944a5181753c803fcb0fe",
   "columns": [
    "Date[Year]",
    "[v]"
@@ -1255,7 +1255,7 @@
   ]
  },
  "iterators-offset-previous-month-empty-months": {
-  "hash": "c9fbbfaffeddcc1c269de0ce874e0e9f5ed63580",
+  "hash": "b2eddd642055c823af641b0c94816404bcc58064",
   "columns": [
    "Date[YearMonth]",
    "[Sales]",
@@ -1460,7 +1460,7 @@
   ]
  },
  "iterators-one-to-one-profile-format-sumx-related": {
-  "hash": "a2b1c47b281ce6e896e280c6ff5837fefd90f5e6",
+  "hash": "979e2041ae65bd811e96a948f558291a8d04c10d",
   "columns": [
    "StoreProfile[Format]",
    "[Format Is Blank]",
@@ -1510,11 +1510,11 @@
   ]
  },
  "iterators-product-extremes-by-brand": {
-  "hash": "6df2504608be4b6d0779bc20dab5e459e51a8baa",
+  "hash": "eac3f55a593341e2557b0edb455bb2692f332a07",
   "error": "The result of a conversion or arithmetic operation is either too large or too small."
  },
  "iterators-rank-rownumber-blanks-first-last": {
-  "hash": "b15758443b1cf47cfccbe0115fb97763826909eb",
+  "hash": "9ad4e6d7fd27d56b9dbf12be20a48d83142ed0fa",
   "columns": [
    "Product[ProductKey]",
    "Product[Product]",
@@ -1679,7 +1679,7 @@
   ]
  },
  "iterators-rankx-returns-negative-vs-blank": {
-  "hash": "e624dbcecb801a54d1ebb0ebe2bb25e5c9f23353",
+  "hash": "649ec0f94c2f05955bcf59f4891f344c1487d5af",
   "columns": [
    "Customer[CustomerKey]",
    "[Returned]",
@@ -1840,7 +1840,7 @@
   ]
  },
  "iterators-rankx-skip-dense-twin-ties": {
-  "hash": "1efd15863e1954a2a3b895c4c38c000497414b51",
+  "hash": "a3101e2f9c1cce65e72370d846e83c0c9729c802",
   "columns": [
    "Product[Product]",
    "[Name Is Blank]",
@@ -1971,7 +1971,7 @@
   ]
  },
  "iterators-rls-europe-rankx-stores": {
-  "hash": "c93022954b989452d167e3caa1141d6b1780eba2",
+  "hash": "5bd4132fb88fcbdc03c1bb675a045dbb14e12d20",
   "columns": [
    "Store[Store]",
    "[Sales]",
@@ -2016,7 +2016,7 @@
   ]
  },
  "iterators-rls-retail-averagex-customers": {
-  "hash": "3c9e262754c09ee4f4496f4f526a33c05c3fef7e",
+  "hash": "bff02985241f4c64a6b69cd5f47f9f333a35bb8f",
   "columns": [
    "Store[Store]",
    "[Lines]",
@@ -2101,7 +2101,7 @@
   ]
  },
  "iterators-shipped-role-playing-sumx-years": {
-  "hash": "e21c5b5b7154df4431a158edfe6d925fef7479a2",
+  "hash": "0da180e1b001d186ecdd00a266e838b9eb48dc51",
   "columns": [
    "Date[Year]",
    "[Is Total]",
@@ -2151,7 +2151,7 @@
   ]
  },
  "iterators-summarize-snowflake-unknown-stores": {
-  "hash": "445f98e5bacc6d526560141f26e5fe38744ba6ef",
+  "hash": "85a3e9803142712901f5ca49a8c0225d0fe27d51",
   "columns": [
    "Sales[StoreKey]",
    "Sales[Store Region]",
@@ -2255,7 +2255,7 @@
   ]
  },
  "iterators-sumx-brands-many-to-many-target": {
-  "hash": "4a4b39d03af8c90e77e3dc9c9d5911f0e808aa9a",
+  "hash": "aa986b3bc4322c6a3bb5562eb41f34fd983dd13b",
   "columns": [
    "Product[Brand]",
    "[Is Total]",
@@ -2314,7 +2314,7 @@
   ]
  },
  "iterators-sumx-currency-division-by-store": {
-  "hash": "310dd045f6720ca54520f1649de0f2a0db881bb2",
+  "hash": "1f2ad68d84fc4f802fe13be3c111659b3d04953b",
   "columns": [
    "Store[Store]",
    "[Total Cost]",
@@ -2391,7 +2391,7 @@
   ]
  },
  "iterators-text-functions-spaces-unicode": {
-  "hash": "83e7746bc44332f9037d6e59fb4c71ee3b800cc4",
+  "hash": "e47fdc3270ef4f9c0bcd689155aa5202e4d9d61b",
   "columns": [
    "[Key]",
    "[Product]",
@@ -2643,7 +2643,7 @@
   ]
  },
  "iterators-topn-ascending-boundary-in-tie": {
-  "hash": "a1a21c697817e69ca576bc807a6d4b976ebd7d11",
+  "hash": "cbedae8e4474e190ca46c5d3f9182ccb074163e2",
   "columns": [
    "Product[Product]",
    "[Name Is Blank]",
@@ -2683,7 +2683,7 @@
   ]
  },
  "iterators-topn-text-blank-equals-empty": {
-  "hash": "c959f382f78b2c4377906f349ae8e7de6e7a5d62",
+  "hash": "90d5bcf372a185334addf25b313d60ba03a4fcab",
   "columns": [
    "[N]",
    "[Customer]",
@@ -2713,7 +2713,7 @@
   ]
  },
  "iterators-window-running-sum-month-gap": {
-  "hash": "7ab925a5cfc9dd8c41a4941ffe519e77a7e5697e",
+  "hash": "fe347e8dbeb3b37389c5d8a873dbdd1462b51149",
   "columns": [
    "Date[Year]",
    "Date[YearMonth]",

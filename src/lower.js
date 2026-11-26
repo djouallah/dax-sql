@@ -991,6 +991,9 @@ export class Lowerer {
     // again, PY in the PY, YoY and YoY % items) is that one, as the compiled SQL writes a
     // subquery repeated once.
     const t = this.hoist(x, scope, blk) ?? blk;
+    // A value of one row that reads nothing (the last date of the date table, under TOTALYTD): a
+    // condition reading it can have a copy of its own (groupedFirst's semi-join).
+    if (!free(rel).size) (this.closedRels ??= new Map()).set(col, rel);
     const key = canon(rel, true).key;
     const seen = (t.applyKeys ??= new Map()).get(key);
     if (seen) return P.ref(seen);
@@ -1060,10 +1063,17 @@ export class Lowerer {
       if (on?.k !== 'pop' || on.op !== 'eq') continue;
       const [to, fk] = on.a;
       if (to.k !== 'ref' || fk.k !== 'ref' || !j.rel.cols.includes(to.col) || !base.has(fk.col)) continue;
-      const mine = new Set(j.rel.cols);
-      const cs = outer.filter(c => { const r = scalarReads(c); return r.cols.size && [...r.cols].every(x => mine.has(x)) && blankFails(c); });
+      // (It may read values of one row that read nothing, closedRels: a copy of each, crossed in.)
+      const mine = new Set(j.rel.cols), closedOf = c => this.closedRels?.get(c);
+      const cs = outer.filter(c => { const r = scalarReads(c); return [...r.cols].some(x => mine.has(x)) && [...r.cols].every(x => mine.has(x) || closedOf(x)) && blankFails(c); });
       if (!cs.length) continue;
-      const { rel, map: m } = clone(j.rel);
+      let { rel, map: m } = clone(j.rel);
+      const ones = [...new Set(cs.flatMap(c => [...scalarReads(c).cols].filter(x => !mine.has(x))))];
+      for (const one of [...new Set(ones.map(closedOf))]) {
+        const { rel: cp, map: m2 } = clone(one);
+        for (const [k, v] of m2) m.set(k, v);
+        rel = P.join('cross', cp, rel);
+      }
       inner.push({ ...P.exists(P.select(rel, P.and([...cs.map(c => subst(c, m)), P.eq(P.ref(m.get(to.col)), fk)]))), member: true });
     }
     const v = P.newCol(a.fn, col.t);

@@ -1,0 +1,56 @@
+# The tpcds queries with their constants swapped for values the data holds (a filter that keeps no
+# row says nothing of the SQL), dax-sql's SQL and the hand-written timed and their answers compared
+# at a TPC-DS scale factor (conformance/tools/tpcds/scale-variants.mjs). A measure, not a gate.
+name: Variants
+
+on:
+  workflow_dispatch:
+    inputs:
+      sf:
+        description: "TPC-DS scale factor"
+        default: "10"
+      timeout:
+        description: "A query's time at most (seconds)"
+        default: "120"
+      grep:
+        description: "Only the queries whose family/id this matches"
+        default: ""
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  SF: ${{ inputs.sf }}
+
+permissions:
+  contents: read
+
+jobs:
+  variants:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      # The tables scale.yml writes, by the same key.
+      - name: The tables, cached
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/tpcds
+          key: tpcds-sf${{ env.SF }}-${{ hashFiles('conformance/tools/tpcds/scale.mjs', 'conformance/models/tpcds/model.bim') }}
+      - name: TPC-DS at SF${{ env.SF }}
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: node conformance/tools/tpcds/scale.mjs "$SF" "$RUNNER_TEMP/tpcds/tpcds.duckdb" --model-dir "$RUNNER_TEMP/tpcds/model"
+      - name: The tpcds queries with other constants at SF${{ env.SF }}
+        run: |
+          g=(); test -n "${{ inputs.grep }}" && g=(--grep "${{ inputs.grep }}")
+          node conformance/tools/tpcds/scale-variants.mjs "$RUNNER_TEMP/tpcds/tpcds.duckdb" --timeout "${{ inputs.timeout }}" \
+            --report "$RUNNER_TEMP/variants.json" "${g[@]}"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: variants
+          path: ${{ runner.temp }}/variants.json

@@ -1,0 +1,68 @@
+# A change's SQL against its base's, timed on one runner (conformance/tools/tpcds/scale-ab.mjs):
+# across two runs of scale.yml a runner can be a third slower or faster. A measure, not a gate.
+name: A/B
+
+on:
+  workflow_dispatch:
+    inputs:
+      base:
+        description: "The commit to compare with"
+        required: true
+      head:
+        description: "The commit compared (by default the ref run)"
+        default: ""
+      sf:
+        description: "TPC-DS scale factor"
+        default: "10"
+      grep:
+        description: "Only the queries whose family/id this matches"
+        default: ""
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  SF: ${{ inputs.sf }}
+
+permissions:
+  contents: read
+
+jobs:
+  ab:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: The base's checkout
+        run: |
+          git worktree add "$RUNNER_TEMP/base" "${{ inputs.base }}"
+          ln -s "$GITHUB_WORKSPACE/node_modules" "$RUNNER_TEMP/base/node_modules"
+          if [ -n "${{ inputs.head }}" ]; then
+            git worktree add "$RUNNER_TEMP/head" "${{ inputs.head }}"
+            ln -s "$GITHUB_WORKSPACE/node_modules" "$RUNNER_TEMP/head/node_modules"
+          fi
+      # The tables scale.yml writes, by the same key.
+      - name: The tables, cached
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/tpcds
+          key: tpcds-sf${{ env.SF }}-${{ hashFiles('conformance/tools/tpcds/scale.mjs', 'conformance/models/tpcds/model.bim') }}
+      - name: TPC-DS at SF${{ env.SF }}
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: node conformance/tools/tpcds/scale.mjs "$SF" "$RUNNER_TEMP/tpcds/tpcds.duckdb" --model-dir "$RUNNER_TEMP/tpcds/model"
+      - name: Head against base at SF${{ env.SF }}
+        run: |
+          g=(); test -n "${{ inputs.grep }}" && g=(--grep "${{ inputs.grep }}")
+          test -n "${{ inputs.head }}" && g+=(--head "$RUNNER_TEMP/head")
+          node conformance/tools/tpcds/scale-ab.mjs "$RUNNER_TEMP/tpcds/tpcds.duckdb" "$RUNNER_TEMP/base" --report "$RUNNER_TEMP/ab.json" "${g[@]}"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ab
+          path: ${{ runner.temp }}/ab.json

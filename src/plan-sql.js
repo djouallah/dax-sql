@@ -285,6 +285,8 @@ export class PlanSql {
       case 'length': return d.fn('len', a, nodes);
       case 'substring': return d.fn('mid', a, nodes);
       case 'trim': return d.fn('trim_ends', a, nodes);
+      // Trailing spaces only (passes/trim.js: text as Power BI loads it).
+      case 'rtrim': return ts ? `RTRIM(${x})` : `rtrim(${x})`;
       case 'contains': return d.fn('containsstringexact', a, nodes);
       case 'mod': return `(${x} % ${y})`;
       // Whole-number division.

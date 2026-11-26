@@ -55,7 +55,7 @@ export const FNS = {
   round: ['rounding', 'round'], floor: ['rounding', 'floor'], ceil: ['rounding', 'ceil'], log10: ['logarithmic', 'log10'], ln: ['logarithmic', 'ln'],
   greatest: ['comparison', 'greatest'], least: ['comparison', 'least'],
   upper: ['string', 'upper'], lower: ['string', 'lower'], replace: ['string', 'replace'], strpos: ['string', 'strpos'], substring: ['string', 'substring'],
-  length: ['string', 'char_length'], left: ['string', 'left'], right: ['string', 'right'], trim: ['string', 'trim'], contains: ['string', 'contains'],
+  length: ['string', 'char_length'], left: ['string', 'left'], right: ['string', 'right'], trim: ['string', 'trim'], rtrim: ['string', 'rtrim'], contains: ['string', 'contains'],
   regexp_replace: ['string', 'regexp_replace'], rept: ['string', 'repeat'], fact: ['arithmetic', 'factorial'],
 };
 // dax-sql's own functions: none.

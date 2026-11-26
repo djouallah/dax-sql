@@ -637,6 +637,10 @@ const { sql, columns } = dax.compile(`
   receives, `{ key, name, many, one }`, so a caller keys its answers by `rel.key`. It reads the
   tables without row-level security, as the blank row's own test does. A relationship on a
   calculated column is not listed (its test stays in the SQL).
+- `trailingSpacesCheck()`: the statement that answers the `trailingSpaces` option,
+  `{ sql, columns }`: one `SELECT` of one row with a boolean for each text column of the
+  model's stored tables (`{ key, table, column }`, what `trailingSpaces` receives), `true` where
+  a value ends in a space. In the compiler's dialect, without row-level security.
 - `model`: the model as read; `dialect`: the dialect it writes.
 
 The package also exports `DaxError`, `Model`, the dialects (`Dialect`, `DuckDBDialect`,
@@ -686,6 +690,7 @@ SELECT * FROM (SHOW SEMANTIC METRICS IN sales) WHERE ...;   -- each one reads as
 | `columnNames` | `'short'` (default): the column's or the expression's name. `'dax'`: `Table[Column]`, `[Measure]`. |
 | `castOutput` | `true` (default): whole numbers as `BIGINT`, other numbers as `DOUBLE`. Or an object, by the column's type (`int`, `double`, `decimal`, `datetime`, `string`, `bool`), of a function of its SQL: `{ int: s => \`CAST(${s} AS INTEGER)\` }`; a type it leaves out is not cast. |
 | `assumeIntegrity` | `true`: every relationship relies on referential integrity, so a dimension key is read off the fact's foreign key without a join. TMSL's `relyOnReferentialIntegrity` is DirectQuery's and is not read this way: an import model has the blank row whatever it says. It also leaves out DAX's blank row (no check of the facts for keys a dimension lacks). |
+| `trailingSpaces` | a function of a text column, `({ key, table, column }) => true`: the column holds trailing spaces (as the data holds them now), so it is read trimmed, as Power BI loads it. The others, and every column without the option, are read as stored. `trailingSpacesCheck()` writes the statement that answers it. |
 | `orphans` | a function of a relationship, `(rel) => true, false or undefined`, rel `{ name, many: { table, column }, one: { table, column } }`: what the caller knows of a relationship's keys as the data holds them now. `false`: the many side holds no key the one side lacks (NULL and empty included), so no blank row from it, no anti-join, and its foreign key stands for the key; `true`: the blank row is there, no test; `undefined`: tested in the SQL. Not a departure from DAX (no orphan key, no blank row in Power BI either); a caller computes it once per relationship and table version. |
 | `user` | The value of `USERNAME()` and `USERPRINCIPALNAME()`. |
 | `roles` | A role name, or several: row-level security, each table keeping the rows that at least one of the roles keeps; and object-level security, a table or column hidden when every role hides it. A hidden object is no name for the query (naming it, a measure that reads it, a measure of a hidden table: an error, as the model lacked it), while the model still reads it: relationships, joins, and calculated columns computed from it, which stay visible. A table result leaves its hidden columns out. Roles that hide objects together with roles that filter rows are an error, as in Power BI; one role can do both. |
@@ -964,10 +969,13 @@ and gives each aggregate the filters that reach its table.
 - **Text functions and blanks:** `LEN`, `TRIM` and `PATHLENGTH` of a blank are blank (of `""`,
   0, `""` and 0). `FIND` and `SEARCH` read a blank as `""`: nothing is found in it, so they
   return the NotFoundValue.
-- **Stored text keeps its trailing spaces, by design:** the model drops them as it loads the
-  data (`"a "` is `"a"`, in its value, its length, filters and relationships); here a column is
-  read as the data has it. Trimming every row of every scan costs more than the difference is
-  worth (15-20% of a fact scan joined on a text key), as comparing text by DAX's rules does.
+- **Trailing spaces, where the caller names them:** the model drops them as it loads the data
+  (`"a "` is `"a"`, in its value, its length, filters and relationships). A column the
+  `trailingSpaces` option names is read so (`passes/trim.js`: each scan of its table a projection
+  of it with `rtrim`, after the passes, so the plan reaches Substrait and every dialect with it);
+  any other is read as the data has it. Trimming every row of every scan cost 15-20% of a fact
+  scan joined on a text key; few columns hold trailing spaces, and `trailingSpacesCheck()` is the
+  statement that finds them.
 
 ### SQL
 

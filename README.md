@@ -10,6 +10,6 @@ DAX is tested against Power BI's answers ([conformance/](conformance/README.md))
 
 ## Departures from DAX, by design
 
-- Text is compared as the engine's collation does it (`"red"` is not `"Red"` on DuckDB) and keeps its trailing spaces.
+- Text is compared as the engine's collation does it (`"red"` is not `"Red"` on DuckDB); trailing spaces are dropped only in the columns `trailingSpaces` names (`trailingSpacesCheck()` finds them).
 - A column mixing numbers and text comes back as text; a date minus a date as days; `IFERROR` returns its first argument. Values come back unformatted; `FORMAT` is en-US, with a constant pattern. `PATH` walks at most 32 levels: a deeper row's path is blank.
 - A statement that reads one table only (a dimension listed alone) has no blank row; any that reads a fact has it as Power BI does.

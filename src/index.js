@@ -32,6 +32,10 @@
 //                  departure from DAX when it says what the data holds: a table with no orphan
 //                  key has no blank row in Power BI either. orphanCheck() writes the statement that
 //                  answers it for every relationship
+//   trailingSpaces ({ key, table, column }) => true: the text column holds trailing spaces, so it is
+//                  read without them (rtrim), as Power BI loads it: its value, length, filters and
+//                  relationships. Others are read as stored. trailingSpacesCheck() writes the
+//                  statement that answers it for every text column
 //   user           the value of USERNAME() and USERPRINCIPALNAME()
 //   roles          the names of the model's roles to query as: every table's rows are those
 //                  some role keeps (row-level security), and what every role hides is no name
@@ -65,6 +69,8 @@ import { unnest } from './passes/unnest.js';
 import { fuse } from './passes/fuse.js';
 import { joins } from './passes/joins.js';
 import { outer } from './passes/outer.js';
+import { trimScans, paddedOf } from './passes/trim.js';
+import * as P from './plan.js';
 import { kids, scalarsOf } from './passes/decorrelate.js';
 import { pipe, checked } from './check.js';
 // The correlated plan: the plan before decorrelation, its scalars standard, its measures fused,
@@ -211,6 +217,8 @@ export function createCompiler(input, options = {}) {
   // DuckDB is given the plan correlated (it unnests it itself), every other engine the plan
   // unnested (passes/unnest.js). There is no other way to SQL.
   const pipeline = dialect.name === 'duckdb' ? correlated : unnested;
+  // The text columns the caller says hold trailing spaces, read trimmed (passes/trim.js).
+  const padded = paddedOf(options);
   // The engine's pass, after the Substrait is read: a function the plan defines that the dialect
   // writes as its own (DuckDB's FORMAT) its arguments alone, and what only its definition read
   // pruned. (In place: the plan is the one just read.)
@@ -232,7 +240,7 @@ export function createCompiler(input, options = {}) {
     const o = { ...opts, calcColumn, calcTable, security };
     const lw = new Lowerer(model, o), p = lw.query(s);
     const passed = pipeline(p.plan);
-    const plan = readBack(engine(readSubstrait(JSON.parse(JSON.stringify(toSubstrait(passed).plan)), model, { columns: p.columns, castOutput: options.castOutput })));
+    const plan = readBack(engine(readSubstrait(JSON.parse(JSON.stringify(toSubstrait(trimScans(passed, padded)).plan)), model, { columns: p.columns, castOutput: options.castOutput })));
     const ps = new PlanSql(model, dialect, o);
     const sql = ps.query({ ...p, plan });
     // Its size (the smaller of a calculation group's two forms is kept): the plan's, after the passes.
@@ -358,7 +366,7 @@ export function createCompiler(input, options = {}) {
     planSql(text, o = {}) {
       if (o.optimize === false) throw new DaxError('planSql: the plan as lowered (DAX functions in it) has no Substrait, and so no SQL', { code: 'UNSUPPORTED' });
       const p = onePlan(text);
-      const plan = readBack(engine(readSubstrait(JSON.parse(JSON.stringify(toSubstrait(pick(p.plan, o)).plan)), model, { columns: p.columns, castOutput: options.castOutput })));
+      const plan = readBack(engine(readSubstrait(JSON.parse(JSON.stringify(toSubstrait(trimScans(pick(p.plan, o), padded)).plan)), model, { columns: p.columns, castOutput: options.castOutput })));
       return { sql: new PlanSql(model, dialect, options).query({ ...p, plan }), columns: p.columns };
     },
     // The query plan as a Substrait plan (substrait.js): { plan (its JSON form), dax (dax-sql's
@@ -367,7 +375,7 @@ export function createCompiler(input, options = {}) {
       const p = onePlan(text);
       // unnest, correlated, or optimized: the plan planSql writes its SQL from.
       if (o.optimize === false) throw new DaxError('substrait: the plan as lowered (DAX functions in it) has no Substrait', { code: 'UNSUPPORTED' });
-      return { ...toSubstrait(pick(p.plan, o), o), columns: p.columns };
+      return { ...toSubstrait(trimScans(pick(p.plan, o), padded), o), columns: p.columns };
     },
     // One EVALUATE, or a SELECT over the model -> { sql, columns: [{ name, dax, type, lineage }] }.
     compile(dax) {
@@ -387,8 +395,30 @@ export function createCompiler(input, options = {}) {
     orphanCheck() {
       const o = { ...options, calcColumn, calcTable, security };
       const p = new Lowerer(model, o).orphanCheck();
-      const plan = readBack(engine(readSubstrait(JSON.parse(JSON.stringify(toSubstrait(pipeline(p.plan)).plan)), model, { columns: p.columns, castOutput: false })));
+      const plan = readBack(engine(readSubstrait(JSON.parse(JSON.stringify(toSubstrait(trimScans(pipeline(p.plan), padded)).plan)), model, { columns: p.columns, castOutput: false })));
       return { sql: new PlanSql(model, dialect, o).query({ ...p, plan }), rels: p.rels };
+    },
+    // The trailingSpaces option's answers, as one statement to run on the data: { sql, columns }.
+    // sql is a SELECT of one row, a boolean for each entry of columns ({ key, table, column }, what
+    // trailingSpaces receives): true where a value of that text column ends in a space. In this
+    // compiler's dialect and with its tableSource; without row-level security. Calculated
+    // tables, calculation groups and calculated columns are not listed.
+    trailingSpacesCheck() {
+      const columns = [], items = [];
+      for (const t of model.tables.values()) {
+        if (t.calc || t.calcGroup) continue;
+        for (const c of t.columns) {
+          if (c.expr || c.type !== 'string') continue;
+          const scan = P.scan(t), col = scan.cols.find(x => x.lineage === c);
+          if (!col) continue;
+          const trimmed = { k: 'pop', op: 'call', name: 'rtrim', a: [P.ref(col)], t: 'string', nn: false };
+          items.push({ name: `s${items.length}`, expr: P.exists(P.select(scan, P.cmp('ne', P.ref(col), trimmed))), by: null, cast: null });
+          columns.push({ key: `${t.name}|${c.name}`, table: t.name, column: c.name });
+        }
+      }
+      const p = { plan: P.output(P.oneRow(), items, [], []), ordered: false, columns: items.map(i => ({ name: i.name, dax: null, type: 'bool', lineage: null })) };
+      const plan = readBack(engine(readSubstrait(JSON.parse(JSON.stringify(toSubstrait(pipeline(p.plan)).plan)), model, { columns: p.columns, castOutput: false })));
+      return { sql: new PlanSql(model, dialect, options).query({ ...p, plan }), columns };
     },
     // Any SQL in which a SELECT over the model (FROM `name`, 'model' by default) is a relation in
     // parentheses -> { sql, relations: [{ text, dax, sql }] }: each SELECT's SQL in its place, the

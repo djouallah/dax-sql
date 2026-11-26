@@ -172,6 +172,30 @@ test('orphans: what the caller knows of a relationship\'s keys stands for the te
   assert.doesNotMatch(no.sql, /UNION|EXISTS/, no.sql);
 });
 
+test('trailingSpaces: a column the caller names is read without its trailing spaces, as Power BI loads it', async () => {
+  const { createCompiler } = await import('../src/index.js');
+  const { tmslToModel } = await import('../formats/tmsl.js');
+  const model = tmslToModel(bim);
+  const q = `EVALUATE ROW("n", CALCULATE(COUNTROWS(Product), Product[Color] = "Red"), "l", MAXX(FILTER(VALUES(Product[Color]), Product[Color] = "Red"), LEN(Product[Color])))`;
+  const [before] = await h.run(q);
+  await h.sql('BEGIN TRANSACTION');
+  try {
+    await h.sql(`UPDATE "Product" SET "Color" = 'Red  ' WHERE "ProductKey" = (SELECT MIN("ProductKey") FROM "Product" WHERE "Color" = 'Red')`);
+    // The compiler's own statement finds the column.
+    const { sql: check, columns } = h.dax.trailingSpacesCheck();
+    const [row] = await h.sql(check);
+    const padded = new Set(columns.filter((c, i) => Object.values(row)[i] === true).map(c => c.key));
+    assert.deepEqual([...padded], ['Product|Color']);
+    // Read as stored, the padded red is another color; trimmed, it is red again, of length 3.
+    const [stored] = await h.run(q);
+    assert.equal(Object.values(stored)[0], Object.values(before)[0] - 1);
+    const { sql } = createCompiler(model, { trailingSpaces: c => padded.has(c.key) }).compile(q);
+    assert.match(sql, /rtrim\(/);
+    const [trimmed] = await h.sql(sql);
+    assert.deepEqual(Object.values(trimmed), Object.values(before));
+  } finally { await h.sql('ROLLBACK'); }
+});
+
 test('text given as a date is the date it reads as', async () => {
   const [r] = await h.run(`EVALUATE ROW("y", YEAR("2024-03-05"), "m", MONTH("2024-03-05"), "d", DATEDIFF("2024-01-01", "2024-03-05", DAY), "w", WEEKDAY("2024-03-05"), "h", HOUR("2024-03-05 13:45:00"))`);
   assert.deepEqual(Object.values(r), [2024, 3, 64, 3, 13]);

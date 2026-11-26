@@ -9,6 +9,9 @@
 // DAXSQL_PLAN=unnest: that plan unnested (passes/unnest.js: no apply, for an engine that does not unnest).
 // DAXSQL_ORPHANS=1: the compiler told, for each relationship, whether its many side holds a key the
 // one side lacks (the orphans option), as the data says: the answers must be those without it.
+// The text columns that hold trailing spaces are found with the compiler's own statement
+// (trailingSpacesCheck) and given to it (the trailingSpaces option), as a host does: read trimmed,
+// as Power BI loads them. DAXSQL_TRIM=0: not.
 import { readFileSync, writeFileSync } from 'node:fs';
 import { engine, value } from './db.mjs';
 
@@ -21,6 +24,12 @@ const request = JSON.parse(readFileSync(process.argv[3], 'utf8'));
 const dbs = new Map();
 // Whether each relationship's many side holds a key its one side lacks, read from the data with the
 // compiler's own statement (orphanCheck): a map of rel.key to true or false.
+async function paddedOf(db) {
+  const { sql, columns } = e.createCompiler(db.model).trailingSpacesCheck();
+  if (!columns.length) return new Set();
+  const row = (await db.con.runAndReadAll(sql)).getRowsJS()[0];
+  return new Set(columns.filter((c, i) => row[i] === true).map(c => c.key));
+}
 async function orphansOf(db) {
   const { sql, rels } = e.createCompiler(db.model).orphanCheck();
   const row = (await db.con.runAndReadAll(sql)).getRowsJS()[0];
@@ -33,11 +42,12 @@ for (const q of request.queries) {
     if (!dbs.has(key)) {
       const d = await e.database(q.model, q.data);
       const known = process.env.DAXSQL_ORPHANS ? await orphansOf(d) : null;
-      dbs.set(key, { ...d, compilers: new Map(), orphans: known && (rel => known.get(rel.key)) });
+      const padded = process.env.DAXSQL_TRIM === '0' ? null : await paddedOf(d);
+      dbs.set(key, { ...d, compilers: new Map(), orphans: known && (rel => known.get(rel.key)), padded: padded?.size ? (c => padded.has(c.key)) : null });
     }
     const db = dbs.get(key);
     const roles = JSON.stringify(q.roles ?? null);
-    if (!db.compilers.has(roles)) db.compilers.set(roles, e.createCompiler(db.model, { columnNames: 'dax', ...(q.roles ? { roles: q.roles } : {}), ...(db.orphans ? { orphans: db.orphans } : {}) }));
+    if (!db.compilers.has(roles)) db.compilers.set(roles, e.createCompiler(db.model, { columnNames: 'dax', ...(q.roles ? { roles: q.roles } : {}), ...(db.orphans ? { orphans: db.orphans } : {}), ...(db.padded ? { trailingSpaces: db.padded } : {}) }));
     const c = db.compilers.get(roles);
     const { sql, columns } = PLAN ? c.planSql(q.dax, PLAN === 'correlated' ? { correlated: true } : PLAN === 'unnest' ? { unnest: true } : {}) : c.compile(q.dax);
     const t0 = performance.now();

@@ -224,7 +224,7 @@ test('object-level security: a hidden column is no name; the model still reads i
 });
 
 test("RANKX's two sides add floating-point values exactly: the same sum wherever the measure is written", async () => {
-  const q = `EVALUATE ADDCOLUMNS(VALUES(Product[Color]), "r", RANKX(ALL(Product[Color]), SUMX(Product, Product[Price] * 1.1)))`;
+  const q = `EVALUATE ADDCOLUMNS(VALUES(Product[Color]), "r", RANKX(ALL(Product[Color]), CALCULATE(SUMX(Product, Product[Price] * 1.1))))`;
   const { sql } = h.dax.compile(q);
   assert.match(sql, /DECIMAL\(38,15\)/, sql);
   // A measure outside a RANKX adds up as the engine does.

@@ -378,8 +378,17 @@ export class Lowerer {
       const r = { block: res.block, col: ref => res.meta(typeof ref === 'number' ? p.row.cols[ref].lineage : ref), meta: m => res.meta(m) };
       return this.scalar(p.pred, withRow(scope, p.row, r), res.block);
     });
-    // The scan's own column holds one of its values on every row, a NULL stored in it too.
-    for (const c of D) if (c.table !== table) parts.push(P.notNull(res.meta(c)));
+    // The scan's own column holds one of its values on every row, a NULL stored in it too. A
+    // column read through a relationship holds one where the row has a row of the column's table
+    // (not the blank row): its key is not blank, a NULL stored in the column a value all the same
+    // (Product[Color] <> "Red" keeps a product of no color). A column that may hold a NULL, of a
+    // table with no key, cannot tell the two apart: the general membership.
+    for (const c of D) {
+      if (c.table === table) continue;
+      const k = !mayHoldNull(c) ? c : c.table.key;
+      if (!k) return null;
+      parts.push(P.notNull(res.meta(k)));
+    }
     return parts;
   }
 

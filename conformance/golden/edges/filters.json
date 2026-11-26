@@ -1,4 +1,128 @@
 {
+ "filters-all-color-not-red-null-stored": {
+  "hash": "284bf7976da18be55fe1f4d7c8866415f105efb0",
+  "columns": [
+   "Product[Product]",
+   "[Lines]",
+   "[Not Red Boolean]",
+   "[Not Red FILTER ALL]",
+   "[Not Red FILTER VALUES]"
+  ],
+  "rows": [
+   [
+    null,
+    52,
+    52,
+    52,
+    52
+   ],
+   [
+    "",
+    32,
+    32,
+    32,
+    32
+   ],
+   [
+    " Spaced Lamp",
+    54,
+    54,
+    54,
+    54
+   ],
+   [
+    "Ångström Gauge",
+    42,
+    42,
+    42,
+    42
+   ],
+   [
+    "Café Crème Mug",
+    40,
+    null,
+    null,
+    null
+   ],
+   [
+    "Container Ship",
+    1,
+    1,
+    1,
+    1
+   ],
+   [
+    "Crème Brûlée Torch",
+    57,
+    57,
+    57,
+    57
+   ],
+   [
+    "Desk Fan",
+    47,
+    47,
+    47,
+    47
+   ],
+   [
+    "Dust Mote",
+    52,
+    52,
+    52,
+    52
+   ],
+   [
+    "Free Sample",
+    53,
+    53,
+    53,
+    53
+   ],
+   [
+    "Gadget",
+    104,
+    104,
+    104,
+    104
+   ],
+   [
+    "Naïve Notebook",
+    52,
+    52,
+    52,
+    52
+   ],
+   [
+    "Šunka Slicer",
+    59,
+    59,
+    59,
+    59
+   ],
+   [
+    "Twin A",
+    2,
+    2,
+    2,
+    2
+   ],
+   [
+    "Twin B",
+    2,
+    2,
+    2,
+    2
+   ],
+   [
+    "Zero Price Promo",
+    36,
+    36,
+    36,
+    36
+   ]
+  ]
+ },
  "filters-allexcept-snowflake-expanded-store": {
   "hash": "f24416a3ae83728ac439424263c5b2fe496113e6",
   "columns": [
@@ -1668,6 +1792,36 @@
     null,
     null,
     null
+   ]
+  ]
+ },
+ "filters-summarizecolumns-all-color-not-red-null-stored": {
+  "hash": "56a38bb820b3587a104bb97fdb7c7a88789b8acb",
+  "columns": [
+   "Product[Brand]",
+   "[Lines]",
+   "[Lines Calculate]"
+  ],
+  "rows": [
+   [
+    null,
+    45,
+    45
+   ],
+   [
+    "Contoso",
+    193,
+    193
+   ],
+   [
+    "Fabrikam",
+    313,
+    313
+   ],
+   [
+    "Ünïcorn",
+    94,
+    94
    ]
   ]
  },

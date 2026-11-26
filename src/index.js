@@ -19,7 +19,8 @@
 //                  the column's type, a function of its SQL ({ int: s => `CAST(${s} AS INTEGER)` })
 //   assumeIntegrity  true: every relationship relies on referential integrity, so a
 //                  dimension's key is read off the fact's foreign key with no join (by
-//                  default only those whose assumeIntegrity says so)
+//                  default only those whose assumeIntegrity says so), and no table has DAX's
+//                  blank row (no check of the facts for keys a dimension lacks)
 //   user           the value of USERNAME() and USERPRINCIPALNAME()
 //   roles          the names of the model's roles to query as: every table's rows are those
 //                  some role keeps (row-level security), and what every role hides is no name

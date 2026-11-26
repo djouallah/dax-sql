@@ -128,21 +128,23 @@ test('text is compared as the engine compares it (DuckDB: by case): a comparison
   assert.deepEqual(Object.values(r), [1, true]);
 });
 
-test('the blank row: a dimension lists its own rows, with no scan of the facts for keys it lacks; the facts grouped by it have the blank group', async () => {
+test('the blank row: a dimension listed alone has none, with no scan of the facts; with the facts it has the blank row, and the facts grouped by it the blank group', async () => {
   // Customer 99 has sales and no row in Customer.
-  const q = `EVALUATE ADDCOLUMNS(VALUES(Customer[City]), "s", [Sales Amount])`;
-  const { sql } = h.dax.compile(q);
-  assert.doesNotMatch(sql, /IS NULL\)|UNION/, sql);
-  const rows = await h.run(q);
+  const alone = `EVALUATE VALUES(Customer[City])`;
+  const { sql } = h.dax.compile(alone);
+  assert.doesNotMatch(sql, /"Sales"|UNION/, sql);
   const cities = (await h.sql(`SELECT DISTINCT "City" FROM "Customer"`)).map(r => r.City);
-  assert.deepEqual(sorted(rows).map(r => Object.values(r)[0]), sorted(cities.map(City => ({ City }))).map(r => r.City));
-  // Its sales count in the total, and in the blank group of a measure grouped by city (read off the
-  // fact's grouping, no other scan).
+  assert.deepEqual(sorted(await h.run(alone)).map(r => Object.values(r)[0]), sorted(cities.map(City => ({ City }))).map(r => r.City));
+  // With a fact's measure, the blank row is a value: the sales of the customer it lacks.
+  const [blank] = await h.sql(`SELECT SUM(s."Amount") AS s FROM "Sales" s WHERE NOT EXISTS (SELECT 1 FROM "Customer" c WHERE c."CustomerKey" = s."CustomerKey")`);
+  const listed = await h.run(`EVALUATE ADDCOLUMNS(VALUES(Customer[City]), "s", [Sales Amount])`);
+  assert.equal(listed.length, cities.length + 1);
+  assert.deepEqual(listed.filter(r => Object.values(r)[0] == null).map(r => Object.values(r)[1]), [blank.s]);
+  // Its sales count in the total, and in the blank group of a measure grouped by city.
   const [all] = await h.run(`EVALUATE ROW("s", [Sales Amount])`);
   const [sum] = await h.sql(`SELECT SUM("Amount") AS s FROM "Sales"`);
   assert.equal(Object.values(all)[0], sum.s);
   const byCity = await h.run(`EVALUATE SUMMARIZECOLUMNS(Customer[City], "s", [Sales Amount])`);
-  const [blank] = await h.sql(`SELECT SUM(s."Amount") AS s FROM "Sales" s WHERE NOT EXISTS (SELECT 1 FROM "Customer" c WHERE c."CustomerKey" = s."CustomerKey")`);
   assert.deepEqual(byCity.filter(r => Object.values(r)[0] == null).map(r => Object.values(r)[1]), [blank.s]);
 });
 

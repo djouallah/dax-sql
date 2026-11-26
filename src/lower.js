@@ -244,7 +244,7 @@ export class Lowerer {
   // relationship whose many side holds keys the table lacks (model.oneSides). A statement that
   // reads one table only (a dimension listed alone) has none: knowing whether it is there takes
   // a scan of the tables related to it (index.js compiles such a statement again without it).
-  hasBlankRow(table) { return this.options.blankRows !== false && this.model.oneSides(table).length > 0; }
+  hasBlankRow(table) { return this.options.blankRows !== false && !this.options.assumeIntegrity && this.model.oneSides(table).length > 0; }
 
   // The blank row under the filter context, when the table has one: a block over one row of
   // NULLs, which the filters hold of as of any row, and which is there when some row of a many

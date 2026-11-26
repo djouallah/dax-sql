@@ -8,7 +8,7 @@
 // A query that disagrees fails the run; it is kept (minimized by hand) as a query of the suite,
 // for Power BI to answer.
 //   node conformance/tools/agree.mjs [--count 300] [--seed 1] [--mutations 300] [--models a,b] [--report file]
-import { appendFileSync, writeFileSync } from 'node:fs';
+import { appendFileSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { engine, value } from '../engines/dax-sql/db.mjs';
 import { ROOT, modelDir } from './suite.mjs';
@@ -25,6 +25,10 @@ const OTHER = ['tsql', 'polars', 'datafusion'];
 
 const e = await engine(join(ROOT, '..'));
 const { DaxError } = await import(new URL('../../src/index.js', import.meta.url));
+// Disagreements that are the engine's, not dax-sql's (agree-known.json: { dax, mode, reason }): a
+// DuckDB bug on one way's SQL, the SQL right (the answer DuckDB gives with its optimizer off).
+const engineBugs = JSON.parse(readFileSync(new URL('./agree-known.json', import.meta.url), 'utf8'));
+const engineBug = (dax, mode) => engineBugs.some(k => k.dax === dax && k.mode === mode);
 const failures = [], tally = { queries: 0, answered: 0, refused: 0, failed: 0, mutations: 0 };
 const fail = (model, dax, what) => { failures.push({ model, dax, what }); tally.failed++; };
 const message = err => `${err.code ? `${err.code}: ` : ''}${err.message.split('\n')[0]}`;
@@ -55,7 +59,7 @@ for (const model of MODELS) {
     for (const [mode, o] of Object.entries(MODES)) {
       const a = await run(() => c.planSql(dax, o).sql);
       if (a.raw) fail(model, dax, `${mode}: ${a.error}`);
-      else if (base.rows && a.rows && !sameRows(a.rows, base.rows, ordered(dax))) fail(model, dax, `${mode}: other rows than compile's\n  ${mode}: ${JSON.stringify(a.rows).slice(0, 300)}\n  compile: ${JSON.stringify(base.rows).slice(0, 300)}`);
+      else if (base.rows && a.rows && !sameRows(a.rows, base.rows, ordered(dax)) && !engineBug(dax, mode)) fail(model, dax, `${mode}: other rows than compile's\n  ${mode}: ${JSON.stringify(a.rows).slice(0, 300)}\n  compile: ${JSON.stringify(base.rows).slice(0, 300)}`);
       else if (base.rows && a.error && !a.dax) fail(model, dax, `${mode}: ${a.error} where compile answers`);
       else if (base.error && a.rows) fail(model, dax, `${mode}: rows where compile fails (${base.error})`);
       else if (base.engine && a.error && a.dax) { /* refused here, failed on DuckDB there: both fail */ }

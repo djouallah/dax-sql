@@ -93,10 +93,11 @@ test('a value that a function names twice is written once: fixed decimals nested
 
 test("a measure in a column and in another's DIVIDE is one subquery of the row", () => {
   const q = query('paper-q4-catalog-yoy-ar');
-  // The quantity's group, and last year's quantity once (it was in three places).
-  assert.equal(reads(compileAs(q.model, q.dax), 'catalog_sales'), 2);
+  // The quantity's group, and last year's quantity once (it was in three places); without the
+  // blank row's check, which reads the fact too.
+  assert.equal(reads(compileAs(q.model, q.dax, 'tsql', { assumeIntegrity: true }), 'catalog_sales'), 2);
   // On DuckDB too.
-  assert.equal(reads(compileAs(q.model, q.dax, null), 'catalog_sales'), 2);
+  assert.equal(reads(compileAs(q.model, q.dax, null, { assumeIntegrity: true }), 'catalog_sales'), 2);
 });
 
 test('T-SQL = takes " " for "": an empty search text is told by its length, and EXACT by lengths of one type', () => {

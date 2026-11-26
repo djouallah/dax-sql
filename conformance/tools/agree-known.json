@@ -1,0 +1,7 @@
+[
+ {
+  "dax": "EVALUATE SUMMARIZECOLUMNS('Date'[Year], 'Customer'[Customer], \"m0\", CALCULATE(CALCULATE(LEN(CONCATENATEX(VALUES('Customer'[City]), 'Customer'[City], \",\")), INDEX(1, ALL('Product'[Color]), ORDERBY('Product'[Color], DESC))), ALLSELECTED('Customer'[Customer])), \"m1\", SWITCH(TRUE(), DIVIDE(ROUND([Returned], 0), CALCULATE(MAX([Big Orders], [Best Customer Sales]), ALL('Product'[Price]))) > 1, AVERAGE('Returns'[ReturnQty]), MINX(VALUES('Product'[Color]), [Sales by Ship Date]) < 10, DIVIDE(CALCULATE(MAX('Sales'[Qty]), ALLSELECTED('Category'[Category])), CALCULATE([Big Orders], ALL('Date'[Month]))), [Return Rate]))",
+  "mode": "optimized",
+  "reason": "DuckDB 2.0.0's optimizer answers the optimized plan's SQL wrong (7 rows of 10; right with its optimizer off, or with filter_pushdown, join_order or projection_pullup disabled)"
+ }
+]

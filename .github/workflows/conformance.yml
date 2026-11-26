@@ -40,6 +40,15 @@ jobs:
         run: |
           node conformance/runner/run.mjs --adapter "node conformance/engines/dax-sql/adapter.mjs ." \
             --known conformance/engines/dax-sql/known.json --report "$RUNNER_TEMP/dax-sql.json"
+      # The SQL written by hand (conformance/engines/hand), the oracle dax-sql's SQL is timed against
+      # at scale (scale.yml): each file's answer held to Power BI's, on the queries it has files for.
+      - name: The SQL written by hand against Power BI's answers
+        if: always()
+        run: |
+          ids=$(cd conformance/engines/hand && find . -name '*.sql' | sed 's|^\./||; s|\.sql$||' | sort | paste -sd'|')
+          test -n "$ids" || exit 0
+          node conformance/runner/run.mjs --adapter "node conformance/engines/hand/adapter.mjs ." --grep "^($ids)$" \
+            --report "$RUNNER_TEMP/hand.json"
       # Each query's time on DuckDB, measured as the T-SQL adapter measures Fabric's (the query
       # alone, from sent to its rows read), added up, and the slowest.
       - name: The time on DuckDB

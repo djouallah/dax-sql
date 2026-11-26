@@ -11,6 +11,7 @@ name: Scale
 #            --gate, the release gate: a query that fails, takes more than the timeout, or is
 #            refused where Power BI answers it fails it), DataFusion, and Polars by hand
 #            (tools/tpcds/scale-engine.mjs, answers of more than 100,000 rows left out), not gates;
+#            and the SQL written by hand (conformance/engines/hand), what dax-sql's is measured against;
 #   compare  the engines' times and answers in one table (tools/tpcds/scale-compare.mjs).
 # On a push and a release (publish.yml): SF1, 120 s, DuckDB and DataFusion.
 
@@ -21,6 +22,7 @@ on:
       - "formats/**"
       - "conformance/queries/tpcds/**"
       - "conformance/tools/tpcds/**"
+      - "conformance/engines/hand/**"
       - ".github/workflows/scale.yml"
   workflow_dispatch:
     inputs:
@@ -91,7 +93,8 @@ jobs:
       fail-fast: false
       matrix:
         # Polars by hand only (its SF1 run takes most of half an hour).
-        engine: ${{ fromJSON(inputs.engines == 'duckdb only' && '["duckdb"]' || inputs.engines == 'polars' && '["duckdb","polars"]' || inputs.engines == 'polars and datafusion' && '["duckdb","datafusion","polars"]' || '["duckdb","datafusion"]') }}
+        # hand: the SQL written by hand (conformance/engines/hand), on every run (it is quick).
+        engine: ${{ fromJSON(inputs.engines == 'duckdb only' && '["duckdb","hand"]' || inputs.engines == 'polars' && '["duckdb","hand","polars"]' || inputs.engines == 'polars and datafusion' && '["duckdb","hand","datafusion","polars"]' || '["duckdb","hand","datafusion"]') }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -102,7 +105,7 @@ jobs:
           cache: npm
       - run: npm ci --no-audit --no-fund
       - uses: actions/setup-python@v5
-        if: matrix.engine != 'duckdb'
+        if: matrix.engine != 'duckdb' && matrix.engine != 'hand'
         with:
           python-version: "3.12"
       - name: Polars 2.2.0
@@ -126,8 +129,16 @@ jobs:
         run: |
           node conformance/tools/tpcds/scale-run.mjs "$RUNNER_TEMP/tpcds/tpcds.duckdb" --no-agree --timeout "$TIMEOUT" \
             --gate --report "$RUNNER_TEMP/duckdb.json"
+      # The SQL written by hand, on the DuckDB file dax-sql's SQL runs on.
+      - name: The tpcds queries at SF${{ env.SF }} written by hand
+        if: matrix.engine == 'hand'
+        run: |
+          export HAND_DUCKDB="$RUNNER_TEMP/tpcds/tpcds.duckdb" HAND_TIMEOUT="$TIMEOUT"
+          node conformance/tools/tpcds/scale-engine.mjs --adapter "node conformance/engines/hand/adapter.mjs ." \
+            --label "hand-written SQL" --model-dir "$RUNNER_TEMP/tpcds/model" --answers "$RUNNER_TEMP/duck/answers.json" \
+            --report "$RUNNER_TEMP/hand.json"
       - name: The tpcds queries at SF${{ env.SF }} on ${{ matrix.engine }}
-        if: matrix.engine != 'duckdb'
+        if: matrix.engine != 'duckdb' && matrix.engine != 'hand'
         env:
           PY: python
           DATAFUSION_PYTHON: python

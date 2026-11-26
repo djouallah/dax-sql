@@ -482,6 +482,12 @@ What says the SQL is right is the answers, not the SQL's text:
   Power BI is the reference. The wide table cases that raise an error are held to Ossie's codes
   (`ossie-query.yml`).
 - **Each commit is held to the speed of the one before** (`bench.mjs`, `perf.yml`).
+- **The SQL is measured against SQL written by hand** (`conformance/engines/hand`): for the tpcds
+  queries that are not random, DuckDB SQL as an engineer who knows the data would write it, one
+  file per query, its answers held to Power BI's like an engine's (`conformance.yml`). At a TPC-DS
+  scale factor (`scale.yml`) each runs beside dax-sql's SQL on the same DuckDB file. It is not a
+  target to match, only a way to find very bad queries: the comparison lists those whose SQL takes
+  five times the hand's or more (and half a second longer).
 - **Unit tests** hold the SQL's shape, the errors, the parser, the T-SQL dialect's text and the
   SQL front end (`npm test`).
 

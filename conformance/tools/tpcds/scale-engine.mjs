@@ -39,7 +39,8 @@ for await (const line of createInterface({ input: child.stdout })) {
   let a;
   try { a = JSON.parse(line); } catch { continue; }
   const d = duck[a.id];
-  if (a.error) results.set(a.id, { id: a.id, outcome: /timeout/i.test(a.error) ? 'timeout' : 'error', detail: a.error });
+  if (a.unsupported) results.set(a.id, { id: a.id, outcome: 'unsupported', detail: a.error });
+  else if (a.error) results.set(a.id, { id: a.id, outcome: /timeout/i.test(a.error) ? 'timeout' : 'error', detail: a.error });
   else {
     const hash = createHash('sha1').update(norm(a.rows).join('\n')).digest('hex');
     results.set(a.id, { id: a.id, outcome: hash === d.hash ? 'same' : 'differs', detail: hash === d.hash ? '' : `${a.rows.length} rows, DuckDB ${d.rows}` });
@@ -51,16 +52,18 @@ for (const q of asked) if (!results.has(q.key)) results.set(q.key, { id: q.key, 
 
 let times = [];
 try { times = JSON.parse(readFileSync(timesFile, 'utf8')); } catch {}
-const ms = new Map(times.map(t => [t.id, t.ms]));
-for (const r of results.values()) r.ms = ms.get(r.id) ?? null;
-const all = [...results.values()];
+const ms = new Map(times.map(t => [t.id, t]));
+for (const r of results.values()) { r.ms = ms.get(r.id)?.ms ?? null; if (ms.get(r.id)?.bytes != null) r.bytes = ms.get(r.id).bytes; }
+// A query the engine does not handle (the hand-written oracle's with no file) is left out.
+const unsupported = [...results.values()].filter(r => r.outcome === 'unsupported').length;
+const all = [...results.values()].filter(r => r.outcome !== 'unsupported');
 const count = o => all.filter(r => r.outcome === o).length;
 const timed = all.filter(r => r.ms != null).map(r => r.ms).sort((a, b) => a - b);
 const pct = p => (timed.length ? timed[Math.min(timed.length - 1, Math.floor(p * timed.length))] : 0);
 const total = timed.reduce((s, v) => s + v, 0);
 const line = r => `| ${r.id} | ${r.ms ?? ''} | ${r.outcome} | ${String(r.detail).replaceAll('|', '\\|').slice(0, 160)} |`;
 const summary = [
-  `### ${label}, tpcds at scale: ${asked.length} queries (${queries.length - asked.length} left out: more than ${maxRows} rows on DuckDB, or none)`, '',
+  `### ${label}, tpcds at scale: ${all.length} queries (${queries.length - asked.length} left out: more than ${maxRows} rows on DuckDB, or none${unsupported ? `; ${unsupported} the engine does not handle` : ''})`, '',
   `| same as DuckDB | differs | error | timeout | time (median, p90, max) |`, '|---|---|---|---|---|',
   `| ${count('same')} | ${count('differs')} | ${count('error')} | ${count('timeout')} | ${(total / 1000).toFixed(1)} s (${pct(0.5)} ms, ${pct(0.9)} ms, ${pct(1)} ms) |`, '',
   '#### The slowest 15', '', '| query | ms | outcome | |', '|---|---|---|---|',

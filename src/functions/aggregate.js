@@ -262,6 +262,9 @@ function rankX(c, args, env) {
   // The two values compared are the same measure written twice: their floating-point sums are
   // added exactly (passes/exact.js), or a row could rank below itself by a last digit.
   const same = x => (x.k === 'lit' ? x : ir.fn('same', [x], x.t, { nn: x.nn }));
+  // An expression that reads nothing of the row (no column of it, no measure, whose context
+  // transition would): the same value at every row, the value ranked among them: 1.
+  if (!(args[2] && args[2].k !== 'empty') && !ir.freeRows(over.arg).has(row.id)) return ir.lit(1);
   const arg = same(over.arg);
   const value = same(args[2] && args[2].k !== 'empty' ? c.scalar(args[2], env) : c.scalar(args[1], env));
   const desc = isDesc(args[3], true);

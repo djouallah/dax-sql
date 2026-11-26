@@ -425,7 +425,10 @@ export class Lowerer {
     if (!chain || chain.scan.ctx.filters.length) return null;
     const T = chain.scan.table;
     if (!chain.cols.every(c => c.lineage?.table === T && D.includes(c.lineage))) return null;
-    if (D.some(c => this.blankSide(table, c, state))) return null;
+    // A column read through a relationship is blank for the rows of the blank row: they are kept
+    // as the predicates say of a blank when the filter has the blank row (below), and dropped when
+    // it has not and a blank is no value of its column (a NULL stored in it).
+    if (!chain.blank && D.some(c => this.blankSide(table, c, state))) return null;
     if (!chain.preds.every(p => plainOf(p.pred, p.row))) return null;
     const parts = chain.preds.map(p => {
       const r = { block: res.block, col: ref => res.meta(typeof ref === 'number' ? p.row.cols[ref].lineage : ref), meta: m => res.meta(m) };
@@ -435,7 +438,11 @@ export class Lowerer {
     // column read through a relationship holds one where the row has a row of the column's table
     // (not the blank row): its key is not blank, a NULL stored in the column a value all the same
     // (Product[Color] <> "Red" keeps a product of no color). A column that may hold a NULL, of a
-    // table with no key, cannot tell the two apart: the general membership.
+    // table with no key, cannot tell the two apart: the general membership. A filter with the
+    // blank row (ALL(T[c]) of a table that has one) has a blank whenever a row reads the column
+    // blank: the predicates say whether it is kept (a row of the blank row exists only when the
+    // blank row does).
+    if (chain.blank) return parts;
     for (const c of D) {
       if (c.table === table) continue;
       const k = !mayHoldNull(c) ? c : c.table.key;
@@ -1487,7 +1494,10 @@ function mayBeBlank(x, i) {
   switch (x.k) {
     case 'rows': return x.rows.some(r => !lit(r[i]));
     case 'onerow': return !lit(x.vals[i]) && !x.vals[i]?.nn;
-    case 'distinct': case 'shared': case 'filter': case 'topn': case 'topnskip': return mayBeBlank(x.src, i);
+    // Rows kept where the column is one of a table's values that are never blank (a date moved,
+    // kept where the date column has it: DATEADD's, SAMEPERIODLASTYEAR's) hold no blank there.
+    case 'filter': return !keptOnlyIn(x.pred, x.row, i) && mayBeBlank(x.src, i);
+    case 'distinct': case 'shared': case 'topn': case 'topnskip': return mayBeBlank(x.src, i);
     case 'project': {
       if (x.keep && i < x.src.cols.length) return mayBeBlank(x.src, i);
       const e = x.items[x.keep ? i - x.src.cols.length : i]?.expr;
@@ -1499,6 +1509,14 @@ function mayBeBlank(x, i) {
     case 'union': case 'intersect': case 'except': return x.srcs.some(y => mayBeBlank(y, i));
   }
   return true;
+}
+// Whether predicate p (on the rows of `row`) holds only where column i is one of a table's values
+// none of which is blank: IN a source that holds no blank there, or such a test AND others.
+function keptOnlyIn(p, row, i) {
+  if (p?.k === 'op' && p.op === 'and') return p.a.some(y => keptOnlyIn(y, row, i));
+  if (p?.k !== 'insub' || p.e.length !== 1) return false;
+  const e = p.e[0];
+  return e.k === 'col' && e.row === row && (e.ref === i || row.cols?.[i] && e.ref === row.cols[i].lineage) && !mayBeBlank(p.src, 0);
 }
 // Whether a value can't be blank: one that never is, or a column that holds none, read on a row
 // of its own table (not through a join that can find no row).
@@ -1525,14 +1543,17 @@ function filterChain(x) {
 }
 // A filter's table as FILTER(..DISTINCT(SELECTCOLUMNS(scan, its own columns))..): the scan, the
 // predicates on the columns kept, and those columns; or null.
+// The table's blank row with them (ALL(T[c]) of a table that has one: withblank) is `blank`.
 function valuesChain(x) {
   const preds = [];
+  let blank = false;
   for (;;) {
     if (x.k === 'filter') { preds.push({ pred: x.pred, row: x.row }); x = x.src; } else if (x.k === 'distinct' || x.k === 'shared') x = x.src;
+    else if (x.k === 'withblank' && !blank && !x.ctx.filters.length) { blank = true; x = x.src; }
     else break;
   }
   if (x.k !== 'project' || x.keep || x.src.k !== 'scan' || !x.items.every(i => i.expr.k === 'col' && i.expr.row === x.row)) return null;
-  return { scan: x.src, preds, cols: x.cols };
+  return { scan: x.src, preds, cols: x.cols, blank };
 }
 // Whether an expression reads nothing but constants and the columns of `row`.
 function plainOf(x, row) {

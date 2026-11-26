@@ -1,6 +1,21 @@
 # To do
 
-Nothing here blocks a release. DAX on DuckDB has nothing left; T-SQL is the last wave.
+Nothing here blocks a release. DAX on DuckDB has nothing left but speed; T-SQL is the last wave.
+
+# Speed at SF10 (scale.yml, DuckDB)
+
+- [ ] 30 queries are very bad (5× the hand's time or more, and 500 ms slower). The worst:
+  `fuzz3-0112` 31 s (hand 11 s), `fuzz2-0043` 24 s (5.6 s), `fuzz3-0149` 15 s (5.1 s),
+  `fuzz3-0139` 10 s (3.2 s).
+- [ ] `fuzz2-0109` 10 s (hand 0.5 s): RANKX over ALL(price) under SUMMARIZECOLUMNS' auto-exist
+  ranks each price within the outer group's classes, so one window is wrong (219 rows) and the
+  per-price sums' mapping is 4.9 M rows. Needs a RANKX evaluated by outer group.
+- [ ] `fuzz2-0057` 15 s (hand 1.6 s) before c4c9153 (1.8× faster at SF1): confirm at SF10.
+
+# Open
+
+- [ ] Probe Power BI: a DAX literal with a trailing space against a `trailingSpaces` column.
+- [ ] Issue #9 (feature request, left open).
 
 # DAX not supported yet (on the known lists, with their queries)
 

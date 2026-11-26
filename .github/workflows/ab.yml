@@ -17,6 +17,10 @@ on:
       grep:
         description: "Only the queries whose family/id this matches"
         default: ""
+      stats:
+        description: "The head compiled with what the data says (orphans, trailingSpaces)"
+        type: boolean
+        default: false
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -60,6 +64,7 @@ jobs:
         run: |
           g=(); test -n "${{ inputs.grep }}" && g=(--grep "${{ inputs.grep }}")
           test -n "${{ inputs.head }}" && g+=(--head "$RUNNER_TEMP/head")
+          test "${{ inputs.stats }}" = "true" && g+=(--stats)
           node conformance/tools/tpcds/scale-ab.mjs "$RUNNER_TEMP/tpcds/tpcds.duckdb" "$RUNNER_TEMP/base" --report "$RUNNER_TEMP/ab.json" "${g[@]}"
       - uses: actions/upload-artifact@v4
         if: always()

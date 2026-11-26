@@ -2,7 +2,10 @@
 // head's, the base's, the head's again), so a change is held to the same runner's speed: across
 // two runs of scale.yml a runner can be a third slower or faster.
 //   node tools/tpcds/scale-ab.mjs <sf.duckdb> <base checkout> [--head <checkout>] [--grep regex] [--timeout 120] [--report out.json]
-// --head: the head's checkout (by default this one).
+// --head: the head's checkout (by default this one). --stats: the head compiled with what the data
+// says (the orphans and trailingSpaces options, read with the compiler's own orphanCheck and
+// trailingSpacesCheck statements, as a host does once it has loaded the tables): with the base the
+// same checkout, what they are worth.
 // Each query: both compiled; the same SQL is not run again (no change); otherwise each run twice,
 // interleaved (head, base, head, base), its time the faster of its two. Answers are compared.
 // A measure, not a gate: it exits 0.
@@ -17,6 +20,7 @@ const timeout = Number(opt('--timeout', 120)) * 1000;
 const grep = opt('--grep', null);
 const report = opt('--report', null);
 const headOpt = opt('--head', null);
+const stats = (i => i >= 0 && !!args.splice(i, 1))(args.indexOf('--stats'));
 const [file, baseDir] = args;
 if (!file || !baseDir) throw new Error('usage: scale-ab.mjs <sf.duckdb> <base checkout> [--grep regex]');
 
@@ -31,11 +35,19 @@ const require = createRequire(join(headDir, 'package.json'));
 const { DuckDBInstance, JSDuckDBValueConverter } = require('@duckdb/node-api');
 const inst = await DuckDBInstance.create(file, { access_mode: 'READ_ONLY' });
 let con = await inst.connect();
-const compilerOf = async X => {
+const compilerOf = async (X, withStats) => {
   const db = await X.e.database(join(X.modelDir('tpcds'), 'model.bim'), null, con);
-  return X.e.createCompiler(db.model, { columnNames: 'dax' });
+  if (!withStats) return X.e.createCompiler(db.model, { columnNames: 'dax' });
+  const c0 = X.e.createCompiler(db.model);
+  const o = c0.orphanCheck(), orow = (await con.runAndReadAll(o.sql)).getRowsJS()[0];
+  const known = new Map(o.rels.map((r, i) => [r.key, orow[i] === true]));
+  const t = c0.trailingSpacesCheck();
+  const trow = t.columns.length ? (await con.runAndReadAll(t.sql)).getRowsJS()[0] : [];
+  const padded = new Set(t.columns.filter((c, i) => trow[i] === true).map(c => c.key));
+  console.log(`stats: ${[...known.values()].filter(Boolean).length} of ${known.size} relationships with keys the one side lacks; ${padded.size} columns with trailing spaces`);
+  return X.e.createCompiler(db.model, { columnNames: 'dax', orphans: rel => known.get(rel.key), ...(padded.size ? { trailingSpaces: c => padded.has(c.key) } : {}) });
 };
-const hc = await compilerOf(H), bc = await compilerOf(B);
+const hc = await compilerOf(H, stats), bc = await compilerOf(B, false);
 
 async function run(sql) {
   const timer = setTimeout(() => con.interrupt(), timeout);

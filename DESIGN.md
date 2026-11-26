@@ -158,8 +158,9 @@ filters on its expanded table's columns only.
 Power BI adds a row of blanks to a table on the one side of a relationship when the other side
 has keys it lacks, and lists it in `VALUES`, `ALL` and the groups of SUMMARIZECOLUMNS. So does
 dax-sql (`withblank`, `blankexists`; `Lowerer.blankRow`): the row is there when a row of a many
-side holds a key, not blank, that the table lacks (`orphans`: a blank key alone gives none, as
-Power BI's answers say), under the filters, row-level security and the row's own blanks.
+side holds a key the table lacks, a blank one too (`orphans`), whether the relationship relies on
+referential integrity or not (a flag of DirectQuery's), under the filters, row-level security and
+the row's own blanks; option `assumeIntegrity` leaves it out.
 `DISTINCTCOUNT` is `COUNTROWS(DISTINCT(...))`: it does not count it. Knowing whether the row is
 there takes a scan of each such table for the keys the dimension lacks; a statement that reads
 one table only (a dimension listed alone) is compiled again without it (`readsOneTable`), a

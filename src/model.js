@@ -6,7 +6,7 @@
 //   inbound(table)     the relationships a filter enters `table` by from outside its expanded
 //                      table (the one side of a bidirectional one, a many-to-many)
 //   reaches(from, to)  whether a filter on `from` propagates to `to`
-//   oneSides(table)    the relationships `table` is the one side of, not relying on integrity
+//   oneSides(table)    the relationships `table` is the one side of
 //   securityPaths(..)  two ways a secured table's filter reaches a table, if there are two
 // They depend on which relationships are active and in which direction they filter, which
 // USERELATIONSHIP and CROSSFILTER change inside a CALCULATE: a `RelState` says that.
@@ -300,14 +300,15 @@ export class Model {
     return out;
   }
 
-  // The relationships `table` is a one side of, whose other side may hold keys it lacks (they
-  // do not rely on referential integrity): the one side of a many-to-one relationship, and
-  // either side of a one-to-one relationship. [{ rel, one: column of `table`, many: the other
-  // side's }]: a column of `table` whose values are unique.
+  // The relationships `table` is a one side of, whose other side may hold keys it lacks: the one
+  // side of a many-to-one relationship, and either side of a one-to-one relationship, relying on
+  // referential integrity or not (the flag is DirectQuery's: an imported model has its blank row
+  // all the same). [{ rel, one: column of `table`, many: the other side's }]: a column of `table`
+  // whose values are unique.
   oneSides(table) {
     const out = [];
     for (const r of this.relationships) {
-      if (r.ri || r.toCard !== 'one' || r.self) continue;
+      if (r.toCard !== 'one' || r.self) continue;
       if (r.to.table === table) out.push({ rel: r, one: r.to, many: r.from });
       if (r.fromCard === 'one' && r.from.table === table) out.push({ rel: r, one: r.from, many: r.to });
     }

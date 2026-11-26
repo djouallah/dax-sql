@@ -273,7 +273,7 @@ export class Lowerer {
         if (one.expr || many.expr) continue;
         const M = this.source(many.table), O = this.source(one.table);
         const mk = colOf(M, many), ok = colOf(O, one);
-        parts.push(P.exists(P.select(P.join('left', M, O, P.eq(P.ref(ok), P.ref(mk))), P.and([P.notNull(P.ref(mk)), P.isNull(P.ref(ok))]))));
+        parts.push(P.exists(P.select(P.join('left', M, O, P.eq(P.ref(ok), P.ref(mk))), P.isNull(P.ref(ok)))));
         if (!seen.has(many.table) && this.hasBlankRow(many.table)) parts.push(this.orphans(many.table, seen));
       }
     } finally { this.checks--; }

@@ -8,11 +8,9 @@ Measure a change with `ab.yml` (its SQL against its base's on one runner); scale
 move by a third from one runner to the next. `variants.yml` swaps the queries' constants for
 values the data holds: a filter that keeps no row at SF10 says nothing of the SQL.
 
-- [ ] `fuzz2-0109` 10 s (hand 0.5 s; 25 s against 1 s in the variants): RANKX over ALL(price)
-  under SUMMARIZECOLUMNS' auto-exist ranks each price within the outer group's classes, so one
-  window is wrong (219 rows) and the per-price sums' mapping by item key is 4.9 M rows. The
-  hand file's way: the sums grouped by the item's columns (colour, class, price, month), mapped
-  by class: fusion by a table's columns, not its key.
+- [ ] `fuzz2-0109` 3 s at SF10 (hand 0.5 s; 15 s before 120913c): the RANKX's sums fused by the
+  auto-exist tuple (class, colour), grouped before that mapping repeats them. Left: the level's
+  and the rank's sums are separate groupings of the same rows.
 - [ ] `grid-0049` 4 s (hand 60 ms), `grid-0024`: the SQL front end's TREATAS of all 16 columns
   of catalog_sales onto themselves, a DISTINCT of 14 M rows and a join on 16 columns. The rows
   of a scan joined to tables by their keys (one row or none each) are the scan's own rows.

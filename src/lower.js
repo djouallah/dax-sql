@@ -1065,16 +1065,26 @@ export class Lowerer {
       if (to.k !== 'ref' || fk.k !== 'ref' || !j.rel.cols.includes(to.col) || !base.has(fk.col)) continue;
       // (It may read values of one row that read nothing, closedRels: a copy of each, crossed in.)
       const mine = new Set(j.rel.cols), closedOf = c => this.closedRels?.get(c);
-      const cs = outer.filter(c => { const r = scalarReads(c); return [...r.cols].some(x => mine.has(x)) && [...r.cols].every(x => mine.has(x) || closedOf(x)) && blankFails(c); });
-      if (!cs.length) continue;
-      let { rel, map: m } = clone(j.rel);
-      const ones = [...new Set(cs.flatMap(c => [...scalarReads(c).cols].filter(x => !mine.has(x))))];
-      for (const one of [...new Set(ones.map(closedOf))]) {
-        const { rel: cp, map: m2 } = clone(one);
-        for (const [k, v] of m2) m.set(k, v);
-        rel = P.join('cross', cp, rel);
+      // A condition a blank may pass (a filter table matched by ≡: a TREATAS of brands, a FILTER of
+      // classes) keeps the rows of no row of the table too (a blank meets a blank: the condition
+      // above decides them).
+      const ofJ = c => { const r = scalarReads(c); return [...r.cols].some(x => mine.has(x)) && [...r.cols].every(x => mine.has(x) || closedOf(x)); };
+      const cs = outer.filter(c => ofJ(c) && blankFails(c)), loose = outer.filter(c => ofJ(c) && !blankFails(c));
+      const member = conds => {
+        let { rel, map: m } = clone(j.rel);
+        const ones = [...new Set(conds.flatMap(c => [...scalarReads(c).cols].filter(x => !mine.has(x))))];
+        for (const one of [...new Set(ones.map(closedOf))]) {
+          const { rel: cp, map: m2 } = clone(one);
+          for (const [k, v] of m2) m.set(k, v);
+          rel = P.join('cross', cp, rel);
+        }
+        return P.exists(P.select(rel, P.and([...conds.map(c => subst(c, m)), P.eq(P.ref(m.get(to.col)), fk)])));
+      };
+      if (cs.length) inner.push({ ...member(cs), member: true });
+      if (loose.length && !cs.length) {
+        const { rel: jn, map: m3 } = clone(j.rel);
+        inner.push(P.or([member(loose), P.not(P.exists(P.select(jn, P.eq(P.ref(m3.get(to.col)), fk))))]));
       }
-      inner.push({ ...P.exists(P.select(rel, P.and([...cs.map(c => subst(c, m)), P.eq(P.ref(m.get(to.col)), fk)]))), member: true });
     }
     const v = P.newCol(a.fn, col.t);
     const G = P.aggregate(inner.length ? P.select(b.from, P.and(inner)) : b.from,
@@ -1564,11 +1574,19 @@ Fusion.prototype.belowJoins = function belowJoins(g) {
 // constant is one a blank equals (BLANK, 0, "", FALSE): Product[Color] = "Red", not = 0.
 // A membership (EXISTS of rows one of whose columns = the column, SQL's =: the dates of a
 // DATESBETWEEN) fails for a blank too: NULL = matches nothing.
+// So does a match by ≡ to a column of rows that is never blank (a filter table of classes, its
+// blank row's arm kept only when a blank is one of the classes: TREATAS, FILTER(VALUES(…), … IN …)).
 function blankFails(x) {
   if (x.k === 'ref' || x.k === 'lit') return true;
   if (x.k === 'exists') {
     const fr = free(x.rel);
-    return x.rel.k === 'select' && conjuncts(x.rel.pred).some(c => c.k === 'pop' && c.op === 'eq' && c.a.some(y => y.k === 'ref' && fr.has(y.col)));
+    if (x.rel.k !== 'select') return false;
+    return conjuncts(x.rel.pred).some(c => {
+      if (c.k === 'pop' && c.op === 'eq') return c.a.some(y => y.k === 'ref' && fr.has(y.col));
+      if (!((c.k === 'op' && c.op === 'eqs') || (c.k === 'pop' && c.op === 'key')) || !c.a.every(y => y.k === 'ref')) return false;
+      const [l, r] = c.a, mine = l.col, inner = fr.has(mine) ? r.col : l.col;
+      return (fr.has(l.col) !== fr.has(r.col)) && neverBlank(x.rel.src, inner);
+    });
   }
   if (x.k === 'pop') return ['and', 'eq', 'ne', 'lt', 'le', 'gt', 'ge', 'in', 'notnull'].includes(x.op) && x.a.every(blankFails);
   if (x.k === 'op' && x.op === 'and') return x.a.every(blankFails);
@@ -1579,6 +1597,26 @@ function blankFails(x) {
   if (x.k === 'op' && x.op === 'eq' && x.a.length === 2) {
     const lit = x.a.find(y => y.k === 'lit'), other = x.a.find(y => y !== lit);
     return !!lit && other?.k === 'ref' && ![null, undefined, 0, '', false].includes(lit.v) && !(typeof lit.v === 'bigint' && lit.v === 0n);
+  }
+  return false;
+}
+
+// Whether column col of plan relation r is never NULL: declared so, kept by a condition a blank
+// fails that reads it alone, or so in every arm and source it comes from.
+function neverBlank(r, col, depth = 0) {
+  if (col.nn) return true;
+  if (!r || depth > 40) return false;
+  const at = r.cols.indexOf(col);
+  switch (r.k) {
+    case 'select':
+      return conjuncts(r.pred).some(c => { const rd = scalarReads(c); return !rd.query && rd.cols.size === 1 && rd.cols.has(col) && blankFails(c); })
+        || neverBlank(r.src, col, depth + 1);
+    case 'distinct': return neverBlank(r.src, col, depth + 1);
+    case 'project': { const it = r.items.find(i => i.col === col); return !!it && (it.expr.k === 'ref' ? neverBlank(r.src, it.expr.col, depth + 1) : !!it.expr.nn); }
+    case 'union': return at >= 0 && r.srcs.every((s, k) => neverBlank(s, r.picks[k][at], depth + 1));
+    case 'values': return at >= 0 && r.rows.every(row => row[at]?.k === 'lit' && row[at].v != null);
+    case 'join': return r.left.cols.includes(col) ? (r.kind !== 'right' && neverBlank(r.left, col, depth + 1)) : (r.kind === 'inner' || r.kind === 'cross') && neverBlank(r.right, col, depth + 1);
+    case 'shared': return at >= 0 && neverBlank(r.def.rel, r.picks[at], depth + 1);
   }
   return false;
 }

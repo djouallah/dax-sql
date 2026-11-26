@@ -1119,7 +1119,7 @@ class Fusion {
   // combinations: a level's seven dates, not the calendar's) beside each value f's table holds
   // for them, f's table under each one's (an apply). One definition, read where it is joined:
   // { rel, k: [its keys], v }.
-  mapping(f, refs, c, state) {
+  mapping(f, refs, c, state, outerIds = []) {
     const lw = this.lw;
     const byTable = new Map();
     for (const i of refs) {
@@ -1152,18 +1152,49 @@ class Fusion {
       is.forEach((i, j) => kcol.set(i, part.cols[j]));
       D = D ? P.join('cross', D, part) : part;
     }
+    // The rows around the iterator the filter reads (outerIds): their columns' values, the
+    // mapping's keys too (every value of them and the blank row's), each row bound to them where
+    // the filter is lowered.
+    const outs = [];
+    for (const id of outerIds) {
+      const row = rowById(f, id);
+      if (!row?.cols) return null;
+      // Only the columns whose values change the filter's rows (the outer year, not its city and
+      // class, which filter no table of the dates).
+      const filt = keysThatFilter(f, id, lw.model), all = [...ir.rowRefs(f, id)];
+      const used = (filt.size ? all.filter(r => filt.has(r)) : all).map(r => (typeof r === 'number' ? r : row.cols.findIndex(k => k.lineage === r)));
+      if (used.some(i => i < 0 || !row.cols[i]?.lineage?.table)) return null;
+      const byT = new Map();
+      for (const i of new Set(used)) { const t = row.cols[i].lineage.table; if (!byT.has(t)) byT.set(t, []); byT.get(t).push(i); }
+      const ocol = new Map();
+      for (const [t, is] of byT) {
+        const out = b => { b.setOut(is.map(i => ({ name: `o${i}`, lineage: null })), is.map(i => b.res.meta(row.cols[i].lineage))); b.distinct = true; return b.render(); };
+        let part = lw.exact(out(lw.isolated(() => lw.scanBlock(t, dom, new Map()))));
+        const blank = lw.isolated(() => lw.blankRow(t, dom, new Map(), out));
+        if (blank) part = P.distinct(P.union([part, lw.exact(blank)]));
+        is.forEach((i, j) => ocol.set(i, part.cols[j]));
+        D = D ? P.join('cross', D, part) : part;
+      }
+      outs.push({ row, ocol });
+    }
+    if (!D) return null;
     const db = new Block(lw, D, []);
     db.res = new WrapRes(lw, db, this.keyCols.map((k, i) => ({ expr: kcol.has(i) ? P.ref(kcol.get(i)) : ir.lit(null, k.type), lineage: k, name: k.name })), state);
-    const sb = lw.isolated(() => lw.table(f.src, withRow(new Map(), this.keyRow, db.res)).render());
+    let sc = withRow(new Map(), this.keyRow, db.res);
+    for (const o of outs) sc = withRow(sc, o.row, new WrapRes(lw, db, o.row.cols.map((k, i) => ({ expr: o.ocol.has(i) ? P.ref(o.ocol.get(i)) : ir.lit(null, k.t ?? k.lineage?.type ?? 'string'), lineage: k.lineage ?? null, name: k.name })), state));
+    const sb = lw.isolated(() => lw.table(f.src, sc).render());
     // A filter of a table's rows (f.base) has no idx: its columns are the table's, by lineage.
     const at = f.idx ? f.idx[f.cols.indexOf(c)] : f.src.cols.findIndex(y => y.lineage === c);
     if (at < 0 || !sb.list[at]) return null;
     db.applies.push({ rel: sb.rel, outer: false });
-    db.setOut([...refs.map(i => ({ name: `k${i}`, lineage: null })), { name: 'v', lineage: null }], [...refs.map(i => P.ref(kcol.get(i))), sb.list[at].expr]);
+    const oList = outs.flatMap(o => [...o.ocol].map(([i, col]) => ({ row: o.row, ref: i, t: o.row.cols[i].t ?? o.row.cols[i].lineage.type, col })));
+    db.setOut([...refs.map(i => ({ name: `k${i}`, lineage: null })), ...oList.map((_, j) => ({ name: `o${j}`, lineage: null })), { name: 'v', lineage: null }],
+      [...refs.map(i => P.ref(kcol.get(i))), ...oList.map(o => P.ref(o.col)), sb.list[at].expr]);
     db.distinct = true;
     const rel = lw.exact(db.render());
     const s = lw.shared(`mapping|${canon(rel, true).key}`, () => rel);
-    return { rel: s, k: refs.map((_, j) => P.ref(s.cols[j])), v: P.ref(s.cols[refs.length]) };
+    const n = refs.length;
+    return { rel: s, k: refs.map((_, j) => P.ref(s.cols[j])), o: oList.map((o, j) => ({ row: o.row, ref: o.ref, t: o.t, expr: P.ref(s.cols[n + j]) })), v: P.ref(s.cols[n + oList.length]) };
   }
 
   // Aggregate x as a column of its group, or null (not fused: computed for each row).
@@ -1196,9 +1227,12 @@ class Fusion {
     const outerBind = f => this.ofRows && f.kind === 'bind' && !f.guard && f.val.k === 'col' && f.val.row && f.val.row !== this.keyRow && !!this.outerRows?.has(f.val.row.id);
     // (A row only a scan's filter reads where it reaches no table of that scan is idle there: the
     // year-to-date dates of an iterator's month, under a group's brand and city.)
+    // A table filter that reads rows around the iterator (SAMEPERIODLASTYEAR of the outer group's
+    // year, under RANKX over ALL of a column) can be a mapping by their values (outerMapped).
+    const outerMapped = f => this.ofRows && f.kind === 'rel' && [...reads(f)].some(id => id !== kid) && [...reads(f)].every(id => id === kid || !!this.outerRows?.has(id));
     for (const id of ir.freeRows(x)) {
       if (id === kid) continue;
-      for (const f of S.ctx.filters) if (!outerBind(f) && !idle(f) && reads(f).has(id) && rowsThatFilter(f, lw.model).has(id)) return null;
+      for (const f of S.ctx.filters) if (!outerBind(f) && !idle(f) && !outerMapped(f) && reads(f).has(id) && rowsThatFilter(f, lw.model).has(id)) return null;
     }
     for (const part of [x.arg, ...(x.a ?? []), ...(x.order ?? []).map(o => o.expr)]) {
       if (!part) continue;
@@ -1210,7 +1244,7 @@ class Fusion {
       if (outerBind(f)) {
         // One that does not filter the scan is left out, as a group's key is; one that reaches
         // it over a relationship that filters back is not fused.
-        if (exp.has(f.cols[0].table.name)) outer.push({ col: f.cols[0], val: lw.isolated(() => lw.scalar(f.val, scope, blk)) });
+        if (exp.has(f.cols[0].table.name)) outer.push({ col: f.cols[0], val: lw.isolated(() => lw.scalar(f.val, scope, blk)), src: f.val });
         else if (lw.model.reaches(f.cols[0].table, S.table, state)) return null;
         continue;
       }
@@ -1238,21 +1272,27 @@ class Fusion {
     const mapped = [];
     for (const f of rest) {
       const free = reads(f), filtering = rowsThatFilter(f, lw.model);
-      for (const id of free) if (id !== kid && filtering.has(id)) return null;
+      const outerIds = [...free].filter(id => id !== kid && filtering.has(id));
+      if (outerIds.length && !outerMapped(f)) return null;
+      // By the outer rows' values only a filter worked out from its own table (a date table's
+      // dates a year back, the last date of the group's year): one that aggregates another table
+      // for every outer value (FILTER(VALUES(category), [Catalog Sales LY] > 100)) costs more than
+      // its subquery for each row.
+      if (outerIds.length && !aggregatesOnly(f.src, f.cols[0]?.table)) return null;
       if (!free.size) continue;
       // The keys whose values change the filter's rows: not one only a scan's filter reads that
       // reaches no table of that scan (TOTALYTD's dates under a group's color: the date table's,
       // whatever the color, so the mapping is of the quarter's dates, not each group's).
       const all = [...ir.rowRefs(f, kid)], used = keysThatFilter(f, kid, lw.model);
       const refs = used.size ? all.filter(i => used.has(i)) : all;
-      if (refs.every(i => keys.has(i))) { readsKeys = true; continue; }
+      if (!outerIds.length && refs.every(i => keys.has(i))) { readsKeys = true; continue; }
       // The column the mapping is on: the filter's one column, or the key of the one table whose
       // columns it holds (FILTER(ALL('Date'), ...): the key says which row).
       const T = f.cols[0]?.table;
       const c = f.cols.length === 1 ? f.cols[0] : f.cols.every(y => y.table === T) && T.key && f.cols.includes(T.key) ? T.key : null;
       if (f.kind !== 'rel' || !c || via.length || !NULL_EMPTY.has(x.fn) || !exp.has(c.table.name)
         || refs.some(i => !this.keyCols[i]?.table || !this.active.includes(i))) return null;
-      mapped.push({ f, refs, c });
+      mapped.push({ f, refs, c, outerIds });
     }
     // Keys that reach the scan over a relationship that filters back: the scan is joined to the
     // pairs (key, value of the relationship's column) that the filter context keeps on the keys'
@@ -1292,13 +1332,23 @@ class Fusion {
       block.late.push({ kind: 'inner', rel: pairs, on: mm ? P.key(here, y) : P.eq(here, y) });
       via.forEach((v, j) => { keys.add(v.ref); keyExpr.set(v.ref, P.ref(pairs.cols[j])); });
     }
-    for (const { f, refs, c } of mapped) {
-      const m = this.mapping(f, refs, c, state);
+    const byOuter = [];
+    for (const { f, refs, c, outerIds } of mapped) {
+      const m = this.mapping(f, refs, c, state, outerIds);
       if (!m) return null;
       const here = lw.isolated(() => block.res.meta(c));
+      const sameRef = (src, o) => src.row.id === o.row.id && (src.ref === o.ref || (typeof src.ref === 'object' && o.row.cols[o.ref]?.lineage === src.ref));
+      const joinOuter = [];
+      for (const o of m.o) {
+        // An outer value the scan is filtered to already (an outer bind of that column): the
+        // mapping's is the scan's, joined (as a key of the iterator's row is), not grouped apart.
+        const ob = outer.find(x => x.src && sameRef(x.src, o));
+        if (ob) joinOuter.push(P.key(o.expr, lw.isolated(() => block.res.meta(ob.col))));
+        else byOuter.push({ expr: o.expr, val: lw.isolated(() => lw.scalar({ k: 'col', row: o.row, ref: o.ref, t: o.t }, scope, blk)) });
+      }
       // A key the scan is grouped by already is the mapping's too: the same value. One it is
       // not grouped by is the mapping's.
-      const on = [mayHoldNull(c) ? P.key(m.v, here) : P.eq(m.v, here)];
+      const on = [mayHoldNull(c) ? P.key(m.v, here) : P.eq(m.v, here), ...joinOuter];
       refs.forEach((i, j) => {
         if (keys.has(i)) on.push(P.key(m.k[j], keyExpr.get(i) ?? lw.isolated(() => block.res.meta(this.keyCols[i]))));
         else { keys.add(i); keyExpr.set(i, m.k[j]); }
@@ -1306,15 +1356,15 @@ class Fusion {
       block.late.push({ kind: 'inner', rel: m.rel, on: P.and(on) });
     }
     const keyList = [...keys].sort((a, b) => a - b);
-    const keyExprs = lw.isolated(() => [...keyList.map(i => keyExpr.get(i) ?? block.res.meta(this.keyCols[i])), ...outer.map(o => block.res.meta(o.col))]);
+    const keyExprs = lw.isolated(() => [...keyList.map(i => keyExpr.get(i) ?? block.res.meta(this.keyCols[i])), ...outer.map(o => block.res.meta(o.col)), ...byOuter.map(o => o.expr)]);
     const c = canon(block.body(), true);
-    const outerSig = outer.map(o => `${o.col.table.name}.${o.col.name}=${text(o.val, new Map())}`).join(',');
+    const outerSig = [...outer.map(o => `${o.col.table.name}.${o.col.name}=${text(o.val, new Map())}`), ...byOuter.map(o => `~${text(o.val, new Map())}`)].join(',');
     const sig = `${S.table.name}|${state.key}|${keyList.join(',')}|${outerSig}|${keyExprs.map(e => text(e, c.ids)).join(',')}|${c.key}`;
     const keyed = keyList.length > 0, nullEmpty = NULL_EMPTY.has(x.fn);
     // A group whose aggregates differ in their conditions has the rows of any of them: an
     // aggregate that is not blank over no rows does not join it.
     let g = this.groups.find(y => y.sig === sig && !(y.mixed && !nullEmpty)), conds = null;
-    if (!g && !readsKeys && !edge && !outer.length && !mapped.length && MERGES.has(x.fn) && (!keyed || nullEmpty)) {
+    if (!g && !readsKeys && !edge && !outer.length && !byOuter.length && !mapped.length && MERGES.has(x.fn) && (!keyed || nullEmpty)) {
       // An aggregate over another scan of the same tables by the same keys is that scan's, over
       // the rows its own conditions on the joined tables keep: one scan for both, its conditions
       // the group's or its own (CASE WHEN in its argument). With no keys there is one row each; by
@@ -1334,7 +1384,7 @@ class Fusion {
     }
     if (!g) {
       const plain = !edge && !readsKeys && !mapped.length;
-      g = { sig, block, table: S.table, keys: keyList, keyExprs, outer: outer.map(o => o.val), aggs: [], plain, nullEmpty: true, merge: plain ? `${S.table.name}|${state.key}|${keyList.join(',')}` : null };
+      g = { sig, block, table: S.table, keys: keyList, keyExprs, outer: [...outer.map(o => o.val), ...byOuter.map(o => o.val)], aggs: [], plain, nullEmpty: true, merge: plain ? `${S.table.name}|${state.key}|${keyList.join(',')}` : null };
       this.groups.push(g);
     }
     if (!nullEmpty) g.nullEmpty = false;
@@ -1531,6 +1581,36 @@ function walkFiltering(x, model, kid) {
 // Whether each row of table x is one row of a model table: its rows, filtered, projected, ...; VALUES
 // and ALL with the table's blank row too (withblank: its blank row is one more row of it, and a
 // mapping lists it: Fusion.mapping).
+// Whether every aggregate in x is over rows of `table` alone (the scan it reads is of that table).
+function aggregatesOnly(x, table, seen = new Set()) {
+  if (!x || typeof x !== 'object' || seen.has(x)) return true;
+  seen.add(x);
+  if (x.k === 'agg') {
+    let src = x.src;
+    while (src && src.k !== 'scan' && src.src) src = src.src;
+    if (src?.k !== 'scan' || src.table !== table) return false;
+  }
+  for (const [k, v] of Object.entries(x)) {
+    if (k === 'row' || k === 'lrow' || k === 'cols' || k === 'table' || k === 'base' || k === 'lineage') continue;
+    if (Array.isArray(v) ? !v.every(y => aggregatesOnly(y, table, seen)) : (v && typeof v === 'object' && !aggregatesOnly(v, table, seen))) return false;
+  }
+  return true;
+}
+
+// The row object of id `id` that a table or a filter x reads (a column of it), or null.
+function rowById(x, id, seen = new Set()) {
+  if (!x || typeof x !== 'object' || seen.has(x)) return null;
+  seen.add(x);
+  if (x.k === 'col' && x.row?.id === id) return x.row;
+  for (const [k, v] of Object.entries(x)) {
+    if (k === 'row' || k === 'lrow' || k === 'cols' || k === 'table' || k === 'base' || k === 'lineage') continue;
+    if (k === 'ctx') { for (const f of v.filters) { const r = rowById(f, id, seen); if (r) return r; } continue; }
+    const r = Array.isArray(v) ? v.reduce((acc, y) => acc ?? rowById(y, id, seen), null) : rowById(v, id, seen);
+    if (r) return r;
+  }
+  return null;
+}
+
 function ownRows(x) {
   if (!x) return false;
   if (x.k === 'scan') return true;

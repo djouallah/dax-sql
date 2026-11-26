@@ -1,5 +1,6 @@
 -- store sales to Secondary and 2 yr Degree customers (the ship modes reach no store sale); a blank compares as 0
--- in a two-argument MAX; m2 only when the stores have one state: revenue against every date a year back
+-- in a two-argument MAX; m2 only when the stores have one state (store's blank row, sales of no store, adds
+-- a blank state): revenue against every date a year back
 WITH shift AS (
   SELECT (d_date - INTERVAL 1 YEAR)::DATE AS ly FROM date_dim
   UNION SELECT last_day((d_date - INTERVAL 1 YEAR)::DATE) FROM date_dim WHERE d_date = last_day(d_date)
@@ -13,7 +14,9 @@ WITH shift AS (
 ), t AS (
   SELECT profit, sign(sm) * ((2 * abs(sm) + n) // (2 * n)) / 10000 AS avgp,
     (SELECT NULLIF(COUNT(*), 0) FROM stg_tpcds_archive_log) AS files,
-    CASE WHEN (SELECT COUNT(DISTINCT s_state) + (COUNT(*) > COUNT(s_state))::INT FROM store) = 1 THEN rev_ly END AS m2
+    CASE WHEN (SELECT COUNT(DISTINCT s_state) + (COUNT(*) > COUNT(s_state) OR EXISTS (SELECT 1 FROM store_sales
+                 WHERE ss_store_sk IS NULL OR ss_store_sk NOT IN (SELECT s_store_sk FROM store)))::INT FROM store) = 1
+         THEN rev_ly END AS m2
   FROM s
 ), u AS (
   SELECT profit AS m0,

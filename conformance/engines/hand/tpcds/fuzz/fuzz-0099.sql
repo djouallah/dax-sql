@@ -1,5 +1,6 @@
 -- under color almond. 0 when the store YoY over the catalog quantity is blank, else the catalog's
--- largest sale of the price up to 2024-03-18 (the store does not filter the catalog)
+-- largest sale of the price up to 2024-03-18 (the store does not filter the catalog). A sale with no or
+-- an unknown store makes a blank state.
 WITH it AS (SELECT * FROM item WHERE i_color = 'almond'),
 s AS (
   SELECT st.s_state AS state, it.i_current_price AS pr, SUM(ss.ss_ext_sales_price) AS rev,
@@ -17,7 +18,10 @@ s AS (
   LEFT JOIN date_dim d ON d.d_date_sk_1 = cs.cs_sold_date_sk
   GROUP BY 1
 ), g AS (
-  SELECT * FROM (SELECT DISTINCT s_state AS state FROM store) CROSS JOIN (SELECT DISTINCT i_current_price AS pr FROM it)
+  SELECT * FROM (
+    SELECT DISTINCT s_state AS state FROM store
+    UNION SELECT NULL WHERE EXISTS (SELECT 1 FROM store_sales WHERE ss_store_sk IS NULL OR ss_store_sk NOT IN (SELECT s_store_sk FROM store))
+  ) CROSS JOIN (SELECT DISTINCT i_current_price AS pr FROM it)
 ), r AS (
   SELECT g.state, g.pr,
     CASE WHEN ((COALESCE(s.rev, 0) - s.ly) / NULLIF(s.ly, 0)) / NULLIF(c.qty, 0) IS NULL THEN 0 ELSE c.mx END AS m0

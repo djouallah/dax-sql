@@ -1,6 +1,7 @@
 -- per marital status (of 2 yr Degree), quarter (d_qoy) and promotion name, all shown (the archive's rows never
 -- blank): twice the addresses' distinct states (filtered by nothing, blank counting once) plus the catalog
--- quantity of the last class by descending name (blank sorts last) over the quarter's dates a year back
+-- quantity of the last class by descending name (blank sorts last) over the quarter's dates a year back. The
+-- quarters and the names include the blank row when some sale has no date, no promotion
 WITH cl AS (SELECT i_class FROM (SELECT DISTINCT i_class FROM item) ORDER BY i_class ASC NULLS FIRST LIMIT 1
 ), ly AS (
   SELECT d_qoy, (d_date - INTERVAL 1 YEAR)::DATE AS dt FROM date_dim
@@ -19,6 +20,10 @@ SELECT gm.cd_marital_status, gq.d_qoy, gp.p_promo_name,
   (SELECT COUNT(DISTINCT ca_state) + MAX((ca_state IS NULL)::INT) FROM customer_address) * 2 + COALESCE(q.sply, 0) AS m0,
   (SELECT SUM(row_count) FROM stg_tpcds_archive_log) AS m1
 FROM (SELECT DISTINCT cd_marital_status FROM customer_demographics WHERE cd_education_status = '2 yr Degree') gm
-CROSS JOIN (SELECT DISTINCT d_qoy FROM date_dim) gq
-CROSS JOIN (SELECT DISTINCT p_promo_name FROM promotion) gp
+CROSS JOIN (SELECT d_qoy FROM date_dim
+  UNION SELECT NULL WHERE EXISTS (SELECT 1 FROM store_sales ANTI JOIN date_dim ON d_date_sk_1 = ss_sold_date_sk)
+    OR EXISTS (SELECT 1 FROM catalog_sales ANTI JOIN date_dim ON d_date_sk_1 = cs_sold_date_sk)) gq
+CROSS JOIN (SELECT p_promo_name FROM promotion
+  UNION SELECT NULL WHERE EXISTS (SELECT 1 FROM store_sales ANTI JOIN promotion ON p_promo_sk = ss_promo_sk)
+    OR EXISTS (SELECT 1 FROM catalog_sales ANTI JOIN promotion ON p_promo_sk = cs_promo_sk)) gp
 LEFT JOIN q ON q.ms = gm.cd_marital_status AND q.q = gq.d_qoy AND q.pn IS NOT DISTINCT FROM gp.p_promo_name

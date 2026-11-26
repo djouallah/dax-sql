@@ -2,7 +2,9 @@
 -- the test is whether the category has more than one item price. If so: from 1 January of the quarter number's last
 -- date's year to that date, each date a year back (a month's last day also its month's), the smallest over the
 -- category's prices of the catalog quantity there (the same for every state). Else: the smallest store profit over
--- the catalog revenue (0, so blank, when the store revenue a year back is blank)
+-- the catalog revenue (0, so blank, when the store revenue a year back is blank). A store sale with no (or an
+-- unknown) store makes the store table's blank row: a blank state. (The date table's blank quarter is blank either
+-- way: no year to date, no year back.)
 WITH sh AS (
   SELECT d_date AS dt, (d_date - INTERVAL 1 YEAR)::DATE AS ly FROM date_dim
   UNION SELECT d_date, last_day((d_date - INTERVAL 1 YEAR)::DATE) FROM date_dim WHERE d_date = last_day(d_date)
@@ -45,7 +47,8 @@ SELECT k.i_category, q.d_qoy, t.s_state,
        ELSE s.mnp / NULLIF(CASE WHEN sly.rev IS NULL THEN 0 ELSE c.rev END, 0) END AS m0
 FROM (SELECT DISTINCT i_category FROM item) k
 CROSS JOIN (SELECT DISTINCT d_qoy FROM date_dim) q
-CROSS JOIN (SELECT DISTINCT s_state FROM store) t
+CROSS JOIN (SELECT DISTINCT s_state FROM store
+  UNION SELECT NULL WHERE EXISTS (SELECT 1 FROM store_sales WHERE ss_store_sk IS NULL OR ss_store_sk NOT IN (SELECT s_store_sk FROM store))) t
 JOIN dc ON dc.i_category IS NOT DISTINCT FROM k.i_category
 LEFT JOIN a ON a.i_category IS NOT DISTINCT FROM k.i_category AND a.d_qoy = q.d_qoy
 LEFT JOIN s ON s.i_category IS NOT DISTINCT FROM k.i_category AND s.d_qoy = q.d_qoy AND s.s_state IS NOT DISTINCT FROM t.s_state

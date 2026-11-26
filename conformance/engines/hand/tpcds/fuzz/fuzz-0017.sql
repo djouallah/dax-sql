@@ -1,5 +1,5 @@
 -- items of the colors navy, plum and khaki (not coral); every store state by every customer state (m1 is never
--- blank; the dimensions' values, no blank row)
+-- blank), the blank store / address among them when some sale has no store / address
 -- m0: when the store sold there, catalog quantity of the address state a year back (0 if none);
 -- m1: the items' classes; m2: store revenue a year back, to 1 place
 WITH shift AS (
@@ -22,9 +22,13 @@ WITH shift AS (
   LEFT JOIN customer_address ca ON ca.ca_address_sk = cs.cs_bill_addr_sk
   GROUP BY ALL
 ), states AS (
-  SELECT DISTINCT s_state FROM store
+  SELECT s_state FROM store
+  UNION SELECT NULL WHERE EXISTS (SELECT 1 FROM store_sales WHERE ss_store_sk IS NULL OR ss_store_sk NOT IN (SELECT s_store_sk FROM store))
 ), castates AS (
-  SELECT DISTINCT ca_state FROM customer_address
+  SELECT ca_state FROM customer_address
+  UNION SELECT NULL WHERE EXISTS (SELECT 1 FROM store_sales WHERE ss_addr_sk IS NULL OR ss_addr_sk NOT IN (SELECT ca_address_sk FROM customer_address))
+    OR EXISTS (SELECT 1 FROM catalog_sales WHERE cs_bill_addr_sk IS NULL OR cs_bill_addr_sk NOT IN (SELECT ca_address_sk FROM customer_address)
+      OR cs_ship_addr_sk IS NULL OR cs_ship_addr_sk NOT IN (SELECT ca_address_sk FROM customer_address))
 ), classes AS (
   SELECT COUNT(DISTINCT i_class) + (COUNT(*) > COUNT(i_class))::INT AS n FROM it
 )

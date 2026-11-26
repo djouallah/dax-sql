@@ -1,6 +1,8 @@
 -- per quarter (d_qoy) and category: the profit share among single/married customers' store sales (over every
 -- item) picks between the item count (no measure: every item) (when last year's revenue exists) and the store net profit (when the YTD
--- revenue, from Jan 1 of the quarter's last date's year through it, exists); twice that plus the archive's rows
+-- revenue, from Jan 1 of the quarter's last date's year through it, exists); twice that plus the archive's rows.
+-- Quarter and category each hold their blank row when some row's key misses the table; the blank quarter has no
+-- year back and no YTD, so it picks 0 either way
 WITH s AS (
   SELECT d.d_qoy AS q, i.i_category AS cat, d.d_date AS dt, cd.cd_marital_status AS ms,
     SUM(ss.ss_ext_sales_price) AS rev, SUM(ss.ss_net_profit) AS np
@@ -10,7 +12,13 @@ WITH s AS (
   GROUP BY ALL
 ), g AS (
   SELECT q.d_qoy, c.i_category, q.hi
-  FROM (SELECT d_qoy, MAX(d_date) AS hi FROM date_dim GROUP BY ALL) q, (SELECT DISTINCT i_category FROM item) c
+  FROM (SELECT d_qoy, MAX(d_date) AS hi FROM date_dim GROUP BY ALL
+        UNION SELECT NULL, NULL WHERE EXISTS (FROM store_sales ANTI JOIN date_dim ON d_date_sk_1 = ss_sold_date_sk)
+                                   OR EXISTS (FROM catalog_sales ANTI JOIN date_dim ON d_date_sk_1 = cs_sold_date_sk)) q,
+       (SELECT DISTINCT i_category FROM item
+        UNION SELECT NULL WHERE EXISTS (FROM store_sales ANTI JOIN item ON i_item_sk = ss_item_sk)
+                             OR EXISTS (FROM catalog_sales ANTI JOIN item ON i_item_sk = cs_item_sk)
+                             OR EXISTS (FROM promotion ANTI JOIN item ON i_item_sk = p_item_sk)) c
 ), ly AS (
   SELECT d_qoy, (d_date - INTERVAL 1 YEAR)::DATE AS ly FROM date_dim
   UNION SELECT d_qoy, last_day((d_date - INTERVAL 1 YEAR)::DATE) FROM date_dim WHERE d_date = last_day(d_date)

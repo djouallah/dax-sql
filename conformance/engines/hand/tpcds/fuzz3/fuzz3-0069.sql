@@ -1,6 +1,7 @@
 -- per quarter (d_qoy) and year: catalog quantity (no brand is selected); the store revenue change over a year
 -- for the month before the group's first date (whole months a year apart); and the group's own change over a
--- year (its dates a year back, a month's last day also reaching Feb 29), 0 when it has no store profit
+-- year (its dates a year back, a month's last day also reaching Feb 29), 0 when it has no store profit. The
+-- blank date (sales with no date) has no month before nor a year back: its quantity, and 0 or blank
 WITH r AS (
   SELECT d.d_date AS dt, SUM(ss.ss_ext_sales_price) AS rev, SUM(ss.ss_net_profit) AS np
   FROM store_sales ss JOIN date_dim d ON d.d_date_sk_1 = ss.ss_sold_date_sk
@@ -18,6 +19,11 @@ WITH r AS (
   SELECT d.d_qoy AS q, d.d_year AS y, SUM(r.rev) AS rev, SUM(r.np) AS np FROM date_dim d JOIN r ON r.dt = d.d_date GROUP BY ALL
 ), prev AS (
   SELECT ly.q, ly.y, SUM(r.rev) AS rev FROM ly JOIN r USING (dt) GROUP BY ALL
+), o AS (
+  SELECT (SELECT SUM(cs_quantity) FROM catalog_sales ANTI JOIN date_dim ON d_date_sk_1 = cs_sold_date_sk) AS csq,
+    (SELECT SUM(ss_net_profit) FROM store_sales ANTI JOIN date_dim ON d_date_sk_1 = ss_sold_date_sk) AS np,
+    EXISTS (SELECT 1 FROM store_sales ANTI JOIN date_dim ON d_date_sk_1 = ss_sold_date_sk)
+      OR EXISTS (SELECT 1 FROM catalog_sales ANTI JOIN date_dim ON d_date_sk_1 = cs_sold_date_sk) AS blank
 ), pmo AS (
   SELECT g.q, g.y,
     SUM(r.rev) FILTER (WHERE r.dt >= g.pm AND r.dt < g.pm + INTERVAL 1 MONTH) AS rev,
@@ -30,3 +36,5 @@ SELECT g.q, g.y, c.csq AS m0,
   CASE WHEN cur.np IS NULL THEN 0 ELSE (COALESCE(cur.rev, 0) - prev.rev) / NULLIF(prev.rev, 0) END AS m2
 FROM g
 LEFT JOIN c USING (q, y) LEFT JOIN cur USING (q, y) LEFT JOIN prev USING (q, y) LEFT JOIN pmo USING (q, y)
+UNION ALL
+SELECT NULL, NULL, csq, NULL, CASE WHEN np IS NULL THEN 0 END FROM o WHERE blank

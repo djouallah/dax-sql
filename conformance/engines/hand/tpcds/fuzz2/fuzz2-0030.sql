@@ -1,7 +1,8 @@
 -- per customer state, ship mode type and store city:
 -- m0: the item categories (no filter reaches item) / catalog quantity of non-single bill customers
 -- m1: store net profit
--- (the dimensions' values make the groups; a sale with no address, ship mode or store counts under a blank one)
+-- (the dimensions' values make the groups; a sale with no or an unknown address, ship mode or store counts
+-- under the blank one, a group of its own)
 WITH cs AS (
   SELECT ca.ca_state, sm.sm_type, SUM(cs.cs_quantity) AS qty
   FROM catalog_sales cs
@@ -20,9 +21,20 @@ WITH cs AS (
   SELECT COUNT(DISTINCT i_category) + MAX(CASE WHEN i_category IS NULL THEN 1 ELSE 0 END) AS n FROM item
 )
 SELECT a.ca_state, t.sm_type, c.s_city, cats.n / NULLIF(cs.qty, 0) AS m0, ss.np AS m1
-FROM (SELECT DISTINCT ca_state FROM customer_address) a
-CROSS JOIN (SELECT DISTINCT sm_type FROM ship_mode) t
-CROSS JOIN (SELECT DISTINCT s_city FROM store) c
+FROM (
+  SELECT DISTINCT ca_state FROM customer_address
+  UNION SELECT NULL WHERE EXISTS (SELECT 1 FROM store_sales WHERE ss_addr_sk IS NULL OR ss_addr_sk NOT IN (SELECT ca_address_sk FROM customer_address))
+    OR EXISTS (SELECT 1 FROM catalog_sales WHERE cs_bill_addr_sk IS NULL OR cs_bill_addr_sk NOT IN (SELECT ca_address_sk FROM customer_address)
+      OR cs_ship_addr_sk IS NULL OR cs_ship_addr_sk NOT IN (SELECT ca_address_sk FROM customer_address))
+) a
+CROSS JOIN (
+  SELECT DISTINCT sm_type FROM ship_mode
+  UNION SELECT NULL WHERE EXISTS (SELECT 1 FROM catalog_sales WHERE cs_ship_mode_sk IS NULL OR cs_ship_mode_sk NOT IN (SELECT sm_ship_mode_sk FROM ship_mode))
+) t
+CROSS JOIN (
+  SELECT DISTINCT s_city FROM store
+  UNION SELECT NULL WHERE EXISTS (SELECT 1 FROM store_sales WHERE ss_store_sk IS NULL OR ss_store_sk NOT IN (SELECT s_store_sk FROM store))
+) c
 CROSS JOIN cats
 LEFT JOIN cs ON cs.ca_state IS NOT DISTINCT FROM a.ca_state AND cs.sm_type IS NOT DISTINCT FROM t.sm_type
 LEFT JOIN ss ON ss.ca_state IS NOT DISTINCT FROM a.ca_state AND ss.s_city IS NOT DISTINCT FROM c.s_city

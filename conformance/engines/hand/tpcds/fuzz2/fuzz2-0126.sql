@@ -2,7 +2,9 @@
 -- m0: the smallest over marital statuses of distinct store customers, less |archive rows x smallest store sale|.
 -- m1: the average over item prices of catalog revenue at the price when the archive has over 1000 files (it has 5),
 -- else of the count of stores of the name; 2 x that + this year-to-date store revenue (from 1 January of the last such date's year) x catalog revenue
--- (the ship-address relationship changes nothing: no address filter)
+-- (the ship-address relationship changes nothing: no address filter).
+-- A sale with no (or an unknown) store, promotion or customer_demographics key makes that table's blank row: a blank
+-- store name (no store rows to count), promotion name or marital status, holding those sales.
 WITH ytd AS (
   SELECT date_trunc('year', MAX(d_date))::DATE AS d0, MAX(d_date) AS d1 FROM date_dim WHERE d_moy <> 2
 ), s AS (
@@ -14,7 +16,7 @@ WITH ytd AS (
   SELECT s_store_name, p_promo_name, MIN(dc) AS dc FROM (
     SELECT s_store_name, p_promo_name, cd_marital_status,
       COUNT(DISTINCT ss_customer_sk) + MAX(CASE WHEN ss_customer_sk IS NULL THEN 1 ELSE 0 END) AS dc
-    FROM s WHERE d_moy IS DISTINCT FROM 2 AND cd_marital_status IN (SELECT cd_marital_status FROM customer_demographics)
+    FROM s WHERE d_moy IS DISTINCT FROM 2
     GROUP BY ALL)
   GROUP BY ALL
 ), sa AS (
@@ -38,12 +40,17 @@ WITH ytd AS (
   GROUP BY ALL
 ), n AS (
   SELECT s_store_name, COUNT(*) AS n FROM store GROUP BY ALL
+  UNION ALL SELECT NULL, NULL
+  WHERE EXISTS (SELECT 1 FROM store_sales WHERE ss_store_sk IS NULL OR ss_store_sk NOT IN (SELECT s_store_sk FROM store))
+    AND NOT EXISTS (SELECT 1 FROM store WHERE s_store_name IS NULL)
 )
 SELECT n.s_store_name, p.p_promo_name,
   CASE WHEN dcm.dc IS NULL AND sa.mn IS NULL THEN NULL
        ELSE COALESCE(dcm.dc, 0) - COALESCE(ABS((SELECT SUM(row_count) FROM stg_tpcds_archive_log) * sa.mn), 0) END AS m0,
   CASE WHEN v.v IS NULL AND sa.ytd * c.rev IS NULL THEN NULL ELSE COALESCE(v.v, 0) * 2 + COALESCE(sa.ytd * c.rev, 0) END AS m1
-FROM n CROSS JOIN (SELECT DISTINCT p_promo_name FROM promotion) p
+FROM n CROSS JOIN (SELECT DISTINCT p_promo_name FROM promotion
+  UNION SELECT NULL WHERE EXISTS (SELECT 1 FROM store_sales WHERE ss_promo_sk IS NULL OR ss_promo_sk NOT IN (SELECT p_promo_sk FROM promotion))
+    OR EXISTS (SELECT 1 FROM catalog_sales WHERE cs_promo_sk IS NULL OR cs_promo_sk NOT IN (SELECT p_promo_sk FROM promotion))) p
 LEFT JOIN dcm ON dcm.s_store_name IS NOT DISTINCT FROM n.s_store_name AND dcm.p_promo_name IS NOT DISTINCT FROM p.p_promo_name
 LEFT JOIN sa ON sa.s_store_name IS NOT DISTINCT FROM n.s_store_name AND sa.p_promo_name IS NOT DISTINCT FROM p.p_promo_name
 LEFT JOIN c ON c.p_promo_name IS NOT DISTINCT FROM p.p_promo_name

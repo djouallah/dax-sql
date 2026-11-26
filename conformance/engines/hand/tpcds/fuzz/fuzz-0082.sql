@@ -1,7 +1,8 @@
 -- A quarter's dates are every year's dates of that d_qoy. YTD: from January 1 of the year of the
 -- quarter's last date to that date (every date between, the quarter's filter replaced); YTD of the
 -- YTD is the same dates. A year back: each of the quarter's dates a year back (February 28 also
--- reaching February 29 when its day before is there too).
+-- reaching February 29 when its day before is there too). The quarter and the status have their blank value
+-- too when the model has that blank row (the blank quarter has no year to date and no year back).
 WITH vis AS (SELECT d_qoy AS q, d_date AS d FROM date_dim),
 last_d AS (SELECT q, MAX(d) AS mx FROM vis GROUP BY 1),
 ytd AS (
@@ -32,7 +33,11 @@ cs AS (
 ),
 c_ly AS (SELECT ly.q, cs.m, SUM(cs.qty) AS v FROM ly JOIN cs ON cs.sk = ly.sk GROUP BY 1, 2),
 g AS (
-  SELECT * FROM (SELECT DISTINCT d_qoy AS q FROM date_dim) CROSS JOIN (SELECT DISTINCT cd_marital_status AS m FROM customer_demographics)
+  SELECT * FROM (SELECT d_qoy AS q FROM date_dim UNION SELECT NULL WHERE EXISTS (SELECT 1 FROM store_sales WHERE ss_sold_date_sk IS NULL OR ss_sold_date_sk NOT IN (SELECT d_date_sk_1 FROM date_dim))
+    OR EXISTS (SELECT 1 FROM catalog_sales WHERE cs_sold_date_sk IS NULL OR cs_sold_date_sk NOT IN (SELECT d_date_sk_1 FROM date_dim)))
+  CROSS JOIN (SELECT cd_marital_status AS m FROM customer_demographics UNION SELECT NULL WHERE EXISTS (SELECT 1 FROM store_sales WHERE ss_cdemo_sk IS NULL OR ss_cdemo_sk NOT IN (SELECT cd_demo_sk FROM customer_demographics))
+    OR EXISTS (SELECT 1 FROM catalog_sales WHERE cs_bill_cdemo_sk IS NULL OR cs_bill_cdemo_sk NOT IN (SELECT cd_demo_sk FROM customer_demographics)
+      OR cs_ship_cdemo_sk IS NULL OR cs_ship_cdemo_sk NOT IN (SELECT cd_demo_sk FROM customer_demographics)))
 ),
 r AS (
   SELECT g.q, g.m, y.v AS m0, y.v / NULLIF(s.v, 0) AS m1, ABS(c.v) AS m2

@@ -1,6 +1,7 @@
 -- catalog_sales is not filtered by store: the December catalog profit for two ship types picks, per state,
 -- the state's store count or twice the catalog revenue plus the state's store profit; then the greater of
--- that and the catalog profit (MAX of two: a blank compares as 0).
+-- that and the catalog profit (MAX of two: a blank compares as 0). A store sale with no (or an unknown) store makes
+-- the store table's blank row: a blank state, with those sales' profit and no store rows to count.
 WITH cond AS (
   SELECT COALESCE(SUM(cs.cs_net_profit), 0) > 0 AS b
   FROM catalog_sales cs JOIN date_dim d ON d.d_date_sk_1 = cs.cs_sold_date_sk
@@ -9,8 +10,12 @@ WITH cond AS (
 c AS (SELECT SUM(cs_ext_sales_price) AS rev, SUM(cs_net_profit) AS np FROM catalog_sales),
 sp AS (
   SELECT st.s_state, SUM(ss.ss_net_profit) AS p
-  FROM store_sales ss JOIN store st ON st.s_store_sk = ss.ss_store_sk GROUP BY 1),
-sc AS (SELECT s_state, COUNT(*) AS n FROM store GROUP BY 1),
+  FROM store_sales ss LEFT JOIN store st ON st.s_store_sk = ss.ss_store_sk GROUP BY 1),
+sc AS (
+  SELECT s_state, COUNT(*) AS n FROM store GROUP BY 1
+  UNION ALL SELECT NULL, NULL
+  WHERE EXISTS (SELECT 1 FROM store_sales WHERE ss_store_sk IS NULL OR ss_store_sk NOT IN (SELECT s_store_sk FROM store))
+    AND NOT EXISTS (SELECT 1 FROM store WHERE s_state IS NULL)),
 x AS (
   SELECT sc.s_state,
     CASE WHEN cond.b THEN sc.n

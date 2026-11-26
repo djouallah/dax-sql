@@ -2,7 +2,8 @@
 -- m0 = dense rank (descending) of the store revenue YoY at this price among all the item prices, the classes held to
 -- those of this colour and price (auto-exist: ALL(price) leaves the class x colour pairs); a price with no YoY is
 -- blank, ranked as 0. Last year = each date of the month a year back (a month's last day also its month's).
--- m1, m2 = smallest store profit and catalog quantity
+-- m1, m2 = smallest store profit and catalog quantity. A sale with no (or an unknown) date makes the date table's blank row: a blank
+-- month (no YoY: rank 1), holding those sales
 WITH f AS (
   SELECT * FROM item WHERE i_class IN ('pants', 'fiction') AND i_color IS DISTINCT FROM 'khaki'
 ), g AS (
@@ -16,7 +17,7 @@ WITH f AS (
   JOIN date_dim d ON d.d_date = x.dt
 ), cur AS (
   SELECT i.i_color, i.i_class, i.i_current_price, d.d_moy, SUM(ss.ss_ext_sales_price) AS rev, MIN(ss.ss_net_profit) AS mnp
-  FROM store_sales ss JOIN f i ON i.i_item_sk = ss.ss_item_sk JOIN date_dim d ON d.d_date_sk_1 = ss.ss_sold_date_sk
+  FROM store_sales ss JOIN f i ON i.i_item_sk = ss.ss_item_sk LEFT JOIN date_dim d ON d.d_date_sk_1 = ss.ss_sold_date_sk
   GROUP BY ALL
 ), ly AS (
   SELECT i.i_color, i.i_class, i.i_current_price, lym.d_moy, SUM(ss.ss_ext_sales_price) AS rev
@@ -30,7 +31,9 @@ WITH f AS (
   LEFT JOIN cur ON cur.i_color IS NOT DISTINCT FROM ly.i_color AND cur.i_class = ly.i_class AND cur.i_current_price IS NOT DISTINCT FROM ly.i_current_price AND cur.d_moy = ly.d_moy
   GROUP BY ALL
 ), gm AS (
-  SELECT g.i_color, g.i_current_price, m.d_moy FROM g CROSS JOIN (SELECT DISTINCT d_moy FROM date_dim) m
+  SELECT g.i_color, g.i_current_price, m.d_moy FROM g CROSS JOIN (SELECT DISTINCT d_moy FROM date_dim
+    UNION SELECT NULL WHERE EXISTS (SELECT 1 FROM store_sales WHERE ss_sold_date_sk IS NULL OR ss_sold_date_sk NOT IN (SELECT d_date_sk_1 FROM date_dim))
+      OR EXISTS (SELECT 1 FROM catalog_sales WHERE cs_sold_date_sk IS NULL OR cs_sold_date_sk NOT IN (SELECT d_date_sk_1 FROM date_dim))) m
 ), vals AS (
   -- the distinct values ranked per group and month: the YoYs, and 0 when some price has none
   SELECT i_color, p0, d_moy, v FROM yoy WHERE v IS NOT NULL
@@ -42,13 +45,13 @@ WITH f AS (
   SELECT i_color, i_current_price, d_moy, MIN(mnp) AS mnp FROM cur GROUP BY ALL
 ), mq AS (
   SELECT i.i_color, i.i_current_price, d.d_moy, MIN(cs.cs_quantity) AS mq
-  FROM catalog_sales cs JOIN f i ON i.i_item_sk = cs.cs_item_sk JOIN date_dim d ON d.d_date_sk_1 = cs.cs_sold_date_sk
+  FROM catalog_sales cs JOIN f i ON i.i_item_sk = cs.cs_item_sk LEFT JOIN date_dim d ON d.d_date_sk_1 = cs.cs_sold_date_sk
   GROUP BY ALL
 )
 SELECT gm.i_color, gm.d_moy, gm.i_current_price,
-  1 + (SELECT COUNT(*) FROM vals WHERE vals.i_color IS NOT DISTINCT FROM gm.i_color AND vals.p0 IS NOT DISTINCT FROM gm.i_current_price AND vals.d_moy = gm.d_moy AND vals.v > COALESCE(y.v, 0)) AS m0,
+  1 + (SELECT COUNT(*) FROM vals WHERE vals.i_color IS NOT DISTINCT FROM gm.i_color AND vals.p0 IS NOT DISTINCT FROM gm.i_current_price AND vals.d_moy IS NOT DISTINCT FROM gm.d_moy AND vals.v > COALESCE(y.v, 0)) AS m0,
   s.mnp AS m1, mq.mq AS m2
 FROM gm
 LEFT JOIN yoy y ON y.i_color IS NOT DISTINCT FROM gm.i_color AND y.p0 IS NOT DISTINCT FROM gm.i_current_price AND y.p IS NOT DISTINCT FROM gm.i_current_price AND y.d_moy = gm.d_moy
-LEFT JOIN s ON s.i_color IS NOT DISTINCT FROM gm.i_color AND s.i_current_price IS NOT DISTINCT FROM gm.i_current_price AND s.d_moy = gm.d_moy
-LEFT JOIN mq ON mq.i_color IS NOT DISTINCT FROM gm.i_color AND mq.i_current_price IS NOT DISTINCT FROM gm.i_current_price AND mq.d_moy = gm.d_moy
+LEFT JOIN s ON s.i_color IS NOT DISTINCT FROM gm.i_color AND s.i_current_price IS NOT DISTINCT FROM gm.i_current_price AND s.d_moy IS NOT DISTINCT FROM gm.d_moy
+LEFT JOIN mq ON mq.i_color IS NOT DISTINCT FROM gm.i_color AND mq.i_current_price IS NOT DISTINCT FROM gm.i_current_price AND mq.d_moy IS NOT DISTINCT FROM gm.d_moy

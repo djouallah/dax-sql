@@ -353,8 +353,9 @@ extend a block wraps it in a subquery.
 **A scan** is the table joined to the related tables it needs, with the filter context as its
 WHERE.
 
-- A dimension key is read off the fact's foreign key when the relationship relies on
-  referential integrity.
+- A dimension key is read off the fact's foreign key under `assumeIntegrity` (no orphan key).
+  A relationship's referential-integrity flag is DirectQuery's and changes nothing: an orphan
+  key's dimension key is blank.
 - A `rel` filter is `IN` for one column and `EXISTS` for more.
 
 **An aggregate** is a scalar subquery over its table's block, correlated to the rows it reads.
@@ -669,7 +670,7 @@ SELECT * FROM (SHOW SEMANTIC METRICS IN sales) WHERE ...;   -- each one reads as
 | `dialect` | `'duckdb'` (default), `'tsql'` (the Fabric SQL endpoint and Warehouse; see T-SQL below), `'polars'` (Polars SQL; see below), `'datafusion'` (Apache DataFusion; see below), or an instance of a `Dialect` subclass. |
 | `columnNames` | `'short'` (default): the column's or the expression's name. `'dax'`: `Table[Column]`, `[Measure]`. |
 | `castOutput` | `true` (default): whole numbers as `BIGINT`, other numbers as `DOUBLE`. Or an object, by the column's type (`int`, `double`, `decimal`, `datetime`, `string`, `bool`), of a function of its SQL: `{ int: s => \`CAST(${s} AS INTEGER)\` }`; a type it leaves out is not cast. |
-| `assumeIntegrity` | `true`: every relationship relies on referential integrity, so a dimension key is read off the fact's foreign key without a join. By default only relationships whose `assumeIntegrity` is set (TMSL's `relyOnReferentialIntegrity`) are treated this way. It also leaves out DAX's blank row (no check of the facts for keys a dimension lacks). |
+| `assumeIntegrity` | `true`: every relationship relies on referential integrity, so a dimension key is read off the fact's foreign key without a join. TMSL's `relyOnReferentialIntegrity` is DirectQuery's and is not read this way: an import model has the blank row whatever it says. It also leaves out DAX's blank row (no check of the facts for keys a dimension lacks). |
 | `user` | The value of `USERNAME()` and `USERPRINCIPALNAME()`. |
 | `roles` | A role name, or several: row-level security, each table keeping the rows that at least one of the roles keeps; and object-level security, a table or column hidden when every role hides it. A hidden object is no name for the query (naming it, a measure that reads it, a measure of a hidden table: an error, as the model lacked it), while the model still reads it: relationships, joins, and calculated columns computed from it, which stay visible. A table result leaves its hidden columns out. Roles that hide objects together with roles that filter rows are an error, as in Power BI; one role can do both. |
 | `params` | The values of the query's parameters (`@name`), by name: numbers, text, booleans, `Date`s or `null` (blank). |
@@ -1106,7 +1107,7 @@ The SQL it writes:
 - A filter of a column's values with conditions on that column alone, like
   `FILTER(ALL('Date'[Date]), 'Date'[Date] >= x)`, is a condition on the scan's own row when
   every row has a value of that column: the scan's own column, or one reached over
-  relationships that rely on referential integrity. There is no subquery, so the engine can
+  relationships under `assumeIntegrity`. There is no subquery, so the engine can
   skip the rows the condition rules out.
 - A total over the rows of a fused group, like `CALCULATE(x, ALLSELECTED(…))` next to `x` by
   group, is the group's values added up, not a second scan: by none of its keys or by some

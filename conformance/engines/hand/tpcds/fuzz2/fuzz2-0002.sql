@@ -11,8 +11,11 @@ WITH ss AS (
   WHERE COALESCE(i.i_color, '') <> 'plum'
   GROUP BY d.d_moy
 ), g AS (
-  -- the months of the calendar (no blank month: the store count is never blank, the dimension's values make the groups)
+  -- the months of the calendar (the store count is never blank: the dimension's values make the groups), and
+  -- the blank month when a sale has no or an unknown date
   SELECT DISTINCT d_moy FROM date_dim
+  UNION SELECT NULL WHERE EXISTS (SELECT 1 FROM store_sales WHERE ss_sold_date_sk IS NULL OR ss_sold_date_sk NOT IN (SELECT d_date_sk_1 FROM date_dim))
+    OR EXISTS (SELECT 1 FROM catalog_sales WHERE cs_sold_date_sk IS NULL OR cs_sold_date_sk NOT IN (SELECT d_date_sk_1 FROM date_dim))
 )
 SELECT g.d_moy, ROUND(ss.cust, 2), (SELECT COUNT(*) FROM store), cs.profit
 FROM g LEFT JOIN ss ON ss.d_moy IS NOT DISTINCT FROM g.d_moy LEFT JOIN cs ON cs.d_moy IS NOT DISTINCT FROM g.d_moy

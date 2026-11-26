@@ -1,5 +1,5 @@
--- per year of the date table (no blank year for sales of no date, as dax-sql has it beside a time intelligence
--- measure): store revenue of the year's dates a year back, date by date
+-- per year of the date table, and the blank year of the sales with no date (no dates a year back): store
+-- revenue of the year's dates a year back, date by date
 WITH shift AS (
   SELECT d_year, (d_date - INTERVAL 1 YEAR)::DATE AS ly FROM date_dim
   UNION SELECT d_year, last_day((d_date - INTERVAL 1 YEAR)::DATE) FROM date_dim WHERE d_date = last_day(d_date)
@@ -16,7 +16,10 @@ WITH shift AS (
   FROM catalog_sales cs LEFT JOIN date_dim d ON d.d_date_sk_1 = cs.cs_sold_date_sk
   GROUP BY ALL
 ), g AS (
-  SELECT DISTINCT d_year FROM date_dim
+  SELECT d_year FROM date_dim
+  UNION SELECT NULL
+  WHERE EXISTS (SELECT 1 FROM store_sales WHERE ss_sold_date_sk IS NULL OR ss_sold_date_sk NOT IN (SELECT d_date_sk_1 FROM date_dim))
+     OR EXISTS (SELECT 1 FROM catalog_sales WHERE cs_sold_date_sk IS NULL OR cs_sold_date_sk NOT IN (SELECT d_date_sk_1 FROM date_dim))
 )
 SELECT g.d_year, ly.rev AS m0, s.minp AS m1, c.qty AS m2
 FROM g

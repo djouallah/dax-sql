@@ -1,7 +1,8 @@
 -- m1 (the same for every ship type): per category and quarter, the dense rank among all brands of each brand's
 -- rank of its quarter among the quarters, both of the store revenue on the quarter's dates a year back (a blank
 -- as 0; d_qoy need not follow calendar quarters). The outer value is that rank with no brand filter; a brand
--- with no sales in the category ranks 1, never above it. Every category x quarter is a group.
+-- with no sales in the category ranks 1, never above it. Every category x quarter is a group, and the blank quarter
+-- (the date table's blank row, of sales with no or an unknown date: its catalog revenue, rank 1).
 WITH a AS (
   SELECT d.d_date AS dt, i.i_category, i.i_brand, SUM(ss.ss_ext_sales_price) AS rev
   FROM store_sales ss JOIN date_dim d ON d.d_date_sk_1 = ss.ss_sold_date_sk LEFT JOIN item i ON i.i_item_sk = ss.ss_item_sk
@@ -31,10 +32,13 @@ outer_rk AS (
   GROUP BY ALL),
 c AS (
   SELECT i.i_category, d.d_qoy, SUM(cs.cs_ext_sales_price) AS rev
-  FROM catalog_sales cs JOIN date_dim d ON d.d_date_sk_1 = cs.cs_sold_date_sk LEFT JOIN item i ON i.i_item_sk = cs.cs_item_sk
+  FROM catalog_sales cs LEFT JOIN date_dim d ON d.d_date_sk_1 = cs.cs_sold_date_sk LEFT JOIN item i ON i.i_item_sk = cs.cs_item_sk
   GROUP BY ALL)
 SELECT g.i_category, g.d_qoy, c.rev AS m0,
   CASE WHEN EXISTS (SELECT 1 FROM ship_mode) THEN COALESCE(o.r, 1)::DOUBLE END AS m1
-FROM (SELECT DISTINCT i.i_category, qs.d_qoy FROM item i, qs) g
-LEFT JOIN c ON c.i_category IS NOT DISTINCT FROM g.i_category AND c.d_qoy = g.d_qoy
+FROM (SELECT DISTINCT i.i_category, q.d_qoy FROM item i,
+        (SELECT d_qoy FROM qs
+         UNION SELECT NULL WHERE EXISTS (SELECT 1 FROM store_sales WHERE ss_sold_date_sk IS NULL OR ss_sold_date_sk NOT IN (SELECT d_date_sk_1 FROM date_dim))
+           OR EXISTS (SELECT 1 FROM catalog_sales WHERE cs_sold_date_sk IS NULL OR cs_sold_date_sk NOT IN (SELECT d_date_sk_1 FROM date_dim))) q) g
+LEFT JOIN c ON c.i_category IS NOT DISTINCT FROM g.i_category AND c.d_qoy IS NOT DISTINCT FROM g.d_qoy
 LEFT JOIN outer_rk o ON o.i_category IS NOT DISTINCT FROM g.i_category AND o.d_qoy = g.d_qoy

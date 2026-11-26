@@ -1,13 +1,21 @@
 -- m0: twice the store quantity of the city over the year to date of the month's last date (DATESYTD of the
 -- dates with that d_moy: the last year's month), plus every archive row count
 -- m1: catalog YoY of the month (blue and almond items) over catalog's average price from 2025-10-24 to 2026-05-13
+-- The blank month (sales with no date) and the blank city (store sales with no store) are rows too, when the
+-- facts have such sales: the blank month's DATESYTD is empty (m0 = the archive rows), its m1 blank.
 WITH months AS (
-  SELECT d_moy, MAX(d_date) AS last_dt FROM date_dim GROUP BY d_moy
+  SELECT d_moy, MAX(d_date) AS last_dt
+  FROM (SELECT d_moy, d_date FROM date_dim
+        UNION ALL SELECT NULL, NULL
+        WHERE EXISTS (SELECT 1 FROM store_sales WHERE ss_sold_date_sk IS NULL OR ss_sold_date_sk NOT IN (SELECT d_date_sk_1 FROM date_dim))
+           OR EXISTS (SELECT 1 FROM catalog_sales WHERE cs_sold_date_sk IS NULL OR cs_sold_date_sk NOT IN (SELECT d_date_sk_1 FROM date_dim)))
+  GROUP BY d_moy
 ), cities AS (
-  SELECT DISTINCT s_city FROM store
+  SELECT s_city FROM store
+  UNION SELECT NULL WHERE EXISTS (SELECT 1 FROM store_sales WHERE ss_store_sk IS NULL OR ss_store_sk NOT IN (SELECT s_store_sk FROM store))
 ), ssd AS (
   SELECT s.s_city, d.d_date AS dt, SUM(ss.ss_quantity) AS qty
-  FROM store_sales ss JOIN date_dim d ON d.d_date_sk_1 = ss.ss_sold_date_sk JOIN store s ON s.s_store_sk = ss.ss_store_sk
+  FROM store_sales ss JOIN date_dim d ON d.d_date_sk_1 = ss.ss_sold_date_sk LEFT JOIN store s ON s.s_store_sk = ss.ss_store_sk
   GROUP BY ALL
 ), ytd AS (
   SELECT m.d_moy, c.s_city, SUM(ssd.qty) AS qty

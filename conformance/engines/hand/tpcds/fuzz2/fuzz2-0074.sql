@@ -1,5 +1,9 @@
--- HASONEVALUE(s_state) with no store filter: the store table holds a single state
-WITH one AS (SELECT COUNT(DISTINCT s_state) + (COUNT(*) > COUNT(s_state))::INT = 1 AS b FROM store),
+-- HASONEVALUE(s_state) with no store filter: the store table holds a single state (sales of no store
+-- give store a blank row, a blank state)
+WITH one AS (
+  SELECT COUNT(DISTINCT s_state) + (COUNT(*) > COUNT(s_state)
+    OR EXISTS (SELECT 1 FROM store_sales WHERE ss_store_sk IS NULL OR ss_store_sk NOT IN (SELECT s_store_sk FROM store)))::INT = 1 AS b FROM store
+),
 g AS (
   SELECT i.i_class, sm.sm_type, ROUND(AVG(cs.cs_ext_sales_price), 4) AS a, SUM(cs.cs_net_profit) AS np
   FROM catalog_sales cs LEFT JOIN item i ON i.i_item_sk = cs.cs_item_sk

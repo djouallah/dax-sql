@@ -1,5 +1,6 @@
 -- per store name: 0 when the chosen sales a year back are blank, else the catalog YoY of the month before the
--- date table's first date (PREVIOUSMONTH; those dates a year back); the two lowest (ties kept)
+-- date table's first date (PREVIOUSMONTH; those dates a year back); the two lowest (ties kept). The blank store
+-- (store sales with no store) is a name too; catalog a year back is the same for it.
 WITH shift AS (
   SELECT (d_date - INTERVAL 1 YEAR)::DATE AS ly FROM date_dim
   UNION SELECT last_day((d_date - INTERVAL 1 YEAR)::DATE) FROM date_dim WHERE d_date = last_day(d_date)
@@ -17,14 +18,15 @@ WITH shift AS (
   FROM catalog_sales cs LEFT JOIN date_dim d ON d.d_date_sk_1 = cs.cs_sold_date_sk
 ), s AS (
   SELECT st.s_store_name, SUM(ss.ss_ext_sales_price) AS rev_ly
-  FROM store_sales ss JOIN store st ON st.s_store_sk = ss.ss_store_sk
+  FROM store_sales ss LEFT JOIN store st ON st.s_store_sk = ss.ss_store_sk
   JOIN date_dim d ON d.d_date_sk_1 = ss.ss_sold_date_sk AND d.d_date IN (SELECT ly FROM shift)
   GROUP BY ALL
 ), t AS (
   SELECT n.s_store_name,
     CASE WHEN (CASE WHEN COALESCE(c.rev, 0) > 1000 THEN c.qty_ly ELSE s.rev_ly END) IS NULL THEN 0
       ELSE (COALESCE(c.qty_pm, 0) - c.qty_pm_ly) / NULLIF(c.qty_pm_ly, 0) END AS m0
-  FROM (SELECT DISTINCT s_store_name FROM store) n CROSS JOIN c
+  FROM (SELECT s_store_name FROM store UNION SELECT NULL WHERE EXISTS (SELECT 1 FROM store_sales WHERE ss_store_sk IS NULL OR ss_store_sk NOT IN (SELECT s_store_sk FROM store))) n
+  CROSS JOIN c
   LEFT JOIN s ON s.s_store_name IS NOT DISTINCT FROM n.s_store_name
 )
 SELECT * FROM t WHERE m0 IS NOT NULL QUALIFY RANK() OVER (ORDER BY m0) <= 2

@@ -1,6 +1,7 @@
 -- The outer filter: every date a quarter back (a month's last day also reaching the rest of the shifted month).
 -- m0 does not depend on the store: TOTALYTD from the filter's last date, its year to date against the same
--- dates a year back, of the catalog quantity for three ship types and three categories.
+-- dates a year back, of the catalog quantity for three ship types and three categories. A sale with no (or an
+-- unknown) store makes the store table's blank row: a blank store name.
 WITH f AS (
   SELECT dt FROM (
     SELECT (d_date - INTERVAL 3 MONTH)::DATE AS dt FROM date_dim
@@ -30,6 +31,8 @@ r AS (
   WHERE d.d_date IN (SELECT dt FROM f)
   GROUP BY 1)
 SELECT n.s_store_name, yoy.v AS m0, r.rev AS m1
-FROM (SELECT DISTINCT s_store_name FROM store) n CROSS JOIN yoy
+FROM (SELECT DISTINCT s_store_name FROM store
+      UNION SELECT NULL WHERE EXISTS (SELECT 1 FROM store_sales WHERE ss_store_sk IS NULL OR ss_store_sk NOT IN (SELECT s_store_sk FROM store))) n
+CROSS JOIN yoy
 LEFT JOIN r ON r.s_store_name IS NOT DISTINCT FROM n.s_store_name
 WHERE yoy.v IS NOT NULL OR r.rev IS NOT NULL

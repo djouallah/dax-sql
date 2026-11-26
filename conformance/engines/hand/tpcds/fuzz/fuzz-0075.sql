@@ -1,6 +1,7 @@
 -- m0: the class is not in scope: the state's cities (MINX over the categories of a value no
 -- category row changes). m2: the category filter keeps every category when the state has store
--- sales (COUNTROWS sees no category row); the catalog MIN is not filtered by the store.
+-- sales (COUNTROWS sees no category row); the catalog MIN is not filtered by the store. The blank state (store
+-- sales with no store) has no cities (DISTINCTCOUNT leaves the blank row out).
 WITH last_year AS (SELECT MAX(d_year) AS y FROM date_dim),
 s AS (
   SELECT st.s_state AS state,
@@ -16,7 +17,7 @@ s AS (
   SELECT s_state AS state, NULLIF(COUNT(DISTINCT s_city) + MAX(CASE WHEN s_city IS NULL THEN 1 ELSE 0 END), 0) AS n FROM store GROUP BY 1
 ), a AS (SELECT SUM(row_count) AS src FROM stg_tpcds_archive_log),
 c AS (SELECT MIN(cs_net_profit) AS mn FROM catalog_sales),
-g AS (SELECT DISTINCT s_state AS state FROM store),
+g AS (SELECT s_state AS state FROM store UNION SELECT NULL WHERE EXISTS (SELECT 1 FROM store_sales WHERE ss_store_sk IS NULL OR ss_store_sk NOT IN (SELECT s_store_sk FROM store))),
 r AS (
   SELECT g.state, ci.n AS m0,
     CASE WHEN a.src IS NULL AND s.ly IS NULL AND s.profit IS NULL THEN NULL

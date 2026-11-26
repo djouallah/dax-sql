@@ -376,7 +376,7 @@ export class Lowerer {
       const listed = inline ? null : this.listedValues(f, D, res);
       if (listed) return listed;
       const sub = this.table(f.src, scope).render();
-      const blanks = D.some(c => (this.blankSide(table, c, state) || mayHoldNull(c)) && mayBeBlank(f.src, f.idx[f.cols.indexOf(c)]));
+      const blanks = D.some(c => (this.blankSide(table, c, state, res) || mayHoldNull(c)) && mayBeBlank(f.src, f.idx[f.cols.indexOf(c)]));
       return member(D.map(c => res.meta(c)), D.map(c => sub.list[f.idx[f.cols.indexOf(c)]].expr), sub.rel, blanks);
     }
     // Rows of a model table, as the scan's own rows: its conditions, inline. The filter holds
@@ -410,7 +410,7 @@ export class Lowerer {
     const sub = b.render();
     // A column read through a relationship is blank for rows that match no row of its table; one
     // that may hold a NULL can be blank on both sides.
-    const blanks = cols.some(c => mayHoldNull(c) || this.blankSide(table, c, state) && this.blankSide(f.base, c, state));
+    const blanks = cols.some(c => mayHoldNull(c) || this.blankSide(table, c, state, res) && this.blankSide(f.base, c, state));
     return member(cols.map(c => res.meta(c)), sub.list.map(o => o.expr), sub.rel, blanks);
   }
 
@@ -462,13 +462,14 @@ export class Lowerer {
     return listed.length < vals.length ? P.or([s, P.isNull(L)]) : s;
   }
 
-  // Whether a scan of `table` can read a blank in column c: through a relationship (not relying
-  // on referential integrity) for rows that match no row of c's table.
+  // Whether a scan of `table` can read a blank in column c: through a relationship, for rows that
+  // match no row of c's table. A relationship's referential-integrity flag is DirectQuery's (an
+  // import model has the blank row all the same); only assumeIntegrity says there is none.
   blankSide(table, c, state, res = null) {
     if (res?.blankRow) return true;
     if (c.table === table) return false;
     const path = this.model.expand(table, state, null, true).get(c.table.name);
-    return !path || path.some(h => !(h.rel.ri || this.options.assumeIntegrity));
+    return !path || !this.options.assumeIntegrity;
   }
 
   // A block whose input row is its output: extend it, or wrap it if it is not.
@@ -1086,10 +1087,12 @@ class Fusion {
       byTable.clear();
     }
     for (const [t, is] of byTable) {
-      const b = lw.isolated(() => lw.scanBlock(t, dom, new Map()));
-      b.setOut(is.map(i => ({ name: `k${i}`, lineage: null })), is.map(i => b.res.meta(this.keyCols[i])));
-      b.distinct = true;
-      const part = lw.exact(b.render());
+      const out = b => { b.setOut(is.map(i => ({ name: `k${i}`, lineage: null })), is.map(i => b.res.meta(this.keyCols[i]))); b.distinct = true; return b.render(); };
+      let part = lw.exact(out(lw.isolated(() => lw.scanBlock(t, dom, new Map()))));
+      // The table's blank row too, when it has one: a group of blanks has its mapping as any other
+      // (the blank store's dates a year back are every store's).
+      const blank = lw.isolated(() => lw.blankRow(t, dom, new Map(), out));
+      if (blank) part = P.distinct(P.union([part, lw.exact(blank)]));
       is.forEach((i, j) => kcol.set(i, part.cols[j]));
       D = D ? P.join('cross', D, part) : part;
     }
@@ -1704,10 +1707,10 @@ class Res {
     throw semantic(`'${m.table.name}'[${m.name}] cannot be reached from this row`);
   }
   // Through the joins of `path` to column m of its last table; a foreign key stands for the key
-  // it references when the relationship relies on referential integrity.
+  // it references when the model is assumed whole (assumeIntegrity: no orphan key).
   via(path, m) {
     const last = path.at(-1);
-    if (last.to === m && (last.rel.ri || this.lw.options.assumeIntegrity) && last.rel.to === m)
+    if (last.to === m && this.lw.options.assumeIntegrity && last.rel.to === m)
       return path.length === 1 ? this.own(last.from) : this.via(path.slice(0, -1), last.from);
     return this.physical(this.join(path), m);
   }

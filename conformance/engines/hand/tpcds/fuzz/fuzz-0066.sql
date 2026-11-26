@@ -21,11 +21,18 @@ WITH st AS (
   LEFT JOIN item i ON i.i_item_sk = cs.cs_item_sk
   LEFT JOIN ship_mode sm ON sm.sm_ship_mode_sk = cs.cs_ship_mode_sk
   GROUP BY 1, 2, 3
-), sm AS (SELECT DISTINCT sm_type AS s FROM ship_mode),
--- the groups are the dimensions' values (no blank row)
+),
+-- the groups are the dimensions' values, each with its blank one when the model has that blank row
 g AS (
-  SELECT * FROM (SELECT DISTINCT cd_marital_status AS m FROM customer_demographics)
-  CROSS JOIN (SELECT DISTINCT i_class AS c FROM item) CROSS JOIN sm
+  SELECT * FROM (SELECT cd_marital_status AS m FROM customer_demographics
+    UNION SELECT NULL WHERE EXISTS (SELECT 1 FROM store_sales WHERE ss_cdemo_sk IS NULL OR ss_cdemo_sk NOT IN (SELECT cd_demo_sk FROM customer_demographics))
+    OR EXISTS (SELECT 1 FROM catalog_sales WHERE cs_bill_cdemo_sk IS NULL OR cs_bill_cdemo_sk NOT IN (SELECT cd_demo_sk FROM customer_demographics)
+      OR cs_ship_cdemo_sk IS NULL OR cs_ship_cdemo_sk NOT IN (SELECT cd_demo_sk FROM customer_demographics)))
+  CROSS JOIN (SELECT i_class AS c FROM item
+    UNION SELECT NULL WHERE EXISTS (SELECT 1 FROM store_sales WHERE ss_item_sk IS NULL OR ss_item_sk NOT IN (SELECT i_item_sk FROM item))
+    OR EXISTS (SELECT 1 FROM catalog_sales WHERE cs_item_sk IS NULL OR cs_item_sk NOT IN (SELECT i_item_sk FROM item))
+    OR EXISTS (SELECT 1 FROM promotion WHERE p_item_sk IS NULL OR p_item_sk NOT IN (SELECT i_item_sk FROM item)))
+  CROSS JOIN (SELECT sm_type AS s FROM ship_mode UNION SELECT NULL WHERE EXISTS (SELECT 1 FROM catalog_sales WHERE cs_ship_mode_sk IS NULL OR cs_ship_mode_sk NOT IN (SELECT sm_ship_mode_sk FROM ship_mode)))
 ), r AS (
   SELECT g.m, g.c, g.s,
     CASE WHEN m0.q IS NULL AND m0.r IS NULL THEN NULL ELSE COALESCE(m0.q, 0) - COALESCE(m0.r, 0) END AS v0,

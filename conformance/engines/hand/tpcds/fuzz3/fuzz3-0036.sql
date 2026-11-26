@@ -1,7 +1,8 @@
 -- m0: over the colors, catalog quantity a year back (every date shifted) of brand importcorp #7,
 --     absolute, averaged (blanks skipped)
 -- m1: catalog YoY, all sales against every date a year back
--- m2: the first 4 characters of the states joined: their length
+-- m2: the first 4 characters of the states joined: their length (a blank state first when sales of no
+--     store give store a blank row)
 WITH ly AS (
   SELECT (d_date - INTERVAL 1 YEAR)::DATE AS dt FROM date_dim
   UNION SELECT last_day((d_date - INTERVAL 1 YEAR)::DATE) FROM date_dim WHERE d_date = last_day(d_date)
@@ -16,5 +17,5 @@ WITH ly AS (
 )
 SELECT (SELECT AVG(qty) FROM b) AS m0,
        (COALESCE(c.qty, 0) - c.qty_ly) / NULLIF(c.qty_ly, 0) AS m1,
-       (SELECT length(left(upper(COALESCE(string_agg(COALESCE(s_state, ''), '|' ORDER BY s_state NULLS FIRST), '')), 4)) FROM (SELECT DISTINCT s_state FROM store)) AS m2
+       (SELECT length(left(upper(COALESCE(string_agg(COALESCE(s_state, ''), '|' ORDER BY s_state NULLS FIRST), '')), 4)) FROM (SELECT DISTINCT s_state FROM store UNION SELECT NULL WHERE EXISTS (SELECT 1 FROM store_sales WHERE ss_store_sk IS NULL OR ss_store_sk NOT IN (SELECT s_store_sk FROM store)))) AS m2
 FROM c

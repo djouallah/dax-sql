@@ -1,6 +1,7 @@
 -- SUMMARIZE over store_sales by the address's state (a sale with no address: blank): a group's
 -- context is its store_sales rows, which reach catalog_sales only through the dimensions both
--- share (item, promotion, billing address and demographics, date). m1: the group's average sale
+-- share (item, promotion, billing address and demographics, date; a NULL key meets a NULL key, both
+-- the dimension's blank row). m1: the group's average sale
 -- when its catalog revenue is not blank (or, in the month to 2026-10-30, its marital statuses
 -- plus its catalog quantity pass 1000), else its revenue on the dates a year before its own
 -- sales' dates (a month's last day also reaching the days after it a year back, as Feb 29)
@@ -29,8 +30,11 @@ WITH g AS (
 ), cat AS (
   SELECT k.ca_state, SUM(cs.cs_ext_sales_price) AS rev,
     SUM(cs.cs_quantity) FILTER (WHERE d.d_date > DATE '2026-09-30' AND d.d_date <= DATE '2026-10-30') AS q
-  FROM k JOIN catalog_sales cs ON cs.cs_item_sk = k.ss_item_sk AND cs.cs_promo_sk = k.ss_promo_sk
-    AND cs.cs_bill_addr_sk = k.ss_addr_sk AND cs.cs_bill_cdemo_sk = k.ss_cdemo_sk AND cs.cs_sold_date_sk = k.ss_sold_date_sk
+  FROM k JOIN catalog_sales cs ON cs.cs_item_sk IS NOT DISTINCT FROM k.ss_item_sk
+    AND cs.cs_promo_sk IS NOT DISTINCT FROM k.ss_promo_sk
+    AND cs.cs_bill_addr_sk IS NOT DISTINCT FROM k.ss_addr_sk
+    AND cs.cs_bill_cdemo_sk IS NOT DISTINCT FROM k.ss_cdemo_sk
+    AND cs.cs_sold_date_sk IS NOT DISTINCT FROM k.ss_sold_date_sk
   JOIN date_dim d ON d.d_date_sk_1 = cs.cs_sold_date_sk
   GROUP BY ALL
 ), grp AS (
@@ -43,7 +47,7 @@ WITH g AS (
 SELECT grp.ca_state, (SELECT SUM(row_count) FROM stg_tpcds_archive_log) AS m0,
   CASE WHEN (NULLIF(grp.dcm, 0) IS NOT NULL OR cat.q IS NOT NULL) AND COALESCE(grp.dcm, 0) + COALESCE(cat.q, 0) > 1000
          OR cat.rev IS NOT NULL
-       THEN grp.av ELSE ly.r END AS m1
+       THEN grp.av ELSE ly.r::DECIMAL(38, 4) END AS m1 -- four places: the average's
 FROM grp
 LEFT JOIN cat ON cat.ca_state IS NOT DISTINCT FROM grp.ca_state
 LEFT JOIN ly ON ly.ca_state IS NOT DISTINCT FROM grp.ca_state

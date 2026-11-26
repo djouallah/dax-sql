@@ -1,5 +1,6 @@
 -- per marital status, over the calendar's last year (its year to date): when the stores are one state,
--- archive files / store revenue the year before; the 3 highest, ties kept
+-- archive files / store revenue the year before; the 3 highest, ties kept. Sales of no store give
+-- store a blank row, so a blank state beside the stores' own.
 WITH w AS (
   SELECT date_trunc('year', MAX(d_date))::DATE AS y0, MAX(d_date) AS y1 FROM date_dim
 ), ly AS (
@@ -17,7 +18,8 @@ WITH w AS (
   -- the statuses with revenue (sales with no demographics: a blank status)
   SELECT r.cd_marital_status, (SELECT COUNT(*) FROM stg_tpcds_archive_log) / NULLIF(r.rev, 0) AS m0
   FROM r
-  WHERE (SELECT COUNT(DISTINCT s_state) + MAX(CASE WHEN s_state IS NULL THEN 1 ELSE 0 END) FROM store) = 1
+  WHERE (SELECT COUNT(DISTINCT s_state) + (COUNT(*) > COUNT(s_state)
+           OR EXISTS (SELECT 1 FROM store_sales WHERE ss_store_sk IS NULL OR ss_store_sk NOT IN (SELECT s_store_sk FROM store)))::INT FROM store) = 1
 )
 SELECT * FROM v WHERE m0 IS NOT NULL
 QUALIFY RANK() OVER (ORDER BY m0 DESC) <= 3

@@ -1,4 +1,5 @@
--- the ship modes reach no store sale: per ship mode type, the quarter numbers whose store revenue YoY (dates a
+-- the ship modes reach no store sale: per ship mode type (and the blank one, when some catalog sale has no ship
+-- mode), the quarter numbers whose store revenue YoY (dates a
 -- year back, date by date) is above 0, and the profit share of every item (1) rounded, over customers per
 -- revenue a year back
 WITH shift AS (
@@ -23,5 +24,7 @@ WITH shift AS (
   FROM store_sales
 )
 SELECT sm.sm_type, q.n AS m0, t.share / NULLIF(t.customers / NULLIF(t.rev_ly, 0), 0) AS m1
-FROM (SELECT DISTINCT sm_type FROM ship_mode) sm CROSS JOIN q CROSS JOIN t
+FROM (SELECT sm_type FROM ship_mode
+      UNION SELECT NULL WHERE EXISTS (SELECT 1 FROM catalog_sales WHERE cs_ship_mode_sk IS NULL OR cs_ship_mode_sk NOT IN (SELECT sm_ship_mode_sk FROM ship_mode))) sm
+CROSS JOIN q CROSS JOIN t
 WHERE q.n IS NOT NULL OR m1 IS NOT NULL

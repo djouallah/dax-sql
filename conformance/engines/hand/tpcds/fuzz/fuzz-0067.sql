@@ -1,5 +1,6 @@
 -- under i_category >= "Home". Not in scope of the price: v is the catalog revenue. With no date
--- filter a year back is every year but the last; the YTD is the last year.
+-- filter a year back is every year but the last; the YTD is the last year. Catalog sales of no ship mode
+-- are ship_mode's blank row (a blank type), sales of no store store's (a blank state).
 WITH last_year AS (SELECT MAX(d_year) AS y FROM date_dim),
 cat AS (
   SELECT sm.sm_type AS s, SUM(cs.cs_ext_sales_price) AS v,
@@ -19,7 +20,7 @@ cat AS (
 states AS (
   SELECT NULLIF(COUNT(*), 0) AS n FROM (
     SELECT s.s_state
-    FROM (SELECT DISTINCT s_state FROM store) s
+    FROM (SELECT DISTINCT s_state FROM store UNION SELECT NULL WHERE EXISTS (SELECT 1 FROM store_sales WHERE ss_store_sk IS NULL OR ss_store_sk NOT IN (SELECT s_store_sk FROM store))) s
     JOIN (
       SELECT st.s_state, MIN(ss.ss_ext_sales_price) AS mn
       FROM store_sales ss
@@ -32,7 +33,12 @@ states AS (
   SELECT SUM(ss.ss_ext_sales_price) AS v
   FROM store_sales ss JOIN date_dim d ON d.d_date_sk_1 = ss.ss_sold_date_sk
   WHERE d.d_year = (SELECT y FROM last_year)
-), g AS (SELECT DISTINCT sm_type AS s FROM ship_mode),
+), g AS (
+  SELECT DISTINCT sm_type AS s FROM ship_mode
+  UNION
+  SELECT NULL WHERE EXISTS (SELECT 1 FROM catalog_sales WHERE cs_ship_mode_sk IS NULL
+                              OR cs_ship_mode_sk NOT IN (SELECT sm_ship_mode_sk FROM ship_mode))
+),
 r AS (
   SELECT g.s,
     -- a fixed decimal over a number: a fixed decimal

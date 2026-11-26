@@ -1,6 +1,7 @@
 -- m0: marital status is not grouped. m1: RANKX of an AVERAGE (no context transition) is 1, less the best
 -- month's store profit. m2: distinct prices over last year's revenue (all dates a year back), over the catalog
--- profit per average quantity (a fixed decimal by a number: four places).
+-- profit per average quantity (a fixed decimal by a number: four places). The months include the blank one
+-- (the date table's blank row: sales with no or an unknown date).
 WITH ly AS (
   SELECT (d_date - INTERVAL 1 YEAR)::DATE AS dt FROM date_dim
   UNION SELECT last_day((d_date - INTERVAL 1 YEAR)::DATE) FROM date_dim WHERE d_date = last_day(d_date)),
@@ -11,7 +12,7 @@ sply AS (
 mo AS (
   SELECT MAX(p) AS p FROM (
     SELECT d.d_moy, SUM(ss.ss_net_profit) AS p
-    FROM store_sales ss JOIN date_dim d ON d.d_date_sk_1 = ss.ss_sold_date_sk GROUP BY 1)),
+    FROM store_sales ss LEFT JOIN date_dim d ON d.d_date_sk_1 = ss.ss_sold_date_sk GROUP BY 1)),
 c AS (SELECT MAX(cs_quantity) AS mq, SUM(cs_net_profit) AS np, AVG(cs_quantity) AS aq FROM catalog_sales),
 pr AS (SELECT NULLIF(COUNT(DISTINCT i_current_price) + (COUNT(*) > COUNT(i_current_price))::INT, 0) AS n FROM item)
 SELECT COALESCE(c.mq, 0) AS m0,

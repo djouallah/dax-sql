@@ -1,4 +1,5 @@
--- per ship mode (m0 is never blank: every ship mode type, as dax-sql has them, no blank row): the quarters of the date table (4);
+-- per ship mode (m0 is never blank: every ship mode type, and the blank one when some catalog sale has no ship
+-- mode): the quarters of the date table (4);
 -- m1: the ship mode's highest catalog profit when the three cities sold in store (0 when not, blank when no
 -- class has a store profit); m2: catalog quantity against the dates a year back
 WITH shift AS (
@@ -12,7 +13,8 @@ WITH shift AS (
   LEFT JOIN date_dim d ON d.d_date_sk_1 = cs.cs_sold_date_sk
   GROUP BY sm.sm_type
 ), g AS (
-  SELECT DISTINCT sm_type FROM ship_mode
+  SELECT sm_type FROM ship_mode
+  UNION SELECT NULL WHERE EXISTS (SELECT 1 FROM catalog_sales WHERE cs_ship_mode_sk IS NULL OR cs_ship_mode_sk NOT IN (SELECT sm_ship_mode_sk FROM ship_mode))
 ), s AS (
   SELECT (SELECT COUNT(ss_net_profit) > 0 FROM store_sales) AS any_profit,
     (SELECT SUM(ss.ss_ext_sales_price) FROM store_sales ss JOIN store st ON st.s_store_sk = ss.ss_store_sk

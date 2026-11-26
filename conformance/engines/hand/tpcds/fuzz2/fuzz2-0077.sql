@@ -1,5 +1,6 @@
 -- Per brand, the marital statuses whose store revenue of the date table's last year (TOTALYTD with no date
--- filter) is past 1: the brand's row and the status's both filter (context transition)
+-- filter) is past 1: the brand's row and the status's both filter (context transition). The statuses include the
+-- blank one when a sale has no (or an unknown) customer_demographics key: that table's blank row.
 WITH y AS (SELECT MAX(d_date) AS mx FROM date_dim),
 r AS (
   SELECT i.i_brand, cd.cd_marital_status, SUM(ss.ss_ext_sales_price) AS rev
@@ -9,7 +10,10 @@ r AS (
   GROUP BY 1, 2),
 n AS (
   SELECT r.i_brand, COUNT(*) AS n
-  FROM (SELECT DISTINCT cd_marital_status FROM customer_demographics) m
+  FROM (SELECT DISTINCT cd_marital_status FROM customer_demographics
+        UNION SELECT NULL WHERE EXISTS (SELECT 1 FROM store_sales WHERE ss_cdemo_sk IS NULL OR ss_cdemo_sk NOT IN (SELECT cd_demo_sk FROM customer_demographics))
+          OR EXISTS (SELECT 1 FROM catalog_sales WHERE cs_bill_cdemo_sk IS NULL OR cs_ship_cdemo_sk IS NULL
+            OR cs_bill_cdemo_sk NOT IN (SELECT cd_demo_sk FROM customer_demographics) OR cs_ship_cdemo_sk NOT IN (SELECT cd_demo_sk FROM customer_demographics))) m
   JOIN r ON r.cd_marital_status IS NOT DISTINCT FROM m.cd_marital_status
   WHERE r.rev > 1
   GROUP BY 1)

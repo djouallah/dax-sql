@@ -3,10 +3,16 @@
 -- m2: the store profit share (of the city's and year's profit over all items) less the class's count of
 -- Sports items; past 10, the year's (YTD of a whole year) IF; else the catalog average over a dense rank
 -- that is 1 (the total over all promotions is never below one promotion's revenue).
+-- A sale with no (or an unknown) store or date makes the blank row of that table: a blank city or year group.
 WITH arch AS (SELECT NULLIF(COUNT(*), 0) AS n FROM stg_tpcds_archive_log),
 g AS (
   SELECT c.s_city, k.i_class, y.d_year
-  FROM (SELECT DISTINCT s_city FROM store) c, (SELECT DISTINCT i_class FROM item) k, (SELECT DISTINCT d_year FROM date_dim) y),
+  FROM (SELECT DISTINCT s_city FROM store
+        UNION SELECT NULL WHERE EXISTS (SELECT 1 FROM store_sales WHERE ss_store_sk IS NULL OR ss_store_sk NOT IN (SELECT s_store_sk FROM store))) c,
+       (SELECT DISTINCT i_class FROM item) k,
+       (SELECT DISTINCT d_year FROM date_dim
+        UNION SELECT NULL WHERE EXISTS (SELECT 1 FROM store_sales WHERE ss_sold_date_sk IS NULL OR ss_sold_date_sk NOT IN (SELECT d_date_sk_1 FROM date_dim))
+          OR EXISTS (SELECT 1 FROM catalog_sales WHERE cs_sold_date_sk IS NULL OR cs_sold_date_sk NOT IN (SELECT d_date_sk_1 FROM date_dim))) y),
 c AS (
   SELECT i.i_class, d.d_year, SUM(cs.cs_quantity) AS q, COUNT(*) AS n, (ROUND(AVG(cs.cs_ext_sales_price) * 10000, 0) / 10000) AS a
   FROM catalog_sales cs LEFT JOIN item i ON i.i_item_sk = cs.cs_item_sk LEFT JOIN date_dim d ON d.d_date_sk_1 = cs.cs_sold_date_sk
@@ -25,8 +31,8 @@ SELECT g.s_city, g.i_class, g.d_year,
     THEN CASE WHEN COALESCE(s.a, 0) > 1000 THEN s.mn ELSE c.n END
     ELSE c.a END AS m2
 FROM g CROSS JOIN arch
-LEFT JOIN c ON c.i_class IS NOT DISTINCT FROM g.i_class AND c.d_year = g.d_year
-LEFT JOIN s ON s.s_city IS NOT DISTINCT FROM g.s_city AND s.i_class IS NOT DISTINCT FROM g.i_class AND s.d_year = g.d_year
-LEFT JOIN sy ON sy.s_city IS NOT DISTINCT FROM g.s_city AND sy.d_year = g.d_year
+LEFT JOIN c ON c.i_class IS NOT DISTINCT FROM g.i_class AND c.d_year IS NOT DISTINCT FROM g.d_year
+LEFT JOIN s ON s.s_city IS NOT DISTINCT FROM g.s_city AND s.i_class IS NOT DISTINCT FROM g.i_class AND s.d_year IS NOT DISTINCT FROM g.d_year
+LEFT JOIN sy ON sy.s_city IS NOT DISTINCT FROM g.s_city AND sy.d_year IS NOT DISTINCT FROM g.d_year
 LEFT JOIN sports ON sports.i_class IS NOT DISTINCT FROM g.i_class
 WHERE m0 IS NOT NULL OR m1 IS NOT NULL OR m2 IS NOT NULL

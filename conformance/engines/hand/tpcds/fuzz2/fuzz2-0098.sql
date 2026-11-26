@@ -1,6 +1,7 @@
 -- For the brand's items: per price and ship type, the largest catalog profit past 1 picks the price's store
 -- revenue YoY (all dates against every date a year back; store_sales is not filtered by ship mode), else
--- the price's largest store profit
+-- the price's largest store profit; every price by every ship type, the blank type among them when some catalog
+-- sale has none
 WITH it AS (SELECT * FROM item WHERE i_brand = 'eduuniv #3'),
 ly AS (
   SELECT (d_date - INTERVAL 1 YEAR)::DATE AS dt FROM date_dim
@@ -17,7 +18,9 @@ c AS (
 t AS (
   SELECT g.p, g.sm_type,
     CASE WHEN COALESCE(c.mp, 0) > 1 THEN (COALESCE(s.rev, 0) - s.rly)::DOUBLE / NULLIF(s.rly, 0) ELSE s.mp END AS m0
-  FROM (SELECT DISTINCT it.i_current_price AS p, sm.sm_type FROM it, ship_mode sm) g
+  FROM (SELECT DISTINCT it.i_current_price AS p, sm.sm_type FROM it, (
+    SELECT sm_type FROM ship_mode
+    UNION SELECT NULL WHERE EXISTS (SELECT 1 FROM catalog_sales WHERE cs_ship_mode_sk IS NULL OR cs_ship_mode_sk NOT IN (SELECT sm_ship_mode_sk FROM ship_mode))) sm) g
   LEFT JOIN s ON s.p IS NOT DISTINCT FROM g.p
   LEFT JOIN c ON c.p IS NOT DISTINCT FROM g.p AND c.sm_type IS NOT DISTINCT FROM g.sm_type)
 SELECT * FROM t WHERE m0 IS NOT NULL

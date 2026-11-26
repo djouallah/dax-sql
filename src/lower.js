@@ -1337,7 +1337,9 @@ class Fusion {
       // reaches no table of that scan (TOTALYTD's dates under a group's color: the date table's,
       // whatever the color, so the mapping is of the quarter's dates, not each group's).
       const all = [...ir.rowRefs(f, kid)], used = keysThatFilter(f, kid, lw.model);
-      const refs = used.size ? all.filter(i => used.has(i)) : all;
+      // (None of them: the filter is the same for every group, the stores' under catalog sales.)
+      const refs = all.filter(i => used.has(i));
+      if (!outerIds.length && all.length && !refs.length) continue;
       if (!outerIds.length && refs.every(i => keys.has(i))) { readsKeys = true; continue; }
       // The column the mapping is on: the filter's one column, or the key of the one table whose
       // columns it holds (FILTER(ALL('Date'), ...): the key says which row).

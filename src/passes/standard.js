@@ -319,8 +319,13 @@ function asText(v) {
 }
 // A value read to 15 significant digits, as Power BI does before it cuts one (0.29 * 100 is
 // 28.999999999999996 in binary; ROUNDDOWN(0.29, 2) is 0.29).
-const g15 = v => caseOf([[cond('eq', [v, int(0)]), lit(0, 'double')]],
-  call('round', [v, cast(pop('sub', [int(14), call('floor', [call('log10', [call('abs', [v], 'double')], 'double')], 'double')], 'double'), 'int')], 'double'), 'double');
+// Scaled: v * 10^k rounded to a whole number, over 10^k (round(v, k) of a double rounds its binary
+// value on some engines, DuckDB 2.0.1's: 0.50005, a hair below, to 0.5 at 4 places, not 0.5001).
+const g15 = v => {
+  const p10 = () => call('power', [lit(10, 'double'), pop('sub', [int(14), call('floor', [call('log10', [call('abs', [v], 'double')], 'double')], 'double')], 'double')], 'double');
+  return caseOf([[cond('eq', [v, int(0)]), lit(0, 'double')]],
+    pop('div', [call('round', [pop('mul', [v, p10()], 'double'), int(0)], 'double'), p10()], 'double'), 'double');
+};
 // A value read to 15 digits, rounded to a whole number half away from zero.
 const halfAway = v => pop('mul', [call('sign', [v], 'double'), call('floor', [pop('add', [g15(call('abs', [v], 'double')), lit(0.5, 'double')], 'double')], 'double')], 'double');
 // A date and time as days since day zero (1899-12-30), with the fraction; and back.

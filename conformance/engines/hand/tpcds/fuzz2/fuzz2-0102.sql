@@ -1,5 +1,6 @@
 -- the catalog side is never blank (a YoY minus a count of states), so m0 = m1 = store revenue YoY per city, two
--- brands, the dates of every month but February (FILTER(ALL(d_moy)): no blank month, so no sale without a date);
+-- brands, the dates of every month but February and the blank month (FILTER(ALL(d_moy)) keeps the blank row's: the
+-- sales with no date, or a date the calendar lacks, count as this period's);
 -- last year = each such date a year back (a month's last day also its month's)
 WITH ctx AS (
   SELECT d_date_sk_1 AS sk, d_date FROM date_dim WHERE d_moy <> 2
@@ -14,7 +15,7 @@ WITH ctx AS (
   LEFT JOIN store st ON st.s_store_sk = ss.ss_store_sk
 ), r AS (
   SELECT s_city,
-    SUM(p) FILTER (WHERE sk IN (SELECT sk FROM ctx)) AS rev,
+    SUM(p) FILTER (WHERE sk IN (SELECT sk FROM ctx) OR sk IS NULL OR sk NOT IN (SELECT d_date_sk_1 FROM date_dim)) AS rev,
     SUM(p) FILTER (WHERE sk IN (SELECT sk FROM ly)) AS ly
   FROM f GROUP BY ALL
 )

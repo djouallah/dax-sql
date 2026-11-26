@@ -1116,18 +1116,8 @@ class Fusion {
       // reaches no table of that scan (TOTALYTD's dates under a group's color: the date table's,
       // whatever the color, so the mapping is of the quarter's dates, not each group's).
       const all = [...ir.rowRefs(f, kid)], used = keysThatFilter(f, kid, lw.model);
-      // None of them (SAMEPERIODLASTYEAR of every date, beside a group's brand and city): the
-      // mapping is the filter's values alone, one for every group, not crossed with the groups.
-      // A key whose table reaches some table the filter scans stays all the same (a calculation
-      // group's: the item it selects is the filter).
-      const scanned = tablesScanned(f), st = lw.model.state(S.ctx.mods);
-      // With a calculation group's key among them, all (its item decides the filter, which no
-      // table of it says).
-      // A key of no model table (an iterator's column with no lineage) stays: the mapping below
-      // refuses it.
-      const calc = all.some(i => this.keyCols[i]?.table?.calcGroup);
-      const refs = calc && !used.size ? all : all.filter(i => { const t = this.keyCols[i]?.table; return !t || used.has(i) || [...scanned].some(tb => tb === t || lw.model.reaches(t, tb, st)); });
-      if (refs.length && refs.every(i => keys.has(i))) { readsKeys = true; continue; }
+      const refs = used.size ? all.filter(i => used.has(i)) : all;
+      if (refs.every(i => keys.has(i))) { readsKeys = true; continue; }
       // The column the mapping is on: the filter's one column, or the key of the one table whose
       // columns it holds (FILTER(ALL('Date'), ...): the key says which row).
       const T = f.cols[0]?.table;
@@ -1370,16 +1360,6 @@ function blankFails(x) {
 // The keys of key row kid that x (an IR table, a filter) reads where they decide its rows: a
 // read in a scan's filter counts only when that filter reaches the scan's table (one on a table
 // that filters no table of the scan is idle there).
-// The model tables an IR value scans anywhere in it.
-function tablesScanned(x, out = new Set(), seen = new Set()) {
-  if (!x || typeof x !== 'object' || seen.has(x)) return out;
-  seen.add(x);
-  if (Array.isArray(x)) { x.forEach(y => tablesScanned(y, out, seen)); return out; }
-  if (x.k === 'scan' && x.table) out.add(x.table);
-  for (const [k, v] of Object.entries(x)) if (k !== 'row' && k !== 'lrow' && k !== 'cols' && k !== 'table' && k !== 'base' && k !== 'lineage') tablesScanned(v, out, seen);
-  return out;
-}
-
 function keysThatFilter(x, kid, model) { return walkFiltering(x, model, kid); }
 // The rows x reads where they decide its rows (as keysThatFilter, every row's id).
 function rowsThatFilter(x, model) { return walkFiltering(x, model, null); }

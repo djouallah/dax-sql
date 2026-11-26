@@ -1,0 +1,10 @@
+// note: by Product[Product], lines of colors other than red, the filter on Product[Color] three ways: a boolean filter, FILTER(ALL(Product[Color])) and FILTER(VALUES(Product[Color])); Desk Fan's color is a NULL stored in the column (a value of ALL(Product[Color]), blank <> "Red" true), not the blank row of the sales without a product
+EVALUATE
+SUMMARIZECOLUMNS(
+    Product[Product],
+    "Lines", [Lines],
+    "Not Red Boolean", CALCULATE([Lines], Product[Color] <> "Red"),
+    "Not Red FILTER ALL", CALCULATE([Lines], FILTER(ALL(Product[Color]), Product[Color] <> "Red")),
+    "Not Red FILTER VALUES", CALCULATE([Lines], FILTER(VALUES(Product[Color]), Product[Color] <> "Red"))
+)
+ORDER BY Product[Product]

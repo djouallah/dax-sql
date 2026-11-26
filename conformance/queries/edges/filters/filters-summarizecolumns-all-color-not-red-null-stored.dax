@@ -1,0 +1,9 @@
+// note: by Product[Brand], lines under SUMMARIZECOLUMNS' filter FILTER(ALL(Product[Color]), Product[Color] <> "Red"), and the same in CALCULATE; Desk Fan (Fabrikam) has a NULL stored as its color, which the filter keeps (blank <> "Red")
+EVALUATE
+SUMMARIZECOLUMNS(
+    Product[Brand],
+    FILTER(ALL(Product[Color]), Product[Color] <> "Red"),
+    "Lines", [Lines],
+    "Lines Calculate", CALCULATE([Lines], FILTER(ALL(Product[Color]), Product[Color] <> "Red"))
+)
+ORDER BY Product[Brand]

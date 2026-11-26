@@ -29,7 +29,8 @@ const rootDir = root.pathname.replace(/^\/([A-Za-z]:)/, '$1');
 const e = await engine(rootDir);
 const require = createRequire(new URL('package.json', root));
 const { DuckDBInstance, JSDuckDBValueConverter } = require('@duckdb/node-api');
-const con = await (await DuckDBInstance.create(file, { access_mode: 'READ_ONLY' })).connect();
+const inst = await DuckDBInstance.create(file, { access_mode: 'READ_ONLY' });
+let con = await inst.connect();
 const db = await e.database(join(modelDir('tpcds'), 'model.bim'), null, con);
 const compiler = e.createCompiler(db.model, { columnNames: 'dax' });
 
@@ -141,9 +142,12 @@ async function variant(dax, hand) {
 
 // --- running -----------------------------------------------------------------------------------
 
+// A query's answer, timed. A result left open (interrupted, or past 100,000 rows) holds the
+// connection: the next query has a new one.
 async function run(sql, stream = true) {
   const timer = setTimeout(() => con.interrupt(), timeout);
   const t0 = performance.now();
+  let open = true;
   try {
     let rows = [];
     if (stream) {
@@ -154,11 +158,15 @@ async function run(sql, stream = true) {
         if (rows.length > 100000) { rows = null; break; }
       }
     } else rows = (await con.runAndReadAll(sql)).getRowsJS().map(r => r.map(value));
+    open = !rows;
     return { ms: Math.round(performance.now() - t0), rows };
   } catch (err) {
     const ms = performance.now() - t0;
     return { ms: Math.round(ms), error: ms >= timeout - 50 ? `timeout (${timeout / 1000} s)` : err.message.split('\n')[0] };
-  } finally { clearTimeout(timer); }
+  } finally {
+    clearTimeout(timer);
+    if (open) { try { con.disconnectSync?.(); } catch {} con = await inst.connect(); }
+  }
 }
 const norm = rows => rows.map(r => JSON.stringify(r.map(v => (typeof v === 'number' && Number.isFinite(v) ? Number(v.toPrecision(9)) : v)))).sort();
 const same = (a, b) => { if (!a || !b) return null; const x = norm(a), y = norm(b); return x.length === y.length && x.every((r, i) => r === y[i]); };
@@ -169,6 +177,8 @@ const results = [];
 for (const q of queries) {
   const id = `${q.family}/${q.id}`;
   const hf = join(handDir, `${id}.sql`);
+  // A query the compiler refuses as it is (DAX's error) is no variant.
+  try { compiler.compile(q.dax); } catch { continue; }
   const v = await variant(q.dax, existsSync(hf) ? readFileSync(hf, 'utf8') : null);
   if (!v) continue;
   const r = { id, changes: v.changes };

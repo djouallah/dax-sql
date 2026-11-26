@@ -4,13 +4,21 @@ Nothing here blocks a release. DAX on DuckDB has nothing left but speed; T-SQL i
 
 # Speed at SF10 (scale.yml, DuckDB)
 
-- [ ] 30 queries are very bad (5× the hand's time or more, and 500 ms slower). The worst:
-  `fuzz3-0112` 31 s (hand 11 s), `fuzz2-0043` 24 s (5.6 s), `fuzz3-0149` 15 s (5.1 s),
-  `fuzz3-0139` 10 s (3.2 s).
-- [ ] `fuzz2-0109` 10 s (hand 0.5 s): RANKX over ALL(price) under SUMMARIZECOLUMNS' auto-exist
-  ranks each price within the outer group's classes, so one window is wrong (219 rows) and the
-  per-price sums' mapping is 4.9 M rows. Needs a RANKX evaluated by outer group.
-- [ ] `fuzz2-0057` 15 s (hand 1.6 s) before c4c9153 (1.8× faster at SF1): confirm at SF10.
+Measure a change with `ab.yml` (its SQL against its base's on one runner); scale.yml's times
+move by a third from one runner to the next. `variants.yml` swaps the queries' constants for
+values the data holds: a filter that keeps no row at SF10 says nothing of the SQL.
+
+- [ ] `fuzz2-0109` 10 s (hand 0.5 s; 25 s against 1 s in the variants): RANKX over ALL(price)
+  under SUMMARIZECOLUMNS' auto-exist ranks each price within the outer group's classes, so one
+  window is wrong (219 rows) and the per-price sums' mapping by item key is 4.9 M rows. The
+  hand file's way: the sums grouped by the item's columns (colour, class, price, month), mapped
+  by class: fusion by a table's columns, not its key.
+- [ ] `grid-0049` 4 s (hand 60 ms), `grid-0024`: the SQL front end's TREATAS of all 16 columns
+  of catalog_sales onto themselves, a DISTINCT of 14 M rows and a join on 16 columns. The rows
+  of a scan joined to tables by their keys (one row or none each) are the scan's own rows.
+- [ ] The fuzz3-0112, fuzz2-0043, fuzz3-0149, fuzz3-0139 group: 10–30 s, 3–4× the hand's.
+- Not the SQL's (the hand file reads a fact of the data, not a constant): fuzz2-0006, fuzz2-0106,
+  fuzz2-0145, fuzz2-0009, fuzz2-0013 (the calendar's last year has no sales).
 
 # Open
 

@@ -10,10 +10,18 @@
 // DuckDB, or the compiler refuses one that Power BI answers (golden/tpcds).
 // A query past the timeout is interrupted. The report lists the slowest queries, those that
 // error, and those whose two answers differ.
+// Each query's run is profiled (DuckDB's JSON profile): the rows its operators produce against the
+// rows it reads (intermediate rows per row read: C_out, the sum of intermediate results, over the
+// input), and the largest operator's output against the largest table it reads (the blowup: more
+// rows than any table holds is rows multiplied, a cross product or a nested loop). A sound query
+// produces a few rows for each row it reads and never more than its largest table; one that does
+// is listed, whatever its time.
 import { appendFileSync, writeFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { join } from 'node:path';
+import { readFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { loadQueries, loadGoldens, modelDir } from '../suite.mjs';
 import { engine, value } from '../../engines/dax-sql/db.mjs';
 
@@ -37,6 +45,23 @@ const require = createRequire(new URL('package.json', root));
 const { DuckDBInstance, JSDuckDBValueConverter } = require('@duckdb/node-api');
 const con = await (await DuckDBInstance.create(file, { access_mode: 'READ_ONLY' })).connect();
 const db = await e.database(join(modelDir('tpcds'), 'model.bim'), null, con);
+const profileFile = join(tmpdir(), `dax-scale-profile-${process.pid}.json`).split('\\').join('/');
+await con.run(`SET enable_profiling = 'json'`);
+await con.run(`SET profiling_output = '${profileFile}'`);
+// The query's profile: rows read, rows produced, the largest operator's and the largest scan's.
+function profile() {
+  try {
+    const p = JSON.parse(readFileSync(profileFile, 'utf8'));
+    let peak = 0, scan = 0;
+    const walk = n => {
+      if (/TABLE_SCAN/.test(n.type)) scan = Math.max(scan, n.intermediate_rows ?? 0);
+      else if (n.type !== 'RESULT_COLLECTOR') peak = Math.max(peak, n.intermediate_rows ?? 0);
+      (n.children ?? []).forEach(walk);
+    };
+    (p.operator ?? []).forEach(walk);
+    return { read: p.query?.total_rows_scanned ?? null, produced: p.query?.total_intermediate_rows ?? null, peak, scan };
+  } catch { return null; }
+}
 const compilers = new Map();
 const compiler = roles => {
   const k = JSON.stringify(roles);
@@ -58,7 +83,7 @@ async function run(sql) {
       const cols = ch.convertColumns(JSDuckDBValueConverter);
       for (let i = 0; i < ch.rowCount; i++) rows.push(cols.map(c => value(c[i])));
     }
-    return { ms: performance.now() - t0, n, rows };
+    return { ms: performance.now() - t0, n, rows, prof: profile() };
   } catch (err) {
     const ms = performance.now() - t0;
     return { ms, error: ms >= timeout - 50 ? `timeout (${timeout / 1000} s)` : err.message.split('\n')[0] };
@@ -83,6 +108,11 @@ for (const q of queries) {
   if (a.error && /DAX: /.test(a.error)) { r.daxError = a.error.replace(/^.*?DAX: /, ''); console.log(`DAX error ${r.id}: ${r.daxError}`); continue; }
   if (a.error) { r.error = a.error; console.log(`error ${r.id}: ${a.error}`); continue; }
   r.rows = a.n;
+  if (a.prof) {
+    r.read = a.prof.read; r.produced = a.prof.produced;
+    r.perRow = a.prof.read ? Number((a.prof.produced / a.prof.read).toFixed(2)) : null;
+    r.blowup = a.prof.scan ? Number((a.prof.peak / a.prof.scan).toFixed(2)) : null;
+  }
   if (answersFile && a.rows) answers[r.id] = { rows: a.n, hash: createHash('sha1').update(norm(a.rows).join('\n')).digest('hex') };
   if (r.ms > 2000) console.log(`slow ${r.id}: ${r.ms} ms`);
   if (agree) {
@@ -99,6 +129,11 @@ const total = ran.reduce((s, r) => s + r.ms, 0);
 const pct = p => { const v = ran.map(r => r.ms).sort((a, b) => a - b); return v.length ? v[Math.min(v.length - 1, Math.floor(p * v.length))] : 0; };
 const line = r => `| ${r.id} | ${r.ms ?? ''} | ${r.unnestMs ?? ''} | ${r.rows ?? ''} | ${(r.compileError ?? r.error ?? r.unnestError ?? (r.daxError ? `DAX's error: ${r.daxError}` : '') ?? '') || (r.differs ? 'the two answers differ' : '').replaceAll('|', '\\|').slice(0, 160)} |`;
 const bad = results.filter(r => r.compileError || r.error || r.unnestError || r.differs);
+// Rows multiplied: an operator producing twice the largest table's rows or more, or ten rows
+// produced for each row read or more.
+const multiplied = ran.filter(r => r.blowup >= 2 || r.perRow >= 10).sort((a, b) => (b.blowup ?? 0) - (a.blowup ?? 0) || (b.perRow ?? 0) - (a.perRow ?? 0));
+const M = x => (x == null ? '' : x >= 1e6 ? `${(x / 1e6).toFixed(1)} M` : x >= 1e3 ? `${(x / 1e3).toFixed(0)} k` : `${x}`);
+const mline = r => `| ${r.id} | ${r.ms} | ${M(r.read)} | ${M(r.produced)} | ${r.perRow ?? ''} | ${r.blowup ?? ''} |`;
 const head = '| query | ms | unnested ms | rows | |\n|---|---|---|---|---|';
 const summary = [
   `### tpcds at scale (${file.replace(/\\/g, '/').split('/').pop()}): ${queries.length} queries`, '',
@@ -107,6 +142,8 @@ const summary = [
     + (agree ? `, ${results.filter(r => r.differs).length} answer otherwise unnested, ${results.filter(r => r.unnestError).length} fail unnested` : ''), '',
   '#### The slowest 25', '', head, ...[...ran].sort((a, b) => b.ms - a.ms).slice(0, 25).map(line), '',
   ...(bad.length ? ['#### Errors and disagreements', '', head, ...bad.map(line), ''] : []),
+  `#### Rows multiplied: ${multiplied.length} (an operator with twice the largest table's rows or more, or ten rows produced for each read)`, '',
+  ...(multiplied.length ? ['| query | ms | rows read | rows produced | per row read | blowup |', '|---|---|---|---|---|---|', ...multiplied.slice(0, 40).map(mline), ''] : []),
 ].join('\n');
 console.log(summary);
 if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${summary}\n`);

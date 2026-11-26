@@ -3,6 +3,10 @@
 // slowest queries with every engine's time, and the queries whose SQL is very bad against the SQL
 // written by hand (engines/hand).
 //   node tools/tpcds/scale-compare.mjs <dir with duckdb.json and <engine>.json reports> [--top 25] [--bad 5] [--bad-ms 500]
+//     [--base <duckdb.json at a tenth of the scale factor> [--grows 15] [--grows-ms 300]]
+// --base: how each query's time on DuckDB grows with the data, ten times as much: about ten times
+// for a sound query; those --grows times or more (and --grows-ms at least at the scale factor) are
+// listed, the furthest first.
 // duckdb.json is tools/tpcds/scale-run.mjs's report (ms, bytes, rows, error); another engine's is
 // tools/tpcds/scale-engine.mjs's (ms, bytes, outcome: same, differs, error, timeout).
 import { appendFileSync, readFileSync, readdirSync } from 'node:fs';
@@ -10,7 +14,8 @@ import { join } from 'node:path';
 
 const args = process.argv.slice(2);
 const opt = (name, d) => (args.includes(name) ? Number(args.splice(args.indexOf(name), 2)[1]) : d);
-const top = opt('--top', 25), badRatio = opt('--bad', 5), badMs = opt('--bad-ms', 500);
+const top = opt('--top', 25), badRatio = opt('--bad', 5), badMs = opt('--bad-ms', 500), grows = opt('--grows', 15), growsMs = opt('--grows-ms', 300);
+const baseFile = args.includes('--base') ? args.splice(args.indexOf('--base'), 2)[1] : null;
 const [dir] = args;
 const reports = new Map();
 for (const f of readdirSync(dir).filter(x => x.endsWith('.json') && x !== 'answers.json')) {
@@ -59,6 +64,16 @@ if (reports.has('hand')) {
       + `Answers otherwise than dax-sql's: ${differ.length}.`, '',
     ...(bad.length || differ.length ? ['| query | dax-sql ms | hand ms | × hand | dax-sql KB | hand KB | answer |', '|---|---|---|---|---|---|---|',
       ...[...new Set([...bad, ...differ])].map(id => `| ${id} | ${D.get(id).ms} | ${H.get(id).ms} | ${ratio(id).toFixed(1)} | ${kb(D.get(id).bytes)} | ${kb(H.get(id).bytes)} | ${H.get(id).outcome} |`), ''] : []));
+}
+if (baseFile) {
+  const B = new Map(JSON.parse(readFileSync(baseFile, 'utf8')).filter(r => r.ms != null && !r.error && !r.compileError && !r.daxError).map(r => [r.id, r.ms]));
+  const ids = [...D.keys()].filter(id => D.get(id).ms != null && B.has(id) && D.get(id).ms >= growsMs);
+  const g = id => D.get(id).ms / Math.max(B.get(id), 1);
+  const v = ids.map(g).sort((a, b) => a - b), med = v.length ? v[Math.floor(v.length / 2)] : 0;
+  const far = ids.filter(id => g(id) >= grows).sort((a, b) => g(b) - g(a));
+  lines.push(`### Time against ten times less data: ${ids.length} queries of ${growsMs} ms or more`, '',
+    `Each query's time at this scale factor over its time at a tenth of it (about 10 for a sound query): median ${med.toFixed(1)}; ${grows} or more: ${far.length}.`, '',
+    ...(far.length ? ['| query | ms | ms at a tenth | × |', '|---|---|---|---|', ...far.slice(0, 40).map(id => `| ${id} | ${D.get(id).ms} | ${B.get(id)} | ${g(id).toFixed(1)} |`), ''] : []));
 }
 const text = lines.join('\n');
 console.log(text);

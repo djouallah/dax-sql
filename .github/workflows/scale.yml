@@ -12,7 +12,10 @@ name: Scale
 #            refused where Power BI answers it fails it), DataFusion, and Polars by hand
 #            (tools/tpcds/scale-engine.mjs, answers of more than 100,000 rows left out), not gates;
 #            and the SQL written by hand (conformance/engines/hand), what dax-sql's is measured against;
-#   compare  the engines' times and answers in one table (tools/tpcds/scale-compare.mjs).
+#   base     the queries at a tenth of the scale factor, for how each query's time grows with the data;
+#   compare  the engines' times and answers in one table, and the queries whose time grows far
+#            faster than the data (tools/tpcds/scale-compare.mjs). scale-run.mjs's own summary lists
+#            the queries that multiply rows (DuckDB's profile: an operator past the largest table).
 # On a push and a release (publish.yml): SF1, 120 s, DuckDB and DataFusion.
 
 on:
@@ -82,6 +85,43 @@ jobs:
         with:
           name: answers
           path: ${{ runner.temp }}/answers.json
+
+  # The same queries at a tenth of the scale factor, by this commit too: how each query's time grows
+  # with the data (scale-compare.mjs --base). A sound query takes about ten times as long on ten
+  # times the data; one that takes far more multiplies rows.
+  base:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: djouallah/dax-sql
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: A tenth of SF${{ env.SF }}
+        id: base
+        run: echo "sf=$(node -e 'console.log(Number(process.env.SF) / 10)')" >> "$GITHUB_OUTPUT"
+      - name: The tables, cached
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/tpcds
+          key: tpcds-sf${{ steps.base.outputs.sf }}-${{ hashFiles('conformance/tools/tpcds/scale.mjs', 'conformance/models/tpcds/model.bim') }}
+      - name: TPC-DS at SF${{ steps.base.outputs.sf }}
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: node conformance/tools/tpcds/scale.mjs "${{ steps.base.outputs.sf }}" "$RUNNER_TEMP/tpcds/tpcds.duckdb" --model-dir "$RUNNER_TEMP/tpcds/model"
+      - name: The tpcds queries at SF${{ steps.base.outputs.sf }} on DuckDB
+        run: |
+          mkdir -p "$RUNNER_TEMP/base"
+          node conformance/tools/tpcds/scale-run.mjs "$RUNNER_TEMP/tpcds/tpcds.duckdb" --no-agree --timeout "$TIMEOUT" \
+            --report "$RUNNER_TEMP/base/duckdb.json" > /dev/null
+      - uses: actions/upload-artifact@v4
+        with:
+          name: base
+          path: ${{ runner.temp }}/base/duckdb.json
 
   engines:
     needs: data
@@ -156,7 +196,7 @@ jobs:
           path: ${{ runner.temp }}/${{ matrix.engine }}.json
 
   compare:
-    needs: engines
+    needs: [engines, base]
     if: always()
     runs-on: ubuntu-latest
     steps:
@@ -171,5 +211,12 @@ jobs:
           pattern: report-*
           merge-multiple: true
           path: ${{ runner.temp }}/reports
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: base
+          path: ${{ runner.temp }}/base
       - name: The engines side by side
-        run: node conformance/tools/tpcds/scale-compare.mjs "$RUNNER_TEMP/reports"
+        run: |
+          base=(); test -f "$RUNNER_TEMP/base/duckdb.json" && base=(--base "$RUNNER_TEMP/base/duckdb.json")
+          node conformance/tools/tpcds/scale-compare.mjs "$RUNNER_TEMP/reports" "${base[@]}"

@@ -1,6 +1,6 @@
 {
   "name": "dax-sql",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "license": "MIT",
   "author": "N.S. Devaraj (https://github.com/nsdevaraj)",
   "description": "DAX and Apache Ossie SQL queries over semantic models (TMSL, TMDL, Ossie) compiled to one SQL SELECT for DuckDB or T-SQL (Microsoft Fabric), held to Power BI's answers",

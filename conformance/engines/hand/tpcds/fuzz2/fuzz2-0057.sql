@@ -8,11 +8,11 @@ g AS (
   SELECT c.s_city, k.i_class, y.d_year
   FROM (SELECT DISTINCT s_city FROM store) c, (SELECT DISTINCT i_class FROM item) k, (SELECT DISTINCT d_year FROM date_dim) y),
 c AS (
-  SELECT i.i_class, d.d_year, SUM(cs.cs_quantity) AS q, COUNT(*) AS n, ROUND(AVG(cs.cs_ext_sales_price), 4) AS a
+  SELECT i.i_class, d.d_year, SUM(cs.cs_quantity) AS q, COUNT(*) AS n, (ROUND(AVG(cs.cs_ext_sales_price) * 10000, 0) / 10000) AS a
   FROM catalog_sales cs LEFT JOIN item i ON i.i_item_sk = cs.cs_item_sk LEFT JOIN date_dim d ON d.d_date_sk_1 = cs.cs_sold_date_sk
   GROUP BY ALL),
 s AS (
-  SELECT st.s_city, i.i_class, d.d_year, SUM(ss.ss_net_profit) AS p, ROUND(AVG(ss.ss_ext_sales_price), 4) AS a, MIN(ss.ss_net_profit) AS mn
+  SELECT st.s_city, i.i_class, d.d_year, SUM(ss.ss_net_profit) AS p, (ROUND(AVG(ss.ss_ext_sales_price) * 10000, 0) / 10000) AS a, MIN(ss.ss_net_profit) AS mn
   FROM store_sales ss LEFT JOIN store st ON st.s_store_sk = ss.ss_store_sk LEFT JOIN item i ON i.i_item_sk = ss.ss_item_sk
   LEFT JOIN date_dim d ON d.d_date_sk_1 = ss.ss_sold_date_sk
   GROUP BY ALL),

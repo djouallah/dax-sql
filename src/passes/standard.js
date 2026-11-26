@@ -382,10 +382,16 @@ function fn(x) {
     // A fixed decimal: four places; past its range (922337203685477.5808, as 922337203685477 and
     // 0.5808: each a double exactly) DAX's error. The value bound once (named twice, an engine
     // would compute it in a row of its own, outside the branch a DIVIDE takes it in).
+    // A double, as Power BI converts one: a whole number of ten-thousandths, v * 10000 rounded half
+    // away from zero (0.50005, a double a hair below it, is 5000.5 ten-thousandths: 0.5001, where
+    // round(v, 4) gives 0.5 on DuckDB 2.0.1).
     case 'currency': {
       const v = bind(p, 'cy');
+      const four = v.t === 'double'
+        ? pop('div', [call('round', [pop('mul', [v, lit(10000, 'int')], 'double'), lit(0, 'int')], 'double'), lit(10000, 'int')], 'decimal')
+        : call('round', [v, lit(4, 'int')], 'decimal');
       return caseOf([[cond('ge', [pop('sub', [call('abs', [v], v.t), lit(922337203685477, 'int')], v.t), lit(0.5808, 'double')]), error(FIXED, 'decimal')]],
-        call('round', [v, lit(4, 'int')], 'decimal'), 'decimal');
+        four, 'decimal');
     }
     // Values of different kinds together (a number or a text): as text, as DAX writes them.
     case 'coalesce': return x.t === 'variant' ? coalesce(...a.map(asText)) : coalesce(...a);

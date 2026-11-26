@@ -295,7 +295,9 @@ its columns, a grouping all its keys).
 compiler's decisions built in (`lower.js`'s `Fusion`: a level's measures over
 the same rows one grouping by its keys; a table filter that reads the keys a mapping of (keys,
 value) computed once; the fact grouped by its join keys before the dimensions, with a semi-join
-of each dimension's condition; the same for an iterator's, a FILTER's and an ADDCOLUMNS' rows),
+of each dimension's condition that a blank fails, a DAX `=` of a constant other than BLANK, 0,
+"" or FALSE included (`Fuel = "Rooftop solar"`); the same for an iterator's, a FILTER's and an
+ADDCOLUMNS' rows, VALUES' and ALL's with the blank row too),
 writes the plan as Substrait (`substrait.js`), reads it back (`substrait-read.js`) and writes the
 dialect's SQL from what it read. DuckDB is given the plan correlated, before decorrelation, and
 unnests its applies and EXISTS itself (correlated fusion, the standard scalars, exact sums,
@@ -628,6 +630,13 @@ const { sql, columns } = dax.compile(`
   `planSql(query)` its SQL, `{ sql, columns }` as `compile` gives. Each takes a SQL `SELECT`
   over the model too; `plan` and `explain` take `{ optimize: false }` for the plan before the
   optimizer's passes (which has no SQL).
+- `orphanCheck()`: the statement that answers the `orphans` option for every relationship,
+  `{ sql, rels }`. `sql` is one `SELECT` of one row, in the compiler's dialect and with its
+  `tableSource`, with a boolean for each entry of `rels` (`true`: that relationship's many
+  side holds a key its one side lacks, NULL and empty included). `rels` are what `orphans`
+  receives, `{ key, name, many, one }`, so a caller keys its answers by `rel.key`. It reads the
+  tables without row-level security, as the blank row's own test does. A relationship on a
+  calculated column is not listed (its test stays in the SQL).
 - `model`: the model as read; `dialect`: the dialect it writes.
 
 The package also exports `DaxError`, `Model`, the dialects (`Dialect`, `DuckDBDialect`,

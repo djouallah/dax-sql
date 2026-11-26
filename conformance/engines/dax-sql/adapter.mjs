@@ -19,25 +19,12 @@ const PLAN = process.env.DAXSQL_PLAN;
 const times = [];
 const request = JSON.parse(readFileSync(process.argv[3], 'utf8'));
 const dbs = new Map();
-const quote = s => `"${String(s).replaceAll('"', '""')}"`;
-// Whether each relationship's many side holds a key its one side lacks, read from the data: a map of
-// `name|many table|many column` to true or false (a calculated table or column: not known).
+// Whether each relationship's many side holds a key its one side lacks, read from the data with the
+// compiler's own statement (orphanCheck): a map of rel.key to true or false.
 async function orphansOf(db) {
-  const out = new Map();
-  const table = n => db.model.tables.find(t => t.name === n);
-  const side = (n, c) => { const t = table(n), col = t?.columns.find(x => x.name === c); return t?.source?.entity && col?.source ? { t: quote(t.source.entity), c: quote(col.source) } : null; };
-  for (const r of db.model.relationships) {
-    const dirs = [];
-    if ((r.toCardinality ?? 'one') === 'one') dirs.push([r.from, r.to]);
-    if (r.fromCardinality === 'one') dirs.push([r.to, r.from]);
-    for (const [many, one] of dirs) {
-      const M = side(many.table, many.column), O = side(one.table, one.column);
-      if (!M || !O) continue;
-      const rd = await db.con.runAndReadAll(`SELECT EXISTS (SELECT 1 FROM ${M.t} AS m LEFT JOIN ${O.t} AS o ON o.${O.c} = m.${M.c} WHERE o.${O.c} IS NULL)`);
-      out.set(`${r.name}|${many.table}|${many.column}`, rd.getRowsJS()[0][0] === true);
-    }
-  }
-  return out;
+  const { sql, rels } = e.createCompiler(db.model).orphanCheck();
+  const row = (await db.con.runAndReadAll(sql)).getRowsJS()[0];
+  return new Map(rels.map((r, i) => [r.key, row[i] === true]));
 }
 for (const q of request.queries) {
   let answer;
@@ -46,7 +33,7 @@ for (const q of request.queries) {
     if (!dbs.has(key)) {
       const d = await e.database(q.model, q.data);
       const known = process.env.DAXSQL_ORPHANS ? await orphansOf(d) : null;
-      dbs.set(key, { ...d, compilers: new Map(), orphans: known && (rel => known.get(`${rel.name}|${rel.many.table}|${rel.many.column}`)) });
+      dbs.set(key, { ...d, compilers: new Map(), orphans: known && (rel => known.get(rel.key)) });
     }
     const db = dbs.get(key);
     const roles = JSON.stringify(q.roles ?? null);

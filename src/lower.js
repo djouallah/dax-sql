@@ -16,7 +16,7 @@ import { outputNames, daxName } from './plan-sql.js';
 import { canon, text } from './passes/fuse.js';
 import { free, subst } from './passes/decorrelate.js';
 import { clone } from './passes/clone.js';
-import { orphanHint } from './model.js';
+import { orphanHint, relSide } from './model.js';
 
 const lc = s => String(s).toLowerCase();
 const withRow = (scope, row, res) => { const s = new Map(scope); s.set(row.id, res); return s; };
@@ -276,15 +276,39 @@ export class Lowerer {
         // none, so no test of them (the many side's own blank row still counts).
         const h = this.hint(rel, one, many);
         if (h === true) return P.TRUE;
-        if (h !== false && !one.expr && !many.expr) {
-          const M = this.source(many.table), O = this.source(one.table);
-          const mk = colOf(M, many), ok = colOf(O, one);
-          parts.push(P.exists(P.select(P.join('left', M, O, P.eq(P.ref(ok), P.ref(mk))), P.isNull(P.ref(ok)))));
-        }
+        if (h !== false && !one.expr && !many.expr) parts.push(this.orphanTest(one, many));
         if (!seen.has(many.table) && this.hasBlankRow(many.table)) parts.push(this.orphans(many.table, seen));
       }
     } finally { this.checks--; }
     return parts.length ? P.or(parts) : P.FALSE;
+  }
+
+  // Whether the many side `many` of a relationship holds a key its one side `one` lacks (a NULL or
+  // an empty one too): a row of it that finds no row there. As at refresh: no filter, no security.
+  orphanTest(one, many) {
+    const M = this.source(many.table), O = this.source(one.table);
+    const mk = colOf(M, many), ok = colOf(O, one);
+    return P.exists(P.select(P.join('left', M, O, P.eq(P.ref(ok), P.ref(mk))), P.isNull(P.ref(ok))));
+  }
+
+  // The orphans option's answers as one statement (index.js orphanCheck): a row of a boolean for
+  // each relationship read from its many side to its one side (relSide), true where that side holds
+  // a key the other lacks; one of a calculated column is not listed (it stays a test in the SQL).
+  orphanCheck() {
+    const rels = [], items = [];
+    for (const t of this.model.tables.values()) {
+      for (const { rel, one, many } of this.model.oneSides(t)) {
+        if (one.expr || many.expr) continue;
+        items.push({ name: `o${items.length}`, expr: this.orphanTest(one, many), by: null, cast: null });
+        rels.push(relSide(rel, one, many));
+      }
+    }
+    return {
+      plan: P.output(P.oneRow(), items, [], this.defs),
+      ordered: false,
+      columns: items.map(i => ({ name: i.name, dax: null, type: 'bool', lineage: null })),
+      rels,
+    };
   }
 
   // A model table's rows: its stored rows; a calculated table's expression (as at refresh: no
@@ -1436,9 +1460,16 @@ Fusion.prototype.belowJoins = function belowJoins(g) {
 
 // Whether a condition fails for a blank in what it reads: comparisons and lists of values, and
 // ANDs of them (no OR, NOT, IS NULL, COALESCE or CASE, which can hold of a blank).
+// A DAX = of a column and a constant (an op, DAX's blank rules) fails for a blank too unless the
+// constant is one a blank equals (BLANK, 0, "", FALSE): Product[Color] = "Red", not = 0.
 function blankFails(x) {
   if (x.k === 'ref' || x.k === 'lit') return true;
   if (x.k === 'pop') return ['and', 'eq', 'ne', 'lt', 'le', 'gt', 'ge', 'in', 'notnull'].includes(x.op) && x.a.every(blankFails);
+  if (x.k === 'op' && x.op === 'and') return x.a.every(blankFails);
+  if (x.k === 'op' && x.op === 'eq' && x.a.length === 2) {
+    const lit = x.a.find(y => y.k === 'lit'), other = x.a.find(y => y !== lit);
+    return !!lit && other?.k === 'ref' && ![null, undefined, 0, '', false].includes(lit.v) && !(typeof lit.v === 'bigint' && lit.v === 0n);
+  }
   return false;
 }
 
@@ -1471,10 +1502,13 @@ function walkFiltering(x, model, kid) {
   return out;
 }
 
+// Whether each row of table x is one row of a model table: its rows, filtered, projected, ...; VALUES
+// and ALL with the table's blank row too (withblank: its blank row is one more row of it, and a
+// mapping lists it: Fusion.mapping).
 function ownRows(x) {
   if (!x) return false;
   if (x.k === 'scan') return true;
-  if (['filter', 'project', 'distinct', 'group', 'topn', 'topnskip', 'shared', 'window'].includes(x.k)) return ownRows(x.src);
+  if (['filter', 'project', 'distinct', 'group', 'topn', 'topnskip', 'shared', 'window', 'withblank'].includes(x.k)) return ownRows(x.src);
   return false;
 }
 

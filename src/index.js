@@ -22,7 +22,7 @@
 //                  table has DAX's blank row (no check of the facts for keys a dimension lacks):
 //                  a departure from DAX where some key has no row. A relationship's own flag
 //                  (TMSL's relyOnReferentialIntegrity) is DirectQuery's and changes nothing
-//   orphans        ({ name, many: { table, column }, one: { table, column } }) => true | false |
+//   orphans        ({ key, name, many: { table, column }, one: { table, column } }) => true | false |
 //                  undefined: what the caller knows of a relationship's keys (read from its many
 //                  side to its one side), as the data holds them now. false: the many side holds
 //                  no key the one side lacks, a NULL or empty one included (checked by the
@@ -30,7 +30,8 @@
 //                  stands for the dimension's key; true: it holds one, so the blank row is there
 //                  with no test; undefined: tested in the SQL, as with no option. Not a
 //                  departure from DAX when it says what the data holds: a table with no orphan
-//                  key has no blank row in Power BI either
+//                  key has no blank row in Power BI either. orphanCheck() writes the statement that
+//                  answers it for every relationship
 //   user           the value of USERNAME() and USERPRINCIPALNAME()
 //   roles          the names of the model's roles to query as: every table's rows are those
 //                  some role keeps (row-level security), and what every role hides is no name
@@ -377,6 +378,18 @@ export function createCompiler(input, options = {}) {
       return out[0];
     },
     compileAll,
+    // The orphans option's answers, as one statement to run on the data: { sql, rels }. sql is a
+    // SELECT of one row, a boolean column for each entry of rels (true: that relationship's many
+    // side holds a key its one side lacks, a NULL or empty one too); rels are what orphans
+    // receives ({ key, name, many, one }), so a caller keys its answers by rel.key. In this
+    // compiler's dialect and with its tableSource. It reads the tables as the blank row's own test
+    // does: without row-level security. A relationship on a calculated column is not listed.
+    orphanCheck() {
+      const o = { ...options, calcColumn, calcTable, security };
+      const p = new Lowerer(model, o).orphanCheck();
+      const plan = readBack(engine(readSubstrait(JSON.parse(JSON.stringify(toSubstrait(pipeline(p.plan)).plan)), model, { columns: p.columns, castOutput: false })));
+      return { sql: new PlanSql(model, dialect, o).query({ ...p, plan }), rels: p.rels };
+    },
     // Any SQL in which a SELECT over the model (FROM `name`, 'model' by default) is a relation in
     // parentheses -> { sql, relations: [{ text, dax, sql }] }: each SELECT's SQL in its place, the
     // rest as written. A text that is one SELECT over the model is compiled whole.

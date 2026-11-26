@@ -387,13 +387,19 @@ export function orphanHint(options) {
   if (typeof f !== 'function') return () => undefined;
   const memo = new Map();
   return (rel, one, many) => {
-    const k = `${rel.name}|${many.table.name}|${many.name}`;
-    if (!memo.has(k)) {
-      const v = f({ name: rel.name, many: { table: many.table.name, column: many.name }, one: { table: one.table.name, column: one.name } });
-      memo.set(k, v === true || v === false ? v : undefined);
+    const d = relSide(rel, one, many);
+    if (!memo.has(d.key)) {
+      const v = f(d);
+      memo.set(d.key, v === true || v === false ? v : undefined);
     }
-    return memo.get(k);
+    return memo.get(d.key);
   };
+}
+// A relationship read from its many side to its one side, as the orphans option and orphanCheck
+// name it: { key (stable: the relationship's name, the many side's table and column), name,
+// many: { table, column }, one: { table, column } }.
+export function relSide(rel, one, many) {
+  return { key: `${rel.name}|${many.table.name}|${many.name}`, name: rel.name, many: { table: many.table.name, column: many.name }, one: { table: one.table.name, column: one.name } };
 }
 
 export function isDateKey(model, col) {

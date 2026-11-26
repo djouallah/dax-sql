@@ -161,7 +161,11 @@ test('orphans: what the caller knows of a relationship\'s keys stands for the te
   const yes = await run(rel => { asked.push(rel); return rel.name === 'sales_customer' ? true : undefined; });
   assert.deepEqual(yes.rows, rows);
   assert.ok(exists(yes.sql) < exists(base), yes.sql);
-  assert.deepEqual(asked.find(r => r.name === 'sales_customer'), { name: 'sales_customer', many: { table: 'Sales', column: 'CustomerKey' }, one: { table: 'Customer', column: 'CustomerKey' } });
+  assert.deepEqual(asked.find(r => r.name === 'sales_customer'), { key: 'sales_customer|Sales|CustomerKey', name: 'sales_customer', many: { table: 'Sales', column: 'CustomerKey' }, one: { table: 'Customer', column: 'CustomerKey' } });
+  // The compiler's own statement answers it: customer 99 is a key Customer lacks.
+  const { sql: check, rels } = h.dax.orphanCheck();
+  const [row] = await h.sql(check);
+  assert.equal(Object.values(row)[rels.findIndex(r => r.key === 'sales_customer|Sales|CustomerKey')], true);
   // false: the caller says every key has its row, so there is no blank row, no test, no UNION.
   const no = await run(rel => (rel.name === 'sales_customer' ? false : undefined));
   assert.equal(no.rows.length, rows.length - 1);

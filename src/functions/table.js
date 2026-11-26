@@ -29,14 +29,22 @@ function item(c, name, ast, env) {
 
 // --- reading the model ------------------------------------------------------------------
 
+// The blank row: VALUES and ALL (and its kind) list it; DISTINCT, ALLNOBLANKROW and a table
+// named on its own do not.
+const blankOf = (c, t, fn) => fn !== 'ALLNOBLANKROW' && fn !== 'DISTINCT' && c.blankRowRels(t).length > 0;
+const rowsOf = (c, t, ctx, fn) => {
+  const s = c.scan(t, ctx);
+  return blankOf(c, t, fn) ? ir.withBlank(s, t, ctx) : s;
+};
+
 function all(c, args, env, ast) {
   if (!args.length) throw semantic(`${ast.fn}() with no argument is only valid as a CALCULATE filter`);
-  if (args.length === 1 && isModelTableName(c, args[0], env)) return c.scan(c.model.table(args[0].name), noFilters(env.ctx));
+  if (args.length === 1 && isModelTableName(c, args[0], env)) return rowsOf(c, c.model.table(args[0].name), noFilters(env.ctx), ast.fn);
   // ALL(T[a], T[b]): the combinations of values the table holds, filters ignored.
   const cols = args.map(a => c.modelColumn(a, env));
   const t = cols[0].table;
   if (cols.some(x => x.table !== t)) throw semantic(`${ast.fn} takes columns of one table`);
-  return ir.values(t, noFilters(env.ctx), cols, (tb, ctx) => c.scan(tb, ctx));
+  return ir.values(t, noFilters(env.ctx), cols, (tb, ctx) => c.scan(tb, ctx), blankOf(c, t, ast.fn));
 }
 
 function allExcept(c, args, env) {
@@ -59,22 +67,23 @@ function allSelected(c, args, env) {
   if (!args.length) throw semantic('ALLSELECTED() with no argument is only valid as a CALCULATE filter');
   if (args.length === 1 && isModelTableName(c, args[0], env)) {
     const t = c.model.table(args[0].name), exp = c.expandedColumns(t, env.ctx);
-    return c.scan(t, c.allSelected(env.ctx.remove(x => !exp.has(x)), env, exp));
+    return rowsOf(c, t, c.allSelected(env.ctx.remove(x => !exp.has(x)), env, exp), 'ALLSELECTED');
   }
   const list = args.map(a => c.modelColumn(a, env));
   if (list.some(x => x.table !== list[0].table)) throw semantic('ALLSELECTED takes columns of one table');
   const ctx = c.allSelected(noFilters(env.ctx), env, new Set(list), true);
-  return ir.values(list[0].table, ctx, list, (tb, x) => c.scan(tb, x));
+  return ir.values(list[0].table, ctx, list, (tb, x) => c.scan(tb, x), blankOf(c, list[0].table, 'ALLSELECTED'));
 }
 
 function valuesFn(c, args, env, ast) {
   const a = args[0];
   if (isModelTableName(c, a, env)) {
-    return ir.distinct(c.scan(c.model.table(a.name), env.ctx));
+    const t = c.model.table(a.name), d = ir.distinct(c.scan(t, env.ctx));
+    return blankOf(c, t, ast.fn) ? ir.withBlank(d, t, env.ctx) : d;
   }
   if (a.k === 'col' && a.table && c.model.findColumn(a.table, a.name)) {
     const col = c.modelColumn(a, env);
-    return ir.values(col.table, env.ctx, [col], (tb, ctx) => c.scan(tb, ctx));
+    return ir.values(col.table, env.ctx, [col], (tb, ctx) => c.scan(tb, ctx), blankOf(c, col.table, ast.fn));
   }
   return ir.distinct(c.table(a, env));
 }
@@ -329,7 +338,7 @@ function addMissingItems(c, args, env) {
     if (!byTable.has(col.table)) byTable.set(col.table, []);
     byTable.get(col.table).push(col);
   }
-  const parts = [...byTable].map(([tb, cols]) => ir.values(tb, ctx, cols, (x, y) => c.scan(x, y)));
+  const parts = [...byTable].map(([tb, cols]) => ir.values(tb, ctx, cols, (x, y) => c.scan(x, y), blankOf(c, tb, 'VALUES')));
   const combos = parts.length === 1 ? parts[0] : { k: 'cross', srcs: parts, cols: parts.flatMap(p => p.cols), base: null };
   const at = show.map(col => [...byTable.values()].flat().indexOf(col));
   // Those no row of the table has.
@@ -619,7 +628,7 @@ function autoExist(c, ctx, outer, keys, binds = []) {
     if (fs.length < 2) continue;
     const cols = [...new Set([...fs.flatMap(f => f.cols), ...keys.filter(k => k.table === t)])];
     const own = binds.filter(f => f.cols[0].table === t);
-    const combos = extra => ir.values(t, new Ctx([...fs, ...extra], ctx.mods), cols, (tb, x) => c.scan(tb, x));
+    const combos = extra => ir.values(t, new Ctx([...fs, ...extra], ctx.mods), cols, (tb, x) => c.scan(tb, x), c.blankRowRels(t).length > 0);
     // keyOnly: the keys no filter of fs is on (there only to tie them to the filtered columns).
     const keyOnly = cols.filter(k => !fs.some(f => f.cols.includes(k)));
     ctx = new Ctx(ctx.filters.filter(f => !fs.includes(f)), ctx.mods).add({ kind: 'rel', cols, src: combos([]), idx: cols.map((_, i) => i), base: null, keyOnly });
@@ -662,6 +671,17 @@ function removeMod(c, args, env) {
     for (const t of tables) for (const x of c.expandedColumns(t, ctx)) hit.add(x);
     return x => hit.has(x);
   } };
+}
+// ALLNOBLANKROW(...) as a filter argument: ALL's removal, and the table's rows (or the
+// columns' values) without its blank row as a filter, so the rows that belong to the blank
+// row (a sale of an unknown product) are left out.
+function allNoBlankRowMod(c, args, env, ast) {
+  const remove = removeMod(c, args, env);
+  if (!args.length || args.every(a => a.k === 'empty')) return remove;
+  const t = isModelTableName(c, args[0], env) ? c.model.table(args[0].name) : c.modelColumn(args[0], env).table;
+  if (!c.blankRowRels(t).length) return remove;
+  const filters = [c.tableFilter(all(c, args, env, ast), env.ctx)].flat().filter(Boolean);
+  return [remove, ...filters.map(filter => ({ kind: 'filter', filter, keep: false }))];
 }
 function allExceptMod(c, args, env) {
   if (!isModelTableName(c, args[0], env)) throw semantic('ALLEXCEPT(table, column, ...)');
@@ -722,7 +742,7 @@ export const table = {
 };
 
 export const modifiers = {
-  ALL: removeMod, ALLNOBLANKROW: removeMod, REMOVEFILTERS: removeMod, ALLCROSSFILTERED: removeMod,
+  ALL: removeMod, ALLNOBLANKROW: allNoBlankRowMod, REMOVEFILTERS: removeMod, ALLCROSSFILTERED: removeMod,
   ALLEXCEPT: allExceptMod, ALLSELECTED: allSelectedMod,
   USERELATIONSHIP: useRelationship, CROSSFILTER: crossFilter,
 };

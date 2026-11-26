@@ -156,15 +156,14 @@ filters on its expanded table's columns only.
 ### The blank row
 
 Power BI adds a row of blanks to a table on the one side of a relationship when the other side
-has keys it lacks, and lists it in `VALUES`, `ALL` and the groups of SUMMARIZECOLUMNS. Knowing
-whether it is there takes a scan of every such fact table for the keys the dimension lacks, in
-every query that lists a dimension's values: 3,908 checks over the conformance queries, a third
-of their SQL. So it is there only where it costs nothing: where SUMMARIZECOLUMNS' groups are read
-off the measures' own grouping of a fact (fused, the joins to the one side `LEFT JOIN`s), the
-fact's rows whose key the dimension lacks are a group, its columns blank, as Power BI's. Anywhere
-else (a departure from DAX) there is none: `VALUES` and `ALL` are the dimension's rows, and the
-groups of a level whose measures are not one grouping of a fact (`ALL` of the dimension, time
-intelligence, another table's rows) are the dimension's values.
+has keys it lacks, and lists it in `VALUES`, `ALL` and the groups of SUMMARIZECOLUMNS. So does
+dax-sql (`withblank`, `blankexists`; `Lowerer.blankRow`): the row is there when a row of a many
+side holds a key, not blank, that the table lacks (`orphans`: a blank key alone gives none, as
+Power BI's answers say), under the filters, row-level security and the row's own blanks.
+`DISTINCTCOUNT` is `COUNTROWS(DISTINCT(...))`: it does not count it. Knowing whether the row is
+there takes a scan of each such table for the keys the dimension lacks; a statement that reads
+one table only (a dimension listed alone) is compiled again without it (`readsOneTable`), a
+departure from DAX: it lists the dimension's own rows.
 
 A blank in a table filter must match the fact rows that have no row of the table, and a NULL
 stored in a column, so membership (`member`) is null-safe where both sides can be blank

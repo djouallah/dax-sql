@@ -188,6 +188,12 @@ export function createCompiler(input, options = {}) {
   }
 
   const cache = new Map();
+  // The compiler of a statement that reads one table only: no blank row.
+  let plain = null;
+  const plainCompiler = () => {
+    if (!plain) { plain = new Compiler(model, { ...options, blankRows: false }); plain.hidden = base.hidden; }
+    return plain;
+  };
   // Every dialect's SQL is the query plan's (lower.js), written from it as Substrait (substrait.js)
   // read back (substrait-read.js): nothing reaches the SQL that the Substrait does not carry.
   // DuckDB is given the plan correlated (it unnests it itself), every other engine the plan
@@ -212,13 +218,13 @@ export function createCompiler(input, options = {}) {
   };
   const planned = opts => statements => statements.map(s => {
     const o = { ...opts, calcColumn, calcTable, security };
-    const p = new Lowerer(model, o).query(s);
+    const lw = new Lowerer(model, o), p = lw.query(s);
     const passed = pipeline(p.plan);
     const plan = readBack(engine(readSubstrait(JSON.parse(JSON.stringify(toSubstrait(passed).plan)), model, { columns: p.columns, castOutput: options.castOutput })));
     const ps = new PlanSql(model, dialect, o);
     const sql = ps.query({ ...p, plan });
     // Its size (the smaller of a calculation group's two forms is kept): the plan's, after the passes.
-    return { sql, ctes: ps.parts.ctes, body: ps.parts.body, aliases: ps.n, ordered: p.ordered, columns: p.columns, size: planSize(passed) };
+    return { sql, ctes: ps.parts.ctes, body: ps.parts.body, aliases: ps.n, ordered: p.ordered, columns: p.columns, size: planSize(passed), one: lw.readsOneTable() };
   });
   // `dax`: the query's text, or its tree (keyed by `key`, the text it was built from).
   // `extra`: options of this compilation only (aliasStart).
@@ -231,6 +237,13 @@ export function createCompiler(input, options = {}) {
     if (out) return out;
     const make = planned(opts);
     out = base.query(dax, make);
+    // A statement that reads one table only (a dimension listed alone) lists that table's rows,
+    // with no blank row: the check for one reads the tables related to it, which the statement
+    // does not (DESIGN.md).
+    if (out.some(r => r.one)) {
+      const again = plainCompiler().query(dax, planned({ ...opts, blankRows: false }));
+      out = out.map((r, n) => (r.one ? again[n] : r));
+    }
     if (base.splitOne && dialect.splitOneGroup === 'smaller') {
       // The smaller: the plan's size (as plans keeps), else the SQL's.
       const size = o => o.reduce((n, x) => n + (x.size ?? (x.sql ?? '').length), 0);
@@ -284,7 +297,13 @@ export function createCompiler(input, options = {}) {
     query(text);
     if (rolesError) throw semantic(rolesError);
     const opts = { ...options, calcColumn, calcTable, security };
-    const lower1 = q => base.query(q, statements => statements.map(s => new Lowerer(model, opts).query(s)));
+    // A statement that reads one table only: lowered again without the blank row, as compileAll.
+    const lower1 = q => {
+      const out = base.query(q, statements => statements.map(s => { const lw = new Lowerer(model, opts), p = lw.query(s); return { ...p, one: lw.readsOneTable() }; }));
+      if (!out.some(p => p.one)) return out;
+      const again = plainCompiler().query(q, statements => statements.map(s => new Lowerer(model, { ...opts, blankRows: false }).query(s)));
+      return out.map((p, n) => (p.one ? again[n] : p));
+    };
     // SUMMARIZECOLUMNS by one calculation group's column: a level for each item, or one for all
     // of them; the smaller plan, as compileAll keeps the smaller SQL.
     const lower = q => {

@@ -50,7 +50,12 @@ export class Lowerer {
     this.defOf = new Map();
     this.fusions = [];       // stack: the Fusion an aggregate goes to, or null (inside a table)
     this.fusedIn = new Map(); // a fused aggregate (its node) -> its group
+    this.checks = 0;         // > 0 while writing whether a table has its blank row (orphans)
+    this.reads = new Set();  // the model tables the statement scans, those checks aside
+    this.blanks = false;     // whether a blank row was written
   }
+  // A statement that reads one table only, with a blank row in it: compiled again without.
+  readsOneTable() { return this.blanks && this.reads.size === 1; }
 
   // f, its aggregates fused into none (a table's, a subquery's: their rows are their own).
   isolated(f) {
@@ -208,6 +213,13 @@ export class Lowerer {
         b.open = false;
         return b;
       }
+      case 'withblank': {
+        // VALUES, ALL: the rows, and the table's blank row when it has one.
+        const r = this.table(x.src, scope).render();
+        const blank = this.blankRow(x.table, x.ctx, scope, bb => { bb.setOut(x.cols, x.lineage.map(l => bb.res.meta(l))); return bb.render(); });
+        if (!blank) return this.fromRendered(r, x.cols);
+        return this.fromRel(P.distinct(P.union([this.exact(r), this.exact(blank)])), x.cols);
+      }
       case 'currentgroup': throw semantic('CURRENTGROUP() is only valid in an aggregate inside GROUPBY');
     }
     throw unsupported(`plan: table ${x.k}`);
@@ -216,6 +228,7 @@ export class Lowerer {
   // The rows of a model table the filter context keeps. self: [row, cols], a row whose columns
   // are the scan's own (cols[i] its i-th), for filters that read the keys the scan is grouped by.
   scanBlock(table, ctx, scope, excluded = null, self = null) {
+    if (!this.checks) this.reads.add(table);
     const rel = this.source(table);
     const b = new Block(this, rel, table.columns.map(c => ({ name: c.name, lineage: c, t: c.type })));
     b.res = new ScanRes(this, b, table, rel, this.model.state(ctx.mods));
@@ -225,6 +238,46 @@ export class Lowerer {
     }
     b.where.push(...this.conds(table, ctx, b.res, scope, excluded), ...this.securityConds(table, b.res, scope));
     return b;
+  }
+
+  // DAX's blank row: the row of blanks Power BI adds to a table on the one side of a
+  // relationship whose many side holds keys the table lacks (model.oneSides). A statement that
+  // reads one table only (a dimension listed alone) has none: knowing whether it is there takes
+  // a scan of the tables related to it (index.js compiles such a statement again without it).
+  hasBlankRow(table) { return this.options.blankRows !== false && this.model.oneSides(table).length > 0; }
+
+  // The blank row under the filter context, when the table has one: a block over one row of
+  // NULLs, which the filters hold of as of any row, and which is there when some row of a many
+  // side has a key the table lacks (orphans). `out` writes its columns; null when there is none.
+  blankRow(table, ctx, scope, out, excluded = null) {
+    if (!this.hasBlankRow(table)) return null;
+    const stored = table.columns.filter(c => !c.expr);
+    const rel = P.values([stored.map(c => ir.lit(null, c.type))], stored.map(c => P.newCol(c.name, c.type, { lineage: c, table })));
+    const b = new Block(this, rel, table.columns.map(c => ({ name: c.name, lineage: c, t: c.type })));
+    b.res = new ScanRes(this, b, table, rel, this.model.state(ctx.mods));
+    b.res.blankRow = true;
+    b.where.push(...this.conds(table, ctx, b.res, scope, excluded), ...this.securityConds(table, b.res, scope), this.orphans(table));
+    this.blanks = true;
+    return out(b);
+  }
+
+  // Whether the table has a blank row: a row on the many side of a relationship it is the one
+  // side of has a key it lacks (a blank key too), or that table has a blank row itself (a sale of
+  // an unknown product is in the blank category too). As at refresh: no filter, no security.
+  orphans(table, seen = new Set()) {
+    seen.add(table);
+    const parts = [];
+    this.checks++;
+    try {
+      for (const { one, many } of this.model.oneSides(table)) {
+        if (one.expr || many.expr) continue;
+        const M = this.source(many.table), O = this.source(one.table);
+        const mk = colOf(M, many), ok = colOf(O, one);
+        parts.push(P.exists(P.select(P.join('left', M, O, P.eq(P.ref(ok), P.ref(mk))), P.and([P.notNull(P.ref(mk)), P.isNull(P.ref(ok))]))));
+        if (!seen.has(many.table) && this.hasBlankRow(many.table)) parts.push(this.orphans(many.table, seen));
+      }
+    } finally { this.checks--; }
+    return parts.length ? P.or(parts) : P.FALSE;
   }
 
   // A model table's rows: its stored rows; a calculated table's expression (as at refresh: no
@@ -411,7 +464,8 @@ export class Lowerer {
 
   // Whether a scan of `table` can read a blank in column c: through a relationship (not relying
   // on referential integrity) for rows that match no row of c's table.
-  blankSide(table, c, state) {
+  blankSide(table, c, state, res = null) {
+    if (res?.blankRow) return true;
     if (c.table === table) return false;
     const path = this.model.expand(table, state, null, true).get(c.table.name);
     return !path || path.some(h => !(h.rel.ri || this.options.assumeIntegrity));
@@ -723,10 +777,12 @@ export class Lowerer {
     let rel = null;
     const refs = new Map();
     for (const [t, cols] of byTable) {
-      const b = this.scanBlock(t, new Ctx(this.keyFilters(x, t), x.ctx0.mods), scope);
-      b.setOut(cols.map(c => ({ name: c.name, lineage: c })), cols.map(c => b.res.meta(c)));
-      b.distinct = true;
-      const part = this.exact(b.render());
+      const kctx = new Ctx(this.keyFilters(x, t), x.ctx0.mods);
+      const out = b => { b.setOut(cols.map(c => ({ name: c.name, lineage: c })), cols.map(c => b.res.meta(c))); b.distinct = true; return b.render(); };
+      let part = this.exact(out(this.scanBlock(t, kctx, scope)));
+      // The table's blank row, a combination of blanks, when it has one.
+      const blank = this.blankRow(t, kctx, scope, out);
+      if (blank) part = P.distinct(P.union([part, this.exact(blank)]));
       cols.forEach((c, j) => refs.set(x.keyCols.indexOf(c), P.ref(part.cols[j])));
       rel = rel ? P.join('cross', rel, part) : part;
     }
@@ -757,6 +813,10 @@ export class Lowerer {
       case 'case': return { ...x, shared: false, w: x.w.map(([c, v]) => [this.scalar(c, scope, blk), this.scalar(v, scope, blk)]), e: this.scalar(x.e, scope, blk) };
       case 'agg': return this.agg(x, scope, blk);
       case 'exists': return P.exists(this.table(x.src, scope).render().rel);
+      case 'blankexists': {
+        const r = this.blankRow(x.table, x.ctx, scope, b => { b.setOut([{ name: 'one', lineage: null }], [ir.lit(1, 'int')]); return b.render(); });
+        return r ? P.exists(r.rel) : P.FALSE;
+      }
       case 'insub': {
         const sub = this.table(x.src, scope).render();
         const left = x.e.map(e => this.scalar(e, scope, blk));

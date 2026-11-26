@@ -1237,17 +1237,18 @@ class Fusion {
     for (const o of outs) sc = withRow(sc, o.row, new WrapRes(lw, db, o.row.cols.map((k, i) => ({ expr: o.ocol.has(i) ? P.ref(o.ocol.get(i)) : ir.lit(null, k.t ?? k.lineage?.type ?? 'string'), lineage: k.lineage ?? null, name: k.name })), state));
     const sb = lw.isolated(() => lw.table(f.src, sc).render());
     // A filter of a table's rows (f.base) has no idx: its columns are the table's, by lineage.
-    const at = f.idx ? f.idx[f.cols.indexOf(c)] : f.src.cols.findIndex(y => y.lineage === c);
-    if (at < 0 || !sb.list[at]) return null;
+    const cs = Array.isArray(c) ? c : [c];
+    const ats = cs.map(y => (f.idx ? f.idx[f.cols.indexOf(y)] : f.src.cols.findIndex(z => z.lineage === y)));
+    if (ats.some(at => at < 0 || !sb.list[at])) return null;
     db.applies.push({ rel: sb.rel, outer: false });
     const oList = outs.flatMap(o => [...o.ocol].map(([i, col]) => ({ row: o.row, ref: i, t: o.row.cols[i].t ?? o.row.cols[i].lineage.type, col })));
-    db.setOut([...refs.map(i => ({ name: `k${i}`, lineage: null })), ...oList.map((_, j) => ({ name: `o${j}`, lineage: null })), { name: 'v', lineage: null }],
-      [...refs.map(i => P.ref(kcol.get(i))), ...oList.map(o => P.ref(o.col)), sb.list[at].expr]);
+    db.setOut([...refs.map(i => ({ name: `k${i}`, lineage: null })), ...oList.map((_, j) => ({ name: `o${j}`, lineage: null })), ...ats.map((_, j) => ({ name: `v${j}`, lineage: null }))],
+      [...refs.map(i => P.ref(kcol.get(i))), ...oList.map(o => P.ref(o.col)), ...ats.map(at => sb.list[at].expr)]);
     db.distinct = true;
     const rel = lw.exact(db.render());
     const s = lw.shared(`mapping|${canon(rel, true).key}`, () => rel);
-    const n = refs.length;
-    return { rel: s, k: refs.map((_, j) => P.ref(s.cols[j])), o: oList.map((o, j) => ({ row: o.row, ref: o.ref, t: o.t, expr: P.ref(s.cols[n + j]) })), v: P.ref(s.cols[n + oList.length]) };
+    const n = refs.length, vs = ats.map((_, j) => P.ref(s.cols[n + oList.length + j]));
+    return { rel: s, k: refs.map((_, j) => P.ref(s.cols[j])), o: oList.map((o, j) => ({ row: o.row, ref: o.ref, t: o.t, expr: P.ref(s.cols[n + j]) })), v: vs[0], vs };
   }
 
   // Aggregate x as a column of its group, or null (not fused: computed for each row).
@@ -1343,9 +1344,12 @@ class Fusion {
       if (!outerIds.length && refs.every(i => keys.has(i))) { readsKeys = true; continue; }
       // The column the mapping is on: the filter's one column, or the key of the one table whose
       // columns it holds (FILTER(ALL('Date'), ...): the key says which row).
+      // (Columns of one table without its key, an auto-exist pair (class, colour) of the group's: the
+      // mapping is of the tuples, the scan's row joined on each of them.)
       const T = f.cols[0]?.table;
-      const c = f.cols.length === 1 ? f.cols[0] : f.cols.every(y => y.table === T) && T.key && f.cols.includes(T.key) ? T.key : null;
-      if (f.kind !== 'rel' || !c || via.length || !NULL_EMPTY.has(x.fn) || !exp.has(c.table.name)
+      const c = f.cols.length === 1 ? f.cols[0] : !f.cols.every(y => y.table === T) ? null : T.key && f.cols.includes(T.key) ? T.key : !T.calc ? [...f.cols] : null;
+      const cT = Array.isArray(c) ? c[0]?.table : c?.table;
+      if (f.kind !== 'rel' || !c || via.length || !NULL_EMPTY.has(x.fn) || !exp.has(cT.name)
         || refs.some(i => !this.keyCols[i]?.table || !this.active.includes(i))) return null;
       mapped.push({ f, refs, c, outerIds });
     }
@@ -1391,7 +1395,8 @@ class Fusion {
     for (const { f, refs, c, outerIds } of mapped) {
       const m = this.mapping(f, refs, c, state, outerIds);
       if (!m) return null;
-      const here = lw.isolated(() => block.res.meta(c));
+      const cs = Array.isArray(c) ? c : [c];
+      const here = cs.map(y => lw.isolated(() => block.res.meta(y)));
       const sameRef = (src, o) => src.row.id === o.row.id && (src.ref === o.ref || (typeof src.ref === 'object' && o.row.cols[o.ref]?.lineage === src.ref));
       const joinOuter = [];
       for (const o of m.o) {
@@ -1403,12 +1408,12 @@ class Fusion {
       }
       // A key the scan is grouped by already is the mapping's too: the same value. One it is
       // not grouped by is the mapping's.
-      const on = [mayHoldNull(c) ? P.key(m.v, here) : P.eq(m.v, here), ...joinOuter];
+      const on = [...cs.map((y, j) => (mayHoldNull(y) ? P.key(m.vs[j], here[j]) : P.eq(m.vs[j], here[j]))), ...joinOuter];
       refs.forEach((i, j) => {
         if (keys.has(i)) on.push(P.key(m.k[j], keyExpr.get(i) ?? lw.isolated(() => block.res.meta(this.keyCols[i]))));
         else { keys.add(i); keyExpr.set(i, m.k[j]); }
       });
-      block.late.push({ kind: 'inner', rel: m.rel, on: P.and(on) });
+      block.late.push({ kind: 'inner', rel: m.rel, on: P.and(on), mapping: true });
     }
     const keyList = [...keys].sort((a, b) => a - b);
     const keyExprs = lw.isolated(() => [...keyList.map(i => keyExpr.get(i) ?? block.res.meta(this.keyCols[i])), ...outer.map(o => block.res.meta(o.col)), ...byOuter.map(o => o.expr)]);
@@ -1480,8 +1485,77 @@ class Fusion {
       if (a.fn === 'countrows') return { col: a.col, fn: 'count', arg: when([[q, ir.lit(1, 'int')]], ir.lit(null, 'int'), 'int'), extra: { t: 'int' } };
       return { col: a.col, fn: a.fn, arg: when([[q, a.arg]], ir.lit(null, a.arg.t), a.arg.t), extra: a.extra };
     });
-    g.rel = (owns.some(o => o.length) ? null : this.belowJoins(g)) ?? P.aggregate(g.block.body(), g.keyExprs.map((e, j) => ({ name: `g${j}`, expr: e })), aggs);
+    const below = owns.some(o => o.length) ? null : this.belowJoins(g);
+    if (!below) this.semis(g);
+    g.rel = below ?? (owns.some(o => o.length) ? null : this.belowMappings(g, aggs)) ?? P.aggregate(g.block.body(), g.keyExprs.map((e, j) => ({ name: `g${j}`, expr: e })), aggs);
     return g.rel;
+  }
+
+  // The semi-joins of group g's scan (joins to the keys of a table joined to its one side that its
+  // filter tables, mappings and conditions on that table keep), first among its joins.
+  semis(g) {
+    // An inner join to a filter table or a mapping that reads, of the scan's rows, only a table
+    // joined to its one side (the item's class and colour): the scan's key one of that table's
+    // rows the join keeps, a semi-join on the scan, so its other rows are not joined first.
+    if (g.block.from?.k === 'scan') {
+      const base = new Set(g.block.from.cols);
+      const semis = [];
+      for (const j of [...g.block.joins, ...g.block.late]) {
+        if (j.kind !== 'inner' || !j.on || free(j.rel).size) continue;
+        const m = memberOf(this.lw, g.block.joins, base, j.rel, j.on);
+        if (m) semis.push(m);
+      }
+      // (A condition on that table's columns alone that a blank fails, too: an auto-exist EXISTS.)
+      for (const c of g.block.where) {
+        const m = keptOf(this.lw, g.block.joins, base, c);
+        if (m) semis.push(m);
+      }
+      g.block.joins.unshift(...semis);
+    }
+  }
+
+  // Group g's grouping with its rows aggregated before the mappings that repeat them (a mapping
+  // of the group's class and colour to the outer groups that hold them: each sale once for each
+  // of those), or null: grouped first by the columns the keys and those joins read, then joined
+  // and grouped again (sums of sums, the minimum of minima, counts added up). A mapping joined
+  // on a column that names one row of its table (a date: one or two outer months each) is joined
+  // first: grouping by it would group little.
+  belowMappings(g, aggs) {
+    const OVER = { sum: 'sum', min: 'min', max: 'max', count: 'sum', countrows: 'sum' };
+    const b = g.block;
+    if (b.from?.k !== 'scan' || b.applies.length || b.distinct || b.qualify) return null;
+    if (!aggs.every(a => OVER[a.fn] && !a.extra?.k && !a.extra?.delim && !a.extra?.order?.length)) return null;
+    const unique = c => !!c.lineage && (c.lineage.unique || c.lineage.table?.key === c.lineage);
+    const fanout = j => j.mapping && !free(j.rel).size && !this.fanoutBelow(j, unique);
+    const above = b.late.filter(fanout);
+    if (!above.length) return null;
+    const mine = new Set(above.flatMap(j => j.rel.cols));
+    const readsAbove = e => [...scalarReads(e).cols].some(c => mine.has(c));
+    let r = b.from;
+    for (const j of b.joins) r = P.join(j.kind, r, j.rel, j.on);
+    for (const j of b.late) if (!above.includes(j)) r = P.join(j.kind, r, j.rel, j.on);
+    const before = b.where.filter(c => !readsAbove(c)), after = b.where.filter(readsAbove);
+    if (before.length) r = P.select(r, P.and(before));
+    const fcols = new Set(r.cols);
+    if (aggs.some(a => a.arg && [...scalarReads(a.arg).cols].some(c => !fcols.has(c)))) return null;
+    const exprs = [...g.keyExprs, ...above.map(j => j.on), ...after];
+    if (exprs.some(e => [...scalarReads(e).cols].some(c => !fcols.has(c) && !mine.has(c)))) return null;
+    const cols = [...new Set(exprs.flatMap(e => [...scalarReads(e).cols].filter(c => fcols.has(c))))];
+    const inner = P.aggregate(r, cols.map(c => ({ name: c.name, expr: P.ref(c), lineage: c.lineage })),
+      aggs.map(a => ({ name: a.col.name, t: a.col.t, fn: a.fn, arg: a.arg, extra: a.extra })));
+    const map = new Map(cols.map((c, i) => [c, inner.keys[i].col]));
+    let r2 = inner;
+    for (const j of above) r2 = P.join(j.kind, r2, j.rel, subst(j.on, map));
+    if (after.length) r2 = P.select(r2, P.and(after.map(c => subst(c, map))));
+    return P.aggregate(r2, g.keyExprs.map((e, j) => ({ name: `g${j}`, expr: subst(e, map) })),
+      aggs.map((a, i) => ({ col: a.col, fn: OVER[a.fn], arg: P.ref(inner.aggs[i].col), extra: { ...a.extra, t: a.col.t } })));
+  }
+
+  // Whether a mapping's join reads, of the rows it is joined to, a column that names one row of
+  // its table (it is joined before the rows are grouped).
+  fanoutBelow(j, unique) {
+    const mine = new Set(j.rel.cols);
+    return [...scalarReads(j.on).cols].some(c => !mine.has(c) && unique(c));
   }
 
   // The conditions of a scan of S's table under filters `rest`, written on the rows of group h
@@ -1622,6 +1696,54 @@ function blankFails(x) {
   return false;
 }
 
+// A join of a scan's rows (base: its columns) to the keys of a table joined to its one side (in
+// joins) that an inner join of rel on `on` keeps, or null: on reads that table's columns and rel's
+// alone, and a blank fails it (a = , or a ≡ to a column of rel never blank: a row of no row of
+// the table meets none).
+function memberOf(lw, joins, base, rel, on) {
+  const rc = new Set(rel.cols), cs = conjuncts(on);
+  for (const J of joins) {
+    const jo = J.on;
+    if (J.kind !== 'left' || jo?.k !== 'pop' || jo.op !== 'eq' || !jo.a.every(x => x.k === 'ref')) continue;
+    const [to, fk] = jo.a;
+    if (!J.rel.cols.includes(to.col) || !base.has(fk.col) || !lw.oneSideOf(to.col, fk.col)) continue;
+    const jc = new Set(J.rel.cols);
+    const reads = cs.map(c => [...scalarReads(c).cols]);
+    if (reads.some(r => r.some(x => !jc.has(x) && !rc.has(x))) || !reads.some(r => r.some(x => jc.has(x)))) continue;
+    const { rel: jr, map: m } = clone(J.rel), { rel: rr, map: m2 } = clone(rel);
+    for (const [k, v] of m2) m.set(k, v);
+    const safe = cs.some(c => {
+      if (!c.a || c.a.length !== 2 || !c.a.every(y => y.k === 'ref')) return false;
+      const [l, r] = c.a, mine = jc.has(l.col) ? r.col : jc.has(r.col) ? l.col : null;
+      if (!mine || !rc.has(mine)) return false;
+      return (c.k === 'pop' && c.op === 'eq') || (((c.k === 'pop' && c.op === 'key') || (c.k === 'op' && c.op === 'eqs')) && neverBlank(rel, mine));
+    });
+    if (!safe) return null;
+    // The table's keys the join keeps, distinct: an inner join of the scan to them on its key.
+    const keys = P.distinct(P.project(P.join('inner', jr, rr, subst(on, m)), [{ name: to.col.name, expr: P.ref(m.get(to.col)), t: to.col.t }]));
+    return { kind: 'inner', rel: keys, on: P.eq(fk, P.ref(keys.cols[0])) };
+  }
+  return null;
+}
+
+// A join of a scan's rows to the keys of a table joined to its one side that condition c keeps,
+// or null: c reads that table's columns alone, and a blank fails it.
+function keptOf(lw, joins, base, c) {
+  const reads = [...scalarReads(c).cols];
+  if (!reads.length || !blankFails(c)) return null;
+  for (const J of joins) {
+    const jo = J.on;
+    if (J.kind !== 'left' || jo?.k !== 'pop' || jo.op !== 'eq' || !jo.a.every(x => x.k === 'ref')) continue;
+    const [to, fk] = jo.a;
+    if (!J.rel.cols.includes(to.col) || !base.has(fk.col) || !lw.oneSideOf(to.col, fk.col)) continue;
+    if (!reads.every(x => J.rel.cols.includes(x))) continue;
+    const { rel: jr, map: m } = clone(J.rel);
+    const keys = P.distinct(P.project(P.select(jr, subst(c, m)), [{ name: to.col.name, expr: P.ref(m.get(to.col)), t: to.col.t }]));
+    return { kind: 'inner', rel: keys, on: P.eq(fk, P.ref(keys.cols[0])) };
+  }
+  return null;
+}
+
 // Whether column col of plan relation r is never NULL: declared so, kept by a condition a blank
 // fails that reads it alone, or so in every arm and source it comes from.
 function neverBlank(r, col, depth = 0) {
@@ -1638,6 +1760,7 @@ function neverBlank(r, col, depth = 0) {
     case 'values': return at >= 0 && r.rows.every(row => row[at]?.k === 'lit' && row[at].v != null);
     case 'join': return r.left.cols.includes(col) ? (r.kind !== 'right' && neverBlank(r.left, col, depth + 1)) : (r.kind === 'inner' || r.kind === 'cross') && neverBlank(r.right, col, depth + 1);
     case 'shared': return at >= 0 && neverBlank(r.def.rel, r.picks[at], depth + 1);
+    case 'apply': return r.left.cols.includes(col) ? neverBlank(r.left, col, depth + 1) : !r.outer && neverBlank(r.right, col, depth + 1);
   }
   return false;
 }

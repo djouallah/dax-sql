@@ -1,0 +1,10 @@
+// note: two facts on the many side of Store (one direction), each with lines of no store: a NULL key, an empty-string key, a key Store lacks (Sales: 9008/3 and 9009/1 NULL, 9008/2 "", 9008/1 XXX-99; StoreVisit: NULL 7, "" 5, QQQ-00 3); a SUMMARIZE group of Sales lines filters StoreVisit through Store: does a line of a NULL key reach the visits of a NULL key (Store's blank row on both sides), of any key Store lacks, or none? tpcds fuzz3-0139's question at scale (catalog groups reaching store sales through shared dimensions' NULL keys)
+EVALUATE
+SUMMARIZE(
+    CALCULATETABLE(Sales, Sales[Order Number] IN { 1, 9008, 9009 }),
+    Sales[Order Number],
+    Sales[Line Number],
+    "Visitors", SUM(StoreVisit[Visitors]),
+    "Visits", COUNTROWS(StoreVisit)
+)
+ORDER BY Sales[Order Number], Sales[Line Number]

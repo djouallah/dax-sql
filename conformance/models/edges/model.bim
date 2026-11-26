@@ -210,6 +210,31 @@
         ]
       },
       {
+        "name": "StoreVisit",
+        "description": "Visitors counted at a store key: a fact on the many side of Store (one direction), with a NULL key, an empty-string key and a key Store lacks, as the many side of Sales holds (probes of Store's blank row reached from both facts).",
+        "columns": [
+          {
+            "name": "StoreKey",
+            "dataType": "string",
+            "sourceColumn": "StoreKey"
+          },
+          {
+            "name": "Visitors",
+            "dataType": "int64",
+            "sourceColumn": "Visitors"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "StoreVisit",
+            "source": {
+              "type": "entity",
+              "entityName": "StoreVisit"
+            }
+          }
+        ]
+      },
+      {
         "name": "Product",
         "columns": [
           {
@@ -648,6 +673,13 @@
         "fromCardinality": "one",
         "toCardinality": "one",
         "crossFilteringBehavior": "bothDirections"
+      },
+      {
+        "name": "StoreVisit_StoreKey_Store",
+        "fromTable": "StoreVisit",
+        "fromColumn": "StoreKey",
+        "toTable": "Store",
+        "toColumn": "StoreKey"
       }
     ],
     "roles": [

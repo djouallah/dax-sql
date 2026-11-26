@@ -1,0 +1,10 @@
+// note: as relationships-null-store-key-meets-null-store-key, a FILTER of Sales rows (its expanded table) as CALCULATE's filter: the visits reached from the lines of a NULL key, of the empty-string key, of a key Store lacks, of SFO-01; the visits under Store's blank row by its column, and all
+EVALUATE
+ROW(
+    "Null Key Lines", CALCULATE(SUM(StoreVisit[Visitors]), FILTER(Sales, ISBLANK(Sales[StoreKey]))),
+    "Empty Key Line", CALCULATE(SUM(StoreVisit[Visitors]), FILTER(Sales, Sales[StoreKey] == "")),
+    "Orphan Key Line", CALCULATE(SUM(StoreVisit[Visitors]), FILTER(Sales, Sales[StoreKey] = "XXX-99")),
+    "SFO Lines", CALCULATE(SUM(StoreVisit[Visitors]), FILTER(Sales, Sales[StoreKey] = "SFO-01")),
+    "Blank Store", CALCULATE(SUM(StoreVisit[Visitors]), Store[Store] = BLANK()),
+    "All Visitors", SUM(StoreVisit[Visitors])
+)

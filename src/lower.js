@@ -392,6 +392,23 @@ export class Lowerer {
         const sub = sb.render(), k = sub.list[0].expr, here = res.meta(e.here);
         // A many-to-many relationship matches a blank with a blank.
         const mm = e.rel.fromCard === 'many' && e.rel.toCard === 'many';
+        if (res.blankRow && !mm && !e.here.expr) {
+          // The blank row is reached by the rows kept whose key the table lacks (a blank one too):
+          // a sale of a customer Customer lacks filters Customer to its blank row.
+          const O = this.source(e.here.table), ok = colOf(O, e.here);
+          out.push(P.exists(P.select(P.join('left', sub.rel, O, P.eq(P.ref(ok), k)), P.isNull(P.ref(ok)))));
+          continue;
+        }
+        if (mm) {
+          // X's blank row too, where the filters keep it: its blank meets a blank (Product[Color] =
+          // BLANK() keeps Product's blank row, whose blank brand meets Target's rows of no brand).
+          const bl = this.blankRow(X, ctx, scope, bb => { bb.setOut([{ name: 'k', lineage: null }], [bb.res.meta(e.there)]); return bb.render(); }, skip);
+          if (bl) {
+            const u = P.union([this.exact(sub), this.exact(bl)]);
+            out.push(P.exists(P.select(u, P.same(P.ref(u.cols[0]), here))));
+            continue;
+          }
+        }
         out.push(P.exists(P.select(sub.rel, mm ? P.same(k, here) : P.eq(k, here))));
       }
     }
@@ -1259,9 +1276,18 @@ class Fusion {
       const m = lw.isolated(() => lw.scanBlock(edge.there.table, new Ctx(rest, S.ctx.mods), new Map(), new Set(exp.keys())));
       m.setOut([...via.map((_, j) => ({ name: `g${j}`, lineage: null })), { name: 'y', lineage: null }], lw.isolated(() => [...via.map(v => m.res.meta(v.col)), m.res.meta(edge.there)]));
       m.distinct = true;
-      const pairs = lw.exact(m.render());
+      let pairs = lw.exact(m.render());
       // Across a many-to-many relationship a blank meets a blank (conds): the join is blank-safe.
       const mm = edge.rel.fromCard === 'many' && edge.rel.toCard === 'many';
+      if (mm) {
+        // The table's blank row's pair too, where the filters keep it: its blank keys meet the rows
+        // of a blank value (the blank color's Target rows of no brand).
+        const bl = lw.isolated(() => lw.blankRow(edge.there.table, new Ctx(rest, S.ctx.mods), new Map(), bb => {
+          bb.setOut([...via.map((_, j) => ({ name: `g${j}`, lineage: null })), { name: 'y', lineage: null }], [...via.map(v => bb.res.meta(v.col)), bb.res.meta(edge.there)]);
+          return bb.render();
+        }, new Set(exp.keys())));
+        if (bl) pairs = P.distinct(P.union([pairs, lw.exact(bl)]));
+      }
       const here = lw.isolated(() => block.res.meta(edge.here)), y = P.ref(pairs.cols[via.length]);
       block.late.push({ kind: 'inner', rel: pairs, on: mm ? P.key(here, y) : P.eq(here, y) });
       via.forEach((v, j) => { keys.add(v.ref); keyExpr.set(v.ref, P.ref(pairs.cols[j])); });

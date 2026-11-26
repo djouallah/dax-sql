@@ -1040,6 +1040,13 @@ export class Lowerer {
   // own that the joins and the conditions on other rows read (its date key), under the
   // conditions on its own columns alone; the aggregate then adds up those groups. For sums,
   // counts, minima and maxima of the table's own columns, by three columns at most.
+  // Whether plan column `one` is the one side of a relationship whose many side is `many` (by
+  // their model columns): a join on one = many meets one row of it or none.
+  oneSideOf(one, many) {
+    const o = one?.lineage, m = many?.lineage;
+    return !!o && !!m && this.model.relationships.some(r => (r.toCard === 'one' && r.to === o && r.from === m) || (r.fromCard === 'one' && r.from === o && r.to === m));
+  }
+
   groupedFirst(b, a, col, table) {
     const OVER = { sum: 'sum', min: 'min', max: 'max', count: 'sum', countrows: 'sum', count0: 'sum' };
     if (!OVER[a.fn] || a.extra?.exact || a.extra?.k || a.extra?.delim || b.distinct || b.qualify || b.applies.length || b.from?.k !== 'scan') return null;
@@ -1047,17 +1054,13 @@ export class Lowerer {
     const own = e => { const r = scalarReads(e); return !r.query && [...r.cols].every(c => base.has(c)); };
     if (a.arg && !own(a.arg)) return null;
     const outer = b.where.filter(c => !own(c)), inner = b.where.filter(own);
-    const cols = [...new Set([...b.joins.map(j => j.on), ...outer].flatMap(e => [...scalarReads(e).cols].filter(c => base.has(c))))];
-    if (!cols.length || cols.length > 3) return null;
-    // By more than one column only where a condition is a set of values (the dates of last year):
-    // rows that each name one value of every column find their few rows faster in the table.
-    if (cols.length > 1 && !outer.some(c => scalarReads(c).query)) return null;
     // Not by a column that names one row (the table's key, the one side of a relationship).
     const unique = [table.key, ...this.model.oneSides(table).map(o => o.one)].filter(Boolean);
-    if (cols.some(c => unique.includes(c.lineage))) return null;
     // A condition on a table joined by one equality to a column of the scan's, that a blank fails
-    // and that reads nothing else (the dates of a DATESBETWEEN): the grouping has it too, as a
-    // semi-join, so it groups only the rows it keeps. The condition stays above.
+    // and that reads nothing else (the dates of a DATESBETWEEN): the grouping has it instead, as a
+    // semi-join, so it groups only the rows it keeps; the table's join (to its one side: one row
+    // or none) no longer reads it, nor its key grouped by, when nothing else reads the table.
+    const exact = new Set();
     for (const j of b.joins) {
       const on = j.on;
       if (on?.k !== 'pop' || on.op !== 'eq') continue;
@@ -1067,7 +1070,7 @@ export class Lowerer {
       const mine = new Set(j.rel.cols), closedOf = c => this.closedRels?.get(c);
       // A condition a blank may pass (a filter table matched by ≡: a TREATAS of brands, a FILTER of
       // classes) keeps the rows of no row of the table too (a blank meets a blank: the condition
-      // above decides them).
+      // above decides them, and stays).
       const ofJ = c => { const r = scalarReads(c); return [...r.cols].some(x => mine.has(x)) && [...r.cols].every(x => mine.has(x) || closedOf(x)); };
       const cs = outer.filter(c => ofJ(c) && blankFails(c)), loose = outer.filter(c => ofJ(c) && !blankFails(c));
       const member = conds => {
@@ -1080,20 +1083,36 @@ export class Lowerer {
         }
         return P.exists(P.select(rel, P.and([...conds.map(c => subst(c, m)), P.eq(P.ref(m.get(to.col)), fk)])));
       };
-      if (cs.length) inner.push({ ...member(cs), member: true });
+      if (cs.length) {
+        inner.push({ ...member(cs), member: true });
+        if (j.kind === 'left' && this.oneSideOf(to.col, fk.col)) cs.forEach(c => exact.add(c));
+      }
       if (loose.length && !cs.length) {
         const { rel: jn, map: m3 } = clone(j.rel);
         inner.push(P.or([member(loose), P.not(P.exists(P.select(jn, P.eq(P.ref(m3.get(to.col)), fk))))]));
       }
     }
+    const above = outer.filter(c => !exact.has(c));
+    // The joins what stays above reads (a left join to a one side adds no row: one it does not
+    // read is no work).
+    // (Nor another join's ON: a snowflake's table joined to this one's columns.)
+    const readBy = j => new Set([...above, ...b.joins.filter(x => x !== j).map(x => x.on).filter(Boolean)].flatMap(c => [...scalarReads(c).cols]));
+    const joins = b.joins.filter(j => !(j.kind === 'left' && j.on?.k === 'pop' && j.on.op === 'eq' && j.on.a.every(x => x.k === 'ref')
+      && base.has(j.on.a[1].col) && this.oneSideOf(j.on.a[0].col, j.on.a[1].col) && !(rd => j.rel.cols.some(c => rd.has(c)))(readBy(j))));
+    const cols = [...new Set([...joins.map(j => j.on), ...above].flatMap(e => [...scalarReads(e).cols].filter(c => base.has(c))))];
+    if (!cols.length || cols.length > 3) return null;
+    // By more than one column only where a condition is a set of values (the dates of last year):
+    // rows that each name one value of every column find their few rows faster in the table.
+    if (cols.length > 1 && !above.some(c => scalarReads(c).query)) return null;
+    if (cols.some(c => unique.includes(c.lineage))) return null;
     const v = P.newCol(a.fn, col.t);
     const G = P.aggregate(inner.length ? P.select(b.from, P.and(inner)) : b.from,
       cols.map(c => ({ name: c.name, expr: P.ref(c), lineage: c.lineage })), [{ col: v, fn: a.fn, arg: a.arg, extra: a.extra }]);
     const s = this.shared(`grouped|${canon(G, true).key}`, () => G);
     const map = new Map(cols.map((c, i) => [c, s.cols[i]]));
     let r = s;
-    for (const j of b.joins) r = P.join(j.kind, r, j.rel, subst(j.on, map));
-    if (outer.length) r = P.select(r, P.and(outer.map(c => subst(c, map))));
+    for (const j of joins) r = P.join(j.kind, r, j.rel, subst(j.on, map));
+    if (above.length) r = P.select(r, P.and(above.map(c => subst(c, map))));
     const sv = P.ref(s.cols[cols.length]);
     if (a.fn !== 'count0') return P.aggregate(r, [], [{ col, fn: OVER[a.fn], arg: sv, extra: { ...a.extra, t: col.t } }]);
     const t = P.newCol('sum', col.t);

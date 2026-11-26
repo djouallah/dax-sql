@@ -122,7 +122,8 @@ async function variant(dax, hand) {
     } else if (!s.lits.some(v => v === 0 || v === '')) {
       const vals = await valuesOf(s.table, s.col);
       if (vals?.length && vals.every(v => typeof v === typeof s.lits[0])) {
-        const fresh = vals.filter(v => !s.lits.includes(v));
+        // (Not a value a blank equals under DAX's =: 0, "".)
+        const fresh = vals.filter(v => !s.lits.includes(v) && v !== 0 && v !== '' && v !== false);
         // A constant the data holds among its most frequent stays; another becomes one of those.
         const ls = s.lits.map(v => (vals.includes(v) ? v : fresh.shift() ?? v));
         if (ls.some((v, i) => v !== s.lits[i])) {

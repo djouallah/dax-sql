@@ -3,7 +3,8 @@
 -- sale counts when its keys are those of one of the group's store sales (a NULL key meets a NULL key,
 -- both the dimension's blank row). m0 sums over the states of the group's stores (a group of no
 -- store: the blank state of store's blank row): 0 with no such catalog sale, else the larger of that
--- catalog quantity a year back and the group's stores in the state (none in the blank one: blank). m1: the
+-- catalog quantity a year back and the group's stores (COUNTROWS('store') is no measure: no context transition,
+-- so every state counts all of the group's stores; none with no store: blank). m1: the
 -- group's profit over itself, REMOVEFILTERS('item') leaving the store_sales rows in place
 WITH g AS (
   SELECT s.s_city, i.i_color, s.s_state, s.s_store_sk, d.d_date, ss.*
@@ -37,12 +38,16 @@ WITH g AS (
   WHERE (d.d_date + INTERVAL 1 YEAR)::DATE IN (SELECT g2.d_date FROM g g2 WHERE g2.s_city IS NOT DISTINCT FROM k.s_city AND g2.i_color IS NOT DISTINCT FROM k.i_color)
   GROUP BY ALL
 ), st AS (
-  SELECT s_city, i_color, s_state, NULLIF(COUNT(DISTINCT s_store_sk), 0) AS n FROM g GROUP BY ALL
+  SELECT DISTINCT s_city, i_color, s_state FROM g
+), tot AS (
+  SELECT s_city, i_color, NULLIF(COUNT(DISTINCT s_store_sk), 0) AS n FROM g GROUP BY ALL
 )
 SELECT grp.s_city, grp.i_color,
-  (SELECT SUM(CASE WHEN x.mx IS NULL THEN 0 WHEN COALESCE(ly.q, 0) >= COALESCE(st.n, 0) THEN COALESCE(ly.q, st.n) ELSE st.n END)
-   FROM st WHERE st.s_city IS NOT DISTINCT FROM grp.s_city AND st.i_color IS NOT DISTINCT FROM grp.i_color) AS m0,
+  -- the same for each of the group's states
+  CASE WHEN x.mx IS NULL THEN 0 WHEN COALESCE(ly.q, 0) >= COALESCE(tot.n, 0) THEN COALESCE(ly.q, tot.n) ELSE tot.n END
+    * (SELECT COUNT(*) FROM st WHERE st.s_city IS NOT DISTINCT FROM grp.s_city AND st.i_color IS NOT DISTINCT FROM grp.i_color) AS m0,
   grp.pr / NULLIF(grp.pr, 0) AS m1
 FROM grp
 LEFT JOIN x ON x.s_city IS NOT DISTINCT FROM grp.s_city AND x.i_color IS NOT DISTINCT FROM grp.i_color
 LEFT JOIN ly ON ly.s_city IS NOT DISTINCT FROM grp.s_city AND ly.i_color IS NOT DISTINCT FROM grp.i_color
+LEFT JOIN tot ON tot.s_city IS NOT DISTINCT FROM grp.s_city AND tot.i_color IS NOT DISTINCT FROM grp.i_color

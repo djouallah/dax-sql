@@ -1,0 +1,3 @@
+SELECT SUM(row_count) AS v
+FROM stg_tpcds_archive_log
+WHERE archived_at BETWEEN TIMESTAMP '2026-09-01 00:15:00' AND TIMESTAMP '2026-09-02 01:15:00'

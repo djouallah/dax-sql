@@ -1,0 +1,3 @@
+SELECT cs_ship_addr_sk, SUM(cs_ext_sales_price) AS v
+FROM catalog_sales
+GROUP BY cs_ship_addr_sk

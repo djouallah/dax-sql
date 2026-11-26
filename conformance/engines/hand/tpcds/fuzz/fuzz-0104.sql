@@ -1,0 +1,3 @@
+SELECT n FROM (
+  SELECT NULLIF(COUNT(DISTINCT ss_customer_sk) + MAX(CASE WHEN ss_customer_sk IS NULL THEN 1 ELSE 0 END), 0) AS n FROM store_sales
+) WHERE n IS NOT NULL

@@ -1,0 +1,1 @@
+SELECT ROUND((SELECT COUNT(*) FROM store), 2) AS m0, (SELECT COUNT(*) FROM store_sales) AS m1

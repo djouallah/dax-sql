@@ -19,6 +19,7 @@ import { DuckDBInstance } from '@duckdb/node-api';
 import { createCompiler } from '../../src/index.js';
 import { tmslToModel } from '../tmsl.js';
 import { tmslToOssie, ossieToTmsl, ossieToModel } from '../ossie.js';
+import { metricDax } from '../ossie-sql.js';
 import { bim as contoso, setup as contosoData } from '../../test/fixtures/contoso.js';
 
 const read = p => readFileSync(new URL(p, import.meta.url), 'utf8').replace(/^﻿/, '');
@@ -141,6 +142,12 @@ test('a measure is SQL where it says the same there, DAX where not', () => {
   assert.equal(a.get('Price at hour').expression.sql, 'ROUND(SUM(price * intervals) / NULLIF(SUM(intervals), 0), 4)');
   assert.equal(a.get('Registered units').expression.sql, 'NULLIF(COUNT(*), 0)');
   assert.equal(a.get('Average MW at hour').expression.sql, 'ROUND(AGG(fct_summary_hourly."Output MWh hourly") / NULLIF(AGG(dim_month."Month days"), 0), 4)');
+  // The field date is DATE in OSSIE_SQL_2026 (a regular name, upper-cased; a quoted one matches
+  // as written): a metric reads it as "DATE". Its own expression is the source's column, "date".
+  assert.equal(a.get('Days with output').expression.sql, 'NULLIF(COUNT(DISTINCT "DATE") + MAX(CASE WHEN "DATE" IS NULL THEN 1 ELSE 0 END), 0)');
+  const fctSummary = tmslToOssie(aac).datasets.find(d => d.name === 'fct_summary');
+  assert.equal(fctSummary.fields.find(f => f.name === 'date').expression.sql, '"date"');
+  assert.equal(metricDax(a.get('Days with output').expression.sql, fctSummary, tmslToOssie(aac).datasets).dax, "DISTINCTCOUNT('fct_summary'[date])");
   // IF, VAR, a two-argument MAX: DAX.
   for (const n of ['Demand MW', 'Generation MWh', 'Generation MW']) assert.equal(a.get(n).expression.sql, undefined, n);
 });

@@ -30,7 +30,18 @@ const RESERVED = new Set(`ALL AND ANY AS ASC AT BETWEEN BY CASE CAST CHECK COLUM
   INTERVAL INTO IS JOIN KEY LEFT LIKE LIMIT MINUTE MONTH NATURAL NOT NULL OFFSET ON OR ORDER OUTER OVER
   PARTITION RIGHT ROW ROWS SECOND SELECT SET SOME TABLE THEN TIME TIMESTAMP TO TRUE UNION UNIQUE
   UPDATE USER USING VALUE VALUES WHEN WHERE WINDOW WITH YEAR`.split(/\s+/));
-export const sqlName = n => (/^[A-Za-z_][A-Za-z0-9_]*$/.test(n) && !RESERVED.has(n.toUpperCase()) ? n : `"${n.replace(/"/g, '""')}"`);
+const quoted = n => `"${n.replace(/"/g, '""')}"`;
+// A column of the source (a field's expression, a calculated column's operands): the database's
+// name, quoted as it is when it has to be ("date", the column date).
+export const sqlName = n => (/^[A-Za-z_][A-Za-z0-9_]*$/.test(n) && !RESERVED.has(n.toUpperCase()) ? n : quoted(n));
+// A name the document declares (a field, a dataset, a metric), read in a metric. OSSIE_SQL_2026
+// upper-cases a regular identifier, a declared name too, and matches a quoted one as written: the
+// field date is DATE, which "date" is not. So a regular name SQL reserves is quoted upper-cased,
+// as one with a letter beyond ASCII (été, ÉTÉ); any other is quoted as it is.
+export const declaredName = n => {
+  if (!/^[\p{L}_][\p{L}\p{N}_]*$/u.test(n)) return quoted(n);
+  return /^[A-Za-z_][A-Za-z0-9_]*$/.test(n) && !RESERVED.has(n.toUpperCase()) ? n : quoted(n.toUpperCase());
+};
 
 const lc = s => String(s).toLowerCase();
 const NUMERIC = ['Integer', 'Decimal', 'Float'];
@@ -70,7 +81,7 @@ export function measureSql(ast, tables, measures, metricAt) {
     if (num(a)) return { sql: numText(a), type: /^-?\d+$/.test(numText(a)) ? 'Integer' : 'Float', lit: true };
     if (a.k === 'col') {
       const c = colRef(a, row);
-      return c && NUMERIC.includes(c.type) ? { sql: sqlName(c.name), type: c.type } : null;
+      return c && NUMERIC.includes(c.type) ? { sql: declaredName(c.name), type: c.type } : null;
     }
     // CONVERT(T[x], DOUBLE): x as a double, as SQL's AVG makes any number (AVG(x) is it).
     if (a.k === 'call' && a.fn === 'CONVERT' && a.args.length === 2 && a.args[1].k === 'name' && /^DOUBLE$/i.test(a.args[1].name)) {
@@ -117,7 +128,7 @@ export function measureSql(ast, tables, measures, metricAt) {
     if (num(a)) return { sql: numText(a), type: /^-?\d+$/.test(numText(a)) ? 'Integer' : 'Float', lit: true };
     if (a.k === 'col' && a.table == null && metricAt) {
       const at = metricAt(a.name);
-      return at ? { sql: `AGG(${sqlName(at.dataset)}.${sqlName(at.name)})`, type: NUMERIC.includes(at.type) ? at.type : 'Float', agg: true } : null;
+      return at ? { sql: `AGG(${declaredName(at.dataset)}.${declaredName(at.name)})`, type: NUMERIC.includes(at.type) ? at.type : 'Float', agg: true } : null;
     }
     if (a.k === 'col' && a.table == null) {
       const m = measures.get(lc(a.name));
@@ -132,7 +143,7 @@ export function measureSql(ast, tables, measures, metricAt) {
     const args = a.args;
     if (AGG[a.fn] && args.length === 1) {
       const c = colRef(args[0]);
-      return c && aggregate(AGG[a.fn], { sql: sqlName(c.name), type: c.type });
+      return c && aggregate(AGG[a.fn], { sql: declaredName(c.name), type: c.type });
     }
     if (AGGX[a.fn] && args.length === 2 && args[0].k === 'name') {
       const t = tableOf(args[0].name);
@@ -144,7 +155,7 @@ export function measureSql(ast, tables, measures, metricAt) {
     if ((a.fn === 'COUNT' || a.fn === 'COUNTA' || a.fn === 'DISTINCTCOUNTNOBLANK' || a.fn === 'DISTINCTCOUNT') && args.length === 1) {
       const c = colRef(args[0]);
       if (!c) return null;
-      const f = sqlName(c.name);
+      const f = declaredName(c.name);
       const count = a.fn === 'COUNT' || a.fn === 'COUNTA' ? `COUNT(${f})`
         : a.fn === 'DISTINCTCOUNTNOBLANK' ? `COUNT(DISTINCT ${f})`
         // DISTINCTCOUNT counts BLANK as a value; COUNT(DISTINCT) skips NULL.

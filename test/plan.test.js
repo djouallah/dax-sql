@@ -92,3 +92,22 @@ test('the check finds a union or a definition read wrong, and a DAX operator lef
   assert.throws(broken(Q, 'unnest', p => { p.items[1] = { ...p.items[1], expr: { k: 'fn', name: 'SUM', a: [], t: 'int' } }; }), /output still has DAX's fn SUM/);
   assert.throws(() => checkPlan({ k: 'project', cols: [] }), /the root is project, not output/);
 });
+
+// A total's measures are its rows: no one row crossed with them, nor applied to them, in any plan
+// (a block of no FROM is one row; one row × R is R). Two groupings that are not one are crossed.
+test('a total is its groupings: no one row under them, as lowered or after any pipeline', () => {
+  const TOTALS = [
+    'EVALUATE ROW("q", [Quantity], "s", [Sales Amount])',
+    'EVALUATE { [Quantity] }',
+    'EVALUATE SUMMARIZECOLUMNS("q", [Quantity])',
+    'EVALUATE SUMMARIZECOLUMNS(ROLLUPADDISSUBTOTAL(Product[Color], "t"), "q", [Quantity])',
+    'EVALUATE ROW("x", MAXX(VALUES(Product[Color]), [Quantity]))',
+    'EVALUATE ROW("p", PERCENTILE.INC(Sales[Qty], 0.5), "q", [Quantity])',
+    'EVALUATE ROW("d", DISTINCTCOUNT(Sales[CustomerKey]), "n", COUNTROWS(VALUES(Product[Color])))',
+    'SELECT AGG(Quantity) AS q FROM m',
+  ];
+  for (const q of TOTALS) {
+    for (const o of [{ optimize: false }, ...Object.values(MODES)]) assert.doesNotMatch(c.explain(q, o), /One row/, `${q} ${JSON.stringify(o)}`);
+  }
+  assert.equal(c.explain(TOTALS[5], MODES.unnest).match(/Cross join/g)?.length, 1, 'a percentile and a sum: two groupings, one cross join');
+});

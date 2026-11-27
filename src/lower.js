@@ -778,7 +778,8 @@ export class Lowerer {
     // the keys' values.
     const own = rel => P.projectAs(rel, active.map((ki, j) => ({ col: keyCol.get(ki), expr: P.ref(rel.cols[j]) })));
     let from = [];
-    if (!active.length) kb.from = P.oneRow();
+    // No keys: the block's one row (Block.body: its groupings of no keys are the row).
+    if (!active.length) kb.from = null;
     else if (counted.length && counted.every(i => blankOnly(i.expr))) kb.from = P.values([], [...keyCol.values()]);
     else {
       const supports = counted.length ? counted.map(i => support(i.expr, this.fusedIn)) : [null];
@@ -2040,14 +2041,22 @@ class Block {
   // The input row: from, its joins and applies, its conditions.
   // A condition that reads none of what the applies compute is tested before them (SQL's WHERE
   // before its SELECT list): an apply is computed for the rows kept, not for every row.
+  // No FROM: one row, made here, so nothing reads its column. One row crossed with R, or applied
+  // to R (not outer: over no row of R an outer apply is a row of NULLs), is R: then R is the rows
+  // (a total's grouping of no keys, ROW's measures), and the one row is in no plan.
   body() {
-    let r = this.from ?? P.oneRow();
-    for (const j of this.joins) r = P.join(j.kind, r, j.rel, j.on);
+    let joins = this.joins, applies = this.applies, r = this.from;
+    if (!r && joins[0]?.kind === 'cross') { r = joins[0].rel; joins = joins.slice(1); }
+    else if (!r && !joins.length && applies[0] && !applies[0].outer) { r = applies[0].rel; applies = applies.slice(1); }
+    r ??= P.oneRow();
+    for (const j of joins) r = P.join(j.kind, r, j.rel, j.on);
+    // (A condition before the applies reads none of their columns, the first's included: on R it
+    // keeps every row of R or none, as it keeps the one row or not.)
     const made = new Set([...this.applies, ...this.late].flatMap(a => a.rel.cols));
     const after = c => [...scalarReads(c).cols].some(x => made.has(x));
     const early = this.where.filter(c => !after(c)), later = this.where.filter(after);
     if (early.length && made.size) r = P.select(r, P.and(early));
-    for (const a of this.applies) r = P.apply(r, a.rel, a.outer);
+    for (const a of applies) r = P.apply(r, a.rel, a.outer);
     for (const j of this.late) r = P.join(j.kind, r, j.rel, j.on);
     const rest = made.size ? later : this.where;
     if (rest.length) r = P.select(r, P.and(rest));

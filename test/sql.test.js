@@ -59,6 +59,12 @@ test('a SELECT answers what its DAX answers', async () => {
   for (const [sql, dax] of PAIRS) assert.deepEqual(sorted(await h.run(sql)), sorted(await h.run(dax)), sql);
 });
 
+test('a total is the sum alone: no one-row table crossed with it', async () => {
+  const { sql } = h.dax.compile('SELECT AGG(Quantity) AS q FROM m');
+  assert.doesNotMatch(sql, /CROSS JOIN|SELECT 1 AS/i, sql);
+  assert.deepEqual(await h.run('SELECT AGG(Quantity) AS q FROM m'), await h.run('EVALUATE ROW("q", [Quantity])'));
+});
+
 test('ORDER BY, LIMIT and OFFSET', async () => {
   const all = await h.run(`EVALUATE SUMMARIZECOLUMNS(Product[Name], "s", [Sales Amount]) ORDER BY [s] DESC, Product[Name]`);
   assert.deepEqual(await h.run(`SELECT Product.Name, AGG("Sales Amount") s FROM m GROUP BY ALL ORDER BY s DESC, 1`), all);

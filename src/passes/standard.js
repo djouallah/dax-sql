@@ -113,7 +113,10 @@ function aggregates(r) {
   const tuples = r.aggs.filter(a => (ROWS.has(a.fn) && a.arg?.k === 'fn' && a.arg.name === 'row') || PCT.has(a.fn));
   if (!tuples.length) return plainAggregates(r);
   const rest = plainAggregates({ ...r, aggs: r.aggs.filter(a => !tuples.includes(a)), cols: [...r.keys.map(k => k.col), ...r.aggs.filter(a => !tuples.includes(a)).map(a => a.col)] });
-  let rel = !r.keys.length && rest.k === 'aggregate' && !rest.aggs.length ? P.oneRow() : rest;
+  // No keys and nothing else to aggregate: no rows of its own (not one row crossed with the parts:
+  // one row crossed with R is R); the first part is the rows, the others crossed with it.
+  let rel = !r.keys.length && rest.k === 'aggregate' && !rest.aggs.length ? null : rest;
+  const cross = part => (rel ? P.join('cross', rel, part) : part);
   const vals = new Map();
   const pcts = new Map();
   for (const a of tuples.filter(a => PCT.has(a.fn))) {
@@ -123,7 +126,7 @@ function aggregates(r) {
   }
   for (const as of pcts.values()) {
     const p = percentile(r, as);
-    rel = p.keys.length ? P.join('left', rel, p.rel, P.and(r.keys.map((k, i) => P.key(P.ref(k.col), P.ref(p.keys[i].col))))) : P.join('cross', rel, p.rel);
+    rel = p.keys.length ? P.join('left', rel, p.rel, P.and(r.keys.map((k, i) => P.key(P.ref(k.col), P.ref(p.keys[i].col))))) : cross(p.rel);
     as.forEach((a, j) => vals.set(a.col, p.values[j]));
   }
   for (const a of tuples) {
@@ -135,7 +138,7 @@ function aggregates(r) {
     const keys = r.keys.map((k, i) => ({ col: P.newCol(k.col.name, k.col.t), expr: P.ref(rows.cols[i]) }));
     const n = P.newCol('rows', 'int');
     const counted = P.aggregate(rows, keys, [{ col: n, fn: 'count_star', arg: null, extra: {} }]);
-    rel = keys.length ? P.join('left', rel, counted, P.and(r.keys.map((k, i) => P.key(P.ref(k.col), P.ref(keys[i].col))))) : P.join('cross', rel, counted);
+    rel = keys.length ? P.join('left', rel, counted, P.and(r.keys.map((k, i) => P.key(P.ref(k.col), P.ref(keys[i].col))))) : cross(counted);
     // A row is never blank: the count of distinct rows; over no rows, blank (HASONEVALUE: FALSE).
     const c = P.ref(n), zero = lit(0, 'int');
     vals.set(a.col, a.fn === 'hasone' ? coalesce(cond('eq', [c, lit(1, 'int')]), lit(false, 'bool')) : a.fn === 'dcount0' ? coalesce(c, zero) : pop('nullif', [c, zero], 'int'));

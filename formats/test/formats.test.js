@@ -242,6 +242,34 @@ test('a file of the spec before, custom_extensions with their data a JSON string
   }
 });
 
+test('a metric with its SQL and its DAX side by side: the DAX is read, and both are written back', () => {
+  const doc = {
+    version: '0.3.0.dev0',
+    name: 'shop',
+    datasets: [
+      { name: 'orders', source: 'sales.orders', fields: [{ name: 'amount', expression: { sql: 'amt' }, datatype: 'Decimal' }], metrics: [
+        { name: 'total', expression: { sql: 'SUM(amt)', dialects: [{ dialect: 'DAX', expression: "SUM('orders'[amount]) + 0" }] } },
+      ] },
+      { name: 'returns', source: 'sales.returns', fields: [{ name: 'qty', expression: { sql: 'qty' }, datatype: 'Integer' }], metrics: [
+        { name: 'returned', expression: { sql: 'SUM(qty)' } },
+      ] },
+    ],
+    metrics: [
+      { name: 'return rate', expression: { sql: 'AGG(returns.returned) / AGG(orders.total)', dialects: [{ dialect: 'DAX', expression: 'DIVIDE([returned], [total]) + 0' }] } },
+    ],
+  };
+  const bim = ossieToTmsl(doc);
+  const dax = Object.fromEntries(bim.model.tables.flatMap(t => (t.measures ?? []).map(m => [m.name, m.expression])));
+  assert.deepEqual(dax, { total: "SUM('orders'[amount]) + 0", returned: "SUM('returns'[qty])", 'return rate': 'DIVIDE([returned], [total]) + 0' });
+  const back = tmslToOssie(bim, 'shop');
+  assert.deepEqual(back.datasets[0].metrics.map(m => [m.name, m.expression]), doc.datasets[0].metrics.map(m => [m.name, m.expression]));
+  assert.deepEqual(back.metrics.map(m => [m.name, m.expression]), doc.metrics.map(m => [m.name, m.expression]));
+  // The DAX changed in the model: the SQL kept beside it no longer says the same, so the SQL is the new DAX's.
+  bim.model.tables.find(t => t.name === 'orders').measures.find(m => m.name === 'total').expression = "SUM('orders'[amount])";
+  assert.deepEqual(tmslToOssie(bim, 'shop').datasets[0].metrics.find(m => m.name === 'total').expression,
+    { sql: 'SUM(amount)' });
+});
+
 test('AGG(dataset.metric), source.column and ROUND read as DAX', () => {
   const doc = {
     version: '0.3.0.dev0',

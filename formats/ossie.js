@@ -348,7 +348,8 @@ export function ossieToTmsl(doc, { onSkip = () => {} } = {}) {
     const home = table == null ? tables[0] : byName.get(String(table).toLowerCase());
     if (!home) throw new Error(`metric '${m.name}': the model has no table '${table}'`);
     const { table: named, ...extra } = powerBi(m);
-    const sql = dax(m) == null ? sqlOf(m) : null;
+    // Its SQL, kept to write back: alone, it was read as DAX; beside a DAX, the DAX is read.
+    const sql = sqlOf(m);
     const was = { dataset, home: home.name, ...(sql != null ? { expression: m.expression, dax: code, ...optional('datatype', m.datatype) } : {}),
       ...(sql != null && dataset == null && named != null ? { placed: true } : {}) };
     extra.annotations = [...(extra.annotations ?? []).filter(a => a.name !== OSSIE), { name: OSSIE, value: JSON.stringify(was) }];

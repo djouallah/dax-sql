@@ -40,11 +40,6 @@ export function prune(root) {
         return { ...r, src, keys: r.keys.map(k => ({ ...k, expr: S(k.expr) })), aggs: aggs.map(a => ({ ...a, arg: a.arg && S(a.arg) })), cols: [...r.keys.map(k => k.col), ...aggs.map(a => a.col)] };
       }
       case 'join': {
-        // Crossed with one row of constants nobody reads (the row a total is computed for, a
-        // FROM-less SELECT's): the other side, whose rows those are.
-        const unread = x => x.k === 'values' && x.rows.length === 1 && !x.cols.some(c => want.has(c));
-        if (r.kind === 'cross' && unread(r.left)) return N(r.right, want);
-        if (r.kind === 'cross' && unread(r.right)) return N(r.left, want);
         const on = r.on ? refs(r.on) : new Set();
         const left = N(r.left, union(want, on)), right = N(r.right, union(want, on));
         return { ...r, left, right, on: r.on && S(r.on), cols: [...left.cols, ...right.cols] };

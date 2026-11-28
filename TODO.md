@@ -20,6 +20,11 @@ values the data holds: a filter that keeps no row at SF10 says nothing of the SQ
 
 - [ ] Probe Power BI: a DAX literal with a trailing space against a `trailingSpaces` column.
 - [ ] Issue #9 (feature request, left open).
+- [ ] `isNullable: false` (a model's own declaration, `mayHoldNull`/`neverBlank`): declared on tpcds's
+  19 never-blank columns (keys, `d_date_sk_1`, `date_dim`, the facts' item and order numbers; A/B
+  46109989459, SF10), `fuzz2-0021` answered otherwise and `fuzz2-0005` raised the fixed decimal's
+  overflow. Either a column holds NULLs at SF10, or the not-nullable path is wrong: find out which.
+  (Its speed: none, 71.0 s against 70.8 s; a data check of blanks is not worth an option.)
 
 # DAX not supported yet (on the known lists, with their queries)
 

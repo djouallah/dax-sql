@@ -780,9 +780,11 @@ const { sql, columns } = dax.compile(`
   hidden, description, displayFolder }], relationships: [{ name, from: { table, column }, to:
   { table, column }, fromCardinality, toCardinality, crossFilter, active }] }`, a measure's
   `type` the one `compile` gives it alone (`variant` when it cannot be compiled); `autoDate` a
-  Power BI auto date/time table; the model's `name` the document's (TMSL's, a TMDL database's, an Ossie document's) and its `description`, `null` when it has none (its annotation, else its `LocalDateTable_<guid>` /
-  `DateTableTemplate_<guid>` name); a relationship's cardinalities `many` or `one`, `crossFilter`
-  `single` or `both`, a table's to itself not active. `dimensionsOf(measure)`: the tables whose filters reach the measure's, as
+  Power BI auto date/time table (its annotation, else its `LocalDateTable_<guid>` /
+  `DateTableTemplate_<guid>` name); the model's `name` the document's (TMSL's, a TMDL database's,
+  an Ossie document's) and its `description`, `null` when it has none; a relationship's
+  cardinalities `many` or `one`, `crossFilter` `single` or `both`, a table's to itself not
+  active. `dimensionsOf(measure)`: the tables whose filters reach the measure's, as
   `describe()` lists them (`SHOW SEMANTIC DIMENSIONS … FOR METRIC`).
 - `plan`, `explain`, `planSql` take `{ optimize, correlated, unnest }`; `substrait` also
   `{ inline, tableName, tableSchema }`.

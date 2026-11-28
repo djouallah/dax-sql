@@ -548,7 +548,13 @@ A file is read into a model object by a reader in `formats/`, exported as `dax-s
   security) and expressions; lineage tags, perspectives and cultures are left out.
 - `formats/ossie.js` reads an [Apache Ossie](https://github.com/apache/ossie) model and goes
   both ways between it and TMSL. `ossieToModel(doc)`, `tmslToOssie(bim)` and `ossieToTmsl(doc)`
-  take parsed objects, so the YAML is the caller's to parse. A column is a field whose `sql` is
+  take parsed objects, so the YAML is the caller's to parse. `ossieToTmsl` and `ossieToModel` also
+  take a folder of them, `{ 'path.yaml': doc }` (a Fabric semantic view's `Context/Semantic
+  Views/<view>/`), merged as Fabric merges on publish: only the `.yaml` files; each with its
+  `version` and `name`; the lists (`datasets`, `relationships`, `metrics`, the extensions)
+  concatenated; a dataset, relationship or metric (a metric by its name in any case) defined
+  once across the files; one description. Anything else is an `INPUT` error naming the files.
+  A column is a field whose `sql` is
   its source column; a measure is a metric of the dataset it reads, in Ossie's portable SQL
   when it says the same there (`formats/ossie-sql.js`: SUM, AVERAGE, COUNTROWS, DIVIDE, ... over
   one table, BLANK as NULL), and in the DAX dialect when not. Where DAX rounds a fixed decimal

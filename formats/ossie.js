@@ -2,7 +2,8 @@
 // TMSL, either way, and as dax-sql's model object. Not part of the package: a reader of one
 // format. It takes and gives parsed objects; parsing YAML is the caller's.
 //   tmslToOssie(bim)    a model.bim as Ossie
-//   ossieToTmsl(doc, { onSkip })   the model.bim an Ossie document stands for
+//   ossieToTmsl(doc, { onSkip })   the model.bim an Ossie document stands for; doc may be a folder
+//                                  of them, { 'path.yaml': doc }, merged as Fabric merges (ossieFolder)
 //   ossieToModel(doc, { onSkip })  dax-sql's model object (createCompiler takes it)
 // A metric or a field it cannot say in DAX (one in another engine's dialect alone, or SQL beyond
 // what dax-sql reads) is left out, not the model refused: onSkip({ kind, name, dataset, why }) hears of each.
@@ -25,6 +26,7 @@
 // that name says where the data is, and the partition and the expression it read are not kept.
 // Back, such a source is the partition's schema (all of it but the table) and entity.
 import { tmslToModel } from './tmsl.js';
+import { DaxError } from '../src/errors.js';
 import { measureSql, columnSql, parseDax, metricDax, fieldDax, sourceColumnOf, dialectSourceOf, sqlName } from './ossie-sql.js';
 
 const VERSION = '0.3.0.dev0';
@@ -291,6 +293,7 @@ const measureDax = (m, dataset, datasets) => {
 };
 
 export function ossieToTmsl(doc, { onSkip = () => {} } = {}) {
+  if (isFolder(doc)) doc = ossieFolder(doc);
   // `partition`: the one a dataset with none of its own has. The rest is the TMSL's.
   const { model: modelExtra = {}, partition: defaults = {}, ...docExtra } = powerBi(doc);
   const tables = doc.datasets.map(d => {
@@ -381,3 +384,47 @@ export function ossieToTmsl(doc, { onSkip = () => {} } = {}) {
 }
 
 export const ossieToModel = (doc, opts) => tmslToModel(ossieToTmsl(doc, opts));
+
+// A folder: an object of files by path, each a .yaml or .yml (a document has its datasets,
+// version and name as keys instead).
+const isFolder = x => x !== null && typeof x === 'object' && !Array.isArray(x) && !('datasets' in x)
+  && Object.keys(x).length > 0 && Object.keys(x).every(k => /\.ya?ml$/i.test(k));
+
+// A Fabric semantic view's folder of Apache Ossie files (Context/Semantic Views/<view>/:
+// datasets/dimensions.yaml, relationships.yaml, metrics/all.yaml, model.yaml…) as one document,
+// merged as Fabric merges them on publish: only the .yaml files (a .yml beside them is not read,
+// as Fabric does not read it); each has its version and name; the lists are concatenated in any
+// file order (here by path); a dataset, relationship or metric (a metric by its name in any
+// case) is defined once across the files; the description is the same wherever it is given. The
+// files are parsed already, as a document is (parsing YAML is the caller's). An error is an
+// INPUT one, naming the files.
+const LISTS = ['datasets', 'relationships', 'metrics', 'custom_extensions', 'nonportable_extensions'];
+export function ossieFolder(files) {
+  const bad = msg => new DaxError(`Ossie folder: ${msg}`, { code: 'INPUT' });
+  const read = Object.entries(files).filter(([p]) => /\.yaml$/i.test(p)).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+  if (!read.length) throw bad('no .yaml file in it');
+  const merged = {}, defined = new Map();
+  for (const [path, doc] of read) {
+    if (typeof doc === 'string') throw bad(`${path} is text: parse its YAML first (the reader takes parsed documents)`);
+    if (!doc || typeof doc !== 'object' || Array.isArray(doc)) throw bad(`${path} is not an Ossie document`);
+    for (const key of ['version', 'name']) if (doc[key] == null) throw bad(`${path} has no ${key}`);
+    if (doc.description != null) {
+      if (merged.description != null && merged.description !== doc.description) throw bad(`${path}'s description differs from another file's (one description for the view)`);
+      merged.description = doc.description;
+    }
+    for (const [key, value] of Object.entries(doc)) {
+      if (LISTS.includes(key)) {
+        if (!Array.isArray(value)) throw bad(`${path}: ${key} is not a list`);
+        for (const item of value) {
+          if (key.endsWith('extensions') || item?.name == null) continue;
+          const id = `${key}:${key === 'metrics' ? String(item.name).toLowerCase() : item.name}`;
+          if (defined.has(id)) throw bad(`${key.replace(/s$/, '')} ${item.name} is in ${defined.get(id)} and ${path}`);
+          defined.set(id, path);
+        }
+        merged[key] = [...(merged[key] ?? []), ...value];
+      } else if (key !== 'description' && !(key in merged)) merged[key] = value;
+    }
+  }
+  merged.datasets ??= [];
+  return merged;
+}

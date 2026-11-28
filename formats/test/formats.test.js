@@ -433,3 +433,30 @@ test('a metric with neither DAX nor SQL dax-sql reads is left out, saying why', 
   // No onSkip: left out all the same.
   assert.ok(!ossieToTmsl(doc).model.tables.flatMap(t => (t.measures ?? []).map(m => m.name)).includes('y'));
 });
+
+// A Fabric semantic view's folder of Ossie files (#11), parsed by the caller: merged as Fabric
+// merges on publish, it reads as the one document it was split from.
+test('Ossie: a folder of files reads as the document it was split from, merged as Fabric merges', () => {
+  const doc = tmslToOssie(contoso);
+  const { datasets, relationships, metrics, ...top } = doc;
+  const head = { version: doc.version, name: doc.name };
+  const half = Math.ceil(datasets.length / 2);
+  const folder = {
+    'a/model.yaml': top,
+    'b/datasets/1.yaml': { ...head, datasets: datasets.slice(0, half) },
+    'b/datasets/2.yaml': { ...head, datasets: datasets.slice(half) },
+    'c/relationships.yaml': { ...head, relationships },
+    ...(metrics ? { 'd/metrics/all.yaml': { ...head, metrics } } : {}),
+    'e/old.yml': { ...head, datasets: [{ name: 'Ignored' }] },
+  };
+  assert.deepEqual(ossieToTmsl(folder), ossieToTmsl(doc));
+  assert.deepEqual(ossieToModel(folder).tables.size, ossieToModel(doc).tables.size);
+  const input = (files, re) => assert.throws(() => ossieToTmsl(files), e => e.code === 'INPUT' && re.test(e.message), re);
+  // A name defined twice, in two files: both named. A metric's name in any case.
+  input({ ...folder, 'f/again.yaml': { ...head, datasets: [datasets[0]] } }, new RegExp(`dataset ${datasets[0].name} is in b/datasets/1\.yaml and f/again\.yaml`));
+  if (metrics) input({ ...folder, 'f/m.yaml': { ...head, metrics: [{ ...metrics[0], name: metrics[0].name.toUpperCase() }] } }, /metric .* is in d\/metrics\/all\.yaml and f\/m\.yaml/);
+  input({ ...folder, 'f/x.yaml': { name: doc.name, datasets: [] } }, /f\/x\.yaml has no version/);
+  input({ ...folder, 'f/x.yaml': { ...head, description: 'another' }, 'a/model.yaml': { ...top, description: 'one' } }, /description differs/);
+  input({ 'model.yaml': 'version: 1' }, /is text: parse its YAML first/);
+  input({ 'old.yml': head }, /no \.yaml file/);
+});

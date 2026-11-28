@@ -69,7 +69,7 @@ def rows_text(rows):
 
 
 def cell(s):
-    return str(s).replace("|", "\|").replace("\n", " ")[:160]
+    return str(s).replace("|", r"\|").replace("\n", " ")[:160]
 
 
 def main():
@@ -83,9 +83,12 @@ def main():
     }
     ctx = pl.SQLContext(**frames)
     duck = duckdb.connect()
-    for name, df in frames.items():
-        duck.register(f"{name}_src", df.to_arrow())
-        duck.execute(f"CREATE TABLE {name} AS SELECT * FROM {name}_src")
+    # The same tables, in SQL (no pyarrow needed).
+    duck.execute("CREATE TABLE t AS SELECT * FROM (VALUES (1), (2), (3)) v(a)")
+    duck.execute("CREATE TABLE u AS SELECT CAST(d AS DATE) AS d, CAST(d AS TIMESTAMP) + INTERVAL '10 hours 30 minutes' AS ts, n FROM "
+                 "(VALUES ('2024-01-31', 1), ('2024-02-29', 2), ('2024-03-01', -1)) v(d, n)")
+    duck.execute("CREATE TABLE w AS SELECT CAST(x AS DECIMAL(18,4)) AS x, CAST(y AS DECIMAL(18,4)) AS y FROM (VALUES ('1', '3'), ('2', '7')) v(x, y)")
+    duck.execute("CREATE TABLE r AS SELECT * FROM (VALUES (0, 1), (2, 3)) v(lo, hi)")
     commit = getattr(pl, "__build_commit__", None) or ""
     print(f"### Probes: Polars {pl.__version__} {commit[:10]}, DuckDB {duckdb.__version__}\n")
     print("| probe | Polars | DuckDB | same |\n|---|---|---|---|")

@@ -13,6 +13,22 @@ const EMPTY = new Map();
 const MANY = 'A table of multiple values was supplied where a single value was expected.';
 const lc = s => String(s).toLowerCase();
 const isQuery = s => /\bSELECT\b/i.test(s ?? '');
+// A partition's schemaName as the names it is a path of: a catalog's schema ("lh"."dbo", or lh.dbo
+// from an Ossie source named in full) is two. Split at the dots outside "quotes", a quoted part
+// unquoted ("" a quote); a schema with none is one name, as written.
+function schemaPath(schema) {
+  const parts = [];
+  let cur = '', q = false, quoted = false;
+  for (let i = 0; i < schema.length; i++) {
+    const ch = schema[i];
+    if (ch === '"') {
+      if (q && schema[i + 1] === '"') { cur += '"'; i++; } else { q = !q; quoted = true; }
+    } else if (ch === '.' && !q) { parts.push(cur); cur = ''; } else cur += ch;
+  }
+  parts.push(cur);
+  // Not a path after all (an unclosed quote, an empty part): the schema as one name.
+  return q || parts.some(p => p === '') || (!quoted && parts.length === 1) ? [schema] : parts;
+}
 
 export class PlanSql {
   constructor(model, dialect, options = {}) {
@@ -40,7 +56,7 @@ export class PlanSql {
       return own;
     }
     const s = table.source;
-    return s.schema ? `${this.ident(s.schema)}.${this.ident(s.entity)}` : this.ident(s.entity);
+    return [...(s.schema ? schemaPath(s.schema) : []), s.entity].map(n => this.ident(n)).join('.');
   }
 
   // A column's name: numbered in the query in the order its columns are first written, so that

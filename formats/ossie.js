@@ -306,10 +306,13 @@ const measureDax = (m, dataset, datasets) => {
 //              none, the table has its key and relationship columns, as text, so the model holds.
 // It is called as the document is read: the host reads the columns first (ossieSources lists
 // what it will be asked).
-export function ossieToTmsl(doc, { onSkip = () => {}, catalog = null, columnsOf = null } = {}) {
-  if (isFolder(doc)) doc = ossieFolder(doc);
+//   as         'fabric': a Fabric semantic view's folder (or document) read as the model Fabric's
+//              Publish makes of it, leniently (fabricView below); not given: as the spec says.
+export function ossieToTmsl(doc, { onSkip = () => {}, catalog = null, columnsOf = null, as = null } = {}) {
   if (catalog != null && typeof catalog !== 'string') throw new DaxError('ossieToTmsl: catalog is a text', { code: 'INPUT' });
   if (columnsOf != null && typeof columnsOf !== 'function') throw new DaxError('ossieToTmsl: columnsOf is a function ({ dataset, source }) => [{ name, type }]', { code: 'INPUT' });
+  if (checkAs('ossieToTmsl', as)) return fabricView(doc, { onSkip, catalog, columnsOf });
+  if (isFolder(doc)) doc = ossieFolder(doc);
   // `partition`: the one a dataset with none of its own has. The rest is the TMSL's.
   const { model: modelExtra = {}, partition: defaults = {}, ...docExtra } = powerBi(doc);
   // A dataset with no fields has its source's (columnsOf): for its table and for its metrics alike.
@@ -409,10 +412,132 @@ export const ossieToModel = (doc, opts) => tmslToModel(ossieToTmsl(doc, opts));
 const quoteName = s => `"${String(s).replace(/"/g, '""')}"`;
 
 // The datasets of a document (or folder) whose columns ossieToTmsl will ask columnsOf: those with
-// no fields, [{ dataset, source }], so a host reads their columns first.
-export function ossieSources(doc) {
+// no fields, [{ dataset, source }], so a host reads their columns first. With `as: 'fabric'`,
+// every dataset the view keeps (Fabric's model has each source table's columns).
+export function ossieSources(doc, { as = null } = {}) {
+  if (checkAs('ossieSources', as)) return fabricMerge(doc, () => {}).datasets.map(d => ({ dataset: d.name, source: d.source }));
   if (isFolder(doc)) doc = ossieFolder(doc);
   return (doc.datasets ?? []).filter(d => !d.fields?.length).map(d => ({ dataset: d.name, source: d.source }));
+}
+
+const checkAs = (what, as) => {
+  if (as != null && as !== 'fabric') throw new DaxError(`${what}: as is 'fabric' or not given`, { code: 'INPUT' });
+  return as === 'fabric';
+};
+
+// A Fabric semantic view read as the model Fabric's Publish makes of it (ossieToTmsl's
+// `as: 'fabric'`). Its files are of version 0.2.0.dev0 (what Publish reads) or 0.3.0.dev0, any
+// other an error naming the file. They are merged leniently: what Publish refuses but a model can
+// do without is left out and said to onSkip({ kind, name, file, why }): the second of a name given
+// twice in any case, a dataset whose source is not schema.table, a relationship of more than one
+// column a side or to a dataset left out, a metric named as a dataset or with no DAX dialect, a
+// dataset's own metrics. Each dataset is a Direct Lake table of the catalog with its source
+// table's columns (columnsOf; none is an error naming the dataset), every relationship active,
+// and the DAX metrics in a table of their own, Metrics, as the model Publish creates has them.
+export const FABRIC_VERSIONS = ['0.2.0.dev0', '0.3.0.dev0'];
+export const FABRIC_METRICS = 'Metrics';
+const fabricSource = d => {
+  const parts = typeof d?.source === 'string' ? d.source.split('.') : [];
+  return parts.length === 2 && parts.every(p => p.trim()) ? parts : null;
+};
+function fabricMerge(input, onSkip) {
+  const bad = msg => new DaxError(`Fabric semantic view: ${msg}`, { code: 'INPUT' });
+  const files = input !== null && typeof input === 'object' && !Array.isArray(input) && 'datasets' in input
+    ? [['the document', input]]
+    : Object.entries(input !== null && typeof input === 'object' ? input : {}).filter(([p]) => /\.yaml$/i.test(p))
+      .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+  if (!files.length) throw bad('no .yaml file in its folder');
+  const all = { datasets: [], relationships: [], metrics: [] };
+  let name = null, description = null;
+  for (const [file, doc] of files) {
+    if (typeof doc === 'string') throw bad(`${file} is text: parse its YAML first (the reader takes parsed documents)`);
+    if (!doc || typeof doc !== 'object' || Array.isArray(doc)) throw bad(`${file} is not an Ossie document`);
+    if (!FABRIC_VERSIONS.includes(String(doc.version))) {
+      throw bad(`${file} is version ${doc.version ?? '(none)'}: a Fabric semantic view is ${FABRIC_VERSIONS.join(' or ')}`);
+    }
+    name ??= doc.name ?? null;
+    description ??= doc.description ?? null;
+    for (const key of Object.keys(all)) {
+      if (doc[key] == null) continue;
+      if (!Array.isArray(doc[key])) throw bad(`${file}: ${key} is not a list`);
+      all[key].push(...doc[key].map(x => ({ x, file })));
+    }
+  }
+  // Said to onSkip; false, whatever onSkip returns.
+  const skip = (kind, { x, file }, why) => { onSkip({ kind, name: x?.name ?? null, file, why: `${kind} '${x?.name}': ${why}` }); return false; };
+  // Each name once, in any case: the first kept.
+  const once = (kind, list) => {
+    const seen = new Map();
+    return list.filter(it => {
+      if (!it.x || typeof it.x !== 'object' || it.x.name == null) return skip(kind, it, 'it has no name'), false;
+      const k = lc(it.x.name);
+      if (seen.has(k)) return skip(kind, it, `it is named a second time (first in ${seen.get(k)})`), false;
+      seen.set(k, it.file);
+      return true;
+    });
+  };
+  const datasets = once('dataset', all.datasets).filter(it => fabricSource(it.x)
+    || skip('dataset', it, `its source ${JSON.stringify(it.x.source ?? null)} is not schema.table`));
+  for (const { x: d, file } of datasets) {
+    for (const m of Array.isArray(d.metrics) ? d.metrics : []) {
+      skip('metric', { x: m, file }, `a metric of the dataset '${d.name}': a Fabric semantic view's metrics are the view's`);
+    }
+  }
+  const kept = new Map(datasets.map(({ x }) => [lc(x.name), x]));
+  const one = c => Array.isArray(c) && c.length === 1;
+  const relationships = once('relationship', all.relationships).filter(it => {
+    const r = it.x;
+    if (!one(r.from_columns) || !one(r.to_columns)) return skip('relationship', it, 'it joins more than one column on a side'), false;
+    const lost = [r.from, r.to].find(end => !kept.has(lc(end)));
+    if (lost !== undefined) return skip('relationship', it, `its dataset '${lost}' is left out or not in the view`), false;
+    return true;
+  });
+  const metrics = once('metric', all.metrics).flatMap(it => {
+    if (kept.has(lc(it.x.name))) return skip('metric', it, 'a dataset has its name'), [];
+    const d = (Array.isArray(it.x.expression?.dialects) ? it.x.expression.dialects : [])
+      .find(e => lc(e?.dialect) === 'dax' && String(text(e?.expression) ?? '').trim());
+    if (!d) return skip('metric', it, 'it has no DAX dialect (Fabric leaves it out too)'), [];
+    return [{ m: it.x, dax: String(text(d.expression)) }];
+  });
+  return { name, description, datasets: datasets.map(({ x }) => x), relationships: relationships.map(({ x }) => x), metrics, kept };
+}
+function fabricView(input, { onSkip, catalog, columnsOf }) {
+  if (typeof columnsOf !== 'function') {
+    throw new DaxError("ossieToTmsl: as 'fabric' reads each dataset's columns by columnsOf ({ dataset, source }) => [{ name, type }]", { code: 'INPUT' });
+  }
+  const view = fabricMerge(input, onSkip);
+  if (view.metrics.length && view.kept.has(lc(FABRIC_METRICS))) {
+    throw new DaxError(`Fabric semantic view: a dataset is named ${FABRIC_METRICS}, the table Fabric's model holds the metrics in`, { code: 'INPUT' });
+  }
+  const tables = view.datasets.map(d => {
+    const [schema, entityName] = fabricSource(d);
+    const read = columnsOf({ dataset: d.name, source: d.source });
+    const columns = (Array.isArray(read) ? read : []).flatMap(c => {
+      const dataType = tmslType(c?.type);
+      if (c?.name && dataType) return [{ name: String(c.name), dataType, sourceColumn: String(c.name) }];
+      onSkip({ kind: 'field', name: c?.name ?? null, file: null, why: `field '${d.name}.${c?.name}': a column of type ${c?.type}, which a model cannot hold` });
+      return [];
+    });
+    if (!columns.length) {
+      throw new DaxError(`Fabric semantic view: the dataset ${d.name}: its source ${d.source} is no table, or has no column a model can hold`, { code: 'INPUT' });
+    }
+    const schemaName = catalog != null ? `${quoteName(catalog)}.${quoteName(schema)}` : schema;
+    return tmsl({ name: d.name, description: d.description, columns,
+      partitions: [{ name: d.name, mode: 'directLake', source: { type: 'entity', entityName, schemaName } }] }, {});
+  });
+  if (view.metrics.length) {
+    tables.push({ name: FABRIC_METRICS, columns: [],
+      measures: view.metrics.map(({ m, dax: code }) => tmsl({ name: String(m.name), description: m.description, expression: code }, {})) });
+  }
+  const nameOf = n => view.kept.get(lc(n)).name;
+  const relationships = view.relationships.map(r => ({ name: String(r.name), fromTable: nameOf(r.from), fromColumn: String(r.from_columns[0]),
+    toTable: nameOf(r.to), toColumn: String(r.to_columns[0]) }));
+  return tmsl({
+    name: view.name,
+    compatibilityLevel: 1604,
+    model: tmsl({ culture: 'en-US', defaultPowerBIDataSourceVersion: 'powerBI_V3', description: view.description, tables,
+      ...(relationships.length ? { relationships } : {}) }, {}),
+  }, {});
 }
 
 // An engine's type name as TMSL's dataType, or null for one a model cannot hold.

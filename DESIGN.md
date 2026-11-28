@@ -538,13 +538,13 @@ the same at its top.
 A file is read into a model object by a reader in `formats/`, exported as `dax-sql/formats/tmsl.js`,
 `dax-sql/formats/tmdl.js` and `dax-sql/formats/ossie.js`. The compiler never imports them.
 
-- `formats/model.js`: `readModel(path, text | files, { parseYaml, catalog, columnsOf })` is the one reader a host
+- `formats/model.js`: `readModel(path, text | files, { parseYaml, catalog, columnsOf, as })` is the one reader a host
   needs: `{ bim, skipped }`, the TMSL of a model's file, or of a folder of them (`{ path: text }`),
   by the format its path says (`.bim` TMSL, `.tmdl` TMDL, `.yaml` / `.yml` Apache Ossie). A folder
   is TMDL when it holds `.tmdl` files, else Ossie's `.yaml` files merged as Fabric merges a
   semantic view's. A UTF-8 BOM is dropped. YAML is parsed by the caller's `parseYaml` (needed for
   Ossie only: dax-sql has no dependencies). `skipped` is what `ossieToTmsl` left out; a model
-  whose metrics were all left out is refused. Every error is `INPUT`, naming the file (one file
+  whose metrics were all left out is refused (not with `as: 'fabric'`). Every error is `INPUT`, naming the file (one file
   of a Power BI project's folder, not a model; YAML with no datasets). A path of another
   extension is read as its text says.
 - `formatOf(path, text)`: a model file's format from its path and text, nothing parsed (a host
@@ -586,6 +586,16 @@ A file is read into a model object by a reader in `formats/`, exported as `dax-s
   said to `onSkip`), or null when not known. With none, such a table has its key and relationship
   columns as text, so the model holds. `columnsOf` is called as the document is read:
   `ossieSources(doc)` lists the `{ dataset, source }` it will be asked, for the host to read first.
+  With `as: 'fabric'` (`ossieToTmsl`, `ossieSources`, `readModel`), a Fabric semantic view's folder is
+  read as the model Fabric's Publish makes of it, leniently. Its files are of version `0.2.0.dev0`
+  (what Publish reads) or `0.3.0.dev0`, any other an `INPUT` error naming the file. What Publish
+  refuses but a model can do without is left out and said to `onSkip({ kind, name, file, why })`: a
+  dataset, relationship or metric named a second time in any case (the first kept), a dataset whose
+  `source` is not `schema.table`, a relationship of more than one column a side or to a dataset
+  left out, a metric named as a dataset or with no DAX dialect, a dataset's own metrics. Each
+  dataset is a Direct Lake table of `catalog` with the columns `columnsOf` gives (required; none
+  is an `INPUT` error naming the dataset and its source), its fields not read; every relationship
+  is active; the DAX metrics are in a table of their own, `Metrics`, as Fabric's model has them.
   A column is a field whose `sql` is
   its source column; a measure is a metric of the dataset it reads, in Ossie's portable SQL
   when it says the same there (`formats/ossie-sql.js`: SUM, AVERAGE, COUNTROWS, DIVIDE, ... over
@@ -795,7 +805,7 @@ SELECT * FROM (SHOW SEMANTIC METRICS IN sales) WHERE ...;   -- each one reads as
 
 | Option | |
 |---|---|
-| `tableSource` | `(table) => SQL` naming a model table's rows, or `undefined` / `null` for the default: its partition's entity, `"schema"."entity"` (a host places only the tables it reads itself). Anything else is an `INPUT` error. |
+| `tableSource` | `(table) => SQL` naming a model table's rows, or `undefined` / `null` for the default: its partition's entity, `"schema"."entity"`, a schema of a path (`"lh"."dbo"`, `lh.dbo`) a name each (a host places only the tables it reads itself). Anything else is an `INPUT` error. |
 | `dialect` | `'duckdb'` (default), `'tsql'` (the Fabric SQL endpoint and Warehouse; see T-SQL below), `'polars'` (Polars SQL; see below), `'datafusion'` (Apache DataFusion; see below), or an instance of a `Dialect` subclass. |
 | `columnNames` | `'short'` (default): the column's or the expression's name. `'dax'`: `Table[Column]`, `[Measure]`. |
 | `castOutput` | `true` (default): whole numbers as `BIGINT`, other numbers as `DOUBLE`. Or an object, by the column's type (`int`, `double`, `decimal`, `datetime`, `string`, `bool`), of a function of its SQL: `{ int: s => \`CAST(${s} AS INTEGER)\` }`; a type it leaves out is not cast. |

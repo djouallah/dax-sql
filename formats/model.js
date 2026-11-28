@@ -11,8 +11,9 @@
 // them is not read). A UTF-8 BOM before a file's text is dropped (Visual Studio writes one).
 // YAML is parsed by `parseYaml`, the caller's (dax-sql has no dependencies): it is needed for
 // Ossie only, as are `catalog` and `columnsOf` (ossieToTmsl's: what a Fabric semantic view leaves to
-// the platform). `skipped` is what ossieToTmsl left out ({ kind, name, dataset, why }); a model
-// whose metrics were all left out is refused. Every error is a DaxError of code INPUT naming the
+// the platform) and `as: 'fabric'` (a Fabric semantic view read as Fabric's Publish reads it,
+// leniently: ossieToTmsl's). `skipped` is what ossieToTmsl left out ({ kind, name, dataset, why }); a model
+// whose metrics were all left out is refused (but a Fabric view's). Every error is a DaxError of code INPUT naming the
 // file.
 import { DaxError } from '../src/errors.js';
 import { tmdlToTmsl } from './tmdl.js';
@@ -41,7 +42,7 @@ export function formatOf(path, text) {
   return json() ? 'tmsl' : ossie() ? 'ossie' : tmdl() ? 'tmdl' : null;
 }
 
-export function readModel(path, input, { parseYaml, catalog, columnsOf } = {}) {
+export function readModel(path, input, { parseYaml, catalog, columnsOf, as } = {}) {
   path = String(path ?? '');
   if (parseYaml != null && typeof parseYaml !== 'function') throw bad('readModel: parseYaml is a function (text -> document)');
   // A reader's error, its own code kept (INPUT from a folder's merge), any other as INPUT.
@@ -57,7 +58,9 @@ export function readModel(path, input, { parseYaml, catalog, columnsOf } = {}) {
   };
   const ossie = doc => {
     const skipped = [];
-    const bim = ossieToTmsl(doc, { onSkip: s => skipped.push(s), catalog, columnsOf });
+    const bim = ossieToTmsl(doc, { onSkip: s => skipped.push(s), catalog, columnsOf, as });
+    // A Fabric view opens without what Publish leaves out, its metrics too.
+    if (as === 'fabric') return { bim, skipped };
     const measures = (bim.model?.tables ?? []).reduce((n, t) => n + (t.measures?.length ?? 0), 0);
     const metrics = skipped.filter(s => s.kind === 'metric');
     if (!measures && metrics.length) throw bad(`${path}: none of its metrics can be read: ${metrics.map(s => s.why).join('; ')}`);
@@ -76,7 +79,7 @@ export function readModel(path, input, { parseYaml, catalog, columnsOf } = {}) {
     if (kind === 'ossie') {
       const doc = yaml(path, body);
       if (!doc || typeof doc !== 'object' || Array.isArray(doc) || !Array.isArray(doc.datasets)) throw bad(`${path} is not an Apache Ossie model: YAML with no datasets`);
-      return read('an Apache Ossie model', () => ossie(doc));
+      return read('an Apache Ossie model', () => ossie(as === 'fabric' && /.yaml$/i.test(path) ? { [path]: doc } : doc));
     }
     throw bad(`${path}: a model is read from ${FORMATS}`);
   }

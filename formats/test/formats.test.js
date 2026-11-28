@@ -549,10 +549,74 @@ test('ossieToTmsl: a dataset with no fields has its source\'s columns (columnsOf
   assert.equal(bare.model.tables[0].partitions[0].source.schemaName, 'dbo', 'no catalog: as before');
   createCompiler(tmslToModel(bare)).compile('EVALUATE ROW("n", COUNTROWS(sales))');
   assert.ok(createCompiler(tmslToModel(bim)).compile('EVALUATE ROW("t", [Total])').sql, 'its metric reads a column columnsOf gave');
+  assert.match(createCompiler(tmslToModel(bim)).compile('EVALUATE dim').sql, /FROM "lh"."dbo"."dim"/, 'a schema of a path, each name its own');
   // The engine's type names.
   const want = { BIGINT: 'int64', HUGEINT: 'int64', integer: 'int64', 'DOUBLE': 'double', real: 'double', 'NUMERIC(10,2)': 'decimal', BOOLEAN: 'boolean', date: 'dateTime', datetime2: 'dateTime', 'VARCHAR(20)': 'string', uuid: 'string', BLOB: null, 'MAP(VARCHAR, INT)': null, INTERVAL: null };
   for (const [k, v] of Object.entries(want)) assert.equal(tmslType(k), v, k);
   assert.throws(() => ossieToTmsl(doc, { columnsOf: 'x' }), e => e.code === 'INPUT');
+});
+
+// A Fabric semantic view read as Fabric's Publish reads it (#25): lenient, its metrics in Metrics.
+test("ossieToTmsl as 'fabric': a semantic view as the model Fabric's Publish makes of it, what it left out said", () => {
+  const dax = e => ({ dialects: [{ dialect: 'DAX', expression: e }] });
+  const files = {
+    'datasets.yaml': { version: '0.2.0.dev0', name: 'nem', description: 'NEM', datasets: [
+      { name: 'sales', source: 'dbo.sales', fields: [{ name: 'ignored' }], metrics: [{ name: 'Own', expression: dax('1') }] },
+      { name: 'cust', source: 'dbo.customers' },
+      { name: 'CUST', source: 'dbo.other' },
+      { name: 'far', source: 'lh.dbo.far' },
+    ] },
+    'relationships.yaml': { version: '0.3.0.dev0', name: 'nem', relationships: [
+      { name: 'r', from: 'Sales', from_columns: ['cust_id'], to: 'cust', to_columns: ['cid'] },
+      { name: 'R', from: 'sales', from_columns: ['cust_id'], to: 'cust', to_columns: ['cid'] },
+      { name: 'two', from: 'sales', from_columns: ['a', 'b'], to: 'cust', to_columns: ['c', 'd'] },
+      { name: 'lost', from: 'sales', from_columns: ['x'], to: 'far', to_columns: ['y'] },
+    ] },
+    'metrics.yaml': { version: '0.2.0.dev0', name: 'nem', metrics: [
+      { name: 'Total', description: 'all of it', expression: dax('SUM(sales[amount])') },
+      { name: 'total', expression: dax('0') },
+      { name: 'Cust', expression: dax('1') },
+      { name: 'SqlOnly', expression: { dialects: [{ dialect: 'OSSIE_SQL_2026', expression: 'SUM(amount)' }] } },
+    ] },
+    'notes.yml': { version: '9' },
+  };
+  const columns = { sales: [{ name: 'cust_id', type: 'BIGINT' }, { name: 'amount', type: 'DECIMAL(18,2)' }, { name: 'tags', type: 'VARCHAR[]' }],
+    cust: [{ name: 'cid', type: 'long' }, { name: 'name', type: 'VARCHAR' }] };
+  const asked = [], skipped = [];
+  const columnsOf = s => { asked.push(s); return columns[s.dataset] ?? []; };
+  assert.deepEqual(ossieSources(files, { as: 'fabric' }), [{ dataset: 'sales', source: 'dbo.sales' }, { dataset: 'cust', source: 'dbo.customers' }]);
+  const bim = ossieToTmsl(files, { as: 'fabric', catalog: 'nem', columnsOf, onSkip: s => skipped.push(s) });
+  assert.deepEqual(asked, ossieSources(files, { as: 'fabric' }), 'every dataset kept, its fields or not');
+  assert.equal(bim.name, 'nem');
+  assert.equal(bim.model.description, 'NEM');
+  assert.deepEqual(bim.model.tables.map(t => t.name), ['sales', 'cust', 'Metrics']);
+  const sales = bim.model.tables[0];
+  assert.deepEqual(sales.columns.map(c => [c.name, c.dataType, c.sourceColumn]), [['cust_id', 'int64', 'cust_id'], ['amount', 'decimal', 'amount']]);
+  assert.deepEqual(sales.partitions, [{ name: 'sales', mode: 'directLake', source: { type: 'entity', entityName: 'sales', schemaName: '"nem"."dbo"' } }]);
+  assert.deepEqual(bim.model.tables[2].measures, [{ name: 'Total', description: 'all of it', expression: 'SUM(sales[amount])' }]);
+  assert.deepEqual(bim.model.relationships, [{ name: 'r', fromTable: 'sales', fromColumn: 'cust_id', toTable: 'cust', toColumn: 'cid' }]);
+  assert.deepEqual(skipped.map(s => [s.kind, s.name, s.file]), [
+    ['dataset', 'CUST', 'datasets.yaml'], ['dataset', 'far', 'datasets.yaml'], ['metric', 'Own', 'datasets.yaml'],
+    ['relationship', 'R', 'relationships.yaml'], ['relationship', 'two', 'relationships.yaml'], ['relationship', 'lost', 'relationships.yaml'],
+    ['metric', 'total', 'metrics.yaml'], ['metric', 'Cust', 'metrics.yaml'], ['metric', 'SqlOnly', 'metrics.yaml'],
+    ['field', 'tags', null],
+  ]);
+  assert.ok(skipped.every(s => typeof s.why === 'string' && s.why.includes(s.name)));
+  const { sql } = createCompiler(tmslToModel(bim)).compile('EVALUATE SUMMARIZECOLUMNS(cust[name], "t", [Total])');
+  assert.match(sql, /"nem"\."dbo"\."sales"/);
+  // readModel: a folder's texts, a Fabric view's whose metrics are all left out still opens.
+  const texts = Object.fromEntries(Object.entries(files).map(([p, d]) => [p, stringify(d)]));
+  assert.deepEqual(readModel('Semantic Views/nem', texts, { parseYaml: parse, as: 'fabric', catalog: 'nem', columnsOf: s => columns[s.dataset] ?? [] }).bim, bim);
+  const noDax = { 'm.yaml': { version: '0.2.0.dev0', name: 'v', datasets: [{ name: 'sales', source: 'dbo.sales' }], metrics: [{ name: 'S', expression: { sql: 'SUM(amount)' } }] } };
+  assert.equal(readModel('v', Object.fromEntries(Object.entries(noDax).map(([p, d]) => [p, stringify(d)])), { parseYaml: parse, as: 'fabric', columnsOf: () => columns.sales }).skipped.map(x => x.name).join(), 'S,tags');
+  // What leaves nothing to open: another version, a dataset with no columns, no columnsOf, a bad as.
+  const input = (f, re) => assert.throws(f, e => e.code === 'INPUT' && re.test(e.message), re);
+  input(() => ossieToTmsl({ ...files, 'x.yaml': { version: '0.1', name: 'nem' } }, { as: 'fabric', columnsOf }), /x\.yaml is version 0\.1: a Fabric semantic view is 0\.2\.0\.dev0 or 0\.3\.0\.dev0/);
+  input(() => ossieToTmsl(files, { as: 'fabric', columnsOf: s => (s.dataset === 'cust' ? [] : columns.sales) }), /the dataset cust: its source dbo\.customers/);
+  input(() => ossieToTmsl(files, { as: 'fabric' }), /as 'fabric' reads each dataset's columns by columnsOf/);
+  input(() => ossieToTmsl(files, { as: 'Fabric', columnsOf }), /as is 'fabric'/);
+  // Not given: the strict reader, as before.
+  input(() => ossieToTmsl(files), /dataset CUST is in datasets\.yaml|metric total is in/);
 });
 
 // A model's format from its text (#23), no parse: what a host sniffs before reading a file.

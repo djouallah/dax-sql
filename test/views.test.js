@@ -175,3 +175,58 @@ test("two views in one statement: one's SQL is not read again for the other's na
   const direct = await h.run('EVALUATE SUMMARIZECOLUMNS(Product[Color], "o", [Orders], "n", COUNTROWS(ALL(Category)))');
   assert.deepEqual(sorted(rows.map(r => [r.Color, r.o, r.n])), sorted(direct.map(r => [r.Color, r.o, r.n])));
 });
+
+// The DuckDB extension's needs of the views (#16-#19), and names with the schema main written.
+test('a host\'s own SHOW SEMANTIC VIEWS columns, given at define and annotated after (#16)', async () => {
+  const v = createViews({ viewColumns: [['data_as_of', 'VARCHAR'], ['pinned', 'BIGINT']] });
+  v.define('contoso', tmslToModel(bim), { path: 'c.bim', columns: { data_as_of: 'current data' } });
+  v.annotate('contoso', { pinned: 15 });
+  const [{ sql }] = v.rewrite('SHOW SEMANTIC VIEWS');
+  assert.deepEqual(await h.sql(sql), [{ database_name: 'memory', schema_name: 'main', view_name: 'contoso', path: 'c.bim', tables_from: 'search path', data_as_of: 'current data', pinned: 15 }]);
+  const [nested] = v.rewrite('SELECT data_as_of, pinned FROM (SHOW SEMANTIC VIEWS)');
+  assert.deepEqual(await h.sql(nested.sql), [{ data_as_of: 'current data', pinned: 15 }]);
+  v.annotate('contoso', { data_as_of: null });
+  assert.deepEqual((await h.sql(v.rewrite('SELECT data_as_of FROM (SHOW SEMANTIC VIEWS)')[0].sql))[0], { data_as_of: null });
+  assert.throws(() => v.annotate('contoso', { other: 1 }), e => e.code === 'INPUT');
+  assert.throws(() => v.define('x', tmslToModel(bim), { columns: { data_as_of: {} } }), e => e.code === 'INPUT');
+});
+
+test('DESCRIBE | DESC SEMANTIC VIEW v, as DESCRIBE v, and an error for none (#17)', async () => {
+  const want = await run('DESCRIBE contoso');
+  for (const s of ['DESCRIBE SEMANTIC VIEW contoso', 'DESC SEMANTIC VIEW memory.main.contoso']) assert.deepEqual(await run(s), want, s);
+  assert.deepEqual(await run('SELECT * FROM (DESC SEMANTIC VIEW main.contoso)'), want);
+  assert.throws(() => views.rewrite('DESCRIBE SEMANTIC VIEW nothing_here'), e => e.code === 'CATALOG' && /semantic view nothing_here does not exist/.test(e.message));
+});
+
+test('a view kept with its error when its model does not read (restore, #18)', () => {
+  const v = createViews();
+  assert.equal(v.define('nem', null, { path: 'nem.yaml', mode: 'restore', error: 'it has no datasets' }), 'created');
+  assert.equal(v.define('bad', 'not a model', { path: 'bad.bim', mode: 'restore' }), 'created', 'a model that does not read');
+  assert.match(v.rewrite('SHOW SEMANTIC VIEWS')[0].sql, /'nem', 'nem\.yaml'/);
+  for (const s of ['SELECT AGG(Orders) FROM nem', 'SHOW SEMANTIC METRICS IN nem', 'SHOW SEMANTIC DIMENSIONS IN nem', 'DESCRIBE nem', 'DESCRIBE SEMANTIC VIEW nem']) {
+    assert.throws(() => v.rewrite(s), e => e.code === 'INPUT' && /^semantic view nem: it has no datasets$/.test(e.message), s);
+  }
+  assert.throws(() => v.rewrite('SELECT * FROM bad'), e => e.code === 'INPUT' && /^semantic view bad: /.test(e.message));
+  // Replaced, or dropped, as any view.
+  assert.equal(v.define('nem', tmslToModel(bim), { mode: 'replace' }), 'created');
+  assert.ok(v.rewrite('SHOW SEMANTIC METRICS IN nem')[0].sql);
+  assert.equal(v.drop('bad'), true);
+  assert.throws(() => v.define('x', null, { error: 'why' }), e => e.code === 'INPUT', 'error is for restore');
+});
+
+test('REFRESH SEMANTIC VIEW v: an entry for the host, the name in full (#19)', () => {
+  const v = createViews();
+  v.define('contoso', tmslToModel(bim), { schema: 'sales' });
+  assert.deepEqual(v.rewrite('REFRESH SEMANTIC VIEW memory.sales.contoso'), [{ refresh: { name: 'sales.contoso' } }]);
+  assert.deepEqual(v.rewrite('REFRESH SEMANTIC VIEW contoso'), [{ refresh: { name: 'sales.contoso' } }]);
+  assert.throws(() => v.rewrite('REFRESH SEMANTIC VIEW nope'), e => e.code === 'CATALOG' && /semantic view nope does not exist/.test(e.message));
+});
+
+test('a view of the schema main is reached with main written too: main.v, db.main.v', async () => {
+  const want = await run('SHOW SEMANTIC METRICS IN contoso');
+  for (const n of ['main.contoso', 'memory.main.contoso', 'memory.contoso']) assert.deepEqual(await run(`SHOW SEMANTIC METRICS IN ${n}`), want, n);
+  const full = createViews({ fullNames: true });
+  full.define('contoso', tmslToModel(bim));
+  assert.ok(full.rewrite('SHOW SEMANTIC METRICS IN memory.main.contoso')[0].sql);
+  assert.ok(full.rewrite('SHOW SEMANTIC METRICS IN memory.contoso')[0].sql);
+});

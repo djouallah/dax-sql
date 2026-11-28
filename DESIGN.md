@@ -723,7 +723,8 @@ the statements that make, drop and list them. It is engine-neutral: where a view
 how its file is read are the host's (a DuckDB extension keeps them in a table, an editor in its
 settings), so every host speaks the same statements.
 
-A view is named in full or in part: `sales` reaches `db.schema.sales` while it's the only one of that name.
+A view is named in full or in part: `sales` reaches `db.schema.sales` while it's the only one of that name. A view
+of the schema `main` is reached with `main` written too (`main.sales`, `memory.main.sales`).
 `createViews({ fullNames: true })` is for a host whose names are a contract: a statement reaches a view only
 by `db.schema.name`, and a shorter name goes to the engine as written.
 
@@ -734,23 +735,36 @@ SHOW SEMANTIC VIEWS;
 SHOW SEMANTIC DIMENSIONS IN sales [FOR METRIC m];   -- FOR METRIC: the columns that filter m
 SHOW SEMANTIC METRICS IN sales;
 DESCRIBE sales;
+DESCRIBE | DESC SEMANTIC VIEW sales;                -- the same, an error when there is no such view
+REFRESH SEMANTIC VIEW sales;                       -- for the host: it reads the data again
 SELECT * FROM (SHOW SEMANTIC METRICS IN sales) WHERE ...;   -- each one reads as a subquery
 ```
 
-- `define(name, model, { path, db, schema, mode, tablesFrom, ...options })`: a view of a model
-  (the readers in `formats/` make one), compiled with `createCompiler(model, options)`. `mode` is
-  `create` (an error if the name is taken), `replace` or `if_not_exists`.
-- `createViews({ fullNames, dialect })`: `dialect` as `createCompiler` takes it, for the views'
-  queries and the statements that list them.
+- `define(name, model, { path, db, schema, mode, tablesFrom, columns, error, ...options })`: a view
+  of a model (the readers in `formats/` make one), compiled with `createCompiler(model, options)`.
+  `mode` is `create` (an error if the name is taken), `replace`, `if_not_exists`, or `restore`: a
+  view a host stored, defined again when it is opened. Restored, a view whose model does not read
+  (or whose `error` says why it could not be read) is kept with that error: listed by `SHOW SEMANTIC
+  VIEWS`, and every statement that reads it (a query, `SHOW … IN`, `DESCRIBE`) fails with `INPUT`
+  `semantic view <name>: <error>`; `drop` and `replace` work on it as on any. `columns`: its values
+  of the host's own columns.
+- `createViews({ fullNames, dialect, viewColumns })`: `dialect` as `createCompiler` takes it, for
+  the views' queries and the statements that list them; `viewColumns`, `[[name, SQL type]]`, a
+  host's own columns of `SHOW SEMANTIC VIEWS` after the five (the DuckDB extension's
+  `data_as_of`), nested too, NULL where a view has no value.
+- `annotate(name, values)`: a view's values of the host's columns, changed after `define` (those
+  given replace theirs; the compiler is not built again).
 - `drop(name, { ifExists })`, `get(name)`, `list()`.
 - `rewrite(sql)`: `null` when nothing in the text is a view's; otherwise one entry per statement:
-  `{ create: { db, schema, name, path, mode } }` or `{ drop: { name, ifExists } }`, which the host
-  carries out (it reads the file and calls `define`, or forgets the view and calls `drop`), or
+  `{ create: { db, schema, name, path, mode } }`, `{ drop: { name, ifExists } }` or `{ refresh:
+  { name } }` (the name in full), which the host carries out (it reads the file and calls `define`,
+  forgets the view and calls `drop`, or reads the data again and defines the view anew), or
   `{ sql }` to run. In `sql`, each model query is compiled in place (`compileStatement`) and each
   `SHOW SEMANTIC …` or `DESCRIBE <view>` is its rows, as a `SELECT` over `VALUES`.
 - The `SHOW SEMANTIC DIMENSIONS` and `METRICS` columns are `database_name, schema_name,
   view_name, table_name, name, data_type, expression, format_string, hidden, comment`;
-  `SHOW SEMANTIC VIEWS` gives `database_name, schema_name, view_name, path, tables_from`;
+  `SHOW SEMANTIC VIEWS` gives `database_name, schema_name, view_name, path, tables_from`, then the
+  host's `viewColumns`;
   `DESCRIBE` gives DuckDB's `column_name, column_type, null, key, default, extra`, with `extra`
   `column` or `measure`.
 - Errors are `DaxError`: `SYNTAX` for a statement that does not read, `CATALOG` for a view that

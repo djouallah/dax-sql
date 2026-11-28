@@ -30,7 +30,7 @@
 // missing or already there.
 import { DaxError } from './errors.js';
 import { nameParts, spliceStatement } from './sql.js';
-import { checkOptions, VIEWS, DEFINE, DROP } from './options.js';
+import { checkOptions, input, VIEWS, DEFINE, DROP } from './options.js';
 
 const lc = s => String(s).toLowerCase();
 const str = s => (s == null ? 'NULL' : `'${String(s).replace(/'/g, "''")}'`);
@@ -174,7 +174,9 @@ function rows(columns, list, tsql = false) {
     return `SELECT * FROM (VALUES (${nulls})) t(${names}) WHERE ${tsql ? '1 = 0' : 'false'}`;
   }
   const bool = x => (tsql ? `CAST(${x ? 1 : 0} AS BIT)` : x ? 'true' : 'false');
-  const cell = (x, t) => (x == null ? blank(t) : t === 'BOOLEAN' ? bool(x) : tsql ? `N${str(x)}` : str(x));
+  // (A host's column of another type, viewColumns': its value cast from text.)
+  const text = x => (tsql ? `N${str(x)}` : str(x));
+  const cell = (x, t) => (x == null ? blank(t) : t === 'BOOLEAN' ? bool(x) : t === 'VARCHAR' ? text(x) : `CAST(${text(String(x))} AS ${type(t)})`);
   const values = list.map(r => `(${r.map((x, i) => cell(x, columns[i][1])).join(', ')})`).join(',\n  ');
   return `SELECT * FROM (VALUES\n  ${values}) t(${names})`;
 }
@@ -234,9 +236,23 @@ const part = s => (/^[A-Za-z_][A-Za-z0-9_]*$/.test(s) ? s : ident(s));
 // is then not a view's, and goes to the engine as written. Its own calls (get, drop) are unchanged.
 // `dialect`: the SQL the views' queries and the inspecting statements are written in, as
 // createCompiler takes it ('duckdb' by default).
+// `viewColumns`: a host's own columns of SHOW SEMANTIC VIEWS, after the five, [[name, SQL type]]
+// (the DuckDB extension's data_as_of): a view's values given to define (`columns`) or annotate
+// (they change after it is defined), NULL where none is.
 export function makeViews(createCompiler, options = {}) {
-  const { fullNames = false, dialect = 'duckdb' } = checkOptions('createViews', options, VIEWS);
+  const { fullNames = false, dialect = 'duckdb', viewColumns = [] } = checkOptions('createViews', options, VIEWS);
   const tsql = (typeof dialect === 'string' ? dialect : dialect?.name) === 'tsql';
+  const own = new Set(viewColumns.map(([n]) => lc(n)));
+  const showColumns = [...VIEW_COLUMNS, ...viewColumns.map(([n, t]) => [n, String(t).toUpperCase()])];
+  // A view's values of the host's columns, checked: only those columns, each a text, number or
+  // boolean (null: none).
+  const columnValues = (what, values) => {
+    for (const [k, x] of Object.entries(values ?? {})) {
+      if (!own.has(lc(k))) throw input(`${what}: no column ${k} of SHOW SEMANTIC VIEWS (createViews' viewColumns: ${viewColumns.map(([n]) => n).join(', ') || 'none'})`);
+      if (x != null && !['string', 'number', 'boolean'].includes(typeof x)) throw input(`${what}: column ${k} is a text, a number or a boolean`);
+    }
+    return Object.fromEntries(Object.entries(values ?? {}).map(([k, x]) => [lc(k), x]));
+  };
   // The views, by their full name, lower-cased: `name`, or `schema.name` for a view defined in
   // a schema of its own (one other than 'main') — two models of one name are two views, as
   // long as their schemas differ. Each { db, schema, name, parts, sqlName, path, tablesFrom,
@@ -245,16 +261,21 @@ export function makeViews(createCompiler, options = {}) {
   const partsOf = (name, schema) => (schema && lc(schema) !== 'main' ? [String(schema), String(name)] : [String(name)]);
   const keyOf = parts => parts.map(lc).join('\u0000');
 
+  // A view's names in full: db.name for one of the schema main as db.main.name too, so
+  // `main.v` and `memory.main.v` reach it as `v` and `memory.v` do.
+  const fulls = v => {
+    const a = [lc(v.db ?? ''), ...v.parts.map(lc)], b = [lc(v.db ?? ''), lc(v.schema ?? 'main'), lc(v.name)];
+    return a.length === b.length ? [a] : [a, b];
+  };
+  const endsWith = (full, ref) => ref.length <= full.length && ref.every((p, i) => p === full[full.length - ref.length + i]);
+
   // The view a name means, written whole (`ws.model`) or in part (`model`): null when none,
   // and an error when the part fits more than one, naming them.
   function resolve(name) {
     const ref = nameParts(name).map(lc);
     const exact = views.get(ref.join('\u0000'));
     if (exact) return exact;
-    const fits = [...views.values()].filter(v => {
-      const full = [lc(v.db ?? ''), ...v.parts.map(lc)];
-      return ref.length <= full.length && ref.every((p, i) => p === full[full.length - ref.length + i]);
-    });
+    const fits = [...views.values()].filter(v => fulls(v).some(full => endsWith(full, ref)));
     if (fits.length > 1) {
       throw fail(`semantic view ${ref.join('.')} is ambiguous: name it in full — ${fits.map(v => v.sqlName).join(', ')}`, 'CATALOG');
     }
@@ -265,10 +286,7 @@ export function makeViews(createCompiler, options = {}) {
   function named(name) {
     if (!fullNames) return resolve(name);
     const ref = nameParts(name).map(lc);
-    return [...views.values()].find(v => {
-      const full = [lc(v.db ?? ''), ...v.parts.map(lc)];
-      return ref.length === full.length && ref.every((p, i) => p === full[i]);
-    }) ?? null;
+    return [...views.values()].find(v => fulls(v).some(full => ref.length === full.length && ref.every((p, i) => p === full[i]))) ?? null;
   }
 
   function view(name) {
@@ -276,17 +294,41 @@ export function makeViews(createCompiler, options = {}) {
     if (!v) throw fail(`semantic view ${nameParts(name).join('.')} does not exist`, 'CATALOG');
     return v;
   }
+  // A view a statement reads: its error, when its model did not read (a restored view).
+  const usable = v => {
+    if (v.error != null) throw input(`semantic view ${v.name}: ${v.error}`);
+    return v;
+  };
 
+  // mode 'restore' (a view stored by the host, defined again when it is opened): when its model
+  // does not read (or `error` says why it could not be read), the view is kept with that error,
+  // listed, and every statement that reads it fails with it; it replaces one of its name.
   function define(name, model, given = {}) {
-    const { path = null, db = 'memory', schema = 'main', mode = 'create', tablesFrom = 'search path', ...options } = checkOptions('define', given, DEFINE);
+    const { path = null, db = 'memory', schema = 'main', mode = 'create', tablesFrom = 'search path', columns = {}, error = null, ...options } = checkOptions('define', given, DEFINE);
+    const values = columnValues('define', columns);
     const parts = partsOf(name, schema);
     const key = keyOf(parts);
     const old = views.get(key);
     if (old && mode === 'create') throw fail(`semantic view ${old.sqlName} already exists`, 'CATALOG');
     if (old && mode === 'if_not_exists') return 'exists';
-    const compiler = createCompiler(model, { dialect, ...options });
-    views.set(key, { db, schema, name, parts, sqlName: parts.map(part).join('.'), path, tablesFrom, compiler });
+    if (error != null && mode !== 'restore') throw input(`define: error is for mode 'restore' (a view kept with the reason its model does not read)`);
+    let compiler = null, why = error;
+    if (why == null) {
+      try { compiler = createCompiler(model, { dialect, ...options }); } catch (e) {
+        if (mode !== 'restore' || (e instanceof DaxError && e.code === 'INPUT' && /^createCompiler: /.test(e.message))) throw e;
+        why = e.message;
+      }
+    }
+    views.set(key, { db, schema, name, parts, sqlName: parts.map(part).join('.'), path, tablesFrom, compiler, columns: values, ...(why != null ? { error: String(why) } : {}) });
     return 'created';
+  }
+
+  // A view's values of the host's columns (viewColumns), changed after it is defined: those given
+  // replace theirs (null: none), the others are kept.
+  function annotate(name, values) {
+    const v = resolve(name);
+    if (!v) throw fail(`semantic view ${nameParts(name).join('.')} does not exist`, 'CATALOG');
+    v.columns = { ...v.columns, ...columnValues('annotate', values) };
   }
 
   function drop(name, given = {}) {
@@ -332,12 +374,13 @@ export function makeViews(createCompiler, options = {}) {
       if (!r.word('SEMANTIC')) return null;
       if (r.word('VIEWS')) {
         r.end();
-        return { sql: rows(VIEW_COLUMNS, [...views.values()].map(v => [v.db, v.schema, v.name, v.path, v.tablesFrom]), tsql) };
+        const list = [...views.values()].map(v => [v.db, v.schema, v.name, v.path, v.tablesFrom, ...viewColumns.map(([n]) => v.columns?.[lc(n)] ?? null)]);
+        return { sql: rows(showColumns, list, tsql) };
       }
       const dims = r.word('DIMENSIONS');
       if (!dims) r.expect('METRICS');
       r.expect('IN');
-      const v = view(r.qualified());
+      const v = usable(view(r.qualified()));
       if (!dims) {
         r.end();
         return { sql: rows(ITEM_COLUMNS, metrics(v), tsql) };
@@ -351,8 +394,21 @@ export function makeViews(createCompiler, options = {}) {
       r.end();
       return { sql: rows(ITEM_COLUMNS, dimensions(v), tsql) };
     }
+    // REFRESH SEMANTIC VIEW v: for the host, which reads the data again and defines the view anew.
+    if (r.word('REFRESH')) {
+      if (!r.words('SEMANTIC', 'VIEW')) return null;
+      const parts = r.qualified();
+      r.end();
+      return { refresh: { name: view(parts).sqlName } };
+    }
     if (r.word('DESCRIBE') || r.word('DESC')) {
       if (r.done()) return null;
+      // DESCRIBE SEMANTIC VIEW v: a view's, or an error when there is none.
+      if (r.words('SEMANTIC', 'VIEW')) {
+        const parts = r.qualified();
+        r.end();
+        return { sql: describe(usable(view(parts)), tsql) };
+      }
       let parts;
       try {
         parts = r.qualified();
@@ -362,7 +418,7 @@ export function makeViews(createCompiler, options = {}) {
       }
       const v = named(parts);
       if (!v) return null;
-      return { sql: describe(v, tsql) };
+      return { sql: describe(usable(v), tsql) };
     }
     return null;
   }
@@ -381,7 +437,7 @@ export function makeViews(createCompiler, options = {}) {
       while (isDot(toks[e + 1]) && isName(toks[e + 2])) { parts.push(toks[e + 2].v); e += 2; }
       if (parts.length > 3) continue;
       const v = named(parts);
-      if (v) found.set(parts.map(lc).join('\u0000'), [v, parts]);
+      if (v) found.set(parts.map(lc).join('\u0000'), [usable(v), parts]);
     }
     // Each view's queries found in the text as written, and put in place in one pass: a view's
     // SQL is never read again for another's name (a view named like a table it reads).
@@ -457,6 +513,7 @@ export function makeViews(createCompiler, options = {}) {
 
   return {
     define,
+    annotate,
     drop,
     // A view by its name, in full or in part (an error when the part fits more than one).
     get: name => resolve(name),

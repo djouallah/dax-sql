@@ -661,42 +661,6 @@ test("fabricRefusals: what Fabric's Publish refuses in a view, by file and path;
   assert.ok(Object.isFrozen(OSSIE.publish) && Object.isFrozen(OSSIE.publish.dialects));
 });
 
-// apache/ossie#817: an expression's dialects under nonportable_dialects, the key renamed.
-test('nonportable_dialects (apache/ossie#817) reads as dialects does, and comes back under the key it was read in', () => {
-  const doc = key => ({ version: '0.3.0.dev0', name: 'v', datasets: [{ name: 'sales', source: 'dbo.sales', primary_key: ['id'], fields: [
-    { name: 'id', datatype: 'Integer', expression: { sql: 'id' } },
-    { name: 'amount', datatype: 'Decimal', expression: { sql: 'amount' } },
-    { name: 'rank', datatype: 'Integer', expression: { [key]: [{ dialect: 'DAX', expression: 'RANKX(ALL(sales), sales[amount])' }] } },
-  ], metrics: [
-    { name: 'Total', expression: { [key]: [{ dialect: 'DAX', expression: 'CALCULATE(SUM(sales[amount]), ALL(sales))' }] } },
-    { name: 'Snow', expression: { sql: 'SUM(amount)', [key]: [{ dialect: 'SNOWFLAKE', expression: 'SUM(amount)' }] } },
-  ] }] });
-  for (const key of ['nonportable_dialects', 'dialects']) {
-    const bim = ossieToTmsl(doc(key));
-    const t = bim.model.tables[0];
-    assert.deepEqual(t.measures.map(m => [m.name, m.expression.replace(/'/g, '')]), [['Total', 'CALCULATE(SUM(sales[amount]), ALL(sales))'], ['Snow', 'SUM(sales[amount])']], key);
-    assert.equal(t.columns.find(c => c.name === 'rank').expression, 'RANKX(ALL(sales), sales[amount])', key);
-    // Back: each expression under the key it was in, word for word.
-    const back = tmslToOssie(bim, 'v').datasets[0];
-    assert.deepEqual(back.fields.find(f => f.name === 'rank').expression, doc(key).datasets[0].fields[2].expression, key);
-    assert.deepEqual(back.metrics.map(m => m.expression), doc(key).datasets[0].metrics.map(m => m.expression), key);
-    createCompiler(tmslToModel(bim)).compile('EVALUATE ROW("t", [Total], "s", [Snow])');
-  }
-  // A dialect's name in any case (apache/ossie#712).
-  const lower = doc('nonportable_dialects');
-  lower.datasets[0].metrics[0].expression.nonportable_dialects[0].dialect = 'dax';
-  assert.equal(ossieToTmsl(lower).model.tables[0].measures[0].expression, 'CALCULATE(SUM(sales[amount]), ALL(sales))');
-  // Written new: main's key, until the rename is merged.
-  const fresh = tmslToOssie(contoso);
-  const keys = new Set(JSON.stringify(fresh).match(/"(nonportable_)?dialects"/g));
-  assert.deepEqual([...keys], ['"dialects"']);
-  // A Fabric view's metric under the new key opens (its DAX read); Publish is said to refuse the key.
-  const view = { 'v.yaml': { version: '0.2.0.dev0', name: 'v', datasets: [{ name: 'sales', source: 'dbo.sales' }],
-    metrics: [{ name: 'T', expression: { nonportable_dialects: [{ dialect: 'DAX', expression: '1' }] } }] } };
-  assert.equal(ossieToTmsl(view, { as: 'fabric', columnsOf: () => [{ name: 'a', type: 'INT' }] }).model.tables[1].measures[0].expression, '1');
-  assert.deepEqual(fabricRefusals(view).map(r => r.path.join('/')), ['metrics/0/expression/nonportable_dialects']);
-});
-
 // A quoted table name (#28): TMSL's entityName is the name itself, and so is directLakeTables'.
 test('a source\'s quoted table name is its name in TMSL, quoted again as Ossie and as SQL', () => {
   const doc = { version: '0.3.0.dev0', name: 'v', datasets: [

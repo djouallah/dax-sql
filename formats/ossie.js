@@ -30,15 +30,6 @@ import { DaxError } from '../src/errors.js';
 import { measureSql, columnSql, parseDax, metricDax, fieldDax, sourceColumnOf, dialectSourceOf, sqlName } from './ossie-sql.js';
 
 const VERSION = '0.3.0.dev0';
-// An expression's entries in dialects other than the spec's SQL: under `dialects` (the spec's
-// main), or `nonportable_dialects` (apache/ossie#817, which renames the key, no alias). Both are
-// read; what was read under one is written back under it; a new expression is written under
-// DIALECTS, main's, until the rename is merged (then this one name changes: ossie.yml, which
-// validates what is written against Ossie's main, fails the morning after).
-const DIALECTS = 'dialects';
-const NEW_DIALECTS = 'nonportable_dialects';
-const entriesOf = e => e?.[NEW_DIALECTS] ?? e?.dialects;
-const keyOf = e => (e && typeof e === 'object' ? (NEW_DIALECTS in e ? NEW_DIALECTS : 'dialects' in e ? 'dialects' : null) : null);
 // The versions a document may say: the spec's (what tmslToOssie writes) and the draft before it
 // (files written then still read). Another is refused: its shape is not this one's (OSI 0.1.1,
 // Ossie's release candidate of May 2026 under its earlier name, is a list of semantic_model).
@@ -112,15 +103,15 @@ function field(c, table) {
   const type = datatype(c);
   if (c.dataType != null && TO_TMSL[type] !== c.dataType) left.dataType = c.dataType;
   let expression;
-  const was = fromOssie(c);
   if (c.type === 'calculated') {
     const code = text(c.expression);
     const sql = columnSql(parseDax(code), table);
-    expression = sql != null ? { sql } : { [keyOf(was?.expression) ?? DIALECTS]: [{ dialect: 'DAX', expression: code }] };
+    expression = sql != null ? { sql } : { dialects: [{ dialect: 'DAX', expression: code }] };
   } else {
     if (!isData(c)) left.type = c.type;
     expression = { sql: sqlName(c.sourceColumn ?? c.name) };
   }
+  const was = fromOssie(c);
   if (was?.expression && JSON.stringify(was.as) === JSON.stringify(readAs(c))) expression = was.expression;
   return {
     name: c.name,
@@ -141,7 +132,7 @@ function metric(ms, home, sql, modelScoped = false) {
   if (modelScoped || (sql && lc(sql.table) !== lc(home))) left.table = home;
   return {
     name: ms.name,
-    expression: sql ? sql.expression ?? { sql: sql.sql } : { [fromOssie(ms)?.key ?? DIALECTS]: [{ dialect: 'DAX', expression: text(ms.expression) ?? '' }] },
+    expression: sql ? sql.expression ?? { sql: sql.sql } : { dialects: [{ dialect: 'DAX', expression: text(ms.expression) ?? '' }] },
     ...optional('description', text(ms.description)),
     ...(sql && TO_TMSL[sql.type] ? { datatype: sql.type } : {}),
     ...ext(left),
@@ -288,11 +279,11 @@ export function tmslToOssie(bim, name = 'model', { source = () => null } = {}) {
   };
 }
 
-const dax = o => entriesOf(o.expression)?.find(d => lc(d?.dialect) === 'dax')?.expression;
+const dax = o => o.expression?.dialects?.find(d => d.dialect === 'DAX')?.expression;
 // A field's or a metric's SQL: the portable `sql`, or a SQL dialect (files of earlier drafts
 // wrote ANSI_SQL).
 const sqlOf = o => o.expression?.sql
-  ?? entriesOf(o.expression)?.find(d => /^(OSSIE_SQL_2026|ANSI_SQL)$/i.test(d?.dialect ?? ''))?.expression;
+  ?? o.expression?.dialects?.find(d => d.dialect === 'OSSIE_SQL_2026' || d.dialect === 'ANSI_SQL')?.expression;
 // Back: what the core says, and the extension over it; a property it holds as null is one
 // the TMSL did not have.
 const tmsl = (core, extra) => Object.fromEntries(Object.entries({ ...core, ...extra }).filter(([, v]) => v !== null && v !== undefined));
@@ -371,8 +362,8 @@ export function ossieToTmsl(doc, { onSkip = () => {}, catalog = null, columnsOf 
       }
       // An expression tmslToOssie writes the same needs nothing kept: a source column's `sql`,
       // or DAX alone.
-      const same = def.sourceColumn != null && !e.type ? f.expression?.sql === sqlName(def.sourceColumn) && !entriesOf(f.expression)
-        : code != null && Object.keys(f.expression).length === 1 && keyOf(f.expression) === DIALECTS && entriesOf(f.expression).length === 1;
+      const same = def.sourceColumn != null && !e.type ? f.expression?.sql === sqlName(def.sourceColumn) && !f.expression.dialects
+        : code != null && Object.keys(f.expression).length === 1 && f.expression.dialects.length === 1;
       const col = tmsl({ name: f.name, description: f.description, dataType: TO_TMSL[f.datatype], ...def }, {});
       return [tmsl({
         ...col,
@@ -401,9 +392,7 @@ export function ossieToTmsl(doc, { onSkip = () => {}, catalog = null, columnsOf 
     // Its SQL, kept to write back: alone, it was read as DAX; beside a DAX, the DAX is read.
     const sql = sqlOf(m);
     const was = { dataset, home: home.name, ...(sql != null ? { expression: m.expression, dax: code, ...optional('datatype', m.datatype) } : {}),
-      ...(sql != null && dataset == null && named != null ? { placed: true } : {}),
-      // DAX alone, under the key of apache/ossie#817: written back under it.
-      ...(sql == null && keyOf(m.expression) === NEW_DIALECTS ? { key: NEW_DIALECTS } : {}) };
+      ...(sql != null && dataset == null && named != null ? { placed: true } : {}) };
     extra.annotations = [...(extra.annotations ?? []).filter(a => a.name !== NOTE), { name: NOTE, value: JSON.stringify(was) }];
     (home.measures ??= []).push(tmsl({ name: m.name, description: m.description, expression: code }, extra));
   };
@@ -556,7 +545,7 @@ function fabricMerge(input, onSkip) {
   });
   const metrics = once('metric', all.metrics).flatMap(it => {
     if (kept.has(lc(it.x.name))) return skip('metric', it, 'a dataset has its name', ['name']), [];
-    const d = (Array.isArray(entriesOf(it.x.expression)) ? entriesOf(it.x.expression) : [])
+    const d = (Array.isArray(it.x.expression?.dialects) ? it.x.expression.dialects : [])
       .find(e => lc(e?.dialect) === 'dax' && String(text(e?.expression) ?? '').trim());
     if (!d) return skip('metric', it, 'it has no DAX dialect (Fabric leaves it out too)', ['expression']), [];
     return [{ m: it.x, dax: String(text(d.expression)) }];
@@ -590,8 +579,7 @@ export function fabricRefusals(input) {
       for (const [k, y] of Object.entries(v)) {
         const at = [...path, k];
         if (k === 'nonportable_extensions') { say(file, at, "nonportable_extensions is Ossie 0.3's: Fabric's Publish reads 0.2.0.dev0, whose key is custom_extensions"); continue; }
-        if (k === NEW_DIALECTS) say(file, at, `${NEW_DIALECTS} is Ossie 0.3's key: Fabric's Publish reads 0.2.0.dev0's, dialects`);
-        if ((k === 'dialects' || k === NEW_DIALECTS) && Array.isArray(y)) {
+        if (k === 'dialects' && Array.isArray(y)) {
           if (!y.length) say(file, at, "Fabric's Publish refuses an empty dialects list");
           y.forEach((e, i) => {
             const d = e?.dialect;

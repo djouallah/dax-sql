@@ -67,10 +67,7 @@ function index(doc) {
   }));
   return { datasets, metrics, steps };
 }
-// The expression's SQL: its own, or an entry's (under `nonportable_dialects`, apache/ossie#817, or
-// `dialects`).
-const sqlOf = m => m?.expression?.sql ?? (m?.expression?.nonportable_dialects ?? m?.expression?.dialects ?? [])
-  .find(d => /^(OSSIE_SQL_2026|ANSI_SQL)$/i.test(d?.dialect ?? ''))?.expression ?? null;
+const sqlOf = m => m?.expression?.sql ?? (m?.expression?.dialects ?? []).find(d => /^(OSSIE_SQL_2026|ANSI_SQL)$/i.test(d.dialect))?.expression ?? null;
 
 // Every path from dataset x to dataset y: steps with no dataset twice (the path to itself empty).
 function paths(model, x, y) {

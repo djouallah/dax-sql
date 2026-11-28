@@ -31,7 +31,7 @@ export async function harness(bim, setup, options = {}) {
   };
 }
 
-function plain(row) {
+export function plain(row) {
   const out = {};
   for (const [k, v] of Object.entries(row)) out[k] = value(v);
   return out;

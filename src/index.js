@@ -52,7 +52,7 @@ import { Dialect } from './dialects/base.js';
 import { newRow } from './ir.js';
 import { DaxError, semantic, unsupported } from './errors.js';
 import { Ctx } from './context.js';
-import { SqlTranslator, isSql, isSqlQuery, printDaxQuery, modelRelations, spliceStatement } from './sql.js';
+import { SqlTranslator, isSql, isSqlQuery, printDaxQuery, modelRelations, spliceStatement, numberMarkers } from './sql.js';
 import { Lowerer } from './lower.js';
 import { PlanSql } from './plan-sql.js';
 import { toSubstrait } from './substrait.js';
@@ -306,8 +306,11 @@ export function createCompiler(input, options = {}) {
   // Any SQL with SELECTs over the model in it: each one's SQL in its place, the rest as written.
   // The model queries of a statement, each compiled, where they are in it: { whole, relations:
   // [{ start, end, arm, text, dax, sql, ctes, body, ordered }], aliases }. Aliases are numbered
-  // from `aliases` on, so that queries of several models can share one WITH.
+  // from `aliases` on, so that queries of several models can share one WITH. A ? is numbered
+  // across the statement ($n, the n-th), in the model's queries and out of them: `text` is the
+  // statement so numbered, which the positions are of.
   function statementRelations(text, name = 'model', aliases = 0) {
+    text = numberMarkers(text);
     query(text, false);
     if (/^\s*(DEFINE|EVALUATE)\b/i.test(text)) throw new DaxError('SQL: a DAX query is not SQL', { code: 'UNSUPPORTED' });
     const relation = t => {
@@ -316,15 +319,15 @@ export function createCompiler(input, options = {}) {
       return { text: t, dax: printDaxQuery(query), sql: out.sql, ctes: out.ctes, body: out.body, ordered: out.ordered && !out.limited };
     };
     const found = modelRelations(text, name);
-    if (found.whole) return { whole: relation(text), relations: [], aliases };
+    if (found.whole) return { whole: relation(text), relations: [], aliases, text };
     const relations = found.relations.map(r => ({ ...r, ...relation(r.text) }));
-    return { whole: null, relations, aliases };
+    return { whole: null, relations, aliases, text };
   }
   // Any SQL with SELECTs over the model in it: each one's SQL in its place, the rest as written.
   function compileStatement(text, name = 'model') {
-    const { whole, relations } = statementRelations(text, name);
+    const { whole, relations, text: numbered } = statementRelations(text, name);
     const out = whole ? [whole] : relations;
-    return { sql: whole ? whole.sql : spliceStatement(text, relations, dialect), relations: out.map(({ text: t, dax, sql }) => ({ text: t, dax, sql })) };
+    return { sql: whole ? whole.sql : spliceStatement(numbered, relations, dialect), relations: out.map(({ text: t, dax, sql }) => ({ text: t, dax, sql })) };
   }
   // The query plan: what an engine has to do for the query, as relational algebra (lower.js),
   // with no rewrite; one per EVALUATE. -> [{ plan, columns, ordered }]

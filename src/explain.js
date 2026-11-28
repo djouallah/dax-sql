@@ -122,6 +122,7 @@ function scalar(x, subs, avail) {
   const S = y => scalar(y, subs, avail);
   switch (x.k) {
     case 'ref': return avail.has(x.col) ? colName(x.col) : `outer.${colName(x.col)}`;
+    case 'param': return `${x.v}:${x.t}`;
     case 'lit':
       if (x.v === null) return 'BLANK';
       if (x.t === 'datetime' || x.t === 'date') return `dt"${x.v}"`;

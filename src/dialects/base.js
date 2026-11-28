@@ -42,6 +42,9 @@ export class Dialect {
     return { int: 'BIGINT', double: 'DOUBLE PRECISION', decimal: 'DECIMAL(19,4)', string: 'VARCHAR', bool: 'BOOLEAN', datetime: 'TIMESTAMP' }[t];
   }
   cast(sql, t) { return `CAST(${sql} AS ${this.type(t)})`; }
+  // A parameter marker ($1, $name) of type t, which the engine binds when it runs the SQL. Only
+  // a dialect that says how its engine binds one writes it.
+  param(v) { throw new DaxError(`SQL: the parameter ${v}: ${this.name}'s SQL has no parameters here`, { code: 'UNSUPPORTED' }); }
   // A blank of type t where a column is one (a subtotal's key): NULL, which the engine types.
   nullOf() { return 'NULL'; }
 

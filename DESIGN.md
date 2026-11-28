@@ -707,7 +707,8 @@ const { sql, columns } = dax.compile(`
 - `compileStatement(text, name = 'model')`: any SQL of the engine in which a `SELECT` over the
   model is a relation in parentheses, `{ sql, relations: [{ text, dax, sql }] }` ([SQL](#sql)).
   `statementRelations(text, name, aliases)` is the same before they are put in place (semantic
-  views put several models' in one statement).
+  views put several models' in one statement), with `text`, the statement its positions are of
+  (its `?` numbered).
 - `fieldParameters()`: the model's field parameters, each with its fields in order.
 - `expandFieldParameter(table, labels)`: the fields a selection of a field parameter stands
   for (all of them without `labels`), each `{ label, ref, order, kind, name, tableName }`.
@@ -1205,6 +1206,18 @@ spec's reference strategy (Section 9), in DAX: the joined rows are a variable of
 `TREATAS` of its table's primary key, as the group's rows hold it. A table in a join needs a
 key: its dataset's `primary_key`. Apache Ossie's query compliance cases (`compliance/query`)
 are queries of the suite in this DAX (`queries/scott/ossie`), answered by Power BI.
+
+**Parameter markers** (`?`, `$1`, `$name`) stand where a value can be: the engine binds them when
+it runs the SQL, and dax-sql reads no value. Each is written back in the compiled SQL in the
+value's place, cast to its type: the type of what it is compared with (`x = ?`, `x IN (?, ?)`,
+`x BETWEEN ? AND ?`, `HAVING s > ?`), or `CAST(? AS type)`'s; anywhere else it is a `SEMANTIC`
+error asking for that CAST. A `?` is written `$n`, the n-th of the whole statement (the model's
+queries and the SQL around them), since a model's SQL may write a value twice; `?` and `$` in one
+statement are a `SYNTAX` error, as DuckDB has it. A value bound is compared as DAX compares (a
+NULL is a blank: `= ?` bound to NULL keeps the blank and empty values). In the plan a marker is a
+value of its own (`param`), in Substrait a `DynamicParameter` (in a lambda `param:<marker>/0:<type>`,
+which names it). DuckDB writes them; another dialect refuses one (`UNSUPPORTED`) until its
+binding is written.
 
 **In a statement of the engine's SQL** (`compileStatement`), a `SELECT` over the model is a
 relation: in parentheses, wherever the engine takes a subquery (a `WITH`'s query, `FROM`, an

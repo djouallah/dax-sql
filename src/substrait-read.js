@@ -236,6 +236,8 @@ export function readSubstrait(plan, model, options = {}) {
       const [name, argc, t] = [m[1], +m[2], m[3]];
       const args = (e.lambdaInvocation.arguments.fields ?? []).map(x => ex(x, cs));
       if (name === 'typed') return { ...args[0], t };
+      // A parameter marker (substrait.js's dynamic): the marker, of the type.
+      if (name.startsWith('param:') && l.lambda.body.dynamicParameter) return { k: 'param', v: name.slice(6), t, nn: false };
       if (name === 'true' || name === 'false') return { k: 'pop', op: name, a: [], t: 'bool', nn: true };
       // Arithmetic of mixed types: whether it can be NULL is its body's (substrait.js writes x.nn there).
       if (ARITH.has(name)) return { k: 'pop', op: name, a: args, t, nn: !!(l.lambda.body.scalarFunction && kindOf(l.lambda.body.scalarFunction.outputType).nn) };

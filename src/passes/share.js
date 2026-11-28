@@ -115,6 +115,7 @@ function text(x, at, key) {
   switch (x.k) {
     case 'ref': return at.has(x.col) ? `#${at.get(x.col)}` : `@${x.col.id}`;
     case 'lit': return `${x.t}:${JSON.stringify(x.v)}`;
+    case 'param': return `param:${x.t}:${x.v}`;
     case 'op': case 'fn': return `${x.k}${x.op ?? x.name}(${x.a.map(S).join(',')})`;
     case 'pop': return `${x.op}${x.name ?? ''}${x.to ?? ''}:${x.t}(${x.a.map(S).join(',')})`;
     case 'case': return `case(${x.w.map(([c, v]) => `${S(c)}:${S(v)}`).join(',')};${S(x.e)})`;

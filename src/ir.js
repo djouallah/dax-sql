@@ -7,6 +7,7 @@
 //
 // Scalars (all carry `t`, the type, and `nn`, true when the value can never be blank):
 //   lit   { v }                       a constant; v null is BLANK()
+//   param { v }                       a parameter marker ($1, $name), bound by the engine
 //   col   { row, ref }
 //   op    { op, a }                   DAX operators, with DAX's rules for blanks (passes/standard.js)
 //   fn    { name, a }                 a function the dialect writes (see dialects/)
@@ -62,6 +63,9 @@ export function unify(types) {
 export const lit = (v, t) => ({ k: 'lit', v, t: t ?? (v === null ? 'blank' : typeof v === 'boolean' ? 'bool'
   : typeof v === 'number' ? (Number.isInteger(v) ? 'int' : 'double') : 'string'), nn: v !== null });
 export const BLANK = lit(null, 'blank');
+// A parameter marker ($1, $name): a value of type t the engine binds when it runs the SQL, blank
+// or not; written as it is (a dialect's param), read by nothing here.
+export const param = (v, t) => ({ k: 'param', v, t, nn: false });
 const ARITHMETIC = new Set(['add', 'sub', 'mul', 'div', 'pow', 'neg']);
 export const TRUE = lit(true), FALSE = lit(false);
 
@@ -292,7 +296,7 @@ export function freeRows(x) {
   const add = y => { for (const id of freeRows(y)) out.add(id); };
   const bound = new Set();
   switch (x.k) {
-    case 'lit': break;
+    case 'lit': case 'param': break;
     case 'col': out.add(x.row.id); break;
     case 'op': case 'fn': x.a.forEach(add); break;
     case 'case': x.w.forEach(([c, v]) => { add(c); add(v); }); add(x.e); break;

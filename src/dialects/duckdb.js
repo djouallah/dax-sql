@@ -18,6 +18,9 @@ export class DuckDBDialect extends Dialect {
   materialized = 'MATERIALIZED ';
 
   type(t) { return t === 'double' ? 'DOUBLE' : super.type(t); }
+  // A parameter as DuckDB binds one ($1, $name), cast to its type: whatever is bound, the SQL
+  // reads it as the value it is compared with.
+  param(v, t) { return this.cast(v, t === 'date' ? 'datetime' : t); }
 
 
   // / divides as DOUBLE already.

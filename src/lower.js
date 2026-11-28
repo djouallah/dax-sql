@@ -864,7 +864,7 @@ export class Lowerer {
   // `blk` (the block whose expressions it is in).
   scalar(x, scope, blk) {
     switch (x.k) {
-      case 'lit': return x;
+      case 'lit': case 'param': return x;
       case 'col': {
         const res = scope.get(x.row.id);
         if (!res) throw new Error(`plan: no row ${x.row.id} in scope`);
@@ -1936,7 +1936,7 @@ function valuesChain(x) {
 // Whether an expression reads nothing but constants and the columns of `row`.
 function plainOf(x, row) {
   switch (x.k) {
-    case 'lit': return true;
+    case 'lit': case 'param': return true;
     case 'col': return x.row === row;
     case 'op': case 'fn': return x.a.every(y => plainOf(y, row));
     case 'case': return x.w.every(([c, v]) => plainOf(c, row) && plainOf(v, row)) && plainOf(x.e, row);

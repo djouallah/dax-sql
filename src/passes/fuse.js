@@ -119,6 +119,7 @@ export function text(x, ids) {
   switch (x.k) {
     case 'ref': return ids.has(x.col) ? `#${ids.get(x.col)}` : `@${x.col.id}`;
     case 'lit': return `${x.t}:${JSON.stringify(x.v)}`;
+    case 'param': return `param:${x.t}:${x.v}`;
     case 'op': return `${x.op}(${x.a.map(S).join(',')})`;
     case 'fn': return `${x.name}(${x.a.map(S).join(',')})`;
     case 'pop': return `${x.op}${x.name ?? ''}${x.to ?? ''}(${x.a.map(S).join(',')})`;

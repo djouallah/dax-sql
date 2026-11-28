@@ -20,6 +20,10 @@
 // [bracketed] ones, 'Table'[Column] as in DAX, or a column's name alone when one table has
 // it. AGG(m) and MEASURE(m) are measure m (AGG(Orders), AGG(Sales.Orders)); SUM, AVG,
 // MIN, MAX and COUNT (COUNT(DISTINCT c)) aggregate a column. FROM names the model.
+//
+// A parameter marker (?, $1, $name) is a value the engine binds when it runs the SQL: written
+// back in its place ($n for the n-th ?, so that it can be written more than once), of the type
+// of what it is compared with (x = ?, x IN (?, ?), x BETWEEN ? AND ?), or CAST(? AS type)'s.
 import { DaxError } from './errors.js';
 
 const lc = s => String(s).toLowerCase();
@@ -28,13 +32,15 @@ const sqlSemantic = msg => new DaxError(`SQL: ${msg}`, { code: 'SEMANTIC' });
 const sqlUnsupported = msg => new DaxError(`SQL: ${msg} is not supported`, { code: 'UNSUPPORTED' });
 
 // --- tokens ------------------------------------------------------------------------------
-//   num, str ('text'), id (a bare name), qid ("name", [name], `name`), op
+//   num, str ('text'), id (a bare name), qid ("name", [name], `name`), op, marker ($1, $name;
+//   a ? is $n, the n-th)
 
 const OPS = ['<>', '!=', '<=', '>=', '||', '=', '<', '>', '+', '-', '*', '/', '%', '(', ')', ',', '.', ';'];
 
 function lex(src) {
   const out = [];
-  let i = 0;
+  let i = 0, positional = 0;
+  const kinds = new Set();
   const n = src.length;
   const quoted = (close, kind, at) => {
     let v = '';
@@ -64,6 +70,17 @@ function lex(src) {
     if (c === '"') { out.push({ t: 'qid', v: quoted('"', 'quoted name', at), at, end: i }); continue; }
     if (c === '`') { out.push({ t: 'qid', v: quoted('`', 'quoted name', at), at, end: i }); continue; }
     if (c === '[') { out.push({ t: 'qid', v: quoted(']', '[name]', at), at, end: i }); continue; }
+    if (c === '?' || (c === '$' && /[\p{L}\p{N}_]/u.test(src[i + 1] ?? ''))) {
+      const m = c === '?' ? null : /^\$(?:\d+|[\p{L}_][\p{L}\p{N}_]*)/u.exec(src.slice(i));
+      if (c === '$' && !m) throw sqlSyntax('unexpected character "$"', i, src);
+      // ? and $ together: the engine numbers neither as the other.
+      const kind = c === '?' ? '?' : '$';
+      if (kinds.size && !kinds.has(kind)) throw sqlSyntax('parameter markers ? and $ together: write one kind', i, src);
+      kinds.add(kind);
+      out.push({ t: 'marker', v: m ? m[0] : `$${++positional}`, at, end: i + (m ? m[0].length : 1) });
+      i += m ? m[0].length : 1;
+      continue;
+    }
     if (/[0-9]/.test(c) || (c === '.' && /[0-9]/.test(src[i + 1] ?? ''))) {
       const m = /^(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?/.exec(src.slice(i));
       out.push({ t: 'num', v: m[0], at, end: i + m[0].length });
@@ -89,7 +106,7 @@ function lex(src) {
 //   { k:'name', parts }  { k:'call', fn, args, distinct, star }  { k:'bin', op, l, r }
 //   { k:'not', e }  { k:'neg', e }  { k:'in', e, list, not }  { k:'between', e, lo, hi, not }
 //   { k:'isnull', e, not }  { k:'like', e, pat, not }  { k:'case', base, whens, else }
-//   { k:'cast', e, type }
+//   { k:'cast', e, type }  { k:'marker', v } (a parameter marker, $1 or $name)
 // Each node has `pos`, and `src`, the text it was written as.
 
 const KEYWORDS = new Set(['SELECT', 'FROM', 'WHERE', 'GROUP', 'BY', 'HAVING', 'ORDER', 'LIMIT', 'OFFSET', 'AS', 'AND',
@@ -353,6 +370,7 @@ class Parser {
     const at = t.at;
     this.i++;
     if (t.t === 'num') return this.node({ k: 'num', v: t.v }, at);
+    if (t.t === 'marker') return this.node({ k: 'marker', v: t.v }, at);
     if (t.t === 'str') {
       // 'Table'[Column], as DAX writes it.
       if (this.tok?.t === 'qid' && this.src[this.tok.at] === '[') {
@@ -489,6 +507,8 @@ const isGrouping = e => e.k === 'call' && e.fn === 'GROUPING';
 export function printDax(e) {
   switch (e.k) {
     case 'num': return e.v;
+    // A parameter marker, which DAX has no text for: as the SQL writes it.
+    case 'marker': return e.type ? `CONVERT(${e.v}, ${e.type})` : e.v;
     case 'str': return `"${e.v.replace(/"/g, '""')}"`;
     case 'bool': return e.v ? 'TRUE' : 'FALSE';
     case 'col': return `${e.table != null ? `'${e.table.replace(/'/g, "''")}'` : ''}[${e.name.replace(/]/g, ']]')}]`;
@@ -634,6 +654,7 @@ export class SqlTranslator {
     const CMP = new Set(['=', '<>', '<', '<=', '>', '>=']);
     switch (e.k) {
       case 'num': return D.num(e.v);
+      case 'marker': return { k: 'marker', v: e.v };
       case 'str': return D.str(e.v);
       case 'null': return D.call('BLANK');
       case 'bool': return D.call(e.v ? 'TRUE' : 'FALSE');
@@ -672,6 +693,8 @@ export class SqlTranslator {
       case 'cast': {
         const t = CASTS[e.type.toUpperCase()];
         if (!t) throw sqlUnsupported(`CAST to ${e.type}`);
+        // A parameter of the type: what the engine binds is cast to it.
+        if (e.e.k === 'marker') return { k: 'marker', v: e.e.v, type: t };
         const x = sub(e.e);
         // CAST(x AS DATE): the day, its time dropped.
         if (e.type.toUpperCase() === 'DATE') {
@@ -1547,6 +1570,20 @@ export function nameParts(name) {
 // A statement's text with its model queries' SQL in their places (statementRelations), in one
 // pass. An engine that cannot nest a WITH (T-SQL): each one's CTEs in one WITH at the top, and
 // an ORDER BY in parentheses only with OFFSET. A UNION's arm is a subquery, named.
+// A statement with each ? numbered across it ($n, the n-th), out of strings, names and
+// comments: the model's queries in it write a parameter more than once, and DuckDB numbers ?
+// by place. A statement that also writes a $ parameter is refused, as DuckDB refuses it.
+export function numberMarkers(text) {
+  const toks = scan(text);
+  const marks = toks.filter(t => t.t === 'op' && t.v === '?');
+  if (!marks.length) return text;
+  const dollar = toks.find(t => t.t === 'op' && t.v === '$' && /[\p{L}\p{N}_]/u.test(text[t.at + 1] ?? ''));
+  if (dollar) throw sqlSyntax('parameter markers ? and $ together: write one kind', dollar.at, text);
+  let out = text;
+  for (let k = marks.length - 1; k >= 0; k--) out = `${out.slice(0, marks[k].at)}$${k + 1}${out.slice(marks[k].at + 1)}`;
+  return out;
+}
+
 export function spliceStatement(text, relations, dialect) {
   const nest = dialect.nestedWith;
   const inner = r => (nest ? r.sql : r.ordered ? `${r.body} OFFSET 0 ROWS` : r.body);

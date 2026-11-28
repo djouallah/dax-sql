@@ -29,7 +29,7 @@
 // Errors are DaxError: SYNTAX for a statement that does not read, CATALOG for a view that is
 // missing or already there.
 import { DaxError } from './errors.js';
-import { nameParts, spliceStatement } from './sql.js';
+import { nameParts, spliceStatement, numberMarkers } from './sql.js';
 import { checkOptions, input, VIEWS, DEFINE, DROP, NAMES } from './options.js';
 
 const lc = s => String(s).toLowerCase();
@@ -477,6 +477,8 @@ export function makeViews(createCompiler, options = {}) {
     // Each view's queries found in the text as written, and put in place in one pass: a view's
     // SQL is never read again for another's name (a view named like a table it reads).
     if (!found.size) return text;
+    // Its ? numbered across the whole statement, as compileStatement numbers them.
+    text = numberMarkers(text);
     let aliases = 0;
     const relations = [];
     for (const [v, parts] of found.values()) {

@@ -2,10 +2,12 @@
 // errors carry their codes.
 import { test, before } from 'node:test';
 import assert from 'node:assert/strict';
-import { harness, sorted } from './helpers.js';
+import { harness, sorted, plain } from './helpers.js';
 import { bim, setup } from './fixtures/contoso.js';
 import { parseQuery } from '../src/parser.js';
 import { SqlTranslator } from '../src/sql.js';
+import { createCompiler, createViews } from '../src/index.js';
+import { tmslToModel } from '../formats/tmsl.js';
 
 let h;
 before(async () => { h = await harness(bim, setup); });
@@ -214,4 +216,44 @@ EVALUATE SELECTCOLUMNS(ADDCOLUMNS(__v2, "__m1", CALCULATE([Sales Amount], REMOVE
   assert.ok((sql.match(/IS NOT DISTINCT FROM/g) ?? []).length < cols.length && !/EXISTS/.test(sql), sql);
   const want = await h.sql(`SELECT d."Quarter" AS "Quarter", CAST(SUM(s."Amount") AS DOUBLE) AS v FROM "Sales" s JOIN "Date" d ON s."ShipDate" = d."Date" GROUP BY 1`);
   assert.deepEqual(sorted(await h.run(dax)), sorted(want));
+});
+
+// Parameter markers (#26): written back in the compiled SQL for the engine to bind, a ? as $n
+// (the n-th, across the statement), each answer the one of the value written in.
+test('a parameter marker (?, $1, $name) is bound by the engine as the value written in would be', async () => {
+  const bound = async (text, params) => {
+    const p = await h.con.prepare(h.dax.compileStatement(text).sql);
+    if (Array.isArray(params)) params.forEach((v, i) => p.bindValue(i + 1, v));
+    else for (const [k, v] of Object.entries(params)) p.bindValue(p.parameterIndex(k), v);
+    return (await p.runAndReadAll()).getRowObjectsJS().map(plain);
+  };
+  const same = async (marked, params, written) =>
+    assert.deepEqual(sorted(await bound(marked, params)), sorted(await h.sql(h.dax.compileStatement(written).sql)), marked);
+  await same(`SELECT Customer.City, AGG("Sales Amount") AS s FROM model WHERE Customer.City = ? GROUP BY ALL`, ['Paris'],
+    `SELECT Customer.City, AGG("Sales Amount") AS s FROM model WHERE Customer.City = 'Paris' GROUP BY ALL`);
+  await same(`SELECT AGG("Sales Amount") AS s FROM model WHERE Customer.City = $city AND Product.Color IN ($a, $b)`, { city: 'Paris', a: 'Red', b: 'Blue' },
+    `SELECT AGG("Sales Amount") AS s FROM model WHERE Customer.City = 'Paris' AND Product.Color IN ('Red', 'Blue')`);
+  await same(`SELECT Product.Color, AGG("Sales Amount") AS s FROM model WHERE Product.ProductKey BETWEEN $1 AND $2 GROUP BY ALL HAVING s > $3`, [1, 3, 1000],
+    `SELECT Product.Color, AGG("Sales Amount") AS s FROM model WHERE Product.ProductKey BETWEEN 1 AND 3 GROUP BY ALL HAVING s > 1000`);
+  await same(`SELECT AGG(Orders) AS o FROM model WHERE Customer.City = CAST(? AS VARCHAR)`, ['London'],
+    `SELECT AGG(Orders) AS o FROM model WHERE Customer.City = 'London'`);
+  // A blank bound is DAX's blank: = BLANK() keeps the blank (and empty) values.
+  await same(`SELECT AGG(Orders) AS o FROM model WHERE Customer.City = ?`, [null], `SELECT AGG(Orders) AS o FROM model WHERE Customer.City IS NULL OR Customer.City = ''`);
+  // The statement's own ? after the model's, numbered across it; the model's written twice is one.
+  const { sql } = h.dax.compileStatement(`SELECT o FROM (SELECT AGG(Orders) AS o FROM model WHERE Customer.City = ?) WHERE o > ?`);
+  assert.match(sql, /\$1/);
+  assert.match(sql, /o > \$2$/);
+  assert.doesNotMatch(sql, /\?/);
+  // A view's query too.
+  const views = createViews();
+  views.define('nem', tmslToModel(bim));
+  const [{ sql: viewSql }] = views.rewrite(`SELECT AGG(Orders) AS o FROM nem WHERE Customer.City = ?`);
+  const p = await h.con.prepare(viewSql);
+  p.bindValue(1, 'Paris');
+  assert.deepEqual((await p.runAndReadAll()).getRowObjectsJS().map(plain).map(r => r.o), (await h.run(`SELECT AGG(Orders) AS o FROM model WHERE Customer.City = 'Paris'`)).map(r => r.o));
+  // Where its type is not known, or in a dialect that writes none, it is said.
+  const fails = (f, code, re) => assert.throws(f, e => e.code === code && re.test(e.message), re);
+  fails(() => h.dax.compileStatement(`SELECT AGG(Orders) + ? AS o FROM model`), 'SEMANTIC', /the parameter \$1: its type is not known here \(write CAST/);
+  fails(() => h.dax.compileStatement(`SELECT AGG(Orders) FROM model WHERE Customer.City = ? AND Product.Color = $1`), 'SYNTAX', /\? and \$ together/);
+  fails(() => createCompiler(tmslToModel(bim), { dialect: 'tsql' }).compileStatement(`SELECT AGG(Orders) FROM model WHERE Customer.City = ?`), 'UNSUPPORTED', /tsql's SQL has no parameters/);
 });

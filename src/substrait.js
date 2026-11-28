@@ -140,6 +140,14 @@ export function toSubstrait(plan, options = {}) {
     return { lambdaInvocation: { namedLambda: { lambdaReference: lambdaIndex.get(key) }, arguments: { fields: args } } };
   };
   const param = i => ({ selection: { directReference: { structField: i ? { field: i } : {} }, lambdaParameterReference: { stepsOut: 0 } } });
+  // A parameter marker ($1, $name): Substrait's dynamic parameter, its reference the marker's
+  // number ($n), or for a name its place among the names; in a lambda `param:<marker>/0:<type>`,
+  // which says what the SQL writes for it.
+  const markers = new Map();
+  const dynamic = x => {
+    if (!markers.has(x.v)) markers.set(x.v, /^\$\d+$/.test(x.v) ? Number(x.v.slice(1)) : markers.size + 1);
+    return invoke(`param:${x.v}/0:${x.t}`, [], { dynamicParameter: { type: typeOf(x.t), parameterReference: markers.get(x.v) } }, []);
+  };
 
   // Definitions: plan relations, read by ReferenceRel (or inline).
   const defIndex = new Map();
@@ -178,6 +186,7 @@ export function toSubstrait(plan, options = {}) {
     switch (x.k) {
       case 'ref': { const i = cols.indexOf(x.col); return i >= 0 ? field(i) : outer(x.col); }
       case 'lit': return literal(x.v, x.t);
+      case 'param': return dynamic(x);
       case 'case': return { ifThen: { ifs: x.w.map(([c, v]) => ({ if: S(c), then: S(v) })), else: S(x.e) } };
       case 'exists': return x.member && memberOf(x.rel) ? member(x.rel, cols) : { subquery: { setPredicate: { predicateOp: 'PREDICATE_OP_EXISTS', tuples: sub(x.rel, cols) } } };
       case 'pop': return pop(x, S, cols);
@@ -250,6 +259,7 @@ export function toSubstrait(plan, options = {}) {
   const withParams = (y, B) => {
     switch (y.k) {
       case 'lit': return literal(y.v, y.t);
+      case 'param': return dynamic(y);
       case 'case': return { ifThen: { ifs: y.w.map(([c, v]) => ({ if: B(c), then: B(v) })), else: B(y.e) } };
       case 'pop': return pop(y, B, []);
       case 'ref': throw new Error(`substrait: a defined function's body reads column ${y.col.name}`);

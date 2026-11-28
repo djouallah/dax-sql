@@ -347,6 +347,7 @@ export class PlanSql {
     }
     // A number in its exact digits (a decimal no double holds).
     if (x.k === 'lit') return x.digits ? x.v : this.d.literal(x.v, x.t);
+    if (x.k === 'param') return this.d.param(x.v, x.t);
     if (x.k === 'case') {
       const val = v => (x.t === 'variant' ? this.variant(v, scope) : this.scalar(v, scope));
       // In this order, which numbers their aliases.

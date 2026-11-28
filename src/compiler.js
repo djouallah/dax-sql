@@ -406,6 +406,16 @@ export class Compiler {
     return ir.lit(String(v), 'string');
   }
 
+  // A parameter marker of SQL over the model ($1, $name): a value the engine binds when it runs
+  // the SQL, of its CAST's type, else `t`, the type of what it is compared with.
+  marker(ast, t = null) {
+    const type = ast.type ? MARKER_TYPES[ast.type] : t;
+    if (!MARKER_TYPES_OK.has(type)) {
+      throw semantic(`the parameter ${ast.v}: its type is not known here (write CAST(${ast.v} AS type), or compare it with a column)`);
+    }
+    return ir.param(ast.v, type);
+  }
+
   // An iterator's row context. The iteration is also a shadow filter context on the columns it
   // iterates (those with a lineage): their values as iterated, what ALLSELECTED restores.
   iter(env, row) {
@@ -460,6 +470,7 @@ export class Compiler {
       case 'bool': return ir.lit(ast.v, 'bool');
       case 'date': return dateLit(ast.v);
       case 'param': return this.param(ast.name);
+      case 'marker': return this.marker(ast);
       case 'col': return this.ref(ast, env);
       case 'name': {
         const v = env.vars.get(lc(ast.name));
@@ -474,6 +485,13 @@ export class Compiler {
       case 'not': return ir.op('not', this.scalar(ast.e, env));
       case 'bin': {
         const o = BINOPS[ast.op];
+        // A parameter compared with a value: of its type.
+        if (COMPARE.has(o) && (isMarker(ast.l) || isMarker(ast.r))) {
+          if (isMarker(ast.l) && isMarker(ast.r)) throw semantic(`${ast.l.v} ${ast.op} ${ast.r.v}: a parameter's type is not known here (write CAST(${ast.l.v} AS type))`);
+          if (isMarker(ast.l)) { const r = this.scalar(ast.r, env); return ir.op(o, this.marker(ast.l, r.t), r); }
+          const l = this.scalar(ast.l, env);
+          return ir.op(o, l, this.marker(ast.r, l.t));
+        }
         const l = this.scalar(ast.l, env);
         // && and || on a constant do not look at the other side.
         if (o === 'and' && l.k === 'lit' && l.v === false) return ir.FALSE;
@@ -510,8 +528,9 @@ export class Compiler {
   inOp(ast, env) {
     const left = ast.e.k === 'row' ? ast.e.items.map(x => this.scalar(x, env)) : [this.scalar(ast.e, env)];
     if (ast.set.k === 'table' && ast.set.rows.every(r => r.length === left.length)) {
-      // x IN { 1, 2 }: compared with ==, so a blank matches only a blank.
-      const rows = ast.set.rows.map(r => r.map(x => this.scalar(x, env)));
+      // x IN { 1, 2 }: compared with ==, so a blank matches only a blank. A parameter in the
+      // list is of the type of the value it is compared with.
+      const rows = ast.set.rows.map(r => r.map((x, i) => (isMarker(x) ? this.marker(x, left[i]?.t) : this.scalar(x, env))));
       if (!rows.length) throw semantic('IN {}: a table constructor needs a value for each column');
       if (left.length === 1) return ir.op('in', left[0], ...rows.map(r => r[0]));
       return rows.map(r => r.map((v, i) => ir.op('eqs', left[i], v)).reduce((a, b) => ir.op('and', a, b)))
@@ -792,6 +811,11 @@ const GROUPBY_AGGREGATES = new Set(['SUMX', 'AVERAGEX', 'MINX', 'MAXX', 'COUNTX'
   'STDEVX.S', 'STDEVX.P', 'VARX.S', 'VARX.P']);
 const BINOPS = { '+': 'add', '-': 'sub', '*': 'mul', '/': 'div', '^': 'pow', '&': 'concat', '=': 'eq', '==': 'eqs',
   '<>': 'ne', '<': 'lt', '<=': 'le', '>': 'gt', '>=': 'ge', '&&': 'and', '||': 'or' };
+const COMPARE = new Set(['eq', 'eqs', 'ne', 'lt', 'le', 'gt', 'ge']);
+// A parameter marker (sql.js): its CAST's type (CONVERT's words), and the types one can be.
+const isMarker = a => a?.k === 'marker';
+const MARKER_TYPES = { INTEGER: 'int', DOUBLE: 'double', STRING: 'string', BOOLEAN: 'bool', DATETIME: 'datetime' };
+const MARKER_TYPES_OK = new Set(['int', 'double', 'decimal', 'string', 'bool', 'datetime', 'date']);
 
 function parse(text, what) {
   try { return parseExpression(text); } catch (e) {

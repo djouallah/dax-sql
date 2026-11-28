@@ -9,72 +9,15 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 import { tmslToModel } from '../tmsl.js';
-import { tmdlToTmsl, tmdlToModel } from '../tmdl.js';
+import { tmdlToTmsl, tmdlToModel, tmslToTmdl } from '../tmdl.js';
 
 const read = p => readFileSync(new URL(p, import.meta.url), 'utf8').replace(/^﻿/, '');
 const MODELS = readdirSync(new URL('../../conformance/models/', import.meta.url))
   .map(name => ({ name, bim: JSON.parse(read(`../../conformance/models/${name}/model.bim`)) }));
 
-// --- a TMSL model written as TMDL, as Power BI writes it ---------------------------------------
-const T = d => '\t'.repeat(d);
-const q = n => (/^[A-Za-z_]\w*$/.test(n) ? n : `'${n.replace(/'/g, "''")}'`);
-const text = e => (Array.isArray(e) ? e.join('\n') : String(e));
-// An expression after `=`: on its line, or on the lines below at depth `at`.
-const after = (e, at) => (text(e).includes('\n') ? '\n' + text(e).split('\n').map(l => T(at) + l).join('\n') : ' ' + text(e));
-const SKIP = new Set(['name', 'description', 'type', 'expression', 'columns', 'measures', 'partitions', 'calculationGroup',
-  'calculationItems', 'annotations', 'extendedProperties', 'tablePermissions', 'columnPermissions', 'filterExpression']);
-function obj(d, type, name, value, o = {}, kids = []) {
-  let out = o.description ? o.description.split('\n').map(l => `${T(d)}/// ${l}\n`).join('') : '';
-  out += `${T(d)}${type}${name != null ? ' ' + q(name) : ''}${value != null ? ' =' + after(value, d + 2) : ''}\n`;
-  for (const [k, v] of Object.entries(o)) {
-    if (SKIP.has(k) || v == null || v === false && k.startsWith('is') && k !== 'isActive' && k !== 'isNullable') continue;
-    if (v === true) out += `${T(d + 1)}${k}\n`;
-    else if (typeof v === 'object' && !Array.isArray(v) && v.expression != null) out += `${T(d + 1)}${k} =${after(v.expression, d + 2)}\n`;
-    else if (typeof v !== 'object') out += `${T(d + 1)}${k}: ${v}\n`;
-  }
-  return out + '\n' + kids.join('');
-}
-const column = (c, d) => obj(d, 'column', c.name, c.type === 'calculated' ? c.expression : null, c,
-  (c.extendedProperties ?? []).map(p => obj(d + 1, 'extendedProperty', p.name, JSON.stringify(p.value))));
-const measure = (m, d) => obj(d, 'measure', m.name, m.expression, m,
-  (m.annotations ?? []).map(a => obj(d + 1, 'annotation', a.name, a.value)));
-function partition(p, d) {
-  const s = p.source ?? {};
-  if (s.type === 'calculated') return obj(d, 'partition', p.name, 'calculated', { source: { expression: s.expression } });
-  if (s.type === 'calculationGroup') return obj(d, 'partition', p.name, 'calculationGroup');
-  const { type, ...where } = s;
-  return obj(d, 'partition', p.name, type, { mode: p.mode }, [obj(d + 1, 'source', null, null, where)]);
-}
-const calculationGroup = (g, d) => obj(d, 'calculationGroup', null, null, g,
-  (g.calculationItems ?? []).map(it => obj(d + 1, 'calculationItem', it.name, it.expression, it)));
-const table = (t, d) => obj(d, 'table', t.name, null, t, [
-  ...(t.calculationGroup ? [calculationGroup(t.calculationGroup, d + 1)] : []),
-  ...(t.columns ?? []).map(c => column(c, d + 1)),
-  ...(t.measures ?? []).map(m => measure(m, d + 1)),
-  ...(t.partitions ?? []).map(p => partition(p, d + 1)),
-  ...(t.annotations ?? []).map(a => obj(d + 1, 'annotation', a.name, a.value)),
-]);
-const relationship = (r, i, d) => obj(d, 'relationship', r.name ?? `rel${i}`, null,
-  { ...r, fromTable: undefined, toTable: undefined, fromColumn: `${q(r.fromTable)}.${q(r.fromColumn)}`, toColumn: `${q(r.toTable)}.${q(r.toColumn)}` });
-const role = (r, d) => obj(d, 'role', r.name, null, r, (r.tablePermissions ?? []).map(p =>
-  obj(d + 1, 'tablePermission', p.name, p.filterExpression ?? null, p,
-    (p.columnPermissions ?? []).map(c => obj(d + 2, 'columnPermission', c.name, null, c)))));
-
-// One file: a script, a database, its model, as Fabric publishes a semantic view.
-const script = bim => 'createOrReplace\n\n' + obj(1, 'database', bim.name ?? 'Model', null, { compatibilityLevel: bim.compatibilityLevel }, [
-  obj(2, 'model', 'Model', null, { culture: 'en-US' }, [
-    ...bim.model.tables.map(t => table(t, 3)),
-    ...(bim.model.relationships ?? []).map((r, i) => relationship(r, i, 3)),
-    ...(bim.model.roles ?? []).map(r => role(r, 3)),
-  ])]);
-// A folder: each object in a file of its own, at the file's root, as a PBIP's definition/ holds them.
-const folder = bim => ({
-  'database.tmdl': obj(0, 'database', bim.name ?? 'Model', null, { compatibilityLevel: bim.compatibilityLevel }),
-  'model.tmdl': obj(0, 'model', 'Model', null, { culture: 'en-US' }) + bim.model.tables.map(t => `ref table ${q(t.name)}\n`).join(''),
-  ...Object.fromEntries(bim.model.tables.map(t => [`tables/${t.name}.tmdl`, table(t, 0)])),
-  'relationships.tmdl': (bim.model.relationships ?? []).map((r, i) => relationship(r, i, 0)).join(''),
-  ...Object.fromEntries((bim.model.roles ?? []).map(r => [`roles/${r.name}.tmdl`, role(r, 0)])),
-});
+// The writer is formats/tmdl.js's own (tmslToTmdl): one file, and a folder.
+const script = bim => tmslToTmdl(bim);
+const folder = bim => tmslToTmdl(bim, { folder: true });
 
 for (const { name, bim } of MODELS) {
   test(`${name}: its model written as TMDL, in one file and as a folder, reads as its model.bim does`, () => {
@@ -82,6 +25,10 @@ for (const { name, bim } of MODELS) {
     assert.deepEqual(tmdlToModel(script(bim)), want, 'one file');
     assert.deepEqual(tmdlToModel(folder(bim)), want, 'a folder, as { path: text }');
     assert.deepEqual(tmdlToModel(Object.values(folder(bim))), want, 'a folder, as its texts');
+    // The shared expressions (a Direct Lake model's source), which the model object does not hold.
+    const exprs = m => (m.model.expressions ?? []).map(e => [e.name, (Array.isArray(e.expression) ? e.expression.join('\n') : e.expression).trim()]);
+    assert.deepEqual(exprs(tmdlToTmsl(script(bim))), exprs(bim), 'expressions, one file');
+    assert.deepEqual(exprs(tmdlToTmsl(folder(bim))), exprs(bim), 'expressions, a folder');
   });
 }
 
@@ -246,4 +193,24 @@ test('a calculation group and a role with object-level security, as Power BI wri
 
 test('a text with no model and no table is refused', () => {
   assert.throws(() => tmdlToTmsl('relationship r\n\tfromColumn: a.b\n'), /no model in it/);
+});
+
+// tmslToTmdl of a Direct Lake model: its shared expression, the model's mode, what a user sees.
+test('tmslToTmdl: a Direct Lake model, its expression and descriptions, read back as it was', () => {
+  const bim = { name: 'nem', compatibilityLevel: 1604, model: { culture: 'en-US', defaultMode: 'directLake',
+    expressions: [{ name: 'DirectLake', kind: 'm', expression: ['let', '    Source = AzureStorage.DataLake("https://onelake.dfs.fabric.microsoft.com/w/l", [HierarchicalNavigation=true])', 'in', '    Source'] }],
+    tables: [{ name: 'Sales Facts', description: 'one row a sale', columns: [
+      { name: 'Amount', dataType: 'decimal', sourceColumn: 'amount', isHidden: true, displayFolder: 'Money', formatString: '#,0.00', description: 'net' }],
+      measures: [{ name: 'Total', expression: 'SUM(\'Sales Facts\'[Amount])', description: 'all of it' }],
+      partitions: [{ name: 'Sales Facts', mode: 'directLake', source: { type: 'entity', entityName: 'sales', schemaName: 'dbo', expressionSource: 'DirectLake' } }] }] } };
+  for (const out of [tmslToTmdl(bim), tmslToTmdl(bim, { folder: true })]) {
+    const back = tmdlToTmsl(out);
+    assert.equal(back.model.defaultMode, 'directLake');
+    assert.deepEqual(back.model.expressions.map(e => [e.name, e.expression.trim()]), [['DirectLake', bim.model.expressions[0].expression.join('\n')]]);
+    assert.deepEqual(back.model.tables[0].partitions[0].source, bim.model.tables[0].partitions[0].source);
+    assert.deepEqual(tmslToModel(back), tmslToModel(bim));
+  }
+  assert.deepEqual(Object.keys(tmslToTmdl(bim, { folder: true })).sort(), ['database.tmdl', 'expressions.tmdl', 'model.tmdl', 'tables/Sales Facts.tmdl']);
+  assert.throws(() => tmslToTmdl({ tables: [] }), e => e.code === 'INPUT');
+  assert.throws(() => tmslToTmdl(bim, { folder: 'yes' }), e => e.code === 'INPUT');
 });

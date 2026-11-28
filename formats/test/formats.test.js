@@ -562,11 +562,15 @@ test('ossieToTmsl: a dataset with no fields has its source\'s columns (columnsOf
     { name: 'cust', source: 'customers', fields: [{ name: 'cid', expression: { sql: 'cid' }, datatype: 'Integer' }] },
     { name: 'dim', source: 'lh.dbo.dim' },
   ], relationships: [{ name: 'r', from: 'sales', from_columns: ['cust_id'], to: 'cust', to_columns: ['cid'] }] };
-  assert.deepEqual(ossieSources(doc), [{ dataset: 'sales', source: 'dbo.sales' }, { dataset: 'dim', source: 'lh.dbo.dim' }]);
+  assert.deepEqual(ossieSources(doc), [{ dataset: 'sales', source: 'dbo.sales', catalog: null, schema: 'dbo', entity: 'sales' }, { dataset: 'dim', source: 'lh.dbo.dim', catalog: 'lh', schema: 'dbo', entity: 'dim' }]);
+  // Where each table is, as ossieToTmsl places it: the catalog given, a source named in full, quotes undone.
+  assert.deepEqual(ossieSources(doc, { catalog: 'nem' }).map(s => s.catalog), ['nem', 'lh']);
+  assert.deepEqual(ossieSources({ version: '0.3.0.dev0', name: 'q', datasets: [{ name: 'x', source: '"my lake"."s 1"."T"' }, { name: 'y', source: 'alone' }] }),
+    [{ dataset: 'x', source: '"my lake"."s 1"."T"', catalog: 'my lake', schema: 's 1', entity: 'T' }, { dataset: 'y', source: 'alone', catalog: null, schema: 'dbo', entity: 'alone' }]);
   const asked = [], skipped = [];
   const columns = { sales: [{ name: 'id', type: 'BIGINT' }, { name: 'amount', type: 'DECIMAL(18,2)' }, { name: 'at', type: 'TIMESTAMP WITH TIME ZONE' }, { name: 'cust_id', type: 'long' }, { name: 'tags', type: 'VARCHAR[]' }, { name: 'meta', type: 'STRUCT(a INT)' }] };
   const bim = ossieToTmsl(doc, { catalog: 'nem', columnsOf: s => { asked.push(s); return columns[s.dataset] ?? null; }, onSkip: s => skipped.push(s) });
-  assert.deepEqual(asked, ossieSources(doc), 'asked of the datasets with no fields');
+  assert.deepEqual(asked, ossieSources(doc, { catalog: 'nem' }), 'asked of the datasets with no fields, where each is');
   const t = n => bim.model.tables.find(x => x.name === n);
   assert.deepEqual(t('sales').columns.map(c => [c.name, c.dataType, c.sourceColumn, !!c.isKey]),
     [['id', 'int64', 'id', true], ['amount', 'decimal', 'amount', false], ['at', 'dateTime', 'at', false], ['cust_id', 'int64', 'cust_id', false]]);
@@ -616,9 +620,9 @@ test("ossieToTmsl as 'fabric': a semantic view as the model Fabric's Publish mak
     cust: [{ name: 'cid', type: 'long' }, { name: 'name', type: 'VARCHAR' }] };
   const asked = [], skipped = [];
   const columnsOf = s => { asked.push(s); return columns[s.dataset] ?? []; };
-  assert.deepEqual(ossieSources(files, { as: 'fabric' }), [{ dataset: 'sales', source: 'dbo.sales' }, { dataset: 'cust', source: 'dbo.customers' }]);
+  assert.deepEqual(ossieSources(files, { as: 'fabric', catalog: 'nem' }), [{ dataset: 'sales', source: 'dbo.sales', catalog: 'nem', schema: 'dbo', entity: 'sales' }, { dataset: 'cust', source: 'dbo.customers', catalog: 'nem', schema: 'dbo', entity: 'customers' }]);
   const bim = ossieToTmsl(files, { as: 'fabric', catalog: 'nem', columnsOf, onSkip: s => skipped.push(s) });
-  assert.deepEqual(asked, ossieSources(files, { as: 'fabric' }), 'every dataset kept, its fields or not');
+  assert.deepEqual(asked, ossieSources(files, { as: 'fabric', catalog: 'nem' }), 'every dataset kept, its fields or not');
   assert.equal(bim.name, 'nem');
   assert.equal(bim.model.description, 'NEM');
   assert.deepEqual(bim.model.tables.map(t => t.name), ['sales', 'cust', 'Metrics']);

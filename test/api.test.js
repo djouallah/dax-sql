@@ -232,3 +232,13 @@ test('tableSource: the default relation is its second argument, for the host to 
   createCompiler(tmslToModel(bim), { tableSource: (t, f) => { got = f; } }).compile('EVALUATE S');
   assert.equal(got, '"lh"."dbo"."S t"');
 });
+
+// A SQL name's parts, as dax-sql reads one (a view's, a model's): split at the dots outside
+// "quotes", each unquoted.
+test('nameParts: a dotted SQL name as its names', async () => {
+  const { nameParts } = await import('../src/index.js');
+  assert.deepEqual(nameParts('ws.model'), ['ws', 'model']);
+  assert.deepEqual(nameParts('"Sales WS"."my.model"'), ['Sales WS', 'my.model']);
+  assert.deepEqual(nameParts('"a""b".c'), ['a"b', 'c']);
+  assert.deepEqual(nameParts(['x', 'y']), ['x', 'y']);
+});

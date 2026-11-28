@@ -577,6 +577,11 @@ A file is read into a model object by a reader in `formats/`, exported as `dax-s
   texts as an array, or `{ path: text }`). It reads tables, columns, measures and their
   annotations, partitions, calculation groups, relationships, roles (filters and object-level
   security) and expressions; lineage tags, perspectives and cultures are left out.
+  `tmslToTmdl(bim)` goes the other way: one file, a script as Fabric publishes a semantic view,
+  or with `{ folder: true }` a PBIP's `definition/` as `{ path: text }` (`database.tmdl`,
+  `model.tmdl`, `tables/<name>.tmdl`, `relationships.tmdl`, `expressions.tmdl`, `roles/<name>.tmdl`):
+  what `tmdlToTmsl` reads back as the same model, the model's properties and shared expressions
+  (a Direct Lake model's source) included.
 - `formats/ossie.js` reads an [Apache Ossie](https://github.com/apache/ossie) model and goes
   both ways between it and TMSL. `ossieToModel(doc)`, `tmslToOssie(bim)` and `ossieToTmsl(doc)`
   take parsed objects, so the YAML is the caller's to parse. A document is of a version `OSSIE.reads`
@@ -597,7 +602,10 @@ A file is read into a model object by a reader in `formats/`, exported as `dax-s
   WITH TIME ZONE`…, read by `tmslType(type)`; struct, list, map, binary and the like left out and
   said to `onSkip`), or null when not known. With none, such a table has its key and relationship
   columns as text, so the model holds. `columnsOf` is called as the document is read:
-  `ossieSources(doc)` lists the `{ dataset, source }` it will be asked, for the host to read first.
+  `ossieSources(doc, { catalog })` lists the `{ dataset, source, catalog, schema, entity }` it will
+  be asked, for the host to read first: where each table is as `ossieToTmsl` places it, each name
+  unquoted (a source named in full gives its catalog; else `catalog` for one no Direct Lake
+  expression reads; else `null`, the host's to say).
   With `as: 'fabric'` (`ossieToTmsl`, `ossieSources`, `readModel`), a Fabric semantic view's folder is
   read as the model Fabric's Publish makes of it, leniently. Its files are of version `0.2.0.dev0`
   (what Publish reads) or `0.3.0.dev0`, any other an `INPUT` error naming the file. What Publish
@@ -720,6 +728,9 @@ const { sql, columns } = dax.compile(`
   and then cached.
 - `isDax(text)`: whether a text starts with `DEFINE` or `EVALUATE`.
 - `isSql(text)`: whether a text starts with `SELECT`.
+- `nameParts(name)` (exported by `src/index.js`): a dotted SQL name as its names, split at the
+  dots outside `"quotes"`, each unquoted (`"Sales WS".model` is `['Sales WS', 'model']`), as
+  dax-sql reads a view's or a model's name.
 - `sqlToDax(sql)`: the DAX query a `SELECT` stands for, `{ dax, limit, offset }`.
 - `compileStatement(text, name = 'model')`: any SQL of the engine in which a `SELECT` over the
   model is a relation in parentheses, `{ sql, relations: [{ text, dax, sql }] }` ([SQL](#sql)).

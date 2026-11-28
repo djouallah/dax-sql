@@ -108,7 +108,7 @@ export { TSqlDialect } from './dialects/tsql.js';
 export { PolarsDialect } from './dialects/polars.js';
 export { DataFusionDialect } from './dialects/datafusion.js';
 export { parseQuery, parseExpression } from './parser.js';
-export { parseSql, modelRelations } from './sql.js';
+export { parseSql, modelRelations, nameParts } from './sql.js';
 
 // Semantic views (views.js): models named in SQL, and CREATE / DROP / SHOW SEMANTIC VIEW.
 import { makeViews } from './views.js';

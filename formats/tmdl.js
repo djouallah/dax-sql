@@ -15,6 +15,7 @@
 // expressions, with their properties as written. Left out: lineage tags, perspectives, cultures.
 
 import { tmslToModel } from './tmsl.js';
+import { DaxError } from '../src/errors.js';
 
 // Properties that only tie an object to where it came from: nothing here reads them.
 const LINEAGE = new Set(['lineageTag', 'sourceLineageTag', 'changedProperty']);
@@ -263,3 +264,89 @@ export function tmdlToTmsl(text) {
 
 // A TMDL model as dax-sql's model object: tmslToModel(tmdlToTmsl(text)).
 export const tmdlToModel = text => tmslToModel(tmdlToTmsl(text));
+
+// --- TMSL written as TMDL --------------------------------------------------------------------
+// A TMSL model as TMDL, as Power BI and Fabric write it, which tmdlToTmsl reads back as the same
+// model (each conformance model is checked so: formats/test/tmdl.test.js):
+//   tmslToTmdl(bim)                    one file: a script (createOrReplace, its database, its
+//                                      model), as Fabric publishes a semantic view;
+//   tmslToTmdl(bim, { folder: true })  a folder, { path: text } as a PBIP's definition/ holds it
+//                                      (database.tmdl, model.tmdl, tables/<name>.tmdl,
+//                                      relationships.tmdl, expressions.tmdl, roles/<name>.tmdl).
+// Written: tables (columns, measures, partitions, a calculation group, annotations), the
+// model's properties and shared expressions (a Direct Lake model's source), relationships and
+// roles; descriptions as `///` lines. Left out, as tmdlToTmsl leaves them out: lineage tags,
+// perspectives, cultures.
+const W = (() => {
+  const T = d => '\t'.repeat(d);
+  const q = n => (/^[A-Za-z_]\w*$/.test(n) ? n : `'${String(n).replace(/'/g, "''")}'`);
+  const text = e => (Array.isArray(e) ? e.join('\n') : String(e));
+  // An expression after `=`: on its line, or on the lines below at depth `at`.
+  const after = (e, at) => (text(e).includes('\n') ? '\n' + text(e).split('\n').map(l => T(at) + l).join('\n') : ' ' + text(e));
+  const SKIP = new Set(['name', 'description', 'type', 'expression', 'columns', 'measures', 'partitions', 'calculationGroup',
+    'calculationItems', 'annotations', 'extendedProperties', 'tablePermissions', 'columnPermissions', 'filterExpression', 'kind',
+    'tables', 'relationships', 'roles', 'expressions']);
+  function obj(d, type, name, value, o = {}, kids = []) {
+    let out = o.description ? text(o.description).split('\n').map(l => `${T(d)}/// ${l}\n`).join('') : '';
+    out += `${T(d)}${type}${name != null ? ' ' + q(name) : ''}${value != null ? ' =' + after(value, d + 2) : ''}\n`;
+    for (const [k, v] of Object.entries(o)) {
+      if (SKIP.has(k) || v == null || (v === false && k.startsWith('is') && k !== 'isActive' && k !== 'isNullable')) continue;
+      if (v === true) out += `${T(d + 1)}${k}\n`;
+      else if (typeof v === 'object' && !Array.isArray(v) && v.expression != null) out += `${T(d + 1)}${k} =${after(v.expression, d + 2)}\n`;
+      else if (typeof v !== 'object') out += `${T(d + 1)}${k}: ${v}\n`;
+    }
+    return out + '\n' + kids.join('');
+  }
+  const note = (a, d) => obj(d, 'annotation', a.name, a.value);
+  const column = (c, d) => obj(d, 'column', c.name, c.type === 'calculated' ? c.expression : null, c,
+    (c.extendedProperties ?? []).map(p => obj(d + 1, 'extendedProperty', p.name, JSON.stringify(p.value))));
+  const measure = (m, d) => obj(d, 'measure', m.name, m.expression, m, (m.annotations ?? []).map(a => note(a, d + 1)));
+  function partition(p, d) {
+    const s = p.source ?? {};
+    if (s.type === 'calculated') return obj(d, 'partition', p.name, 'calculated', { source: { expression: s.expression } });
+    if (s.type === 'calculationGroup') return obj(d, 'partition', p.name, 'calculationGroup');
+    const { type, ...where } = s;
+    return obj(d, 'partition', p.name, type ?? 'entity', { mode: p.mode }, [obj(d + 1, 'source', null, null, where)]);
+  }
+  const calculationGroup = (g, d) => obj(d, 'calculationGroup', null, null, g,
+    (g.calculationItems ?? []).map(it => obj(d + 1, 'calculationItem', it.name, it.expression, it)));
+  const table = (t, d) => obj(d, 'table', t.name, null, t, [
+    ...(t.calculationGroup ? [calculationGroup(t.calculationGroup, d + 1)] : []),
+    ...(t.columns ?? []).map(c => column(c, d + 1)),
+    ...(t.measures ?? []).map(m => measure(m, d + 1)),
+    ...(t.partitions ?? []).map(p => partition(p, d + 1)),
+    ...(t.annotations ?? []).map(a => note(a, d + 1)),
+  ]);
+  const relationship = (r, i, d) => obj(d, 'relationship', r.name ?? `rel${i}`, null,
+    { ...r, fromTable: undefined, toTable: undefined, fromColumn: `${q(r.fromTable)}.${q(r.fromColumn)}`, toColumn: `${q(r.toTable)}.${q(r.toColumn)}` });
+  const role = (r, d) => obj(d, 'role', r.name, null, r, (r.tablePermissions ?? []).map(p =>
+    obj(d + 1, 'tablePermission', p.name, p.filterExpression ?? null, p,
+      (p.columnPermissions ?? []).map(c => obj(d + 2, 'columnPermission', c.name, null, c)))));
+  const expression = (e, d) => obj(d, 'expression', e.name, e.expression ?? '', e, (e.annotations ?? []).map(a => note(a, d + 1)));
+  const modelOf = bim => ({ culture: 'en-US', ...(bim.model ?? {}) });
+  const parts = (bim, d) => [
+    ...(bim.model?.tables ?? []).map(t => table(t, d)),
+    ...(bim.model?.relationships ?? []).map((r, i) => relationship(r, i, d)),
+    ...(bim.model?.expressions ?? []).map(e => expression(e, d)),
+    ...(bim.model?.roles ?? []).map(r => role(r, d)),
+  ];
+  const script = bim => 'createOrReplace\n\n' + obj(1, 'database', bim.name ?? 'Model', null, { compatibilityLevel: bim.compatibilityLevel }, [
+    obj(2, 'model', 'Model', null, modelOf(bim), parts(bim, 3))]);
+  const folder = bim => ({
+    'database.tmdl': obj(0, 'database', bim.name ?? 'Model', null, { compatibilityLevel: bim.compatibilityLevel }),
+    'model.tmdl': obj(0, 'model', 'Model', null, modelOf(bim)) + (bim.model?.tables ?? []).map(t => `ref table ${q(t.name)}\n`).join(''),
+    ...Object.fromEntries((bim.model?.tables ?? []).map(t => [`tables/${t.name}.tmdl`, table(t, 0)])),
+    ...(bim.model?.relationships?.length ? { 'relationships.tmdl': bim.model.relationships.map((r, i) => relationship(r, i, 0)).join('') } : {}),
+    ...(bim.model?.expressions?.length ? { 'expressions.tmdl': bim.model.expressions.map(e => expression(e, 0)).join('') } : {}),
+    ...Object.fromEntries((bim.model?.roles ?? []).map(r => [`roles/${r.name}.tmdl`, role(r, 0)])),
+  });
+  return { script, folder };
+})();
+
+export function tmslToTmdl(bim, { folder = false } = {}) {
+  if (!bim || typeof bim !== 'object' || !Array.isArray(bim.model?.tables)) {
+    throw new DaxError('tmslToTmdl: a TMSL model is { model: { tables } }', { code: 'INPUT' });
+  }
+  if (typeof folder !== 'boolean') throw new DaxError('tmslToTmdl: folder is true or false', { code: 'INPUT' });
+  return folder ? W.folder(bim) : W.script(bim);
+}

@@ -328,7 +328,7 @@ export function ossieToTmsl(doc, { onSkip = () => {}, catalog = null, columnsOf 
   // `partition`: the one a dataset with none of its own has. The rest is the TMSL's.
   const { model: modelExtra = {}, partition: defaults = {}, ...docExtra } = powerBi(doc);
   // A dataset with no fields has its source's (columnsOf): for its table and for its metrics alike.
-  const datasets = doc.datasets.map(d => (d.fields?.length ? d : { ...d, fields: sourceFields(d, doc, columnsOf, onSkip) }));
+  const datasets = doc.datasets.map(d => (d.fields?.length ? d : { ...d, fields: sourceFields(d, doc, columnsOf, onSkip, catalog) }));
   const tables = datasets.map(d => {
     const keys = new Set(d.primary_key ?? []);
     const extra = powerBi(d);
@@ -427,12 +427,37 @@ const quoteName = s => `"${String(s).replace(/"/g, '""')}"`;
 const unquoteName = s => (/^"(?:[^"]|"")*"$/.test(s) ? s.slice(1, -1).replace(/""/g, '"') : s);
 
 // The datasets of a document (or folder) whose columns ossieToTmsl will ask columnsOf: those with
-// no fields, [{ dataset, source }], so a host reads their columns first. With `as: 'fabric'`,
-// every dataset the view keeps (Fabric's model has each source table's columns).
-export function ossieSources(doc, { as = null } = {}) {
-  if (checkAs('ossieSources', as)) return fabricMerge(doc, () => {}).datasets.map(d => ({ dataset: d.name, source: d.source }));
+// no fields, [{ dataset, source, catalog, schema, entity }], so a host reads their columns first.
+// With `as: 'fabric'`, every dataset the view keeps (Fabric's model has each source table's
+// columns). catalog, schema and entity are where the table is, as ossieToTmsl places it, each a
+// name unquoted: the source named in full (lakehouse.schema.table), else the `catalog` option
+// for a schema.table or a table alone (schema dbo) that no Direct Lake expression reads, else
+// catalog null (the host's to say: unplacedTables).
+export function ossieSources(doc, { as = null, catalog = null } = {}) {
+  if (catalog != null && typeof catalog !== 'string') throw new DaxError('ossieSources: catalog is a text', { code: 'INPUT' });
+  if (checkAs('ossieSources', as)) return fabricMerge(doc, () => {}).datasets.map(d => fabricPlace(d, catalog));
   if (isFolder(doc)) doc = ossieFolder(doc);
-  return (doc.datasets ?? []).filter(d => !d.fields?.length).map(d => ({ dataset: d.name, source: d.source }));
+  return (doc.datasets ?? []).filter(d => !d.fields?.length).map(d => placeOf(d, doc, catalog));
+}
+// Where a dataset's table is, as ossieToTmsl places it (ossieSources'): what columnsOf is asked.
+function placeOf(d, doc, catalog) {
+  const parts = sourceParts(d.source);
+  const entity = parts.at(-1), schema = parts.length > 1 ? parts.at(-2) : 'dbo';
+  const named = parts.length > 2 ? parts.slice(0, -2).join('.') : null;
+  const viaExpression = !!powerBi(doc).partition?.expressionSource;
+  return { dataset: d.name, source: d.source, catalog: named ?? (viaExpression ? null : catalog ?? null), schema, entity };
+}
+const fabricPlace = (d, catalog) => {
+  const [schema, entity] = fabricSource(d);
+  return { dataset: d.name, source: d.source, catalog: catalog ?? null, schema, entity };
+};
+// A source's names, split at the dots outside "quotes", each unquoted.
+function sourceParts(source) {
+  const out = [];
+  let rest = String(source ?? '');
+  for (let at = lastDot(rest); at >= 0; at = lastDot(rest)) { out.unshift(unquoteName(rest.slice(at + 1))); rest = rest.slice(0, at); }
+  out.unshift(unquoteName(rest));
+  return out;
 }
 
 const checkAs = (what, as) => {
@@ -632,7 +657,7 @@ function fabricView(input, { onSkip, catalog, columnsOf }) {
   }
   const tables = view.datasets.map(d => {
     const [schema, entityName] = fabricSource(d);
-    const read = columnsOf({ dataset: d.name, source: d.source });
+    const read = columnsOf(fabricPlace(d, catalog));
     const columns = (Array.isArray(read) ? read : []).flatMap(c => {
       const dataType = tmslType(c?.type);
       if (c?.name && dataType) return [{ name: String(c.name), dataType, sourceColumn: String(c.name) }];
@@ -676,8 +701,8 @@ export function tmslType(type) {
 
 // A dataset with no fields: its source's columns as columnsOf says (fields of that name and type),
 // or else its key and relationship columns as text.
-function sourceFields(d, doc, columnsOf, onSkip) {
-  const read = columnsOf ? columnsOf({ dataset: d.name, source: d.source }) : null;
+function sourceFields(d, doc, columnsOf, onSkip, catalog) {
+  const read = columnsOf ? columnsOf(placeOf(d, doc, catalog)) : null;
   if (Array.isArray(read)) {
     return read.flatMap(c => {
       const type = tmslType(c?.type);

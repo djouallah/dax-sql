@@ -30,6 +30,15 @@ import { DaxError } from '../src/errors.js';
 import { measureSql, columnSql, parseDax, metricDax, fieldDax, sourceColumnOf, dialectSourceOf, sqlName } from './ossie-sql.js';
 
 const VERSION = '0.3.0.dev0';
+// The versions a document may say: the spec's (what tmslToOssie writes) and the draft before it
+// (files written then still read). Another is refused: its shape is not this one's (OSI 0.1.1,
+// Ossie's release candidate of May 2026 under its earlier name, is a list of semantic_model).
+const READS = [VERSION, '0.2.0.dev0'];
+const checkVersion = (v, where) => {
+  if (READS.includes(String(v))) return;
+  const old = String(v).startsWith('0.1') ? ' (OSI 0.1, a list of semantic_model, is an earlier shape of the spec)' : '';
+  throw new DaxError(`${where} is Ossie version ${v ?? '(none)'}: dax-sql reads ${READS.join(' and ')}${old}`, { code: 'INPUT' });
+};
 const VENDOR = 'POWER_BI';
 // What Ossie wrote, kept in an `Ossie` annotation so that it comes back as it was written. A
 // measure: where it was (its dataset, or null for the model's own; `home`, the table it was put
@@ -39,11 +48,11 @@ const VENDOR = 'POWER_BI';
 // While the TMSL is still what was read, the expression is the one written,
 // in its dialect, word for word: COUNT stays COUNT, a CASE a CASE, ANSI_SQL ANSI_SQL. Changed
 // since (in Power BI, say), it is translated.
-const OSSIE = 'Ossie';
+const NOTE = 'Ossie';
 // A table's key of several columns (Power BI's isKey is of one), as a JSON list of their names.
 export const PRIMARY_KEY = 'PrimaryKey';
 function fromOssie(ms) {
-  const a = (ms.annotations ?? []).find(x => x.name === OSSIE);
+  const a = (ms.annotations ?? []).find(x => x.name === NOTE);
   try { return a ? JSON.parse(a.value) : null; } catch { return null; }
 }
 const text = e => (Array.isArray(e) ? e.join('\n') : e);
@@ -313,6 +322,7 @@ export function ossieToTmsl(doc, { onSkip = () => {}, catalog = null, columnsOf 
   if (columnsOf != null && typeof columnsOf !== 'function') throw new DaxError('ossieToTmsl: columnsOf is a function ({ dataset, source }) => [{ name, type }]', { code: 'INPUT' });
   if (checkAs('ossieToTmsl', as)) return fabricView(doc, { onSkip, catalog, columnsOf });
   if (isFolder(doc)) doc = ossieFolder(doc);
+  else checkVersion(doc?.version, 'the document');
   // `partition`: the one a dataset with none of its own has. The rest is the TMSL's.
   const { model: modelExtra = {}, partition: defaults = {}, ...docExtra } = powerBi(doc);
   // A dataset with no fields has its source's (columnsOf): for its table and for its metrics alike.
@@ -356,7 +366,7 @@ export function ossieToTmsl(doc, { onSkip = () => {}, catalog = null, columnsOf 
         // A key of one column is the column's isKey; Power BI has no key of several (a table's
         // annotation PrimaryKey says it, for dax-sql and the way back).
         ...(keys.size === 1 && keys.has(f.name) ? { isKey: true } : {}),
-        ...(same ? {} : { annotations: [{ name: OSSIE, value: JSON.stringify({ expression: f.expression, as: readAs(col) }) }] }),
+        ...(same ? {} : { annotations: [{ name: NOTE, value: JSON.stringify({ expression: f.expression, as: readAs(col) }) }] }),
       }, e)];
     });
     const partition = { name: d.name, ...(own.mode ? { mode: own.mode } : {}),
@@ -379,7 +389,7 @@ export function ossieToTmsl(doc, { onSkip = () => {}, catalog = null, columnsOf 
     const sql = sqlOf(m);
     const was = { dataset, home: home.name, ...(sql != null ? { expression: m.expression, dax: code, ...optional('datatype', m.datatype) } : {}),
       ...(sql != null && dataset == null && named != null ? { placed: true } : {}) };
-    extra.annotations = [...(extra.annotations ?? []).filter(a => a.name !== OSSIE), { name: OSSIE, value: JSON.stringify(was) }];
+    extra.annotations = [...(extra.annotations ?? []).filter(a => a.name !== NOTE), { name: NOTE, value: JSON.stringify(was) }];
     (home.measures ??= []).push(tmsl({ name: m.name, description: m.description, expression: code }, extra));
   };
   for (const d of datasets) {
@@ -436,6 +446,22 @@ const checkAs = (what, as) => {
 // and the DAX metrics in a table of their own, Metrics, as the model Publish creates has them.
 export const FABRIC_VERSIONS = ['0.2.0.dev0', '0.3.0.dev0'];
 export const FABRIC_METRICS = 'Metrics';
+
+// What this reader is written for, for a host to say or check (DESIGN.md, Contract):
+//   version   the spec's version tmslToOssie writes;
+//   commit    the apache/ossie commit it was last checked against (ossie.yml checks Ossie's main
+//             every day and says the core-spec commits since this one: a dev version moves);
+//   reads     the versions ossieToTmsl reads (fabric: those of a Fabric semantic view, as 'fabric');
+//   dialects  the expression dialects it evaluates (reads) and writes; an expression in another
+//             is kept as written, both ways, and read in DAX only where one is beside it.
+const freeze = xs => Object.freeze([...xs]);
+export const OSSIE = Object.freeze({
+  version: VERSION,
+  commit: 'b367d3f12e6dc5915020075fd861cd44744633f8',
+  reads: freeze(READS),
+  fabric: freeze(FABRIC_VERSIONS),
+  dialects: Object.freeze({ reads: freeze(['DAX', 'OSSIE_SQL_2026', 'ANSI_SQL']), writes: freeze(['DAX', 'OSSIE_SQL_2026']) }),
+});
 const fabricSource = d => {
   const parts = typeof d?.source === 'string' ? d.source.split('.') : [];
   return parts.length === 2 && parts.every(p => p.trim()) ? parts : null;
@@ -598,6 +624,7 @@ export function ossieFolder(files) {
     if (typeof doc === 'string') throw bad(`${path} is text: parse its YAML first (the reader takes parsed documents)`);
     if (!doc || typeof doc !== 'object' || Array.isArray(doc)) throw bad(`${path} is not an Ossie document`);
     for (const key of ['version', 'name']) if (doc[key] == null) throw bad(`${path} has no ${key}`);
+    checkVersion(doc.version, `Ossie folder: ${path}`);
     if (doc.description != null) {
       if (merged.description != null && merged.description !== doc.description) throw bad(`${path}'s description differs from another file's (one description for the view)`);
       merged.description = doc.description;

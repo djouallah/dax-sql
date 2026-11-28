@@ -49,8 +49,22 @@ jobs:
         with:
           repository: apache/ossie
           path: .ossie
+          fetch-depth: 0
       - name: The Ossie checked
         run: echo "Apache Ossie at $(git -C .ossie rev-parse HEAD), $(git -C .ossie log -1 --format=%cs)" | tee -a "$GITHUB_STEP_SUMMARY"
+      # OSSIE.commit (formats/ossie.js) is the Ossie the reader was last checked against, for a host
+      # to say: an Ossie commit, and the core-spec commits since it are listed, a warning, not a
+      # failure (a dev version moves most days; this run's checks are what fail). Read them, follow
+      # what changed, and move OSSIE.commit to the commit checked.
+      - name: The spec since OSSIE.commit
+        run: |
+          pinned=$(node -e "import('./formats/ossie.js').then(m => console.log(m.OSSIE.commit))")
+          if ! git -C .ossie cat-file -e "$pinned^{commit}" 2>/dev/null; then
+            echo "::error::OSSIE.commit $pinned is not an apache/ossie commit"; exit 1
+          fi
+          since=$(git -C .ossie log --format='- %h %cs %s' "$pinned..HEAD" -- core-spec)
+          { echo "### core-spec since OSSIE.commit ${pinned:0:10}"; echo "${since:-none}"; } >> "$GITHUB_STEP_SUMMARY"
+          if [ -n "$since" ]; then echo "::warning::core-spec changed since OSSIE.commit ${pinned:0:10}: $(echo "$since" | wc -l) commits"; fi
       - uses: actions/setup-node@v4
         with:
           node-version: "24"

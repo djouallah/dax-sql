@@ -18,7 +18,7 @@ import { parse } from 'yaml';
 import { DuckDBInstance } from '@duckdb/node-api';
 import { createCompiler } from '../../src/index.js';
 import { tmslToModel, directLakeTables, storageMode } from '../tmsl.js';
-import { tmslToOssie, ossieToTmsl, ossieToModel, ossieSources, tmslType } from '../ossie.js';
+import { tmslToOssie, ossieToTmsl, ossieToModel, ossieSources, tmslType, OSSIE } from '../ossie.js';
 import { metricDax } from '../ossie-sql.js';
 import { readModel, formatOf } from '../model.js';
 import { stringify } from 'yaml';
@@ -525,7 +525,7 @@ test('readModel reads a .bim, a .tmdl, an Ossie .yaml and a folder of either, an
 // What a Fabric semantic view leaves to the platform (#20): a dataset's columns when it lists no
 // fields, and the lakehouse a source named schema.table alone is read in.
 test('ossieToTmsl: a dataset with no fields has its source\'s columns (columnsOf), and a schema.table source the catalog\'s', () => {
-  const doc = { version: '0.1', name: 'v', datasets: [
+  const doc = { version: '0.3.0.dev0', name: 'v', datasets: [
     { name: 'sales', source: 'dbo.sales', primary_key: ['id'], metrics: [{ name: 'Total', expression: { sql: 'SUM(amount)' } }] },
     { name: 'cust', source: 'customers', fields: [{ name: 'cid', expression: { sql: 'cid' }, datatype: 'Integer' }] },
     { name: 'dim', source: 'lh.dbo.dim' },
@@ -617,6 +617,23 @@ test("ossieToTmsl as 'fabric': a semantic view as the model Fabric's Publish mak
   input(() => ossieToTmsl(files, { as: 'Fabric', columnsOf }), /as is 'fabric'/);
   // Not given: the strict reader, as before.
   input(() => ossieToTmsl(files), /dataset CUST is in datasets\.yaml|metric total is in/);
+});
+
+// What the reader is written for, said: the spec's version and commit, the versions and dialects.
+test('OSSIE: the spec version, the Ossie commit checked, what is read; another version refused', () => {
+  assert.equal(tmslToOssie(contoso).version, OSSIE.version);
+  assert.match(OSSIE.commit, /^[0-9a-f]{40}$/);
+  assert.deepEqual([...OSSIE.reads], ['0.3.0.dev0', '0.2.0.dev0']);
+  assert.deepEqual([...OSSIE.fabric], ['0.2.0.dev0', '0.3.0.dev0']);
+  assert.deepEqual([...OSSIE.dialects.writes], ['DAX', 'OSSIE_SQL_2026']);
+  assert.ok(Object.isFrozen(OSSIE) && Object.isFrozen(OSSIE.reads) && Object.isFrozen(OSSIE.dialects.reads));
+  const doc = tmslToOssie(contoso);
+  for (const v of OSSIE.reads) ossieToTmsl({ ...doc, version: v });
+  const input = (f, re) => assert.throws(f, e => e.code === 'INPUT' && re.test(e.message), re);
+  input(() => ossieToTmsl({ ...doc, version: '0.4.0.dev0' }), /the document is Ossie version 0.4.0.dev0: dax-sql reads 0.3.0.dev0 and 0.2.0.dev0$/);
+  input(() => ossieToTmsl({ version: '0.1.1', semantic_model: [] , datasets: [] }), /version 0.1.1: .*OSI 0.1, a list of semantic_model/);
+  input(() => ossieToTmsl({ 'a.yaml': { ...doc, version: '1.0' } }), /Ossie folder: a.yaml is Ossie version 1.0/);
+  input(() => readModel('m.yaml', stringify({ ...doc, version: '1.0' }), { parseYaml: parse }), /version 1.0/);
 });
 
 // A model's format from its text (#23), no parse: what a host sniffs before reading a file.

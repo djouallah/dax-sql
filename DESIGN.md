@@ -571,7 +571,11 @@ A file is read into a model object by a reader in `formats/`, exported as `dax-s
   security) and expressions; lineage tags, perspectives and cultures are left out.
 - `formats/ossie.js` reads an [Apache Ossie](https://github.com/apache/ossie) model and goes
   both ways between it and TMSL. `ossieToModel(doc)`, `tmslToOssie(bim)` and `ossieToTmsl(doc)`
-  take parsed objects, so the YAML is the caller's to parse. `ossieToTmsl` and `ossieToModel` also
+  take parsed objects, so the YAML is the caller's to parse. A document is of a version `OSSIE.reads`
+  holds (`0.3.0.dev0`, the spec's, and `0.2.0.dev0`, the draft before); another is an `INPUT` error
+  (OSI 0.1.1, the release candidate of May 2026, is an earlier shape: a list of `semantic_model`).
+  Ossie has no release since: dax-sql reads the spec of its main, checked every day (`ossie.yml`,
+  which lists the core-spec commits since `OSSIE.commit`). `ossieToTmsl` and `ossieToModel` also
   take a folder of them, `{ 'path.yaml': doc }` (a Fabric semantic view's `Context/Semantic
   Views/<view>/`), merged as Fabric merges on publish: only the `.yaml` files; each with its
   `version` and `name`; the lists (`datasets`, `relationships`, `metrics`, the extensions)
@@ -659,6 +663,11 @@ What a caller may rely on:
   subquery (and under its `EXPLAIN`), the same for the same input.
 - **The dialects**: `duckdb`, `tsql`, `polars` and `datafusion`, each with the same API and Power
   BI's answers on its engine. DuckDB comes first; the others are supported.
+- **The Ossie read**: `OSSIE` (`formats/ossie.js`) says it: `version` (the spec's, which
+  `tmslToOssie` writes), `commit` (the apache/ossie commit last checked against), `reads` (the
+  versions read; another is an `INPUT` error), `fabric` (a Fabric semantic view's, `as: 'fabric'`)
+  and `dialects.reads` / `dialects.writes` (the expression dialects evaluated and written; one in
+  another dialect is kept as written). The values move with the spec; the keys are contract.
 - **The answers**: Power BI's, blanks as DAX has them; and the SQL a `SELECT` over the model may
   be written in ([SQL](#sql)).
 - **The model as a host lists it**: `describe()` and `dimensionsOf(measure)`.

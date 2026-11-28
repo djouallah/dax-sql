@@ -258,9 +258,20 @@ export class Lowerer {
     const b = new Block(this, rel, table.columns.map(c => ({ name: c.name, lineage: c, t: c.type })));
     b.res = new ScanRes(this, b, table, rel, this.model.state(ctx.mods));
     b.res.blankRow = true;
-    b.where.push(...this.conds(table, ctx, b.res, scope, excluded), ...this.securityConds(table, b.res, scope), this.orphans(table));
+    b.where.push(...this.conds(table, ctx, b.res, scope, excluded), ...this.securityConds(table, b.res, scope), this.hasOrphans(table));
     this.blanks = true;
     return out(b);
+  }
+
+  // Whether the table has its blank row: a fact of the data, the same wherever the statement
+  // asks (no filter, no security), so computed once, a definition of one row read at each place
+  // (it scans the many sides whole: a SUMMARIZECOLUMNS of several levels and measures asks it
+  // tens of times, fuzz2-0136 117).
+  hasOrphans(table) {
+    const test = this.orphans(table);
+    if (test === P.TRUE || test === P.FALSE) return test;
+    const s = this.shared(`orphans ${table.name}`, () => P.project(P.oneRow(), [{ name: 'orphans', expr: test, t: 'bool' }]));
+    return P.exists(P.select(s, P.ref(s.cols[0])));
   }
 
   // Whether the table has a blank row: a row on the many side of a relationship it is the one

@@ -111,3 +111,11 @@ test('a total is its groupings: no one row under them, as lowered or after any p
   }
   assert.equal(c.explain(TOTALS[5], MODES.unnest).match(/Cross join/g)?.length, 1, 'a percentile and a sum: two groupings, one cross join');
 });
+
+// Whether a table has its blank row is a fact of the data: its test (a scan of each many side) is
+// in the plan once however many places ask it (fuzz2-0136 asked it 117 times, 47 store_sales scans).
+test('a table\'s blank-row test is in the plan once, wherever the statement asks it', () => {
+  const q = 'EVALUATE SUMMARIZECOLUMNS(Product[Color], "s", [Sales Amount], "n", COUNTROWS(VALUES(Product[Color])), "d", DISTINCTCOUNT(Product[Color]))';
+  // Product's: a sale's and a return's product key it lacks, one test each.
+  for (const o of [{ optimize: false }, ...Object.values(MODES)]) assert.equal(c.explain(q, o).match(/ProductKey = BLANK/g)?.length, 2, JSON.stringify(o));
+});

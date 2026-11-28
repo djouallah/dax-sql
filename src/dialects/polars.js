@@ -75,6 +75,10 @@ export class PolarsDialect extends PostgresDialect {
   // DAX computes it. Polars keeps it a decimal, exactly (85.719 * 0.25 is 21.42975, where a double's
   // 21.429749999999998 rounds to 21.4297 as a fixed decimal, as Power BI has it).
   operand(sql, from, to) { return from === 'decimal' && to === 'double' ? `CAST(${sql} AS DOUBLE PRECISION)` : sql; }
+  // A quotient that is a fixed decimal (a double's whole ten-thousandths over 10000): a decimal, as
+  // DAX holds one, so that sums of them are exact and equal ones tie (Polars' division is a
+  // double's: RANKX of costs that tie in Power BI, edges fuzz3-0118).
+  result(sql, op, t) { return op === 'div' && t === 'decimal' ? `CAST(${sql} AS DECIMAL(19,4))` : sql; }
 
   fn(name, a, nodes = []) {
     if (name === 'divide') return super.fn(name, [a[0], `CAST(${a[1]} AS DOUBLE PRECISION)`, ...a.slice(2)], nodes);
@@ -89,11 +93,17 @@ export class PolarsDialect extends PostgresDialect {
         const n = nodes[1];
         // A double to a whole number: its binary value rounded half away from zero, as DuckDB's
         // round does (a fixed decimal's ten-thousandths: 403038.49999999994 is 403038). Polars'
-        // cast of a double to NUMERIC keeps no such digits (403038.5), and its round of a double
-        // is half to even.
-        if (n?.k === 'lit' && n.v === 0 && nodes[0]?.t === 'double') {
+        // cast of a double to a decimal keeps no such digits (403038.5), and its round of a double
+        // is half to even. The largest double below a half added: x + 0.5 would round
+        // 0.49999999999999994 up, and an odd whole number past 2^52 too. The value is named twice
+        // only, and only in a fixed decimal's own rounding (its value times 10000: standard.js's
+        // currency): Polars names no value once, so a value is written where it is read, and a
+        // ROUND's 15 digits write their value inside several times already (tpcds fuzz-0069: its
+        // SQL 1.9 MB, 6.7 MB were every whole-number round this one).
+        const tenThousandths = x0 => x0?.k === 'pop' && x0.op === 'mul' && x0.a[1]?.k === 'lit' && x0.a[1].v === 10000;
+        if (n?.k === 'lit' && n.v === 0 && nodes[0]?.t === 'double' && tenThousandths(nodes[0])) {
           const v = `CAST(${x} AS DOUBLE PRECISION)`;
-          return `(CASE WHEN abs(${v}) - floor(abs(${v})) >= 0.5 THEN ceil(abs(${v})) ELSE floor(abs(${v})) END * sign(${v}))`;
+          return `(sign(${v}) * floor(abs(${v}) + 0.49999999999999994))`;
         }
         if (n?.k === 'lit' && Number.isInteger(n.v)) return `CAST(round(CAST(${x} AS NUMERIC), ${n.v}) AS DOUBLE PRECISION)`;
         return `CAST(round(CAST(${x} AS NUMERIC) * power(10, ${y})) / power(10, ${y}) AS DOUBLE PRECISION)`;

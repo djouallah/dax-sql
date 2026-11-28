@@ -239,7 +239,7 @@ export class PlanSql {
       const arith = x.op === 'add' || x.op === 'sub' || x.op === 'mul' || x.op === 'div';
       const A = x.a.map(v => this.scalar(v, scope, logic)).map((s, i) => (arith && this.d.operand ? this.d.operand(s, x.a[i].t, x.t) : s));
       const [a, b] = A;
-      const s = {
+      const s0 = {
         eq: () => `(${a} = ${b})`, ne: () => `(${a} <> ${b})`, key: () => this.d.isNotDistinct(a, b, x.a[0].t),
         isnull: () => `(${a} IS NULL)`, notnull: () => `(${a} IS NOT NULL)`,
         lt: () => `(${a} < ${b})`, le: () => `(${a} <= ${b})`, gt: () => `(${a} > ${b})`, ge: () => `(${a} >= ${b})`,
@@ -251,6 +251,9 @@ export class PlanSql {
         call: () => this.call(x.name, A, x.a, x.t),
         true: () => this.d.always, false: () => this.d.never,
       }[x.op]();
+      // And their result as the dialect holds one of its type (result: a quotient that is a fixed
+      // decimal, which Polars computes as a double).
+      const s = arith && this.d.result ? this.d.result(s0, x.op, x.t) : s0;
       if (this.d.boolValues) return s;
       // Where a condition is no value (T-SQL): a condition asked for as a value is one; a
       // boolean value (COALESCE of conditions, a CASE) asked for as a condition is one too.

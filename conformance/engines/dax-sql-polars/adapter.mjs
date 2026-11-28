@@ -9,7 +9,8 @@
 // to unnest its correlated subqueries itself, as Polars does: a measure of it.
 // POLARS_TIMEOUT_MS: a query's time (30 s); past it the worker is stopped and another started.
 // DAXSQL_TIMES: each query's time (ms), to that file. The text columns that hold trailing
-// spaces are found with trailingSpacesCheck on Polars and given to the compiler (trailingSpaces).
+// spaces are found with trailingSpacesCheck on Polars and given to the compiler (trailingSpaces);
+// DAXSQL_TRIM=0: not.
 import { spawn } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { createInterface } from 'node:readline';
@@ -61,7 +62,7 @@ for (const [modelPath, qs] of byModel) {
   // trimmed, as Power BI loads them.
   let padded = null;
   const check = createCompiler(model, { dialect: 'polars', tableSource: source }).trailingSpacesCheck();
-  if (check.columns.length) {
+  if (check.columns.length && process.env.DAXSQL_TRIM !== '0') {
     const got = await w.ask({ sql: check.sql }, 300000);
     const row = got.rows?.[0] ?? [];
     const keys = new Set(check.columns.filter((c, i) => row[i] === true).map(c => c.key));

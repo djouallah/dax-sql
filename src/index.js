@@ -351,6 +351,16 @@ export function createCompiler(input, options = {}) {
   }
   // The plan a call asks for: { unnest }, { correlated }, { optimize: false } (as lowered), or optimized.
   const pick = (plan, o) => (o.unnest ? unnested(plan) : o.correlated ? correlated(plan) : o.optimize === false ? plan : optimize(plan));
+  // A measure's type alone: the type of its query's one column, as lowered (no SQL written).
+  const measureTypes = new Map();
+  const measureType = m => {
+    if (!measureTypes.has(m)) {
+      let t;
+      try { t = onePlan(`EVALUATE ROW("v", [${m.name.replace(/]/g, ']]')}])`).columns[0].type; } catch { t = 'variant'; }
+      measureTypes.set(m, TYPES.has(t) ? t : 'variant');
+    }
+    return measureTypes.get(m);
+  };
   const onePlan = text => {
     const out = plans(text);
     if (out.length !== 1) throw new DaxError(`the query has ${out.length} EVALUATE statements`);
@@ -447,11 +457,13 @@ export function createCompiler(input, options = {}) {
     fieldParameters: () => fieldParameters(model),
     // The model as a host lists it (SHOW, DESCRIBE, a field list), so it needs nothing of the
     // compiler's own objects: { tables: [{ name, hidden, columns: [{ name, type, calculated,
-    // expression, nullable, unique }] }], measures: [{ name, table, expression, formatString }] }.
+    // expression, nullable, unique }] }], measures: [{ name, table, expression, formatString,
+    // type }] }. A measure's type is the one compile gives it alone (EVALUATE ROW("v", [m])),
+    // 'variant' where it cannot be known (an error in it); worked out once for the compiler.
     describe() {
       return {
         tables: [...model.tables.values()].map(describeTable),
-        measures: [...model.measures.values()].map(m => ({ name: m.name, table: m.table.name, expression: m.text, formatString: m.formatString ?? null })),
+        measures: [...model.measures.values()].map(m => ({ name: m.name, table: m.table.name, expression: m.text, formatString: m.formatString ?? null, type: measureType(m) })),
       };
     },
     // The tables whose filters reach a measure's table, as describe() lists them: the columns
@@ -472,6 +484,9 @@ export function createCompiler(input, options = {}) {
     },
   };
 }
+
+// The contract's type names (DESIGN.md, Contract).
+const TYPES = new Set(['int', 'double', 'decimal', 'string', 'datetime', 'bool', 'variant', 'blank']);
 
 // A table as describe() lists it.
 const describeTable = t => ({ name: t.name, hidden: !!t.hidden,

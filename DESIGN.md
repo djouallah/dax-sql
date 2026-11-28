@@ -605,7 +605,8 @@ What a caller may rely on:
 - **Calls and their options**, as below. An option a call does not take, or a value of the wrong
   kind, is a `DaxError` with code `INPUT`: no option is read that is not here.
 - **Results**: their shapes as below, the type names `int`, `double`, `decimal`, `string`,
-  `datetime`, `bool` and `variant`, and the error codes.
+  `datetime`, `bool`, `variant` and `blank` (a value always blank: `BLANK()` alone), and the error
+  codes.
 - **The SQL**: one `SELECT` in the compiler's dialect, with no `;`, that its engine runs as a
   subquery (and under its `EXPLAIN`), the same for the same input.
 - **The dialects**: `duckdb`, `tsql`, `polars` and `datafusion`, each with the same API and Power
@@ -673,7 +674,8 @@ const { sql, columns } = dax.compile(`
   a value ends in a space. In the compiler's dialect, without row-level security.
 - `describe()`: the model as a host lists it, `{ tables: [{ name, hidden, columns: [{ name, type,
   calculated, expression, nullable, unique }] }], measures: [{ name, table, expression,
-  formatString }] }`; `dimensionsOf(measure)`: the tables whose filters reach the measure's, as
+  formatString, type }] }`, a measure's `type` the one `compile` gives it alone (`variant` when
+  it cannot be compiled); `dimensionsOf(measure)`: the tables whose filters reach the measure's, as
   `describe()` lists them (`SHOW SEMANTIC DIMENSIONS … FOR METRIC`).
 - `plan`, `explain`, `planSql` take `{ optimize, correlated, unnest }`; `substrait` also
   `{ inline, tableName, tableSchema }`.

@@ -46,7 +46,7 @@ test('the methods\' options and the views\' are checked the same way', () => {
 });
 
 test('compile gives { sql, columns } with the contract\'s type names; the SQL is one SELECT, the same each time', async () => {
-  const types = new Set(['int', 'double', 'decimal', 'string', 'datetime', 'bool', 'variant']);
+  const types = new Set(['int', 'double', 'decimal', 'string', 'datetime', 'bool', 'variant', 'blank']);
   const a = createCompiler(model()).compile(Q), b = createCompiler(model()).compile(Q);
   assert.equal(a.sql, b.sql, 'deterministic');
   assert.ok(!/;\s*$/.test(a.sql));
@@ -110,7 +110,9 @@ test('describe() and dimensionsOf(): the model as a host lists it', () => {
     assert.deepEqual(Object.keys(col).sort(), ['calculated', 'expression', 'name', 'nullable', 'type', 'unique']);
   }
   const m = d.measures.find(x => x.name === 'Sales Amount');
-  assert.deepEqual(m, { name: 'Sales Amount', table: 'Sales', expression: 'SUM(Sales[Amount])', formatString: null });
+  assert.deepEqual(m, { name: 'Sales Amount', table: 'Sales', expression: 'SUM(Sales[Amount])', formatString: null, type: 'decimal' });
+  // A measure's type is compile's for it alone.
+  for (const x of d.measures) assert.equal(x.type, (() => { try { return c.compile(`EVALUATE ROW("v", [${x.name}])`).columns[0].type; } catch { return 'variant'; } })(), x.name);
   const dims = c.dimensionsOf('Sales Amount').map(t => t.name);
   assert.ok(dims.includes('Product') && dims.includes('Sales'), dims.join());
   assert.throws(() => c.dimensionsOf('No Such Measure'), e => e.code === 'SEMANTIC');

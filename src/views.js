@@ -187,20 +187,8 @@ const VIEW_COLUMNS = [['database_name', 'VARCHAR'], ['schema_name', 'VARCHAR'], 
 const DESCRIBE_COLUMNS = [['column_name', 'VARCHAR'], ['column_type', 'VARCHAR'], ['null', 'VARCHAR'], ['key', 'VARCHAR'],
   ['default', 'VARCHAR'], ['extra', 'VARCHAR']];
 
-// A measure's type, as the compiler gives it for the measure alone.
-function measureType(v, m) {
-  if (!v.types) v.types = new Map();
-  if (!v.types.has(m.name)) {
-    let t;
-    try {
-      t = v.compiler.compile(`EVALUATE ROW("v", [${m.name.replace(/]/g, ']]')}])`).columns[0].type;
-    } catch {
-      t = 'variant';
-    }
-    v.types.set(m.name, t);
-  }
-  return v.types.get(m.name);
-}
+// A measure's type: describe()'s, the compiler's for the measure alone.
+const measureType = (v, m) => m.type;
 
 // (What a host may list of a model is the compiler's describe(): the views read nothing else.)
 function dimensions(v, tables = v.compiler.describe().tables) {

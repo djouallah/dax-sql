@@ -1,0 +1,61 @@
+name: Polars probe
+
+# Polars built from pola-rs/polars (main by default), by hand only: the SQL shapes Polars may lack
+# (repros.py, issues.py, probes.py in conformance/engines/dax-sql-polars), each against DuckDB, on
+# that build, to the job summary. For an issue to file upstream: checked on main, not on a release
+# (the suite itself stays on the release, polars.yml). The wheels are this run's artifact.
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "pola-rs/polars ref to build"
+        default: main
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: pola-rs/polars
+          ref: ${{ inputs.ref }}
+          path: polars
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Rust, from Polars' rust-toolchain.toml
+        working-directory: polars
+        run: rustup show
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: polars
+      - name: The wheels
+        run: |
+          pip install -q maturin build
+          export RUSTUP_TOOLCHAIN=$(sed -n 's/^channel *= *"\(.*\)"/\1/p' polars/rust-toolchain.toml)
+          mkdir -p wheels
+          (cd polars && maturin build -m py-polars/runtime/polars-runtime-32/Cargo.toml --features backtrace_filter --profile fast-release -o ../wheels)
+          python -m build --wheel --outdir wheels polars/py-polars
+      - uses: actions/upload-artifact@v4
+        with:
+          name: polars-wheels
+          path: wheels/*.whl
+      - name: The probes, on this Polars and DuckDB
+        if: always()
+        run: |
+          python -m venv pl
+          pl/bin/pip install -q --no-deps wheels/*.whl
+          pl/bin/pip install -q duckdb
+          echo "Polars $(git -C polars rev-parse HEAD) ($(git -C polars log -1 --format=%cs))" | tee -a "$GITHUB_STEP_SUMMARY"
+          pl/bin/python conformance/engines/dax-sql-polars/probes.py | tee -a "$GITHUB_STEP_SUMMARY"
+          pl/bin/python conformance/engines/dax-sql-polars/repros.py | tee -a "$GITHUB_STEP_SUMMARY"
+          pl/bin/python conformance/engines/dax-sql-polars/issues.py | tee -a "$GITHUB_STEP_SUMMARY"

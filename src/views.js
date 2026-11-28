@@ -499,13 +499,15 @@ export function makeViews(createCompiler, options = {}) {
   }
 
   // A statement's text with each (DESCRIBE v) and (SHOW SEMANTIC ...) in it replaced by the rows
-  // it lists, so they can be read as subqueries.
+  // it lists, so they can be read as subqueries; and each (DESCRIBE | EXPLAIN | SUMMARIZE <query>)
+  // with its query compiled, the word kept (a client wraps a statement so: DuckDB's Python
+  // client shows a relation as SELECT * FROM (<its text>)).
   function nested(s) {
     const { toks } = s;
     const found = [];
     for (let k = 0; k < toks.length; k++) {
       const w = toks[k + 1];
-      if (toks[k].t !== 'sym' || toks[k].v !== '(' || w?.t !== 'word' || !/^(DESCRIBE|DESC|SHOW|EXPLAIN)$/i.test(w.v)) continue;
+      if (toks[k].t !== 'sym' || toks[k].v !== '(' || w?.t !== 'word' || !/^(DESCRIBE|DESC|SHOW|EXPLAIN|SUMMARIZE)$/i.test(w.v)) continue;
       let depth = 0, e = k;
       for (; e < toks.length; e++) {
         if (toks[e].t !== 'sym') continue;

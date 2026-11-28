@@ -260,3 +260,16 @@ REFRESH SEMANTIC VIEW ws.fourth_semanticmodel; SELECT * FROM (DESCRIBE x.fifth_s
   assert.ok(v.rewrite('SELECT AGG(Orders) FROM ws.sales_semanticmodel')[0].sql);
   assert.throws(() => v.names(sql, { match: 1 }), e => e.code === 'INPUT' && /match is a function/.test(e.message));
 });
+
+// A model query under SUMMARIZE (or DESCRIBE) in parentheses (#38): DuckDB's Python
+// client shows a relation as SELECT * FROM (<its text>).
+test('(SUMMARIZE | DESCRIBE <model query>) inside parentheses: the query compiled, the word kept', async () => {
+  const q = 'SELECT Product.Color, AGG(Orders) AS orders FROM contoso GROUP BY ALL ORDER BY Color';
+  const top = await run(`SUMMARIZE ${q}`);
+  const wrapped = await run(`SELECT * FROM (\nSUMMARIZE ${q}\n) AS "unnamed_relation_1"`);
+  assert.deepEqual(wrapped, top);
+  assert.deepEqual(top.map(r => r.column_name), ['Color', 'orders']);
+  const described = await run(`SELECT column_name FROM (DESCRIBE ${q}) AS d`);
+  assert.deepEqual(described.map(r => r.column_name), ['Color', 'orders']);
+  // (EXPLAIN is no subquery in DuckDB at all.)
+});

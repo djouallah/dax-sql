@@ -7,6 +7,7 @@ import * as P from './plan.js';
 import { isCondOp } from './plan.js';
 import { isNum, qualifiedName } from './ir.js';
 import { free, refsOf } from './passes/decorrelate.js';
+import { DaxError } from './errors.js';
 
 const EMPTY = new Map();
 const MANY = 'A table of multiple values was supplied where a single value was expected.';
@@ -32,7 +33,12 @@ export class PlanSql {
   // rows it is made of, never a scan).
   source(table) {
     if (table.calc || table.calcGroup) throw new Error(`plan-sql: a scan of ${table.name}, a table the plan makes`);
-    if (this.options.tableSource) return this.options.tableSource(table);
+    // The host's relation for the table, or (undefined, null) the default: it places only some.
+    const own = this.options.tableSource?.(table);
+    if (own != null) {
+      if (typeof own !== 'string') throw new DaxError(`tableSource: the relation of ${table.name} is SQL text, or undefined for the default, not ${typeof own}`, { code: 'INPUT' });
+      return own;
+    }
     const s = table.source;
     return s.schema ? `${this.ident(s.schema)}.${this.ident(s.entity)}` : this.ident(s.entity);
   }

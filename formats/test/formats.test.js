@@ -20,7 +20,7 @@ import { createCompiler } from '../../src/index.js';
 import { tmslToModel, directLakeTables, storageMode } from '../tmsl.js';
 import { tmslToOssie, ossieToTmsl, ossieToModel, ossieSources, tmslType } from '../ossie.js';
 import { metricDax } from '../ossie-sql.js';
-import { readModel } from '../model.js';
+import { readModel, formatOf } from '../model.js';
 import { stringify } from 'yaml';
 import { bim as contoso, setup as contosoData } from '../../test/fixtures/contoso.js';
 
@@ -511,7 +511,7 @@ test('readModel reads a .bim, a .tmdl, an Ossie .yaml and a folder of either, an
   assert.deepEqual(readModel('Semantic Views/m', folder, { parseYaml: parse }).bim.model.tables.length, fromDoc.model.tables.length);
   input(() => readModel('m.yaml', stringify(doc)), /parses with the caller's parseYaml/);
   input(() => readModel('m.yaml', 'a: [', { parseYaml: parse }), /m\.yaml is not YAML/);
-  input(() => readModel('m.yaml', 'a: 1', { parseYaml: parse }), /m\.yaml is not an Apache Ossie model: it has no datasets/);
+  input(() => readModel('m.yaml', 'a: 1', { parseYaml: parse }), /m\.yaml is not an Apache Ossie model: YAML with no datasets/);
   // Metrics dax-sql cannot read are skipped and said; a model left with none is refused.
   const other = { version: doc.version, name: 'o', datasets: [{ name: 't', source: 'dbo.t', fields: [{ name: 'x', expression: { sql: 'x' } }],
     metrics: [{ name: 'm', expression: { dialects: [{ dialect: 'SNOWFLAKE', expression: 'SUM(x)' }] } }] }] };
@@ -553,4 +553,21 @@ test('ossieToTmsl: a dataset with no fields has its source\'s columns (columnsOf
   const want = { BIGINT: 'int64', HUGEINT: 'int64', integer: 'int64', 'DOUBLE': 'double', real: 'double', 'NUMERIC(10,2)': 'decimal', BOOLEAN: 'boolean', date: 'dateTime', datetime2: 'dateTime', 'VARCHAR(20)': 'string', uuid: 'string', BLOB: null, 'MAP(VARCHAR, INT)': null, INTERVAL: null };
   for (const [k, v] of Object.entries(want)) assert.equal(tmslType(k), v, k);
   assert.throws(() => ossieToTmsl(doc, { columnsOf: 'x' }), e => e.code === 'INPUT');
+});
+
+// A model's format from its text (#23), no parse: what a host sniffs before reading a file.
+test('formatOf: a model file\'s format from its path and text, null for what is no model', () => {
+  const tmdl = 'model Model\n\tculture: en-US\n\ntable Sales\n\tcolumn Amount\n\t\tdataType: double\n';
+  assert.equal(formatOf('m.bim', JSON.stringify(contoso)), 'tmsl');
+  assert.equal(formatOf('m.json', JSON.stringify(contoso)), 'tmsl', 'by its text');
+  assert.equal(formatOf('m.ossie.yaml', stringify(tmslToOssie(contoso))), 'ossie');
+  assert.equal(formatOf('schema.yml', 'version: 2\nmodels:\n  - name: x\n'), null, 'a dbt schema.yml');
+  assert.equal(formatOf('m.tmdl', tmdl), 'tmdl');
+  assert.equal(formatOf('m.tmdl', 'createOrReplace\n\tdatabase X\n\t\tmodel Model\n\t\t\ttable T\n'), 'tmdl');
+  assert.equal(formatOf('tables/Sales.tmdl', tmdl.split('\n\n')[1]), null, 'one table of a project folder');
+  assert.equal(formatOf('model.tmdl', 'model Model\n\tculture: en-US\n'), null, 'the model\'s settings alone');
+  assert.equal(formatOf('notes.txt', 'hello'), null);
+  // readModel says which: one file of a project, YAML that is no model.
+  assert.throws(() => readModel('tables/Sales.tmdl', tmdl.split('\n\n')[1]), e => e.code === 'INPUT' && /one file of a Power BI project/.test(e.message));
+  assert.equal(readModel('model.json', JSON.stringify(contoso)).bim.name, contoso.name, 'any path, by its text');
 });

@@ -544,7 +544,13 @@ A file is read into a model object by a reader in `formats/`, exported as `dax-s
   is TMDL when it holds `.tmdl` files, else Ossie's `.yaml` files merged as Fabric merges a
   semantic view's. A UTF-8 BOM is dropped. YAML is parsed by the caller's `parseYaml` (needed for
   Ossie only: dax-sql has no dependencies). `skipped` is what `ossieToTmsl` left out; a model
-  whose metrics were all left out is refused. Every error is `INPUT`, naming the file.
+  whose metrics were all left out is refused. Every error is `INPUT`, naming the file (one file
+  of a Power BI project's folder, not a model; YAML with no datasets). A path of another
+  extension is read as its text says.
+- `formatOf(path, text)`: a model file's format from its path and text, nothing parsed (a host
+  sniffs before it reads): `'tmsl'` (a `.bim`, or JSON with a `model`), `'ossie'` (YAML with a
+  top-level `datasets:` and `version:`), `'tmdl'` (a whole model: `createOrReplace`, `database`
+  or `model`, and its tables), or `null`: no model (a dbt `schema.yml`, one table of a project).
 
 - `formats/tmsl.js`: `tmslToModel(bim)` reads a TMSL model (`model.bim`, the JSON of Power BI
   and Analysis Services). For a host, from the TMSL alone (each takes the document or its model):
@@ -789,7 +795,7 @@ SELECT * FROM (SHOW SEMANTIC METRICS IN sales) WHERE ...;   -- each one reads as
 
 | Option | |
 |---|---|
-| `tableSource` | `(table) => SQL` naming a model table's rows. Default: its partition's entity, `"schema"."entity"`. |
+| `tableSource` | `(table) => SQL` naming a model table's rows, or `undefined` / `null` for the default: its partition's entity, `"schema"."entity"` (a host places only the tables it reads itself). Anything else is an `INPUT` error. |
 | `dialect` | `'duckdb'` (default), `'tsql'` (the Fabric SQL endpoint and Warehouse; see T-SQL below), `'polars'` (Polars SQL; see below), `'datafusion'` (Apache DataFusion; see below), or an instance of a `Dialect` subclass. |
 | `columnNames` | `'short'` (default): the column's or the expression's name. `'dax'`: `Table[Column]`, `[Measure]`. |
 | `castOutput` | `true` (default): whole numbers as `BIGINT`, other numbers as `DOUBLE`. Or an object, by the column's type (`int`, `double`, `decimal`, `datetime`, `string`, `bool`), of a function of its SQL: `{ int: s => \`CAST(${s} AS INTEGER)\` }`; a type it leaves out is not cast. |

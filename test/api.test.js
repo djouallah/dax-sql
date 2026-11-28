@@ -159,3 +159,12 @@ test('factsCheck(): one statement, read as plain facts that facts takes, answeri
   inputError(() => createCompiler(model(), { facts: { orphans: { k: 'yes' } } }));
   inputError(() => createCompiler(model(), { facts: { other: {} } }));
 });
+
+// A host places only some tables (#22): tableSource's undefined or null is the default relation.
+test('tableSource: undefined or null leaves a table to the default, the same SQL as without it', () => {
+  const plain = createCompiler(model()).compile(Q).sql;
+  for (const none of [undefined, null]) assert.equal(createCompiler(model(), { tableSource: () => none }).compile(Q).sql, plain);
+  const some = createCompiler(model(), { tableSource: t => (t.name === 'Sales' ? '(SELECT * FROM pinned_sales)' : undefined) }).compile(Q).sql;
+  assert.equal(some, plain.replace('"Sales"', '(SELECT * FROM pinned_sales)'));
+  inputError(() => createCompiler(model(), { tableSource: () => 42 }).compile(Q));
+});

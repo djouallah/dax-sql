@@ -2,12 +2,8 @@
 
 Nothing here blocks a release. DAX on DuckDB has nothing left but speed; T-SQL is the last wave.
 
-# Polars (parked 2026-11-28)
+# Polars (2.2.0, polars.yml green 2026-11-28)
 
-- [ ] The suite on Polars 2.2.0 (polars.yml, by hand) has 39 unexpected FAILs (edges/fuzz3,
-  filters-rankx-ties-allselected, filters-allexcept-snowflake-expanded-store, …), already at
-  d7f38f9 (40 there): last green 49ea30a (2026-11-25). Bisect the 119 commits between (a
-  temporary branch per step, polars.yml dispatched on it): likely a plan change of 11-26..11-28.
 - [ ] DAX's ERROR on Polars stays a blank in a branch no row takes: 2.2 computes postgres.js's
   err() (a failing cast of a value not known beforehand) in untaken branches inside the suite's
   queries (95 failed when it raised: 9f12f44 reverts it), though a lone CASE masks it.

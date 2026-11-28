@@ -310,8 +310,8 @@ export function createCompiler(input, options = {}) {
   // across the statement ($n, the n-th), in the model's queries and out of them: `text` is the
   // statement so numbered, which the positions are of.
   function statementRelations(text, name = 'model', aliases = 0) {
-    text = numberMarkers(text);
     query(text, false);
+    text = numberMarkers(text);
     if (/^\s*(DEFINE|EVALUATE)\b/i.test(text)) throw new DaxError('SQL: a DAX query is not SQL', { code: 'UNSUPPORTED' });
     const relation = t => {
       const { query, out } = translateSql(t, dialect.nestedWith ? null : { aliasStart: aliases });

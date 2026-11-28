@@ -22,7 +22,14 @@ on:
   push:
   schedule:
     - cron: "17 5 * * *"
+  # ossie_ref: a ref of apache/ossie to check against instead of main, such as a pull request not
+  # merged yet (refs/pull/817/head): what dax-sql writes then reads as that change would have it.
   workflow_dispatch:
+    inputs:
+      ossie_ref:
+        description: "A ref of apache/ossie instead of main (refs/pull/<n>/head)"
+        type: string
+        default: ""
   workflow_call:
     inputs:
       version:
@@ -50,6 +57,7 @@ jobs:
           repository: apache/ossie
           path: .ossie
           fetch-depth: 0
+          ref: ${{ inputs.ossie_ref || '' }}
       - name: The Ossie checked
         run: echo "Apache Ossie at $(git -C .ossie rev-parse HEAD), $(git -C .ossie log -1 --format=%cs)" | tee -a "$GITHUB_STEP_SUMMARY"
       # OSSIE.commit (formats/ossie.js) is the Ossie the reader was last checked against, for a host

@@ -1,20 +1,31 @@
 name: Pack
 
-# Packages from the real npm registry as tarballs, an artifact to download (gh run download) where
-# the registry cannot be reached or is a mirror that lags it: npm pack of each, on a runner.
+# Packages from the real registries, an artifact to download (gh run download) where a registry
+# cannot be reached or is a mirror that lags it: npm pack of each (artifact packs), and pip's wheels
+# of each for a platform, with what they need (artifact wheels), on a runner.
 
 on:
   workflow_dispatch:
     inputs:
       packages:
-        description: "Packages and versions, separated by spaces (@duckdb/node-api@2.0.1-r.1 ...)"
-        required: true
+        description: "npm packages and versions, separated by spaces (@duckdb/node-api@2.0.1-r.1 ...)"
+        default: ""
+      wheels:
+        description: "PyPI requirements, separated by spaces (polars==2.2.0 ...)"
+        default: ""
+      platform:
+        description: "The wheels' platform"
+        default: win_amd64
+      python:
+        description: "The wheels' Python version"
+        default: "3.12"
 
 permissions:
   contents: read
 
 jobs:
   pack:
+    if: inputs.packages != ''
     runs-on: ubuntu-latest
     steps:
       - uses: actions/setup-node@v4
@@ -31,3 +42,23 @@ jobs:
         with:
           name: packs
           path: packs/*.tgz
+  wheels:
+    if: inputs.wheels != ''
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: pip download
+        env:
+          WHEELS: ${{ inputs.wheels }}
+          PLATFORM: ${{ inputs.platform }}
+          PY: ${{ inputs.python }}
+        run: |
+          mkdir wheels
+          pip download --only-binary=:all: --platform "$PLATFORM" --python-version "$PY" -d wheels $WHEELS
+          ls -l wheels
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheels
+          path: wheels/*.whl

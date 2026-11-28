@@ -99,6 +99,7 @@ const unnested = pipe([['ownRows', ownRows], ['fuseApplies', fuseApplies], ['sta
 const readBack = checked('the Substrait read back', x => x, { final: true });
 import { explain as drawPlan } from './explain.js';
 import { optimize } from './passes/index.js';
+import { checkOptions, input as inputError, COMPILER, PLAN, SUBSTRAIT } from './options.js';
 
 export { DaxError } from './errors.js';
 export { Dialect } from './dialects/base.js';
@@ -123,9 +124,13 @@ function query(q, tree = true) {
 }
 
 export function createCompiler(input, options = {}) {
+  // The options are the contract's (DESIGN.md, Contract): any other key, or a value of the wrong
+  // kind, is an INPUT error. What the compiler passes itself (the blank row's, the aliases') is
+  // added to a copy, never taken from the caller.
+  options = { ...checkOptions('createCompiler', options, COMPILER) };
   const model = input instanceof Model ? input : new Model(input);
   const dialect = options.dialect instanceof Dialect ? options.dialect : DIALECTS[options.dialect ?? 'duckdb']?.();
-  if (!dialect) throw new DaxError(`unknown dialect ${options.dialect}`);
+  if (!dialect) throw inputError(`createCompiler: no dialect ${options.dialect} (one of ${Object.keys(DIALECTS).join(', ')}, or a Dialect)`);
   const base = new Compiler(model, options);
 
   // A calculated column: its expression on a row of its table, in an empty filter context.
@@ -356,9 +361,9 @@ export function createCompiler(input, options = {}) {
     dialect,
     // One EVALUATE, or a SELECT over the model -> its query plan (plan.js, made by lower.js and
     // the passes/). { optimize: false }: before the passes (the reference CI checks them with).
-    plan: (text, o = {}) => pick(onePlan(text).plan, o),
+    plan: (text, o = {}) => pick(onePlan(text).plan, checkOptions('plan', o, PLAN)),
     // The query plan drawn as a tree, one per EVALUATE.
-    explain: (text, o = {}) => plans(text).map(p => drawPlan(pick(p.plan, o))).join('\n\n'),
+    explain: (text, o = {}) => { o = checkOptions('explain', o, PLAN); return plans(text).map(p => drawPlan(pick(p.plan, o))).join('\n\n'); },
     // The query plan's SQL: { sql, columns }, as compile gives.
     // correlated: the plan before decorrelation, its scalars standard (its applies LATERAL or
     // scalar subqueries, its EXISTS EXISTS: for an engine that unnests them, as DuckDB does).
@@ -366,6 +371,7 @@ export function createCompiler(input, options = {}) {
     // nothing reaches the SQL that the Substrait does not carry (the plan as lowered, which
     // holds DAX's own functions, has no SQL).
     planSql(text, o = {}) {
+      o = checkOptions('planSql', o, PLAN);
       if (o.optimize === false) throw new DaxError('planSql: the plan as lowered (DAX functions in it) has no Substrait, and so no SQL', { code: 'UNSUPPORTED' });
       const p = onePlan(text);
       const plan = readBack(engine(readSubstrait(JSON.parse(JSON.stringify(toSubstrait(trimScans(pick(p.plan, o), padded)).plan)), model, { columns: p.columns, castOutput: options.castOutput })));
@@ -374,6 +380,7 @@ export function createCompiler(input, options = {}) {
     // The query plan as a Substrait plan (substrait.js): { plan (its JSON form), dax (dax-sql's
     // functions it uses), columns }. o: optimize, inline, tableName, tableSchema.
     substrait(text, o = {}) {
+      o = checkOptions('substrait', o, SUBSTRAIT);
       const p = onePlan(text);
       // unnest, correlated, or optimized: the plan planSql writes its SQL from.
       if (o.optimize === false) throw new DaxError('substrait: the plan as lowered (DAX functions in it) has no Substrait', { code: 'UNSUPPORTED' });
@@ -387,7 +394,8 @@ export function createCompiler(input, options = {}) {
       if (out.length !== 1) throw new DaxError(`the query has ${out.length} EVALUATE statements; use compileAll`);
       return out[0];
     },
-    compileAll,
+    // (Its key and extra arguments are the compiler's own: SQL's, and a statement's aliases.)
+    compileAll: dax => compileAll(dax),
     // The orphans option's answers, as one statement to run on the data: { sql, rels }. sql is a
     // SELECT of one row, a boolean column for each entry of rels (true: that relationship's many
     // side holds a key its one side lacks, a NULL or empty one too); rels are what orphans
@@ -437,6 +445,23 @@ export function createCompiler(input, options = {}) {
       return { dax: printDaxQuery(query), limit, offset };
     },
     fieldParameters: () => fieldParameters(model),
+    // The model as a host lists it (SHOW, DESCRIBE, a field list), so it needs nothing of the
+    // compiler's own objects: { tables: [{ name, hidden, columns: [{ name, type, calculated,
+    // expression, nullable, unique }] }], measures: [{ name, table, expression, formatString }] }.
+    describe() {
+      return {
+        tables: [...model.tables.values()].map(describeTable),
+        measures: [...model.measures.values()].map(m => ({ name: m.name, table: m.table.name, expression: m.text, formatString: m.formatString ?? null })),
+      };
+    },
+    // The tables whose filters reach a measure's table, as describe() lists them: the columns
+    // that filter it (SHOW SEMANTIC DIMENSIONS ... FOR METRIC).
+    dimensionsOf(measure) {
+      const m = model.measures.get(String(measure).toLowerCase());
+      if (!m) throw semantic(`the model has no measure ${measure}`);
+      const state = model.state();
+      return [...model.tables.values()].filter(t => model.reaches(t, m.table, state)).map(describeTable);
+    },
     // The fields a field parameter's selection stands for (all of them without `labels`), in
     // its order: what Power BI puts in a visual's query in the parameter's place.
     expandFieldParameter(table, labels = null) {
@@ -447,6 +472,10 @@ export function createCompiler(input, options = {}) {
     },
   };
 }
+
+// A table as describe() lists it.
+const describeTable = t => ({ name: t.name, hidden: !!t.hidden,
+  columns: t.columns.map(c => ({ name: c.name, type: c.type, calculated: !!c.expr, expression: c.expr ?? null, nullable: !!c.nullable, unique: !!c.unique })) });
 
 // The field parameters of the model: calculated tables like
 //   { ("Sales", NAMEOF('Sales'[Sales Amount]), 0), ... }

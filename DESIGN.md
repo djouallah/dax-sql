@@ -590,6 +590,36 @@ A file is read into a model object by a reader in `formats/`, exported as `dax-s
   none (an `ORDER BY`, `HAVING`, `ROLLUP` or `FETCH`; a `WHERE` on two datasets; an expression
   over measures; a query Section 8 rejects). The site's playground shows it beside the DAX.
 
+### Contract
+
+The API is strict and the implementation is free. Better SQL is never finished: the SQL, the
+plan and its passes change in any commit, and nothing a caller may rely on changes with them. A
+change to the contract is a version of its own, with its clients (the DuckDB extension and
+OneLake Studio) updated in the same step. `test/api.test.js` holds it.
+
+What a caller may rely on:
+
+- **Files.** `src/index.js` (the package's `.`) and `formats/{tmsl,tmdl,ossie,ossie-wide}.js`. What a host
+  loads as files is `src/**/*.js` and `formats/{tmsl,tmdl,ossie,ossie-sql}.js`: static ESM,
+  relative imports only, no Node built-in (QuickJS and the browser load them).
+- **Calls and their options**, as below. An option a call does not take, or a value of the wrong
+  kind, is a `DaxError` with code `INPUT`: no option is read that is not here.
+- **Results**: their shapes as below, the type names `int`, `double`, `decimal`, `string`,
+  `datetime`, `bool` and `variant`, and the error codes.
+- **The SQL**: one `SELECT` in the compiler's dialect, with no `;`, that its engine runs as a
+  subquery (and under its `EXPLAIN`), the same for the same input.
+- **The dialects**: `duckdb`, `tsql`, `polars` and `datafusion`, each with the same API and Power
+  BI's answers on its engine. DuckDB comes first; the others are supported.
+- **The answers**: Power BI's, blanks as DAX has them; and the SQL a `SELECT` over the model may
+  be written in ([SQL](#sql)).
+- **The model as a host lists it**: `describe()` and `dimensionsOf(measure)`.
+
+What is not part of it, and changes freely: the SQL's text in every dialect (its aliases, CTEs,
+joins, casts); the query plan and the passes; what `plan`, `explain` and `substrait` give (for
+reading, not for relying on); an error's wording (its code is the contract); `compiler.model` and
+every other object of the compiler's own; the hooks of `Dialect` (a subclass is a caller's own
+risk); which file under `src/` holds what.
+
 ### API
 
 ```js
@@ -641,7 +671,14 @@ const { sql, columns } = dax.compile(`
   `{ sql, columns }`: one `SELECT` of one row with a boolean for each text column of the
   model's stored tables (`{ key, table, column }`, what `trailingSpaces` receives), `true` where
   a value ends in a space. In the compiler's dialect, without row-level security.
-- `model`: the model as read; `dialect`: the dialect it writes.
+- `describe()`: the model as a host lists it, `{ tables: [{ name, hidden, columns: [{ name, type,
+  calculated, expression, nullable, unique }] }], measures: [{ name, table, expression,
+  formatString }] }`; `dimensionsOf(measure)`: the tables whose filters reach the measure's, as
+  `describe()` lists them (`SHOW SEMANTIC DIMENSIONS … FOR METRIC`).
+- `plan`, `explain`, `planSql` take `{ optimize, correlated, unnest }`; `substrait` also
+  `{ inline, tableName, tableSchema }`.
+- `model`: the model as read; `dialect`: the dialect it writes (neither is the contract: read
+  `describe()`).
 
 The package also exports `DaxError`, `Model`, the dialects (`Dialect`, `DuckDBDialect`,
 `TSqlDialect`), the parsers (`parseQuery`, `parseExpression`, `parseSql`) and
@@ -669,6 +706,8 @@ SELECT * FROM (SHOW SEMANTIC METRICS IN sales) WHERE ...;   -- each one reads as
 - `define(name, model, { path, db, schema, mode, tablesFrom, ...options })`: a view of a model
   (the readers in `formats/` make one), compiled with `createCompiler(model, options)`. `mode` is
   `create` (an error if the name is taken), `replace` or `if_not_exists`.
+- `createViews({ fullNames, dialect })`: `dialect` as `createCompiler` takes it, for the views'
+  queries and the statements that list them.
 - `drop(name, { ifExists })`, `get(name)`, `list()`.
 - `rewrite(sql)`: `null` when nothing in the text is a view's; otherwise one entry per statement:
   `{ create: { db, schema, name, path, mode } }` or `{ drop: { name, ifExists } }`, which the host
@@ -703,6 +742,8 @@ Errors are `DaxError` with a `code`:
   with no row context.
 - `UNSUPPORTED`: valid DAX this compiler does not translate.
 - `CATALOG`: a semantic view that is missing or already there.
+- `INPUT`: a call the API does not take (an unknown option, a value of the wrong kind).
+- `TOO_LARGE`: `substrait(…, { inline: true })` of a plan too large to write out.
 
 It never guesses.
 

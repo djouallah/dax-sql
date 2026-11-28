@@ -2,6 +2,9 @@
 //   SYNTAX       the text is not DAX
 //   SEMANTIC     DAX, but wrong for this model (an unknown table, a column with no row context)
 //   UNSUPPORTED  valid DAX that this compiler does not translate
+//   CATALOG      a semantic view that is missing or already there (views.js)
+//   INPUT        a call the API does not take: an unknown option, a value of the wrong kind
+//   TOO_LARGE    a plan too large to write out where each definition is read (substrait inline)
 export class DaxError extends Error {
   constructor(message, { code = 'SEMANTIC', pos = null, src = null } = {}) {
     super(pos != null && src != null ? `${message} at ${where(src, pos)}` : message);

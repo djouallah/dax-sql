@@ -30,6 +30,7 @@
 // missing or already there.
 import { DaxError } from './errors.js';
 import { nameParts, spliceStatement } from './sql.js';
+import { checkOptions, VIEWS, DEFINE, DROP } from './options.js';
 
 const lc = s => String(s).toLowerCase();
 const str = s => (s == null ? 'NULL' : `'${String(s).replace(/'/g, "''")}'`);
@@ -201,26 +202,23 @@ function measureType(v, m) {
   return v.types.get(m.name);
 }
 
-function dimensions(v, only) {
-  const out = [];
-  for (const t of v.compiler.model.tables.values()) {
-    if (only && !only(t)) continue;
-    for (const c of t.columns) out.push([v.db, v.schema, v.name, t.name, c.name, duckType(c.type), c.expr, null, t.hidden, null]);
-  }
-  return out;
+// (What a host may list of a model is the compiler's describe(): the views read nothing else.)
+function dimensions(v, tables = v.compiler.describe().tables) {
+  return tables.flatMap(t => t.columns.map(c => [v.db, v.schema, v.name, t.name, c.name, duckType(c.type), c.expression, null, t.hidden, null]));
 }
 
 function metrics(v) {
-  return [...v.compiler.model.measures.values()].map(m =>
-    [v.db, v.schema, v.name, m.table.name, m.name, duckType(measureType(v, m)), m.text, m.formatString, false, null]);
+  return v.compiler.describe().measures.map(m =>
+    [v.db, v.schema, v.name, m.table, m.name, duckType(measureType(v, m)), m.expression, m.formatString, false, null]);
 }
 
 function describe(v, tsql) {
   const list = [];
-  for (const t of v.compiler.model.tables.values()) {
+  const d = v.compiler.describe();
+  for (const t of d.tables) {
     for (const c of t.columns) list.push([`${t.name}.${c.name}`, duckType(c.type), c.nullable ? 'YES' : 'NO', c.unique ? 'PRI' : null, null, 'column']);
   }
-  for (const m of v.compiler.model.measures.values()) list.push([m.name, duckType(measureType(v, m)), 'YES', null, null, 'measure']);
+  for (const m of d.measures) list.push([m.name, duckType(measureType(v, m)), 'YES', null, null, 'measure']);
   return rows(DESCRIBE_COLUMNS, list, tsql);
 }
 
@@ -248,7 +246,8 @@ const part = s => (/^[A-Za-z_][A-Za-z0-9_]*$/.test(s) ? s : ident(s));
 // is then not a view's, and goes to the engine as written. Its own calls (get, drop) are unchanged.
 // `dialect`: the SQL the views' queries and the inspecting statements are written in, as
 // createCompiler takes it ('duckdb' by default).
-export function makeViews(createCompiler, { fullNames = false, dialect = 'duckdb' } = {}) {
+export function makeViews(createCompiler, options = {}) {
+  const { fullNames = false, dialect = 'duckdb' } = checkOptions('createViews', options, VIEWS);
   const tsql = (typeof dialect === 'string' ? dialect : dialect?.name) === 'tsql';
   // The views, by their full name, lower-cased: `name`, or `schema.name` for a view defined in
   // a schema of its own (one other than 'main') — two models of one name are two views, as
@@ -290,7 +289,8 @@ export function makeViews(createCompiler, { fullNames = false, dialect = 'duckdb
     return v;
   }
 
-  function define(name, model, { path = null, db = 'memory', schema = 'main', mode = 'create', tablesFrom = 'search path', ...options } = {}) {
+  function define(name, model, given = {}) {
+    const { path = null, db = 'memory', schema = 'main', mode = 'create', tablesFrom = 'search path', ...options } = checkOptions('define', given, DEFINE);
     const parts = partsOf(name, schema);
     const key = keyOf(parts);
     const old = views.get(key);
@@ -301,7 +301,8 @@ export function makeViews(createCompiler, { fullNames = false, dialect = 'duckdb
     return 'created';
   }
 
-  function drop(name, { ifExists = false } = {}) {
+  function drop(name, given = {}) {
+    const { ifExists = false } = checkOptions('drop', given, DROP);
     const v = resolve(name);
     if (!v) {
       if (ifExists) return false;
@@ -356,10 +357,8 @@ export function makeViews(createCompiler, { fullNames = false, dialect = 'duckdb
       if (r.words('FOR', 'METRIC')) {
         const name = r.name();
         r.end();
-        const m = v.compiler.model.measures.get(lc(name));
-        if (!m) throw fail(`semantic view ${v.name} has no metric ${name}`, 'CATALOG');
-        const model = v.compiler.model, state = model.state();
-        return { sql: rows(ITEM_COLUMNS, dimensions(v, t => model.reaches(t, m.table, state)), tsql) };
+        if (!v.compiler.describe().measures.some(m => lc(m.name) === lc(name))) throw fail(`semantic view ${v.name} has no metric ${name}`, 'CATALOG');
+        return { sql: rows(ITEM_COLUMNS, dimensions(v, v.compiler.dimensionsOf(name)), tsql) };
       }
       r.end();
       return { sql: rows(ITEM_COLUMNS, dimensions(v), tsql) };

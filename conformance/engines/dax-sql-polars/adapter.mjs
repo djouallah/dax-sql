@@ -8,7 +8,8 @@
 // POLARS_PLAN=correlated: the plan correlated instead (planSql { correlated: true }), for Polars
 // to unnest its correlated subqueries itself, as Polars does: a measure of it.
 // POLARS_TIMEOUT_MS: a query's time (30 s); past it the worker is stopped and another started.
-// DAXSQL_TIMES: each query's time (ms), to that file.
+// DAXSQL_TIMES: each query's time (ms), to that file. The text columns that hold trailing
+// spaces are found with trailingSpacesCheck on Polars and given to the compiler (trailingSpaces).
 import { spawn } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { createInterface } from 'node:readline';
@@ -52,15 +53,26 @@ for (const [modelPath, qs] of byModel) {
   try { bim = JSON.parse(readFileSync(modelPath, 'utf8').replace(/^﻿/, '')); } catch (err) { qs.forEach(q => failed(q, err)); continue; }
   const model = tmslToModel(bim);
   const source = t => `"${name}__${t.source?.entity ?? t.name}"`;
-  const compilers = new Map();
-  const compiler = roles => {
-    const k = JSON.stringify(roles ?? null);
-    if (!compilers.has(k)) compilers.set(k, createCompiler(model, { dialect: 'polars', columnNames: 'dax', tableSource: source, ...(roles ? { roles } : {}) }));
-    return compilers.get(k);
-  };
   let w = worker(dir, name);
   const ready = await w.ask(null, 300000);
   if (!ready.ready) { qs.forEach(q => failed(q, new Error(`no Polars worker for ${name}`))); w.p.kill(); continue; }
+  // The text columns that hold trailing spaces, found with the compiler's own statement on Polars
+  // and given to it (the trailingSpaces option), as engines/dax-sql/adapter.mjs does: read
+  // trimmed, as Power BI loads them.
+  let padded = null;
+  const check = createCompiler(model, { dialect: 'polars', tableSource: source }).trailingSpacesCheck();
+  if (check.columns.length) {
+    const got = await w.ask({ sql: check.sql }, 300000);
+    const row = got.rows?.[0] ?? [];
+    const keys = new Set(check.columns.filter((c, i) => row[i] === true).map(c => c.key));
+    if (keys.size) padded = c => keys.has(c.key);
+  }
+  const compilers = new Map();
+  const compiler = roles => {
+    const k = JSON.stringify(roles ?? null);
+    if (!compilers.has(k)) compilers.set(k, createCompiler(model, { dialect: 'polars', columnNames: 'dax', tableSource: source, ...(roles ? { roles } : {}), ...(padded ? { trailingSpaces: padded } : {}) }));
+    return compilers.get(k);
+  };
   for (const q of qs) {
     let sql, columns;
     try { ({ sql, columns } = compiler(q.roles).planSql(q.dax, PLAN)); } catch (err) { failed(q, err); continue; }

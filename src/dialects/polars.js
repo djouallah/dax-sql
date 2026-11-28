@@ -71,6 +71,10 @@ export class PolarsDialect extends PostgresDialect {
   // lost (tpcds fuzz3-0126 at SF1: 111.77739, DuckDB 111.777384). (An average of a decimal is a
   // double on Polars 2.2.)
   div(a, b) { return super.div(a, `CAST(${b} AS DOUBLE PRECISION)`); }
+  // A decimal in arithmetic whose result is a double (a fixed decimal times a double): a double, as
+  // DAX computes it. Polars keeps it a decimal, exactly (85.719 * 0.25 is 21.42975, where a double's
+  // 21.429749999999998 rounds to 21.4297 as a fixed decimal, as Power BI has it).
+  operand(sql, from, to) { return from === 'decimal' && to === 'double' ? `CAST(${sql} AS DOUBLE PRECISION)` : sql; }
 
   fn(name, a, nodes = []) {
     if (name === 'divide') return super.fn(name, [a[0], `CAST(${a[1]} AS DOUBLE PRECISION)`, ...a.slice(2)], nodes);
@@ -83,6 +87,14 @@ export class PolarsDialect extends PostgresDialect {
       case 'log10': return `log10(${x})`;
       case 'round': {
         const n = nodes[1];
+        // A double to a whole number: its binary value rounded half away from zero, as DuckDB's
+        // round does (a fixed decimal's ten-thousandths: 403038.49999999994 is 403038). Polars'
+        // cast of a double to NUMERIC keeps no such digits (403038.5), and its round of a double
+        // is half to even.
+        if (n?.k === 'lit' && n.v === 0 && nodes[0]?.t === 'double') {
+          const v = `CAST(${x} AS DOUBLE PRECISION)`;
+          return `(CASE WHEN abs(${v}) - floor(abs(${v})) >= 0.5 THEN ceil(abs(${v})) ELSE floor(abs(${v})) END * sign(${v}))`;
+        }
         if (n?.k === 'lit' && Number.isInteger(n.v)) return `CAST(round(CAST(${x} AS NUMERIC), ${n.v}) AS DOUBLE PRECISION)`;
         return `CAST(round(CAST(${x} AS NUMERIC) * power(10, ${y})) / power(10, ${y}) AS DOUBLE PRECISION)`;
       }

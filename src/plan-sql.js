@@ -234,7 +234,10 @@ export class PlanSql {
     if (x.k === 'pop') {
       // The conditions of AND, OR and NOT as conditions; the others' arguments as values.
       const logic = x.op === 'and' || x.op === 'or' || x.op === 'not';
-      const A = x.a.map(v => this.scalar(v, scope, logic));
+      // Arithmetic's operands as the dialect reads them of the result's type (operand: an engine
+      // that keeps a decimal times a double a decimal, Polars, casts it).
+      const arith = x.op === 'add' || x.op === 'sub' || x.op === 'mul' || x.op === 'div';
+      const A = x.a.map(v => this.scalar(v, scope, logic)).map((s, i) => (arith && this.d.operand ? this.d.operand(s, x.a[i].t, x.t) : s));
       const [a, b] = A;
       const s = {
         eq: () => `(${a} = ${b})`, ne: () => `(${a} <> ${b})`, key: () => this.d.isNotDistinct(a, b, x.a[0].t),

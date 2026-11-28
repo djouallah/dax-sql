@@ -8,7 +8,7 @@
 //   combineValues   COMBINEVALUES: the values as text, joined by the separator
 //   replaceNth      SUBSTITUTE with an instance number: the n-th occurrence replaced
 //   parseDatetime   text as a date and time: ISO, or en-US (3/5/2024, March 5, 2024)
-//   codePoint       UNICODE of a printable ASCII character
+//   codePoint       UNICODE of a character from U+0020 to U+2FFF
 //   formatNumber    FORMAT of a number by a pattern (format.js's: sections, digits, separators)
 //   formatDate      FORMAT of a date by a pattern (format.js's tokens)
 //
@@ -135,8 +135,10 @@ export function definitions(bind) {
     return cast(iso, 'datetime');
   }
 
-  // UNICODE: a printable ASCII character's code, by its place among them (none else: blank).
-  const ASCII = Array.from({ length: 95 }, (_, i) => String.fromCharCode(32 + i)).join('');
+  // UNICODE: a character's code, by its place in the characters U+0020 to U+2FFF in order (Latin,
+  // Greek, Cyrillic, … and the punctuation, currency and other symbols: €), each one character of
+  // the engine's text; past them (CJK, emoji), a blank.
+  const ASCII = Array.from({ length: 0x3000 - 32 }, (_, i) => String.fromCharCode(32 + i)).join('');
   function codePoint(x) {
     const p = bind(pos(S(ASCII), left(x, I(1))), 'cp');
     return caseOf([[eq(p, I(0)), lit(null, 'int')]], add(p, I(31)), 'int');

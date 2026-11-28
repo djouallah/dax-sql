@@ -48,10 +48,6 @@ export class PolarsDialect extends PostgresDialect {
   name = 'polars';
   // Polars has no function of a character's code: UNICODE as the plan defines it.
   nativeFns = new Set();
-  // A failing cast of a value not known beforehand (postgres.js's err) fails only where a row
-  // takes its CASE branch (Polars 2.2): DAX's ERROR raises as it does in Power BI. A constant's
-  // still fails in a branch no row takes (pola-rs/polars#31178), which err does not write.
-  raisesWhereTaken = true;
 
   // A date: a TIMESTAMP (a cast to one at midnight), a constant one too.
   type(t) { return t === 'date' ? 'TIMESTAMP' : super.type(t); }

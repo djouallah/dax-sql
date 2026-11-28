@@ -283,10 +283,8 @@ export class PlanSql {
     }
     switch (name) {
       // DAX's runtime error: the dialect's (of the value's type), or a blank where an engine
-      // computes a CASE's branches no row takes and the error would always fail (DataFusion).
-      // Polars 2.2 computes them, but a failing cast of a value it does not know beforehand (the
-      // dialect's err) fails only where a row takes its branch (raisesWhereTaken).
-      case 'error': return d.computesEveryBranch && !d.raisesWhereTaken ? `CAST(NULL AS ${d.type(t)})` : d.err ? d.err(x, t) : d.fn('error', a, nodes);
+      // computes a CASE's branches no row takes (Polars, DataFusion: it would always fail).
+      case 'error': return d.computesEveryBranch ? `CAST(NULL AS ${d.type(t)})` : d.err ? d.err(x, t) : d.fn('error', a, nodes);
       // (T-SQL: CHARINDEX finds no empty text, which is at 1.)
       case 'strpos': return ts ? `CASE WHEN DATALENGTH(${y}) = 0 THEN 1 ELSE CHARINDEX(${y}, ${x}) END` : pg ? `strpos(${x}, ${y})` : `instr(${x}, ${y})`;
       case 'substring_from': return ts ? `SUBSTRING(${x}, ${y}, LEN(${x}))` : `substring(${x}, ${y})`;

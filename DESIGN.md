@@ -757,13 +757,21 @@ SELECT * FROM (SHOW SEMANTIC METRICS IN sales) WHERE ...;   -- each one reads as
   VIEWS`, and every statement that reads it (a query, `SHOW … IN`, `DESCRIBE`) fails with `INPUT`
   `semantic view <name>: <error>`; `drop` and `replace` work on it as on any. `columns`: its values
   of the host's own columns.
-- `createViews({ fullNames, dialect, viewColumns })`: `dialect` as `createCompiler` takes it, for
+- `createViews({ fullNames, db, dialect, viewColumns })`: `db`, the database a view is defined in
+  by default (`memory` without), and under `fullNames` the one a name of one part fewer than
+  `db.schema.name` is read in (`ws.model` as `onelake.ws.model`); `dialect` as `createCompiler` takes it, for
   the views' queries and the statements that list them; `viewColumns`, `[[name, SQL type]]`, a
   host's own columns of `SHOW SEMANTIC VIEWS` after the five (the DuckDB extension's
   `data_as_of`), nested too, NULL where a view has no value.
 - `annotate(name, values)`: a view's values of the host's columns, changed after `define` (those
   given replace theirs; the compiler is not built again).
 - `drop(name, { ifExists })`, `get(name)`, `list()`.
+- `names(sql, { match })`: the names a text's statements read views by, from the tokenizer
+  `rewrite` reads them with (comments, strings and quoted names as SQL has them): a relation's
+  after `FROM` or `JOIN`, and those `SHOW … IN`, `DESCRIBE [SEMANTIC VIEW]` and `REFRESH SEMANTIC
+  VIEW` name. Each once, `{ parts, view }` (`view`: a defined view is that name), those
+  `match(parts)` keeps: a host that defines a view when a statement names one defines those, then
+  calls `rewrite`.
 - `rewrite(sql)`: `null` when nothing in the text is a view's; otherwise one entry per statement:
   `{ create: { db, schema, name, path, mode } }`, `{ drop: { name, ifExists } }` or `{ refresh:
   { name } }` (the name in full), which the host carries out (it reads the file and calls `define`,

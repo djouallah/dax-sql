@@ -30,7 +30,7 @@
 // missing or already there.
 import { DaxError } from './errors.js';
 import { nameParts, spliceStatement } from './sql.js';
-import { checkOptions, input, VIEWS, DEFINE, DROP } from './options.js';
+import { checkOptions, input, VIEWS, DEFINE, DROP, NAMES } from './options.js';
 
 const lc = s => String(s).toLowerCase();
 const str = s => (s == null ? 'NULL' : `'${String(s).replace(/'/g, "''")}'`);
@@ -240,7 +240,7 @@ const part = s => (/^[A-Za-z_][A-Za-z0-9_]*$/.test(s) ? s : ident(s));
 // (the DuckDB extension's data_as_of): a view's values given to define (`columns`) or annotate
 // (they change after it is defined), NULL where none is.
 export function makeViews(createCompiler, options = {}) {
-  const { fullNames = false, dialect = 'duckdb', viewColumns = [] } = checkOptions('createViews', options, VIEWS);
+  const { fullNames = false, dialect = 'duckdb', viewColumns = [], db: home = null } = checkOptions('createViews', options, VIEWS);
   const tsql = (typeof dialect === 'string' ? dialect : dialect?.name) === 'tsql';
   const own = new Set(viewColumns.map(([n]) => lc(n)));
   const showColumns = [...VIEW_COLUMNS, ...viewColumns.map(([n, t]) => [n, String(t).toUpperCase()])];
@@ -286,7 +286,42 @@ export function makeViews(createCompiler, options = {}) {
   function named(name) {
     if (!fullNames) return resolve(name);
     const ref = nameParts(name).map(lc);
-    return [...views.values()].find(v => fulls(v).some(full => ref.length === full.length && ref.every((p, i) => p === full[i]))) ?? null;
+    // `db`: a name of one part fewer than db.schema.name is read in it (ws.model, onelake.ws.model).
+    const refs = home != null && ref.length === 2 ? [ref, [lc(home), ...ref]] : [ref];
+    return [...views.values()].find(v => fulls(v).some(full => refs.some(r => r.length === full.length && r.every((p, i) => p === full[i])))) ?? null;
+  }
+
+  // The names a text's statements read views by, from the tokenizer rewrite reads them with
+  // (comments, strings and quoted names as SQL has them): a relation's after FROM or JOIN, and
+  // the one SHOW ... IN, DESCRIBE [SEMANTIC VIEW] or REFRESH SEMANTIC VIEW names. Each once, as
+  // { parts, view } (view: whether a defined view is that name), those `match(parts)` keeps: a
+  // host that defines views when a statement names one defines those first, then rewrites.
+  function names(sql, given = {}) {
+    const { match = null } = checkOptions('names', given, NAMES);
+    const isName = t => t?.t === 'word' || t?.t === 'name';
+    const isDot = t => t?.t === 'sym' && t.v === '.';
+    const out = new Map();
+    const at = (toks, k) => {
+      if (!isName(toks[k])) return;
+      const parts = [toks[k].v];
+      for (let e = k; isDot(toks[e + 1]) && isName(toks[e + 2]); e += 2) parts.push(toks[e + 2].v);
+      if (parts.length > 3) return;
+      const key = parts.map(lc).join('\u0000');
+      if (out.has(key) || (match && !match([...parts]))) return;
+      let v = null;
+      try { v = named(parts); } catch { v = null; }
+      out.set(key, { parts, view: v != null });
+    };
+    const word = (t, re) => t?.t === 'word' && re.test(t.v);
+    for (const { toks } of statements(String(sql))) {
+      for (let k = 0; k < toks.length; k++) {
+        if (word(toks[k], /^(FROM|JOIN)$/i)) at(toks, k + 1);
+        else if (word(toks[k], /^IN$/i) && toks.slice(Math.max(0, k - 3), k).some(t => word(t, /^(DIMENSIONS|METRICS)$/i))) at(toks, k + 1);
+        else if (word(toks[k], /^(DESCRIBE|DESC)$/i)) at(toks, word(toks[k + 1], /^SEMANTIC$/i) && word(toks[k + 2], /^VIEW$/i) ? k + 3 : k + 1);
+        else if (word(toks[k], /^REFRESH$/i) && word(toks[k + 1], /^SEMANTIC$/i) && word(toks[k + 2], /^VIEW$/i)) at(toks, k + 3);
+      }
+    }
+    return [...out.values()];
   }
 
   function view(name) {
@@ -304,7 +339,7 @@ export function makeViews(createCompiler, options = {}) {
   // does not read (or `error` says why it could not be read), the view is kept with that error,
   // listed, and every statement that reads it fails with it; it replaces one of its name.
   function define(name, model, given = {}) {
-    const { path = null, db = 'memory', schema = 'main', mode = 'create', tablesFrom = 'search path', columns = {}, error = null, ...options } = checkOptions('define', given, DEFINE);
+    const { path = null, db = home ?? 'memory', schema = 'main', mode = 'create', tablesFrom = 'search path', columns = {}, error = null, ...options } = checkOptions('define', given, DEFINE);
     const values = columnValues('define', columns);
     const parts = partsOf(name, schema);
     const key = keyOf(parts);
@@ -515,6 +550,7 @@ export function makeViews(createCompiler, options = {}) {
     define,
     annotate,
     drop,
+    names,
     // A view by its name, in full or in part (an error when the part fits more than one).
     get: name => resolve(name),
     list: () => [...views.values()],

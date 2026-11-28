@@ -230,3 +230,29 @@ test('a view of the schema main is reached with main written too: main.v, db.mai
   assert.ok(full.rewrite('SHOW SEMANTIC METRICS IN memory.main.contoso')[0].sql);
   assert.ok(full.rewrite('SHOW SEMANTIC METRICS IN memory.contoso')[0].sql);
 });
+
+// A host that defines views when a statement names one (#21): the names, from rewrite's own
+// tokenizer; and under fullNames, a default db for a name of one part fewer.
+test('names(sql, { match }): the names a statement reads views by, defined or not; db for 2-part names (#21)', () => {
+  const v = createViews({ fullNames: true, db: 'onelake' });
+  v.define('sales_semanticmodel', tmslToModel(bim), { schema: 'ws' });
+  assert.equal(v.list()[0].db, 'onelake', 'define reads db as the default');
+  const sql = `-- FROM commented.out_semanticmodel
+SELECT * FROM ws.sales_semanticmodel s JOIN "my ws"."Other_SemanticModel" o ON 1 = 1
+WHERE x = 'FROM str.in_semanticmodel' AND y IN (SELECT 1 FROM t);
+SHOW SEMANTIC METRICS IN ws.third_semanticmodel; DESC SEMANTIC VIEW onelake.ws.sales_semanticmodel;
+REFRESH SEMANTIC VIEW ws.fourth_semanticmodel; SELECT * FROM (DESCRIBE x.fifth_semanticmodel)`;
+  const ours = p => /_semanticmodel$/i.test(p.at(-1));
+  assert.deepEqual(v.names(sql, { match: ours }), [
+    { parts: ['ws', 'sales_semanticmodel'], view: true },
+    { parts: ['my ws', 'Other_SemanticModel'], view: false },
+    { parts: ['ws', 'third_semanticmodel'], view: false },
+    { parts: ['onelake', 'ws', 'sales_semanticmodel'], view: true },
+    { parts: ['ws', 'fourth_semanticmodel'], view: false },
+    { parts: ['x', 'fifth_semanticmodel'], view: false },
+  ]);
+  assert.ok(v.names(sql).some(n => n.parts.join('.') === 't'), 'without match, every relation');
+  // ws.model is read in db onelake: no host rewrite of the text first.
+  assert.ok(v.rewrite('SELECT AGG(Orders) FROM ws.sales_semanticmodel')[0].sql);
+  assert.throws(() => v.names(sql, { match: 1 }), e => e.code === 'INPUT' && /match is a function/.test(e.message));
+});

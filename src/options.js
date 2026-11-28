@@ -49,6 +49,7 @@ export const PLAN = { optimize: bool, correlated: bool, unnest: bool };
 export const SUBSTRAIT = { ...PLAN, inline: bool, tableName: fn, tableSchema: fn };
 export const VIEWS = {
   fullNames: bool,
+  db: str,
   dialect: COMPILER.dialect,
   viewColumns: Object.assign(v => Array.isArray(v) && v.every(c => Array.isArray(c) && c.length === 2 && str(c[0]) && str(c[1])),
     { says: 'a list of [name, SQL type]' }),
@@ -58,3 +59,4 @@ export const DEFINE = {
   columns: object, error: str, ...COMPILER,
 };
 export const DROP = { ifExists: bool };
+export const NAMES = { match: fn };

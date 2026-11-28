@@ -49,14 +49,17 @@ export class PlanSql {
   // rows it is made of, never a scan).
   source(table) {
     if (table.calc || table.calcGroup) throw new Error(`plan-sql: a scan of ${table.name}, a table the plan makes`);
-    // The host's relation for the table, or (undefined, null) the default: it places only some.
-    const own = this.options.tableSource?.(table);
+    // The default: the partition's schema (a path, a name each) and entity, quoted as the dialect
+    // quotes. The host's relation for the table, given that default to wrap or qualify ("shop".
+    // before it), or (undefined, null) the default itself: it places only some.
+    const s = table.source;
+    const fallback = [...(s.schema ? schemaPath(s.schema) : []), s.entity].map(n => this.ident(n)).join('.');
+    const own = this.options.tableSource?.(table, fallback);
     if (own != null) {
       if (typeof own !== 'string') throw new DaxError(`tableSource: the relation of ${table.name} is SQL text, or undefined for the default, not ${typeof own}`, { code: 'INPUT' });
       return own;
     }
-    const s = table.source;
-    return [...(s.schema ? schemaPath(s.schema) : []), s.entity].map(n => this.ident(n)).join('.');
+    return fallback;
   }
 
   // A column's name: numbered in the query in the order its columns are first written, so that

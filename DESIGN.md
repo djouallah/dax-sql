@@ -832,7 +832,7 @@ SELECT * FROM (SHOW SEMANTIC METRICS IN sales) WHERE ...;   -- each one reads as
 
 | Option | |
 |---|---|
-| `tableSource` | `(table) => SQL` naming a model table's rows, or `undefined` / `null` for the default: its partition's entity, `"schema"."entity"`, a schema of a path (`"lh"."dbo"`, `lh.dbo`) a name each (a host places only the tables it reads itself). Anything else is an `INPUT` error. |
+| `tableSource` | `(table, fallback) => SQL` naming a model table's rows, or `undefined` / `null` for the default: its partition's entity, `"schema"."entity"`, a schema of a path (`"lh"."dbo"`, `lh.dbo`) a name each (a host places only the tables it reads itself). `fallback` is that default's SQL, quoted as the dialect quotes, for a host to wrap or qualify (`"shop".${fallback}`: a view's tables in another database). Anything else is an `INPUT` error. |
 | `dialect` | `'duckdb'` (default), `'tsql'` (the Fabric SQL endpoint and Warehouse; see T-SQL below), `'polars'` (Polars SQL; see below), `'datafusion'` (Apache DataFusion; see below), or an instance of a `Dialect` subclass. |
 | `columnNames` | `'short'` (default): the column's or the expression's name. `'dax'`: `Table[Column]`, `[Measure]`. |
 | `castOutput` | `true` (default): whole numbers as `BIGINT`, other numbers as `DOUBLE`. Or an object, by the column's type (`int`, `double`, `decimal`, `datetime`, `string`, `bool`), of a function of its SQL: `{ int: s => \`CAST(${s} AS INTEGER)\` }`; a type it leaves out is not cast. |

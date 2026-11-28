@@ -168,3 +168,18 @@ test('tableSource: undefined or null leaves a table to the default, the same SQL
   assert.equal(some, plain.replace('"Sales"', '(SELECT * FROM pinned_sales)'));
   inputError(() => createCompiler(model(), { tableSource: () => 42 }).compile(Q));
 });
+
+// The default relation handed to the host (#31), to qualify: a view's tables in another database.
+test('tableSource: the default relation is its second argument, for the host to qualify', () => {
+  const plain = createCompiler(model()).compile(Q).sql;
+  const seen = [];
+  const sql = createCompiler(model(), { tableSource: (t, fallback) => { seen.push([t.name, fallback]); return `"shop".${fallback}`; } }).compile(Q).sql;
+  assert.ok(seen.length && seen.every(([name, f]) => f === `"${name}"`), JSON.stringify(seen));
+  assert.equal(sql, plain.replaceAll(/FROM "(\w+)"/g, 'FROM "shop"."$1"'));
+  // With a schema, a path: each name its own.
+  const bim = { model: { tables: [{ name: 'S', columns: [{ name: 'a', dataType: 'int64', sourceColumn: 'a' }],
+    partitions: [{ name: 'S', source: { type: 'entity', entityName: 'S t', schemaName: 'lh.dbo' } }] }] } };
+  let got;
+  createCompiler(tmslToModel(bim), { tableSource: (t, f) => { got = f; } }).compile('EVALUATE S');
+  assert.equal(got, '"lh"."dbo"."S t"');
+});

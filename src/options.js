@@ -46,6 +46,7 @@ export const COMPILER = {
 };
 
 export const PLAN = { optimize: bool, correlated: bool, unnest: bool };
+export const FACTS_CHECK = { tables: Object.assign(v => Array.isArray(v) && v.every(str), { says: 'a list of the model\'s table names' }) };
 export const SUBSTRAIT = { ...PLAN, inline: bool, tableName: fn, tableSchema: fn };
 export const VIEWS = {
   fullNames: bool,

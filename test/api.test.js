@@ -160,6 +160,36 @@ test('factsCheck(): one statement, read as plain facts that facts takes, answeri
   inputError(() => createCompiler(model(), { facts: { other: {} } }));
 });
 
+// Only the tables a host vouches for (#32): the facts that read nothing else, checked and read.
+test('factsCheck({ tables }): only the facts that read nothing but those tables', async () => {
+  const c = createCompiler(model());
+  const all = c.factsCheck(), [allRow] = await h.sql(all.sql), every = all.read(allRow);
+  const tables = ['product', 'Category', 'Sales'];
+  const f = c.factsCheck({ tables });
+  const vouched = ts => ts.every(t => tables.some(n => n.toLowerCase() === t.toLowerCase()));
+  // Exactly the facts of those tables: the same keys and tables as the whole check's, filtered.
+  for (const kind of ['orphans', 'trailingSpaces']) {
+    const want = Object.entries(all.tables[kind]).filter(([, ts]) => vouched(ts));
+    assert.ok(want.length && want.length < Object.keys(all.tables[kind]).length, kind);
+    assert.deepEqual(Object.entries(f.tables[kind]), want, kind);
+  }
+  // Its answers are the whole check's for those facts.
+  const [row] = await h.sql(f.sql);
+  const facts = f.read(row);
+  assert.deepEqual(Object.keys(facts.orphans), Object.keys(f.tables.orphans));
+  for (const [k, v] of Object.entries(facts.orphans)) assert.equal(v, every.orphans[k], k);
+  for (const k of Object.keys(f.tables.trailingSpaces)) assert.equal(facts.trailingSpaces[k] === true, every.trailingSpaces[k] === true, k);
+  // None vouched for: nothing to run.
+  const none = c.factsCheck({ tables: [] });
+  assert.equal(none.sql, null);
+  assert.deepEqual(none.read([]), { orphans: {}, trailingSpaces: {} });
+  // Not given: every fact, as before; a name the model lacks, or another option: INPUT.
+  assert.equal(c.factsCheck({}).sql, all.sql);
+  inputError(() => c.factsCheck({ tables: ['Nope'] }));
+  inputError(() => c.factsCheck({ tables: 'Sales' }));
+  inputError(() => c.factsCheck({ other: 1 }));
+});
+
 // A host places only some tables (#22): tableSource's undefined or null is the default relation.
 test('tableSource: undefined or null leaves a table to the default, the same SQL as without it', () => {
   const plain = createCompiler(model()).compile(Q).sql;

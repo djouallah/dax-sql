@@ -99,7 +99,7 @@ const unnested = pipe([['ownRows', ownRows], ['fuseApplies', fuseApplies], ['sta
 const readBack = checked('the Substrait read back', x => x, { final: true });
 import { explain as drawPlan } from './explain.js';
 import { optimize } from './passes/index.js';
-import { checkOptions, input as inputError, COMPILER, PLAN, SUBSTRAIT } from './options.js';
+import { checkOptions, input as inputError, COMPILER, PLAN, SUBSTRAIT, FACTS_CHECK } from './options.js';
 
 export { DaxError } from './errors.js';
 export { Dialect } from './dialects/base.js';
@@ -373,10 +373,10 @@ export function createCompiler(input, options = {}) {
     return measureTypes.get(m);
   };
   // The trailing spaces test of each stored text column: { items, columns } (trailingSpacesCheck).
-  const trailingParts = () => {
+  const trailingParts = (keep = () => true) => {
     const columns = [], items = [];
     for (const t of model.tables.values()) {
-      if (t.calc || t.calcGroup) continue;
+      if (t.calc || t.calcGroup || !keep(t)) continue;
       for (const c of t.columns) {
         if (c.expr || c.type !== 'string') continue;
         const scan = P.scan(t), col = scan.cols.find(x => x.lineage === c);
@@ -465,9 +465,22 @@ export function createCompiler(input, options = {}) {
     // true } } (a value that is neither is no answer: tested in the SQL). tables: the tables each
     // answer reads, { orphans: { [key]: [tables] }, trailingSpaces: { [key]: [table] } }, so a host
     // ties the facts to the snapshots it read. dax-sql runs nothing: the host runs sql.
-    factsCheck() {
+    // `tables`: the model tables the host vouches for (its pinned snapshots); only the facts that
+    // read nothing else are checked and read. A name the model lacks is an INPUT error. When no
+    // fact is left, sql is null: nothing to run, and read gives no answer.
+    factsCheck(opts) {
+      opts = checkOptions('factsCheck', opts, FACTS_CHECK);
+      let keep = () => true;
+      if (opts.tables != null) {
+        for (const n of opts.tables) if (!model.hasTable(n)) throw inputError(`factsCheck: the model has no table ${n}`);
+        const named = new Set(opts.tables.map(n => model.table(n)));
+        keep = t => named.has(t);
+      }
       const o = { ...options, calcColumn, calcTable, security };
-      const op = new Lowerer(model, o).orphanCheck(), tp = trailingParts();
+      const op = new Lowerer(model, o).orphanCheck(keep), tp = trailingParts(keep);
+      if (!op.rels.length && !tp.columns.length) {
+        return { sql: null, tables: { orphans: {}, trailingSpaces: {} }, read: () => ({ orphans: {}, trailingSpaces: {} }) };
+      }
       // Each half through the passes alone: the orphans' keys read trimmed where trailingSpaces
       // says (as Power BI loads them), the trailing spaces' values as stored.
       const a = trimScans(pipeline(op.plan), padded), b = pipeline(P.output(P.oneRow(), tp.items, [], []));

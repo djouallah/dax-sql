@@ -755,6 +755,9 @@ const { sql, columns } = dax.compile(`
   { [column.key]: true } }` (a value of neither kind is no answer: tested in the SQL), which the
   `facts` option takes. `tables` says the tables each answer reads, `{ orphans: { [key]: [tables] },
   trailingSpaces: { [key]: [table] } }`, so a host ties the facts to the snapshots it read.
+  `factsCheck({ tables })` checks only the facts that read nothing but those model tables (the
+  ones a host vouches for, such as its pinned snapshots), names in any case; a name the model
+  lacks is an `INPUT` error. When none is left, `sql` is `null` and `read` gives no answer.
   dax-sql runs nothing: the host runs `sql`, and keeps the facts with the view.
 - `describe()`: the model as a host lists it, `{ tables: [{ name, hidden, columns: [{ name, type,
   calculated, expression, nullable, unique }] }], measures: [{ name, table, expression,

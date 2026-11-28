@@ -305,11 +305,13 @@ export class Lowerer {
   // The orphans option's answers as one statement (index.js orphanCheck): a row of a boolean for
   // each relationship read from its many side to its one side (relSide), true where that side holds
   // a key the other lacks; one of a calculated column is not listed (it stays a test in the SQL).
-  orphanCheck() {
+  // `keep(table)`: whether a relationship's two tables are to be checked (all, by default).
+  orphanCheck(keep = () => true) {
     const rels = [], items = [];
     for (const t of this.model.tables.values()) {
       for (const { rel, one, many } of this.model.oneSides(t)) {
         if (one.expr || many.expr) continue;
+        if (!keep(one.table) || !keep(many.table)) continue;
         items.push({ name: `o${items.length}`, expr: this.orphanTest(one, many), by: null, cast: null });
         rels.push(relSide(rel, one, many));
       }

@@ -21,8 +21,22 @@ function ossieSql(m) {
   return e.sql ?? e.dialects?.find(d => d.dialect !== 'DAX')?.expression ?? null;
 }
 
+// What a model's user sees of an object (describe() lists it): its description, display folder,
+// format string and whether it is hidden, where the TMSL says.
+const shown = o => ({
+  ...(o.isHidden ? { hidden: true } : {}),
+  ...(o.description != null ? { description: text(o.description) } : {}),
+  ...(o.displayFolder ? { displayFolder: o.displayFolder } : {}),
+});
+// Power BI's auto date/time tables (a LocalDateTable_<guid> for each date column, the
+// DateTableTemplate_<guid> they are made from): by their annotation, else their name.
+const AUTO_DATE = /^(LocalDateTable|DateTableTemplate)_[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const autoDate = t => (t.annotations ?? []).some(a => a.name === '__PBI_LocalDateTable' || a.name === '__PBI_TemplateDateTable') || AUTO_DATE.test(t.name);
+
 function table(t) {
   const out = { name: t.name, hidden: !!t.isHidden };
+  if (t.description != null) out.description = text(t.description);
+  if (autoDate(t)) out.autoDate = true;
   if (t.dataCategory) out.dataCategory = t.dataCategory;
   const s = t.partitions?.[0]?.source;
   if (s?.type === 'calculated') out.dax = text(s.expression);
@@ -39,10 +53,12 @@ function table(t) {
     ...(c.dataCategory ? { dataCategory: c.dataCategory } : {}),
     // Power BI marks the fields column of a field parameter in its extended properties.
     fieldParameter: (c.extendedProperties ?? []).some(p => p.name === 'ParameterMetadata'),
+    ...shown(c),
+    ...(c.formatString ? { formatString: c.formatString } : {}),
   }));
   out.measures = (t.measures ?? []).map(m => {
     const sql = ossieSql(m);
-    return { name: m.name, dax: text(m.expression), formatString: m.formatString ?? null, ...(sql != null ? { sql } : {}) };
+    return { name: m.name, dax: text(m.expression), formatString: m.formatString ?? null, ...(sql != null ? { sql } : {}), ...shown(m) };
   });
   const g = t.calculationGroup;
   if (g) out.calculationGroup = {

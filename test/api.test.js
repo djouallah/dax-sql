@@ -106,11 +106,30 @@ test('describe() and dimensionsOf(): the model as a host lists it', () => {
   const d = c.describe();
   const sales = d.tables.find(t => t.name === 'Sales');
   assert.equal(typeof sales.hidden, 'boolean');
+  assert.deepEqual(Object.keys(sales).sort(), ['autoDate', 'columns', 'description', 'hidden', 'name']);
   for (const col of sales.columns) {
-    assert.deepEqual(Object.keys(col).sort(), ['calculated', 'expression', 'name', 'nullable', 'type', 'unique']);
+    assert.deepEqual(Object.keys(col).sort(), ['calculated', 'description', 'displayFolder', 'expression', 'formatString', 'hidden', 'name', 'nullable', 'type', 'unique']);
   }
   const m = d.measures.find(x => x.name === 'Sales Amount');
-  assert.deepEqual(m, { name: 'Sales Amount', table: 'Sales', expression: 'SUM(Sales[Amount])', formatString: null, type: 'decimal' });
+  assert.deepEqual(m, { name: 'Sales Amount', table: 'Sales', expression: 'SUM(Sales[Amount])', formatString: null, type: 'decimal', hidden: false, description: null, displayFolder: null });
+  // Relationships, with their cardinality and direction (#43 of a client: not all many-to-one).
+  for (const r of d.relationships) assert.deepEqual(Object.keys(r).sort(), ['active', 'crossFilter', 'from', 'fromCardinality', 'name', 'to', 'toCardinality']);
+  assert.ok(d.relationships.some(r => r.from.table === 'Sales' && r.to.table === 'Product' && r.fromCardinality === 'many' && r.toCardinality === 'one'));
+  // What a model's user sees, from the TMSL: hidden, description, format string, display folder; an
+  // auto date/time table; a one-to-one relationship filtering both ways.
+  const shown = createCompiler(tmslToModel({ model: { tables: [
+    { name: 'T', description: 'the facts', columns: [
+      { name: 'k', dataType: 'int64', sourceColumn: 'k', isHidden: true, description: 'key', displayFolder: 'Keys', formatString: '0' },
+      { name: 'd', dataType: 'dateTime', sourceColumn: 'd' }],
+      measures: [{ name: 'N', expression: 'COUNTROWS(T)', isHidden: true, description: 'rows', displayFolder: 'Counts', formatString: '#,0' }] },
+    { name: 'U', columns: [{ name: 'k', dataType: 'int64', sourceColumn: 'k' }] },
+    { name: 'LocalDateTable_0f3a1c2e-1111-2222-3333-444455556666', columns: [{ name: 'Date', dataType: 'dateTime', sourceColumn: 'Date' }] },
+  ], relationships: [{ name: 'r', fromTable: 'T', fromColumn: 'k', toTable: 'U', toColumn: 'k', fromCardinality: 'one', crossFilteringBehavior: 'bothDirections', isActive: false }] } })).describe();
+  assert.deepEqual(shown.tables[0].columns[0], { name: 'k', type: 'int', calculated: false, expression: null, nullable: true, unique: true, hidden: true, description: 'key', formatString: '0', displayFolder: 'Keys' });
+  assert.equal(shown.tables[0].description, 'the facts');
+  assert.deepEqual(shown.tables.map(t => t.autoDate), [false, false, true]);
+  assert.deepEqual(shown.measures[0], { name: 'N', table: 'T', expression: 'COUNTROWS(T)', formatString: '#,0', type: 'int', hidden: true, description: 'rows', displayFolder: 'Counts' });
+  assert.deepEqual(shown.relationships, [{ name: 'r', from: { table: 'T', column: 'k' }, to: { table: 'U', column: 'k' }, fromCardinality: 'one', toCardinality: 'one', crossFilter: 'both', active: false }]);
   // A measure's type is compile's for it alone.
   for (const x of d.measures) assert.equal(x.type, (() => { try { return c.compile(`EVALUATE ROW("v", [${x.name}])`).columns[0].type; } catch { return 'variant'; } })(), x.name);
   const dims = c.dimensionsOf('Sales Amount').map(t => t.name);

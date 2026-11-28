@@ -524,15 +524,23 @@ export function createCompiler(input, options = {}) {
       return { dax: printDaxQuery(query), limit, offset };
     },
     fieldParameters: () => fieldParameters(model),
-    // The model as a host lists it (SHOW, DESCRIBE, a field list), so it needs nothing of the
-    // compiler's own objects: { tables: [{ name, hidden, columns: [{ name, type, calculated,
-    // expression, nullable, unique }] }], measures: [{ name, table, expression, formatString,
-    // type }] }. A measure's type is the one compile gives it alone (EVALUATE ROW("v", [m])),
-    // 'variant' where it cannot be known (an error in it); worked out once for the compiler.
+    // The model as a host lists it (SHOW, DESCRIBE, a field list, a diagram), so it needs
+    // nothing of the compiler's own objects: { tables: [{ name, hidden, description, autoDate,
+    // columns: [{ name, type, calculated, expression, nullable, unique, hidden, description,
+    // formatString, displayFolder }] }], measures: [{ name, table, expression, formatString,
+    // type, hidden, description, displayFolder }], relationships: [{ name, from: { table,
+    // column }, to: { table, column }, fromCardinality, toCardinality, crossFilter, active }] }.
+    // A measure's type is the one compile gives it alone (EVALUATE ROW("v", [m])), 'variant'
+    // where it cannot be known (an error in it); worked out once for the compiler. autoDate: a
+    // Power BI auto date/time table. A relationship of a table to itself is not active (DAX has
+    // none).
     describe() {
       return {
         tables: [...model.tables.values()].map(describeTable),
-        measures: [...model.measures.values()].map(m => ({ name: m.name, table: m.table.name, expression: m.text, formatString: m.formatString ?? null, type: measureType(m) })),
+        measures: [...model.measures.values()].map(m => ({ name: m.name, table: m.table.name, expression: m.text, formatString: m.formatString ?? null,
+          type: measureType(m), hidden: !!m.hidden, description: m.description ?? null, displayFolder: m.displayFolder ?? null })),
+        relationships: model.relationships.map(r => ({ name: r.name, from: { table: r.from.table.name, column: r.from.name }, to: { table: r.to.table.name, column: r.to.name },
+          fromCardinality: r.fromCard, toCardinality: r.toCard, crossFilter: r.cross, active: r.active })),
       };
     },
     // The tables whose filters reach a measure's table, as describe() lists them: the columns
@@ -558,8 +566,9 @@ export function createCompiler(input, options = {}) {
 const TYPES = new Set(['int', 'double', 'decimal', 'string', 'datetime', 'bool', 'variant', 'blank']);
 
 // A table as describe() lists it.
-const describeTable = t => ({ name: t.name, hidden: !!t.hidden,
-  columns: t.columns.map(c => ({ name: c.name, type: c.type, calculated: !!c.expr, expression: c.expr ?? null, nullable: !!c.nullable, unique: !!c.unique })) });
+const describeTable = t => ({ name: t.name, hidden: !!t.hidden, description: t.description ?? null, autoDate: !!t.autoDate,
+  columns: t.columns.map(c => ({ name: c.name, type: c.type, calculated: !!c.expr, expression: c.expr ?? null, nullable: !!c.nullable, unique: !!c.unique,
+    hidden: !!c.hidden, description: c.description ?? null, formatString: c.formatString ?? null, displayFolder: c.displayFolder ?? null })) });
 
 // The field parameters of the model: calculated tables like
 //   { ("Sales", NAMEOF('Sales'[Sales Amount]), 0), ... }

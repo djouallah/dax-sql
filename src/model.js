@@ -15,11 +15,13 @@
 // The model object is no file format: a reader turns one into it (formats/: TMSL, Apache
 // Ossie). Its shape (DESIGN.md, "The model"), every property optional unless said:
 //   { tables: [{ name (required), source: { schema, entity }, dax (a calculated table),
-//       hidden, dataCategory,
+//       hidden, dataCategory, description, autoDate (Power BI's auto date/time table),
 //       columns: [{ name (required), type: string|int|double|decimal|datetime|bool|variant,
 //         source (the stored column; its name by default), dax (a calculated column), key,
-//         nullable, dataCategory, fieldParameter (the fields column of a field parameter) }],
-//       measures: [{ name (required), dax (required), formatString }],
+//         nullable, dataCategory, fieldParameter (the fields column of a field parameter),
+//         hidden, description, formatString, displayFolder }],
+//       measures: [{ name (required), dax (required), formatString, hidden, description,
+//         displayFolder }],
 //       calculationGroup: { precedence, items: [{ name, ordinal, dax, formatString }],
 //         multipleOrEmpty, noSelection } }],
 //     relationships: [{ name, from: { table, column }, to: { table, column } (required),
@@ -63,7 +65,8 @@ export class Model {
 
   addTable(t) {
     const table = { name: t.name, columns: [], colMap: new Map(), key: null, dataCategory: t.dataCategory ?? null,
-      source: { schema: t.source?.schema ?? null, entity: t.source?.entity ?? t.name }, hidden: !!t.hidden };
+      source: { schema: t.source?.schema ?? null, entity: t.source?.entity ?? t.name }, hidden: !!t.hidden,
+      description: t.description ?? null, autoDate: !!t.autoDate };
     if (t.dax != null) table.calc = t.dax;
     for (const c of t.columns ?? []) {
       const col = {
@@ -73,6 +76,7 @@ export class Model {
         expr: c.dax ?? null,
         unique: !!c.key, nullable: c.nullable !== false, dataCategory: c.dataCategory ?? null,
         fieldParameter: !!c.fieldParameter,
+        hidden: !!c.hidden, description: c.description ?? null, formatString: c.formatString ?? null, displayFolder: c.displayFolder ?? null,
       };
       if (c.key) { table.key = col; (table.keys ??= []).push(col); }
       table.columns.push(col);
@@ -85,12 +89,14 @@ export class Model {
     }
     if (t.calculationGroup) table.calcGroup = calcGroupOf(t.calculationGroup, table);
     this.tables.set(lc(t.name), table);
-    for (const ms of t.measures ?? []) this.addMeasure(table, ms.name, ms.dax, ms.formatString, ms.sql);
+    for (const ms of t.measures ?? []) this.addMeasure(table, ms.name, ms.dax, ms.formatString, ms.sql, ms);
     return table;
   }
 
-  addMeasure(table, name, expression, formatString = null, sql = null) {
-    this.measures.set(lc(name), { name, table, text: expression, ast: null, formatString: formatString ?? null, sql: sql ?? null });
+  // `shown`: what a model's user sees of it (hidden, description, displayFolder).
+  addMeasure(table, name, expression, formatString = null, sql = null, shown = {}) {
+    this.measures.set(lc(name), { name, table, text: expression, ast: null, formatString: formatString ?? null, sql: sql ?? null,
+      hidden: !!shown.hidden, description: shown.description ?? null, displayFolder: shown.displayFolder ?? null });
   }
 
   relationship(r, i) {

@@ -759,10 +759,15 @@ const { sql, columns } = dax.compile(`
   ones a host vouches for, such as its pinned snapshots), names in any case; a name the model
   lacks is an `INPUT` error. When none is left, `sql` is `null` and `read` gives no answer.
   dax-sql runs nothing: the host runs `sql`, and keeps the facts with the view.
-- `describe()`: the model as a host lists it, `{ tables: [{ name, hidden, columns: [{ name, type,
-  calculated, expression, nullable, unique }] }], measures: [{ name, table, expression,
-  formatString, type }] }`, a measure's `type` the one `compile` gives it alone (`variant` when
-  it cannot be compiled); `dimensionsOf(measure)`: the tables whose filters reach the measure's, as
+- `describe()`: the model as a host lists it, `{ tables: [{ name, hidden, description, autoDate,
+  columns: [{ name, type, calculated, expression, nullable, unique, hidden, description,
+  formatString, displayFolder }] }], measures: [{ name, table, expression, formatString, type,
+  hidden, description, displayFolder }], relationships: [{ name, from: { table, column }, to:
+  { table, column }, fromCardinality, toCardinality, crossFilter, active }] }`, a measure's
+  `type` the one `compile` gives it alone (`variant` when it cannot be compiled); `autoDate` a
+  Power BI auto date/time table (its annotation, else its `LocalDateTable_<guid>` /
+  `DateTableTemplate_<guid>` name); a relationship's cardinalities `many` or `one`, `crossFilter`
+  `single` or `both`, a table's to itself not active. `dimensionsOf(measure)`: the tables whose filters reach the measure's, as
   `describe()` lists them (`SHOW SEMANTIC DIMENSIONS … FOR METRIC`).
 - `plan`, `explain`, `planSql` take `{ optimize, correlated, unnest }`; `substrait` also
   `{ inline, tableName, tableSchema }`.

@@ -200,3 +200,18 @@ test('the model is named only as a relation', () => {
   fails('EVALUATE ROW("x", 1)', 'UNSUPPORTED');
   fails('DEFINE MEASURE Sales[x] = 1 EVALUATE ROW("x", [x])', 'UNSUPPORTED');
 });
+
+// The SQL front end's join of a fact with no key (contoso grid-0291's shape): the fact's rows
+// matched on every column to the joined rows. Each row is its own extension's (two rows alike in
+// every column have the same): no DISTINCT of the fact, no join on its every column.
+test('a fact matched on every column to its joined rows is its rows whose own join holds', async () => {
+  const cols = ['OrderDate', 'ShipDate', 'ProductKey', 'CustomerKey', 'Qty', 'Amount'];
+  const dax = `DEFINE
+VAR __v1 = GENERATE(SELECTCOLUMNS('Sales', ${cols.map(c => `"f.${c}", 'Sales'[${c}]`).join(', ')}), FILTER(SELECTCOLUMNS('Date', "o.Date", 'Date'[Date], "o.Quarter", 'Date'[Quarter]), ([f.ShipDate] = [o.Date])))
+VAR __v2 = DISTINCT(SELECTCOLUMNS(__v1, "Quarter", [o.Quarter]))
+EVALUATE SELECTCOLUMNS(ADDCOLUMNS(__v2, "__m1", CALCULATE([Sales Amount], REMOVEFILTERS(), TREATAS(SELECTCOLUMNS(FILTER(__v1, NOT(${cols.map(c => `ISBLANK([f.${c}])`).join(' && ')}) && ([o.Quarter] == [Quarter])), ${cols.map((c, i) => `"__k${i + 1}", [f.${c}]`).join(', ')}), ${cols.map(c => `'Sales'[${c}]`).join(', ')}))), "Quarter", [Quarter], "v", [__m1])`;
+  const { sql } = h.dax.compile(dax);
+  assert.ok((sql.match(/IS NOT DISTINCT FROM/g) ?? []).length < cols.length && !/EXISTS/.test(sql), sql);
+  const want = await h.sql(`SELECT d."Quarter" AS "Quarter", CAST(SUM(s."Amount") AS DOUBLE) AS v FROM "Sales" s JOIN "Date" d ON s."ShipDate" = d."Date" GROUP BY 1`);
+  assert.deepEqual(sorted(await h.run(dax)), sorted(want));
+});

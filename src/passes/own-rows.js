@@ -1,16 +1,18 @@
 // A scan matched on all its columns to rows of its own table that joins extended: the rows of
 // the scan whose own extension holds the condition (grid-0049: the SQL front end's TREATAS of all
 // 16 columns of catalog_sales from the rows of catalog_sales ⋈ promotion ⋈ item, a DISTINCT of
-// 14 M rows and a join on 16 columns, for SUM over the join the hand writes).
+// 14 M rows and a join on 16 columns, for SUM over the join the hand writes; 4.9 s to 0.4 s at SF10).
 //
-//   σ ∃(σ (S'.c ≡ S.c, every c) ∧ p (S' ⋈ T…)) (S)   =   σ ∃(σp(T…)) (S), T… reading S's row for S'
+//   σ ∃(σ (S'.c ≡ S.c, every c) ∧ p (S' ⋈ T…)) (S)   =   σ own(S) ⋈ δ π k σ rest(T…) on x = k
 //
 // S and S' scans of the same table, every stored column. Two rows alike in every column have
 // the same extensions (the joins and conditions read the same values), so a row of S matches a
 // row of S' ⋈ T… holding p exactly when one of its own extensions holds p: no key need be
-// unique. What is between the EXISTS and S' must be row-wise: σ, π, an inner apply or join to
-// other rows, a definition's read. (The semijoins pass would make the EXISTS a join on every
-// column, of the distinct rows of S' ⋈ T…: a DISTINCT of the whole fact.)
+// unique. Of p, what reads S's row alone (own) holds on S; the first join's matches of S's values
+// x to T…'s k are the semi join's keys; the rest reads T… alone. What is between the EXISTS and
+// S' must be row-wise: σ, π, an inner apply or join to other rows, a definition's read. A join,
+// not the EXISTS of S's own extension: DuckDB does not unnest that one under a group's apply
+// (8d84576, past 120 s at SF1); and not every column (the semijoins pass's): a DISTINCT of the fact.
 import * as P from '../plan.js';
 import { mapKids, mapScalars, subst, conjuncts, made, refsOf, existsOf, free } from './decorrelate.js';
 import { clone } from './clone.js';

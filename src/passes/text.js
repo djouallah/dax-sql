@@ -144,7 +144,7 @@ export function definitions(bind) {
 
   // --- FORMAT of a number ---
   // 10^j as a whole number of 64 bits (exact as a double to 10^18), and a division of two (each
-  // cast: T-SQL types a constant past 32 bits a DECIMAL, Polars divides only one type by itself).
+  // cast: T-SQL types a constant past 32 bits a DECIMAL).
   const pow10 = j => cast(call('power', [D(10), j], 'double'), 'int');
   const idiv = (a, b) => call('idiv', [cast(a, 'int'), cast(b, 'int')], 'int');
   // m >= 0 to 15 significant digits: { M, ex } (m is M * 10^(ex - 14)), as generalNumber has them.

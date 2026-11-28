@@ -38,16 +38,9 @@ export function sqlAggregates(sql) {
 // m (>= 0, or any number) to 15 significant digits in scientific notation, as DuckDB's
 // printf('%.14e'): 1.23450000000000e+03.
 export const e14 = m => `trim(to_char(CAST(${m} AS DOUBLE PRECISION), '9.99999999999999EEEE'))`;
-// The same digits for Polars, which has no to_char of a number: the mantissa rounded to 14 places
-// (ROUND's places a constant on Polars), as Polars writes a double (its shortest form: 1.2345,
-// 1.0), 'e', the exponent (one more when the mantissa rounds up to 10). The exponent a double's:
-// Polars reads a negative whole one as unsigned.
-const e14Polars = x => {
-  const v = `CAST(${x} AS DOUBLE PRECISION)`, e0 = `CAST(floor(log10(abs(${v}))) AS BIGINT)`;
-  const m0 = `round(${v} / power(10.0, CAST(${e0} AS DOUBLE PRECISION)), 14)`;
-  return `CASE WHEN ${v} = 0 THEN '0.0e0' ELSE CAST(CASE WHEN abs(${m0}) >= 10 THEN round(${m0} / 10, 14) ELSE ${m0} END AS TEXT)
-    || 'e' || CAST(CASE WHEN abs(${m0}) >= 10 THEN ${e0} + 1 ELSE ${e0} END AS TEXT) END`;
-};
+// The same digits for Polars, which has no to_char of a number: its printf, as DuckDB's (Polars
+// 2.2, pola-rs/polars#30835; the same text for zero, negatives, subnormals and NULL).
+const e14Polars = x => `printf('%.14e', CAST(${x} AS DOUBLE PRECISION))`;
 
 // --- numbers ---------------------------------------------------------------------------
 

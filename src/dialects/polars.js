@@ -48,6 +48,10 @@ export class PolarsDialect extends PostgresDialect {
   name = 'polars';
   // Polars has no function of a character's code: UNICODE as the plan defines it.
   nativeFns = new Set();
+  // A failing cast of a value not known beforehand (postgres.js's err) fails only where a row
+  // takes its CASE branch (Polars 2.2): DAX's ERROR raises as it does in Power BI. A constant's
+  // still fails in a branch no row takes (pola-rs/polars#31178), which err does not write.
+  raisesWhereTaken = true;
 
   // A date: a TIMESTAMP (a cast to one at midnight), a constant one too.
   type(t) { return t === 'date' ? 'TIMESTAMP' : super.type(t); }
@@ -66,14 +70,11 @@ export class PolarsDialect extends PostgresDialect {
   // it: tpcds fuzz3-0136, CONCATENATEX of prices).
   text(sql, t) { return t === 'double' || t === 'decimal' ? generalNumber(sql, t, true) : super.text(sql, t); }
 
-  // A quotient and an average are doubles, as DAX's are: Polars keeps a decimal's scale in a
-  // division by one (a double over a decimal too) and in its average, so that at scale the
-  // digits past it are lost (tpcds fuzz3-0126 at SF1: 111.77739, DuckDB 111.777384).
+  // A quotient is a double, as DAX's is: Polars keeps a decimal's scale in a division by one (a
+  // DECIMAL(38,10), by design: pola-rs/polars#29520), so that at scale the digits past it are
+  // lost (tpcds fuzz3-0126 at SF1: 111.77739, DuckDB 111.777384). (An average of a decimal is a
+  // double on Polars 2.2.)
   div(a, b) { return super.div(a, `CAST(${b} AS DOUBLE PRECISION)`); }
-  agg(fn, x, extra = {}) {
-    if (fn === 'avg' && !(extra.exact && extra.t === 'double')) return super.agg(fn, `CAST(${x} AS DOUBLE PRECISION)`, extra);
-    return super.agg(fn, x, extra);
-  }
 
   fn(name, a, nodes = []) {
     if (name === 'divide') return super.fn(name, [a[0], `CAST(${a[1]} AS DOUBLE PRECISION)`, ...a.slice(2)], nodes);

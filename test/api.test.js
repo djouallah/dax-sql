@@ -84,11 +84,13 @@ test('orphanCheck and trailingSpacesCheck: one row, one boolean per entry, in it
 
 test('the option callbacks receive what the contract says', () => {
   const seen = { tables: [], rels: [], cols: [] };
-  createCompiler(model(), {
+  const c = createCompiler(model(), {
     tableSource: t => { seen.tables.push(t); return `"${t.name}"`; },
     orphans: r => { seen.rels.push(r); return undefined; },
-    trailingSpaces: c => { seen.cols.push(c); return undefined; },
-  }).compile(Q);
+    trailingSpaces: col => { seen.cols.push(col); return undefined; },
+  });
+  // (The second asks whether Product has its blank row: orphans is asked of its relationships.)
+  for (const q of [Q, 'EVALUATE ROW("n", COUNTROWS(VALUES(Product[Color])))']) c.compile(q);
   for (const t of seen.tables) assert.equal(typeof t.name, 'string');
   for (const r of seen.rels) for (const k of ['key', 'name']) assert.equal(typeof r[k], 'string');
   for (const r of seen.rels) for (const s of ['many', 'one']) { assert.equal(typeof r[s].table, 'string'); assert.equal(typeof r[s].column, 'string'); }

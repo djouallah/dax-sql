@@ -31,7 +31,8 @@
     "./formats/tmsl.js": "./formats/tmsl.js",
     "./formats/tmdl.js": "./formats/tmdl.js",
     "./formats/ossie.js": "./formats/ossie.js",
-    "./formats/ossie-wide.js": "./formats/ossie-wide.js"
+    "./formats/ossie-wide.js": "./formats/ossie-wide.js",
+    "./formats/model.js": "./formats/model.js"
   },
   "files": [
     "src/",
@@ -39,6 +40,7 @@
     "formats/tmdl.js",
     "formats/ossie.js",
     "formats/ossie-sql.js",
+    "formats/model.js",
     "formats/ossie-wide.js",
     "DESIGN.md"
   ],

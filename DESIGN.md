@@ -538,6 +538,14 @@ the same at its top.
 A file is read into a model object by a reader in `formats/`, exported as `dax-sql/formats/tmsl.js`,
 `dax-sql/formats/tmdl.js` and `dax-sql/formats/ossie.js`. The compiler never imports them.
 
+- `formats/model.js`: `readModel(path, text | files, { parseYaml })` is the one reader a host
+  needs: `{ bim, skipped }`, the TMSL of a model's file, or of a folder of them (`{ path: text }`),
+  by the format its path says (`.bim` TMSL, `.tmdl` TMDL, `.yaml` / `.yml` Apache Ossie). A folder
+  is TMDL when it holds `.tmdl` files, else Ossie's `.yaml` files merged as Fabric merges a
+  semantic view's. A UTF-8 BOM is dropped. YAML is parsed by the caller's `parseYaml` (needed for
+  Ossie only: dax-sql has no dependencies). `skipped` is what `ossieToTmsl` left out; a model
+  whose metrics were all left out is refused. Every error is `INPUT`, naming the file.
+
 - `formats/tmsl.js`: `tmslToModel(bim)` reads a TMSL model (`model.bim`, the JSON of Power BI
   and Analysis Services). For a host, from the TMSL alone (each takes the document or its model):
   - `directLakeTables(bim)`: where a Direct Lake model's tables are in OneLake, a `Map` by
@@ -614,8 +622,8 @@ OneLake Studio) updated in the same step. `test/api.test.js` holds it.
 
 What a caller may rely on:
 
-- **Files.** `src/index.js` (the package's `.`) and `formats/{tmsl,tmdl,ossie,ossie-wide}.js`. What a host
-  loads as files is `src/**/*.js` and `formats/{tmsl,tmdl,ossie,ossie-sql}.js`: static ESM,
+- **Files.** `src/index.js` (the package's `.`) and `formats/{tmsl,tmdl,ossie,ossie-wide,model}.js`. What a
+  host loads as files is `src/**/*.js` and `formats/{tmsl,tmdl,ossie,ossie-sql,model}.js`: static ESM,
   relative imports only, no Node built-in (QuickJS and the browser load them).
 - **Calls and their options**, as below. An option a call does not take, or a value of the wrong
   kind, is a `DaxError` with code `INPUT`: no option is read that is not here.

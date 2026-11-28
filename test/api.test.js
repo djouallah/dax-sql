@@ -121,7 +121,7 @@ test('describe() and dimensionsOf(): the model as a host lists it', () => {
 test('the files a client loads are static ESM with relative imports only (QuickJS and the browser)', () => {
   const root = new URL('..', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1');
   const walk = d => readdirSync(d).flatMap(f => { const p = join(d, f); return statSync(p).isDirectory() ? walk(p) : p.endsWith('.js') ? [p] : []; });
-  const files = [...walk(join(root, 'src')), ...['tmsl', 'tmdl', 'ossie', 'ossie-sql'].map(f => join(root, 'formats', `${f}.js`))];
+  const files = [...walk(join(root, 'src')), ...['tmsl', 'tmdl', 'ossie', 'ossie-sql', 'model'].map(f => join(root, 'formats', `${f}.js`))];
   for (const f of files) {
     const text = readFileSync(f, 'utf8');
     for (const [, spec] of text.matchAll(/(?:^|\n)\s*(?:import|export)\b[^'"\n;]*?from\s*['"]([^'"]+)['"]/g)) assert.match(spec, /^\.\.?\//, `${f}: ${spec}`);

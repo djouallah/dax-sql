@@ -20,6 +20,8 @@ import { createCompiler } from '../../src/index.js';
 import { tmslToModel, directLakeTables, storageMode } from '../tmsl.js';
 import { tmslToOssie, ossieToTmsl, ossieToModel } from '../ossie.js';
 import { metricDax } from '../ossie-sql.js';
+import { readModel } from '../model.js';
+import { stringify } from 'yaml';
 import { bim as contoso, setup as contosoData } from '../../test/fixtures/contoso.js';
 
 const read = p => readFileSync(new URL(p, import.meta.url), 'utf8').replace(/^﻿/, '');
@@ -485,4 +487,37 @@ test('directLakeTables and storageMode read where a model\'s data is from its TM
   assert.equal(storageMode({ model: { tables: [{ partitions: [{}] }] } }), 'import', 'no mode: import');
   assert.equal(storageMode({ model: { tables: [{ partitions: [{ mode: 'directQuery' }] }, { partitions: [{ mode: 'import' }] }] } }), 'composite');
   assert.equal(storageMode({ model: { defaultMode: 'dual', tables: [{ partitions: [{ mode: 'default' }] }] } }), 'dual');
+});
+
+// One reader for a model's file or folder (#14): the format its path says, a BOM dropped, the
+// caller's YAML parser for Ossie, INPUT errors naming the file.
+test('readModel reads a .bim, a .tmdl, an Ossie .yaml and a folder of either, and says what it cannot', () => {
+  const bom = '﻿';
+  const input = (f, re) => assert.throws(f, e => e.code === 'INPUT' && re.test(e.message), re);
+  // TMSL, with Visual Studio's BOM.
+  assert.deepEqual(readModel('m.bim', bom + JSON.stringify(contoso)), { bim: contoso, skipped: [] });
+  input(() => readModel('m.bim', '{ not json'), /m\.bim is not a TMSL model/);
+  // TMDL: a file, and a folder (only its .tmdl files read).
+  const tmdl = 'model Model\n\tculture: en-US\n\ntable Sales\n\tmeasure Total = SUM(Sales[Amount])\n\tcolumn Amount\n\t\tdataType: double\n\t\tsourceColumn: Amount\n';
+  const one = readModel('m.tmdl', bom + tmdl).bim;
+  assert.equal(one.model.tables[0].name, 'Sales');
+  assert.deepEqual(readModel('def', { 'model.tmdl': 'model Model\n\tculture: en-US\n', 'tables/Sales.tmdl': tmdl.split('\n\n')[1], 'README.md': '# not read' }).bim.model.tables[0].measures[0].name, 'Total');
+  // Ossie: parsed by the caller's parser; one document, and a folder of .yaml files.
+  const doc = tmslToOssie(contoso);
+  const fromDoc = ossieToTmsl(doc);
+  assert.deepEqual(readModel('m.ossie.yaml', bom + stringify(doc), { parseYaml: parse }).bim, fromDoc);
+  const { datasets, relationships, ...top } = doc, head = { version: doc.version, name: doc.name };
+  const folder = { 'model.yaml': stringify(top), 'ds.yaml': stringify({ ...head, datasets }), 'rels.yaml': stringify({ ...head, relationships }), 'old.yml': 'not: read' };
+  assert.deepEqual(readModel('Semantic Views/m', folder, { parseYaml: parse }).bim.model.tables.length, fromDoc.model.tables.length);
+  input(() => readModel('m.yaml', stringify(doc)), /parses with the caller's parseYaml/);
+  input(() => readModel('m.yaml', 'a: [', { parseYaml: parse }), /m\.yaml is not YAML/);
+  input(() => readModel('m.yaml', 'a: 1', { parseYaml: parse }), /m\.yaml is not an Apache Ossie model: it has no datasets/);
+  // Metrics dax-sql cannot read are skipped and said; a model left with none is refused.
+  const other = { version: doc.version, name: 'o', datasets: [{ name: 't', source: 'dbo.t', fields: [{ name: 'x', expression: { sql: 'x' } }],
+    metrics: [{ name: 'm', expression: { dialects: [{ dialect: 'SNOWFLAKE', expression: 'SUM(x)' }] } }] }] };
+  input(() => readModel('o.yaml', stringify(other), { parseYaml: parse }), /o\.yaml: none of its metrics can be read: metric 'm'/);
+  // What is no model.
+  input(() => readModel('m.csv', 'a,b'), /m\.csv: a model is read from/);
+  input(() => readModel('dir', { 'a.txt': 'x' }), /the folder has no \.tmdl or \.yaml file/);
+  input(() => readModel('dir', [1]), /a model is a file's text, or a folder/);
 });

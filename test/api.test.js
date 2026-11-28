@@ -129,3 +129,33 @@ test('the files a client loads are static ESM with relative imports only (QuickJ
     assert.doesNotMatch(text, /\brequire\s*\(/, `${f}: require`);
   }
 });
+
+// Both data checks in one statement, read back as plain facts (#15), which the facts option takes.
+test('factsCheck(): one statement, read as plain facts that facts takes, answering as both checks do', async () => {
+  const c = createCompiler(model());
+  const f = c.factsCheck();
+  const [row] = await h.sql(f.sql);
+  const facts = f.read(row);
+  // As the two checks apart.
+  const o = c.orphanCheck(), t = c.trailingSpacesCheck();
+  const [ro] = await h.sql(o.sql), [rt] = await h.sql(t.sql);
+  o.rels.forEach((r, i) => assert.equal(facts.orphans[r.key], Object.values(ro)[i], r.key));
+  t.columns.forEach((x, i) => assert.equal(facts.trailingSpaces[x.key] === true, Object.values(rt)[i], x.key));
+  // An array, or text booleans, read the same; a value of neither kind is no answer.
+  assert.deepEqual(f.read(Object.values(row)), facts);
+  assert.deepEqual(f.read(Object.values(row).map(v => String(v).toUpperCase())), facts);
+  assert.deepEqual(f.read(Object.values(row).map(() => null)), { orphans: {}, trailingSpaces: {} });
+  assert.throws(() => f.read([true]), e => e.code === 'INPUT');
+  assert.throws(() => f.read('true'), e => e.code === 'INPUT');
+  // The tables each answer reads.
+  for (const r of o.rels) assert.deepEqual(f.tables.orphans[r.key], [...new Set([r.many.table, r.one.table])]);
+  for (const x of t.columns) assert.deepEqual(f.tables.trailingSpaces[x.key], [x.table]);
+  // facts in place of the two functions: no blank row test where an answer says, the same answers.
+  const q = 'EVALUATE ROW("n", COUNTROWS(VALUES(Category[Category])), "s", [Sales Amount])';
+  const withFacts = createCompiler(model(), { facts: JSON.parse(JSON.stringify(facts)) }).compile(q).sql;
+  assert.ok((withFacts.match(/EXISTS/g) ?? []).length < (c.compile(q).sql.match(/EXISTS/g) ?? []).length, withFacts);
+  assert.deepEqual(await h.sql(withFacts), await h.sql(c.compile(q).sql));
+  inputError(() => createCompiler(model(), { facts, orphans: () => undefined }));
+  inputError(() => createCompiler(model(), { facts: { orphans: { k: 'yes' } } }));
+  inputError(() => createCompiler(model(), { facts: { other: {} } }));
+});

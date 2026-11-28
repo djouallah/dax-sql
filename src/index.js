@@ -128,6 +128,14 @@ export function createCompiler(input, options = {}) {
   // kind, is an INPUT error. What the compiler passes itself (the blank row's, the aliases') is
   // added to a copy, never taken from the caller.
   options = { ...checkOptions('createCompiler', options, COMPILER) };
+  // facts (factsCheck().read's plain data) is the orphans and trailingSpaces options as data.
+  if (options.facts) {
+    if (options.orphans || options.trailingSpaces) throw inputError('createCompiler: facts, or orphans and trailingSpaces: one of the two');
+    const { orphans: o, trailingSpaces: s } = options.facts;
+    if (o) options.orphans = r => (Object.hasOwn(o, r.key) ? o[r.key] : undefined);
+    if (s) options.trailingSpaces = c => Object.hasOwn(s, c.key) && s[c.key] === true;
+    delete options.facts;
+  }
   const model = input instanceof Model ? input : new Model(input);
   const dialect = options.dialect instanceof Dialect ? options.dialect : DIALECTS[options.dialect ?? 'duckdb']?.();
   if (!dialect) throw inputError(`createCompiler: no dialect ${options.dialect} (one of ${Object.keys(DIALECTS).join(', ')}, or a Dialect)`);
@@ -361,6 +369,22 @@ export function createCompiler(input, options = {}) {
     }
     return measureTypes.get(m);
   };
+  // The trailing spaces test of each stored text column: { items, columns } (trailingSpacesCheck).
+  const trailingParts = () => {
+    const columns = [], items = [];
+    for (const t of model.tables.values()) {
+      if (t.calc || t.calcGroup) continue;
+      for (const c of t.columns) {
+        if (c.expr || c.type !== 'string') continue;
+        const scan = P.scan(t), col = scan.cols.find(x => x.lineage === c);
+        if (!col) continue;
+        const trimmed = { k: 'pop', op: 'call', name: 'rtrim', a: [P.ref(col)], t: 'string', nn: false };
+        items.push({ name: `s${items.length}`, expr: P.exists(P.select(scan, P.cmp('ne', P.ref(col), trimmed))), by: null, cast: null });
+        columns.push({ key: `${t.name}|${c.name}`, table: t.name, column: c.name });
+      }
+    }
+    return { items, columns };
+  };
   const onePlan = text => {
     const out = plans(text);
     if (out.length !== 1) throw new DaxError(`the query has ${out.length} EVALUATE statements`);
@@ -424,21 +448,50 @@ export function createCompiler(input, options = {}) {
     // compiler's dialect and with its tableSource; without row-level security. Calculated
     // tables, calculation groups and calculated columns are not listed.
     trailingSpacesCheck() {
-      const columns = [], items = [];
-      for (const t of model.tables.values()) {
-        if (t.calc || t.calcGroup) continue;
-        for (const c of t.columns) {
-          if (c.expr || c.type !== 'string') continue;
-          const scan = P.scan(t), col = scan.cols.find(x => x.lineage === c);
-          if (!col) continue;
-          const trimmed = { k: 'pop', op: 'call', name: 'rtrim', a: [P.ref(col)], t: 'string', nn: false };
-          items.push({ name: `s${items.length}`, expr: P.exists(P.select(scan, P.cmp('ne', P.ref(col), trimmed))), by: null, cast: null });
-          columns.push({ key: `${t.name}|${c.name}`, table: t.name, column: c.name });
-        }
-      }
+      const { items, columns } = trailingParts();
       const p = { plan: P.output(P.oneRow(), items, [], []), ordered: false, columns: items.map(i => ({ name: i.name, dax: null, type: 'bool', lineage: null })) };
       const plan = readBack(engine(readSubstrait(JSON.parse(JSON.stringify(toSubstrait(pipeline(p.plan)).plan)), model, { columns: p.columns, castOutput: false })));
       return { sql: new PlanSql(model, dialect, options).query({ ...p, plan }), columns };
+    },
+    // Both checks in one statement, and what its row says as plain data (the facts option):
+    // { sql, read(row) -> facts, tables }. sql is one SELECT of one row: the orphans test of each
+    // relationship (as orphanCheck's) and the trailing spaces test of each text column (as
+    // trailingSpacesCheck's, of the values as stored), so an engine can share the tables' scans.
+    // read takes that row, an array or an object by column, its values booleans or 'true' /
+    // 'false' text, and gives { orphans: { [rel.key]: bool }, trailingSpaces: { [column.key]:
+    // true } } (a value that is neither is no answer: tested in the SQL). tables: the tables each
+    // answer reads, { orphans: { [key]: [tables] }, trailingSpaces: { [key]: [table] } }, so a host
+    // ties the facts to the snapshots it read. dax-sql runs nothing: the host runs sql.
+    factsCheck() {
+      const o = { ...options, calcColumn, calcTable, security };
+      const op = new Lowerer(model, o).orphanCheck(), tp = trailingParts();
+      // Each half through the passes alone: the orphans' keys read trimmed where trailingSpaces
+      // says (as Power BI loads them), the trailing spaces' values as stored.
+      const a = trimScans(pipeline(op.plan), padded), b = pipeline(P.output(P.oneRow(), tp.items, [], []));
+      const items = [...a.items, ...b.items];
+      const columns = items.map(i => ({ name: i.name, dax: null, type: 'bool', lineage: null }));
+      const joined = { ...a, items, defs: [...(a.defs ?? []), ...(b.defs ?? [])] };
+      const plan = readBack(engine(readSubstrait(JSON.parse(JSON.stringify(toSubstrait(joined).plan)), model, { columns, castOutput: false })));
+      const sql = new PlanSql(model, dialect, o).query({ plan, ordered: false, columns });
+      const rels = op.rels, cols = tp.columns, names = columns.map(c => c.name);
+      const answer = v => (v === true || v === false ? v
+        : typeof v === 'string' && /^\s*(true|false)\s*$/i.test(v) ? /true/i.test(v) : undefined);
+      return {
+        sql,
+        tables: {
+          orphans: Object.fromEntries(rels.map(r => [r.key, [...new Set([r.many.table, r.one.table])]])),
+          trailingSpaces: Object.fromEntries(cols.map(c => [c.key, [c.table]])),
+        },
+        read(row) {
+          if (row === null || typeof row !== 'object') throw inputError('factsCheck().read: the row is an array or an object by column');
+          if (Array.isArray(row) && row.length !== names.length) throw inputError(`factsCheck().read: the row has ${row.length} values, the statement ${names.length}`);
+          const at = i => answer(Array.isArray(row) ? row[i] : row[names[i]]);
+          const facts = { orphans: {}, trailingSpaces: {} };
+          rels.forEach((r, i) => { const v = at(i); if (v !== undefined) facts.orphans[r.key] = v; });
+          cols.forEach((c, j) => { if (at(rels.length + j) === true) facts.trailingSpaces[c.key] = true; });
+          return facts;
+        },
+      };
     },
     // Any SQL in which a SELECT over the model (FROM `name`, 'model' by default) is a relation in
     // parentheses -> { sql, relations: [{ text, dax, sql }] }: each SELECT's SQL in its place, the

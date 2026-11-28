@@ -39,6 +39,10 @@ export const COMPILER = {
   user: str,
   roles: Object.assign(v => str(v) || (Array.isArray(v) && v.every(str)), { says: 'a role name or a list of them' }),
   params: object,
+  // factsCheck().read's: { orphans: { [rel.key]: bool }, trailingSpaces: { [column.key]: bool } }.
+  facts: Object.assign(v => object(v) && Object.keys(v).every(k => k === 'orphans' || k === 'trailingSpaces')
+    && ['orphans', 'trailingSpaces'].every(k => v[k] == null || (object(v[k]) && Object.values(v[k]).every(bool))),
+  { says: '{ orphans: { key: true or false }, trailingSpaces: { key: true } }, as factsCheck().read gives it' }),
 };
 
 export const PLAN = { optimize: bool, correlated: bool, unnest: bool };

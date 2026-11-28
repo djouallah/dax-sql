@@ -695,6 +695,15 @@ const { sql, columns } = dax.compile(`
   `{ sql, columns }`: one `SELECT` of one row with a boolean for each text column of the
   model's stored tables (`{ key, table, column }`, what `trailingSpaces` receives), `true` where
   a value ends in a space. In the compiler's dialect, without row-level security.
+- `factsCheck()`: both checks in one statement, read as plain data: `{ sql, read(row), tables }`.
+  `sql` is one `SELECT` of one row answering both (each table's scans shared where the engine can):
+  the orphans tests with keys read as `orphanCheck`'s, the trailing spaces tests of the values as
+  stored. `read(row)` takes that row, an array or an object by column, of booleans or `'true'` /
+  `'false'` text, and gives the facts, `{ orphans: { [rel.key]: bool }, trailingSpaces:
+  { [column.key]: true } }` (a value of neither kind is no answer: tested in the SQL), which the
+  `facts` option takes. `tables` says the tables each answer reads, `{ orphans: { [key]: [tables] },
+  trailingSpaces: { [key]: [table] } }`, so a host ties the facts to the snapshots it read.
+  dax-sql runs nothing: the host runs `sql`, and keeps the facts with the view.
 - `describe()`: the model as a host lists it, `{ tables: [{ name, hidden, columns: [{ name, type,
   calculated, expression, nullable, unique }] }], measures: [{ name, table, expression,
   formatString, type }] }`, a measure's `type` the one `compile` gives it alone (`variant` when
@@ -759,6 +768,7 @@ SELECT * FROM (SHOW SEMANTIC METRICS IN sales) WHERE ...;   -- each one reads as
 | `user` | The value of `USERNAME()` and `USERPRINCIPALNAME()`. |
 | `roles` | A role name, or several: row-level security, each table keeping the rows that at least one of the roles keeps; and object-level security, a table or column hidden when every role hides it. A hidden object is no name for the query (naming it, a measure that reads it, a measure of a hidden table: an error, as the model lacked it), while the model still reads it: relationships, joins, and calculated columns computed from it, which stay visible. A table result leaves its hidden columns out. Roles that hide objects together with roles that filter rows are an error, as in Power BI; one role can do both. |
 | `params` | The values of the query's parameters (`@name`), by name: numbers, text, booleans, `Date`s or `null` (blank). |
+| `facts` | What `factsCheck().read` gives, `{ orphans: { [rel.key]: bool }, trailingSpaces: { [column.key]: bool } }`: the `orphans` and `trailingSpaces` options as plain data, which a host stores with a view and compares between runs. Given with either function, an `INPUT` error. |
 
 Errors are `DaxError` with a `code`:
 

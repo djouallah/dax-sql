@@ -2043,11 +2043,14 @@ class Block {
   // before its SELECT list): an apply is computed for the rows kept, not for every row.
   // No FROM: one row, made here, so nothing reads its column. One row crossed with R, or applied
   // to R (not outer: over no row of R an outer apply is a row of NULLs), is R: then R is the rows
-  // (a total's grouping of no keys, ROW's measures), and the one row is in no plan.
+  // (a total's grouping of no keys, ROW's measures), and the one row is in no plan. But not an R
+  // that reads a row outside it: applied, it is a value computed for that row (a scalar subquery
+  // for an engine that unnests, DuckDB, which runs it as the rows of a derived table 100 times
+  // slower: fuzz3-0125, a currency's rate on its last date).
   body() {
     let joins = this.joins, applies = this.applies, r = this.from;
     if (!r && joins[0]?.kind === 'cross') { r = joins[0].rel; joins = joins.slice(1); }
-    else if (!r && !joins.length && applies[0] && !applies[0].outer) { r = applies[0].rel; applies = applies.slice(1); }
+    else if (!r && !joins.length && applies[0] && !applies[0].outer && !free(applies[0].rel).size) { r = applies[0].rel; applies = applies.slice(1); }
     r ??= P.oneRow();
     for (const j of joins) r = P.join(j.kind, r, j.rel, j.on);
     // (A condition before the applies reads none of their columns, the first's included: on R it

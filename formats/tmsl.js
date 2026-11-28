@@ -93,32 +93,86 @@ const nameParts = ident => String(ident).match(/"(?:[^"]|"")*"|[^.]+/g) ?? [];
 const unquote = p => (p.startsWith('"') ? p.slice(1, -1).replace(/""/g, '"') : p);
 const ONELAKE = /onelake\.dfs\.fabric\.microsoft\.com\/([0-9a-f-]{36})\/([0-9a-f-]{36})/i;
 
+// A Fabric SQL endpoint's expression: Sql.Database("<label>-<workspace label>.datawarehouse.…",
+// "<endpoint GUID>"), each label a GUID's 16 bytes in base32 (RFC 4648, a-z2-7).
+const SQL_DATABASE = /Sql\.Database\s*\(\s*"[a-z2-7]{26}-([a-z2-7]{26})\.datawarehouse\.[^"]*"\s*,\s*"([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})"\s*\)/i;
+const BASE32 = 'abcdefghijklmnopqrstuvwxyz234567';
+// A label as the GUID it writes: its first three groups little-endian, as a GUID's bytes are.
+function guidOfLabel(label) {
+  let bits = 0, held = 0;
+  const b = [];
+  for (const c of lc(label)) {
+    bits = (bits << 5) | BASE32.indexOf(c);
+    held += 5;
+    if (held >= 8) { held -= 8; b.push((bits >> held) & 255); bits &= (1 << held) - 1; }
+  }
+  const h = b.slice(0, 16).map(x => x.toString(16).padStart(2, '0'));
+  return `${h[3]}${h[2]}${h[1]}${h[0]}-${h[5]}${h[4]}-${h[7]}${h[6]}-${h[8]}${h[9]}-${h.slice(10).join('')}`;
+}
+// A partition's mode, lower-cased: the model's defaultMode where it says none or default (Import
+// when the model says none either).
+const modeOf = (p, model) => lc(!p.mode || lc(p.mode) === 'default' ? (model.defaultMode || 'import') : p.mode);
+// A table's partition of the rows of a named table (an entity), not a calculation or M.
+const entityOf = t => {
+  const s = t.partitions?.[0]?.source;
+  return s && (s.type === 'entity' || (s.type == null && s.entityName != null)) ? s : null;
+};
+
 // A Direct Lake model's tables in OneLake, by lower-cased table name:
 //   { workspace, item, schema, entity }          a partition reading a shared expression whose
 //     AzureStorage.DataLake URL names the lakehouse by GUIDs (schema `dbo`, entity the table's
 //     name, unless the partition says);
+//   { workspace, endpoint, schema, entity, viaSqlEndpoint: true }  a Direct Lake partition (its
+//     mode, else the model's defaultMode) reading a shared expression Sql.Database of a Fabric
+//     SQL endpoint: its workspace and the endpoint, by GUIDs (which item is behind the endpoint is
+//     Fabric's to say); an Import or DirectQuery partition reading one is not in it;
 //   { item, schema, entity, inWorkspace: true }  a partition with no expression whose schema is
 //     item.schema (ossieToTmsl's for a source item.schema.table): the item of that name in the
 //     model's own workspace.
-// A table it places neither way is not in it. It takes the document ({ model }) or its model.
+// A table it places none of these ways is not in it: unplacedTables lists those of no expression.
+// It takes the document ({ model }) or its model.
 export function directLakeTables(bim) {
   const model = bim?.model ?? bim ?? {};
-  const lakes = new Map();
+  const lakes = new Map(), endpoints = new Map();
   for (const e of model.expressions ?? []) {
     const m = ONELAKE.exec(String(text(e.expression)));
     if (m) lakes.set(e.name, { workspace: lc(m[1]), item: lc(m[2]) });
+    const q = SQL_DATABASE.exec(String(text(e.expression)));
+    if (q) endpoints.set(e.name, { workspace: guidOfLabel(q[1]), endpoint: lc(q[2]) });
   }
   const out = new Map();
   for (const t of model.tables ?? []) {
-    const s = t.partitions?.[0]?.source;
+    const p = t.partitions?.[0], s = p?.source;
     if (!s) continue;
-    const lake = s.expressionSource && lakes.get(s.expressionSource);
     // Each part a name, unquoted: an entity written quoted (a TMSL of dax-sql before 0.3) too.
     const entity = unquote(s.entityName ?? t.name);
+    const lake = s.expressionSource && lakes.get(s.expressionSource);
     if (lake) { out.set(lc(t.name), { ...lake, schema: unquote(s.schemaName ?? 'dbo'), entity }); continue; }
+    const sql = s.expressionSource && endpoints.get(s.expressionSource);
+    if (sql) {
+      if (modeOf(p, model) === 'directlake') out.set(lc(t.name), { ...sql, schema: unquote(s.schemaName ?? 'dbo'), entity, viaSqlEndpoint: true });
+      continue;
+    }
     if (s.expressionSource || !s.entityName || !s.schemaName) continue;
     const parts = nameParts(s.schemaName);
     if (parts.length === 2) out.set(lc(t.name), { item: unquote(parts[0]), schema: unquote(parts[1]), entity, inWorkspace: true });
+  }
+  return out;
+}
+
+// The tables of a model that nothing places, by lower-cased table name: { schema, entity }, a
+// partition of a named table (an entity) with no expression and no item.schema name, such as a
+// Fabric semantic view's source dbo.sales read with no catalog. Which lakehouse holds them is the
+// host's to ask. With directLakeTables, every entity table of a model is in one or the other, or
+// reads an expression that is neither OneLake's nor a Fabric SQL endpoint's.
+export function unplacedTables(bim) {
+  const model = bim?.model ?? bim ?? {};
+  const placed = directLakeTables(model);
+  const out = new Map();
+  for (const t of model.tables ?? []) {
+    const s = entityOf(t);
+    if (!s || s.expressionSource || placed.has(lc(t.name))) continue;
+    out.set(lc(t.name), { schema: unquote(s.schemaName ?? 'dbo'), entity: unquote(s.entityName ?? t.name) });
   }
   return out;
 }

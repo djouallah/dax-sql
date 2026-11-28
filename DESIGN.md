@@ -559,7 +559,15 @@ A file is read into a model object by a reader in `formats/`, exported as `dax-s
     shared expression whose `AzureStorage.DataLake` URL names the lakehouse by GUIDs (`schema`
     `dbo` and `entity` the table's name unless the partition says), or `{ item, schema, entity,
     inWorkspace: true }` for one with no expression whose schema is `item.schema` (an Ossie
-    `source` of `item.schema.table`), the item of that name in the model's workspace;
+    `source` of `item.schema.table`), the item of that name in the model's workspace; or
+    `{ workspace, endpoint, schema, entity, viaSqlEndpoint: true }` for a Direct Lake partition
+    (its mode, else the model's `defaultMode`) reading a shared expression `Sql.Database` of a
+    Fabric SQL endpoint: the workspace (the host's second label, a GUID's bytes in base32) and the
+    endpoint by GUIDs, the item behind it Fabric's to say; an Import or DirectQuery one is not
+    listed;
+  - `unplacedTables(bim)`: the entity tables nothing places (no expression, no `item.schema`),
+    `{ schema, entity }` by lower-cased name, such as a semantic view's `dbo.sales` read with no
+    `catalog`: the lakehouse that holds them is the host's to ask;
   - `storageMode(bim)`: `directlake`, `import`, `directquery`, `dual` or `composite`, from the
     partitions' `mode` and the model's `defaultMode` (no mode: import; a calculated table or
     calculation group does not count).

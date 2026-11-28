@@ -17,7 +17,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { parse } from 'yaml';
 import { DuckDBInstance } from '@duckdb/node-api';
 import { createCompiler } from '../../src/index.js';
-import { tmslToModel, directLakeTables, storageMode } from '../tmsl.js';
+import { tmslToModel, directLakeTables, unplacedTables, storageMode } from '../tmsl.js';
 import { tmslToOssie, ossieToTmsl, ossieToModel, ossieSources, tmslType, OSSIE, fabricRefusals } from '../ossie.js';
 import { metricDax } from '../ossie-sql.js';
 import { readModel, formatOf } from '../model.js';
@@ -465,6 +465,38 @@ test('Ossie: a folder of files reads as the document it was split from, merged a
 
 // Where a Direct Lake model's tables are (#13): by GUIDs from a shared expression, or by name in
 // the model's workspace (an Ossie source item.schema.table); and how the model stores them.
+// Direct Lake over a Fabric SQL endpoint, and the tables nothing places (#30).
+test('directLakeTables: a Direct Lake table over a SQL endpoint; unplacedTables: those nothing places', () => {
+  // The host's second label: the workspace GUID's bytes in base32, the first three groups little-endian.
+  const host = 'xpkymsttihxelp6vuo2w5ywt2u-ceircejceiztgrcekvkvkvkvku.datawarehouse.fabric.microsoft.com';
+  const part = (entityName, extra = {}) => [{ name: entityName, ...extra.p, source: { type: 'entity', entityName, expressionSource: 'DatabaseQuery', ...extra.s } }];
+  const bim = { model: { defaultMode: 'directLake', expressions: [
+    { name: 'DatabaseQuery', kind: 'm', expression: ['let', `\tdatabase = Sql.Database("${host}", "AAAAAAAA-0000-0000-0000-000000000001")`, 'in', '\tdatabase'] },
+    { name: 'ByName', kind: 'm', expression: `Sql.Database("${host}", "my_database")` },
+  ], tables: [
+    { name: 'duid', partitions: part('duid') },
+    { name: 'price', partitions: part('price', { s: { schemaName: 'aemo' }, p: { mode: 'directLake' } }) },
+    { name: 'imported', partitions: part('imported', { p: { mode: 'import' } }) },
+    { name: 'named', partitions: part('named', { s: { expressionSource: 'ByName' } }) },
+    { name: 'sales', partitions: [{ name: 'sales', source: { type: 'entity', entityName: 'sales', schemaName: 'dbo' } }] },
+    { name: 'bare', partitions: [{ name: 'bare', source: { type: 'entity', entityName: '"Bare T"' } }] },
+    { name: 'lake', partitions: [{ name: 'lake', source: { type: 'entity', entityName: 'x', schemaName: 'nem.dbo' } }] },
+    { name: 'calc', partitions: [{ name: 'calc', source: { type: 'calculated', expression: '{1}' } }] },
+  ] } };
+  const tables = directLakeTables(bim);
+  const ws = '11111111-2222-3333-4444-555555555555', endpoint = 'aaaaaaaa-0000-0000-0000-000000000001';
+  assert.deepEqual(tables.get('duid'), { workspace: ws, endpoint, schema: 'dbo', entity: 'duid', viaSqlEndpoint: true });
+  assert.deepEqual(tables.get('price'), { workspace: ws, endpoint, schema: 'aemo', entity: 'price', viaSqlEndpoint: true });
+  for (const t of ['imported', 'named', 'sales', 'bare', 'calc']) assert.equal(tables.has(t), false, t);
+  assert.deepEqual(tables.get('lake'), { item: 'nem', schema: 'dbo', entity: 'x', inWorkspace: true });
+  // What nothing places: an entity of no expression, no item.schema.
+  assert.deepEqual([...unplacedTables(bim)], [['sales', { schema: 'dbo', entity: 'sales' }], ['bare', { schema: 'dbo', entity: 'Bare T' }]]);
+  // A Fabric semantic view read with no catalog: its every table.
+  const view = ossieToTmsl({ version: '0.3.0.dev0', name: 'v', datasets: [{ name: 'sales', source: 'dbo.sales', fields: [{ name: 'a', expression: { sql: 'a' } }] }] });
+  assert.deepEqual([...unplacedTables(view)], [['sales', { schema: 'dbo', entity: 'sales' }]]);
+  assert.equal(unplacedTables(ossieToTmsl({ version: '0.3.0.dev0', name: 'v', datasets: [{ name: 'sales', source: 'dbo.sales', fields: [{ name: 'a', expression: { sql: 'a' } }] }] }, { catalog: 'nem' })).size, 0);
+});
+
 test('directLakeTables and storageMode read where a model\'s data is from its TMSL alone', () => {
   const ws = '11111111-2222-3333-4444-555555555555', lh = 'AAAAAAAA-2222-3333-4444-555555555555';
   const bim = { model: {

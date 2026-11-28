@@ -443,94 +443,184 @@ const checkAs = (what, as) => {
 // A Fabric semantic view read as the model Fabric's Publish makes of it (ossieToTmsl's
 // `as: 'fabric'`). Its files are of version 0.2.0.dev0 (what Publish reads) or 0.3.0.dev0, any
 // other an error naming the file. They are merged leniently: what Publish refuses but a model can
-// do without is left out and said to onSkip({ kind, name, file, why }): the second of a name given
-// twice in any case, a dataset whose source is not schema.table, a relationship of more than one
-// column a side or to a dataset left out, a metric named as a dataset or with no DAX dialect, a
-// dataset's own metrics. Each dataset is a Direct Lake table of the catalog with its source
-// table's columns (columnsOf; none is an error naming the dataset), every relationship active,
-// and the DAX metrics in a table of their own, Metrics, as the model Publish creates has them.
+// do without is left out and said to onSkip({ kind, name, file, path, why }), `path` where it is
+// in its file's document (['datasets', 2, 'source']): the second of a name given twice in any
+// case, a dataset whose source is not schema.table, a relationship of more than one column a side
+// or to a dataset left out, a metric named as a dataset or with no DAX dialect, a dataset's own
+// metrics. Each dataset is a Direct Lake table of the catalog with its source table's columns
+// (columnsOf; none is an error naming the dataset), every relationship active, and the DAX
+// metrics in a table of their own, Metrics, as the model Publish creates has them.
 export const FABRIC_VERSIONS = ['0.2.0.dev0', '0.3.0.dev0'];
 export const FABRIC_METRICS = 'Metrics';
+// What Fabric's Publish reads (learn.microsoft.com, fabric/fundamentals/semantic-views-yaml-reference,
+// and tried): files of one version; the dialect names it knows, of which it publishes `reads`
+// and leaves the rest out with a warning, any other name (OSSIE_SQL_2026 too, tried 2026-11-19:
+// OSSIE_MODEL_DESERIALIZATION_FAILED) refusing the whole view.
+const PUBLISH = { version: '0.2.0.dev0', dialects: ['DAX', 'ANSI_SQL', 'SNOWFLAKE', 'MDX', 'TABLEAU', 'DATABRICKS', 'MAQL', 'BIGQUERY'], reads: ['DAX'] };
 
 // What this reader is written for, for a host to say or check (DESIGN.md, Contract):
 //   version   the spec's version tmslToOssie writes;
 //   commit    the apache/ossie commit it was last checked against (ossie.yml checks Ossie's main
 //             every day and says the core-spec commits since this one: a dev version moves);
 //   reads     the versions ossieToTmsl reads (fabric: those of a Fabric semantic view, as 'fabric');
-//   dialects  the expression dialects it evaluates (reads) and writes; an expression in another
-//             is kept as written, both ways, and read in DAX only where one is beside it.
+//   dialects  the expression dialects it evaluates (reads) and writes, and the spec's own SQL
+//             (standard); an expression in another is kept as written, both ways, and read in DAX
+//             only where one is beside it;
+//   publish   what Fabric's Publish reads (PUBLISH above): its version, the dialect names it knows
+//             and those of them it publishes (fabricRefusals checks a view against them).
 const freeze = xs => Object.freeze([...xs]);
 export const OSSIE = Object.freeze({
   version: VERSION,
   commit: 'b367d3f12e6dc5915020075fd861cd44744633f8',
   reads: freeze(READS),
   fabric: freeze(FABRIC_VERSIONS),
-  dialects: Object.freeze({ reads: freeze(['DAX', 'OSSIE_SQL_2026', 'ANSI_SQL']), writes: freeze(['DAX', 'OSSIE_SQL_2026']) }),
+  dialects: Object.freeze({ reads: freeze(['DAX', 'OSSIE_SQL_2026', 'ANSI_SQL']), writes: freeze(['DAX', 'OSSIE_SQL_2026']), standard: 'OSSIE_SQL_2026' }),
+  publish: Object.freeze({ version: PUBLISH.version, dialects: freeze(PUBLISH.dialects), reads: freeze(PUBLISH.reads) }),
 });
 const fabricSource = d => {
   const parts = typeof d?.source === 'string' ? d.source.split('.') : [];
   return parts.length === 2 && parts.every(p => p.trim()) ? parts : null;
 };
-function fabricMerge(input, onSkip) {
-  const bad = msg => new DaxError(`Fabric semantic view: ${msg}`, { code: 'INPUT' });
+const fabricBad = msg => new DaxError(`Fabric semantic view: ${msg}`, { code: 'INPUT' });
+// A view's files, [[file, doc]] by path (its .yaml files), or one document.
+function fabricFiles(input) {
   const files = input !== null && typeof input === 'object' && !Array.isArray(input) && 'datasets' in input
     ? [['the document', input]]
     : Object.entries(input !== null && typeof input === 'object' ? input : {}).filter(([p]) => /\.yaml$/i.test(p))
       .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
-  if (!files.length) throw bad('no .yaml file in its folder');
+  if (!files.length) throw fabricBad('no .yaml file in its folder');
+  for (const [file, doc] of files) {
+    if (typeof doc === 'string') throw fabricBad(`${file} is text: parse its YAML first (the reader takes parsed documents)`);
+    if (!doc || typeof doc !== 'object' || Array.isArray(doc)) throw fabricBad(`${file} is not an Ossie document`);
+    for (const key of ['datasets', 'relationships', 'metrics']) {
+      if (doc[key] != null && !Array.isArray(doc[key])) throw fabricBad(`${file}: ${key} is not a list`);
+    }
+  }
+  return files;
+}
+const LIST_OF = { dataset: 'datasets', relationship: 'relationships', metric: 'metrics' };
+function fabricMerge(input, onSkip) {
+  const files = fabricFiles(input);
   const all = { datasets: [], relationships: [], metrics: [] };
   let name = null, description = null;
   for (const [file, doc] of files) {
-    if (typeof doc === 'string') throw bad(`${file} is text: parse its YAML first (the reader takes parsed documents)`);
-    if (!doc || typeof doc !== 'object' || Array.isArray(doc)) throw bad(`${file} is not an Ossie document`);
     if (!FABRIC_VERSIONS.includes(String(doc.version))) {
-      throw bad(`${file} is version ${doc.version ?? '(none)'}: a Fabric semantic view is ${FABRIC_VERSIONS.join(' or ')}`);
+      throw fabricBad(`${file} is version ${doc.version ?? '(none)'}: a Fabric semantic view is ${FABRIC_VERSIONS.join(' or ')}`);
     }
     name ??= doc.name ?? null;
     description ??= doc.description ?? null;
-    for (const key of Object.keys(all)) {
-      if (doc[key] == null) continue;
-      if (!Array.isArray(doc[key])) throw bad(`${file}: ${key} is not a list`);
-      all[key].push(...doc[key].map(x => ({ x, file })));
-    }
+    for (const key of Object.keys(all)) all[key].push(...(doc[key] ?? []).map((x, i) => ({ x, file, i })));
   }
-  // Said to onSkip; false, whatever onSkip returns.
-  const skip = (kind, { x, file }, why) => { onSkip({ kind, name: x?.name ?? null, file, why: `${kind} '${x?.name}': ${why}` }); return false; };
+  // Said to onSkip, at its path in its file (below the item: `at`); false, whatever onSkip returns.
+  const skip = (kind, { x, file, i }, why, at = []) => {
+    onSkip({ kind, name: x?.name ?? null, file, path: [LIST_OF[kind], i, ...at], why: `${kind} '${x?.name}': ${why}` });
+    return false;
+  };
   // Each name once, in any case: the first kept.
   const once = (kind, list) => {
     const seen = new Map();
     return list.filter(it => {
-      if (!it.x || typeof it.x !== 'object' || it.x.name == null) return skip(kind, it, 'it has no name'), false;
+      if (!it.x || typeof it.x !== 'object' || it.x.name == null) return skip(kind, it, 'it has no name');
       const k = lc(it.x.name);
-      if (seen.has(k)) return skip(kind, it, `it is named a second time (first in ${seen.get(k)})`), false;
+      if (seen.has(k)) return skip(kind, it, `it is named a second time (first in ${seen.get(k)})`, ['name']);
       seen.set(k, it.file);
       return true;
     });
   };
   const datasets = once('dataset', all.datasets).filter(it => fabricSource(it.x)
-    || skip('dataset', it, `its source ${JSON.stringify(it.x.source ?? null)} is not schema.table`));
-  for (const { x: d, file } of datasets) {
-    for (const m of Array.isArray(d.metrics) ? d.metrics : []) {
-      skip('metric', { x: m, file }, `a metric of the dataset '${d.name}': a Fabric semantic view's metrics are the view's`);
-    }
+    || skip('dataset', it, `its source ${JSON.stringify(it.x.source ?? null)} is not schema.table`, ['source']));
+  for (const it of datasets) {
+    (Array.isArray(it.x.metrics) ? it.x.metrics : []).forEach((m, j) => onSkip({ kind: 'metric', name: m?.name ?? null, file: it.file,
+      path: ['datasets', it.i, 'metrics', j], why: `metric '${m?.name}' of the dataset '${it.x.name}': a Fabric semantic view's metrics are the view's` }));
   }
   const kept = new Map(datasets.map(({ x }) => [lc(x.name), x]));
   const one = c => Array.isArray(c) && c.length === 1;
   const relationships = once('relationship', all.relationships).filter(it => {
     const r = it.x;
-    if (!one(r.from_columns) || !one(r.to_columns)) return skip('relationship', it, 'it joins more than one column on a side'), false;
-    const lost = [r.from, r.to].find(end => !kept.has(lc(end)));
-    if (lost !== undefined) return skip('relationship', it, `its dataset '${lost}' is left out or not in the view`), false;
+    const wide = ['from_columns', 'to_columns'].find(k => !one(r[k]));
+    if (wide) return skip('relationship', it, 'it joins more than one column on a side', [wide]);
+    const lost = ['from', 'to'].find(k => !kept.has(lc(r[k])));
+    if (lost) return skip('relationship', it, `its dataset '${r[lost]}' is left out or not in the view`, [lost]);
     return true;
   });
   const metrics = once('metric', all.metrics).flatMap(it => {
-    if (kept.has(lc(it.x.name))) return skip('metric', it, 'a dataset has its name'), [];
+    if (kept.has(lc(it.x.name))) return skip('metric', it, 'a dataset has its name', ['name']), [];
     const d = (Array.isArray(it.x.expression?.dialects) ? it.x.expression.dialects : [])
       .find(e => lc(e?.dialect) === 'dax' && String(text(e?.expression) ?? '').trim());
-    if (!d) return skip('metric', it, 'it has no DAX dialect (Fabric leaves it out too)'), [];
+    if (!d) return skip('metric', it, 'it has no DAX dialect (Fabric leaves it out too)', ['expression']), [];
     return [{ m: it.x, dax: String(text(d.expression)) }];
   });
   return { name, description, datasets: datasets.map(({ x }) => x), relationships: relationships.map(({ x }) => x), metrics, kept };
+}
+
+// What Fabric's Publish refuses in a semantic view, by where it is: [{ file, path, why }], `path`
+// in that file's parsed document (['datasets', 2, 'source'], ['metrics', 0, 'expression',
+// 'dialects', 1, 'dialect'], ['nonportable_extensions']), so a host marks those lines of its
+// YAML. Every rule, those that change no model too: a version other than OSSIE.publish.version;
+// an empty datasets or dialects list; a dataset whose source is not schema.table; a dataset,
+// relationship or metric named a second time in any case, across the files; a relationship of
+// more than one column a side, to a dataset not in the view or left out, or with a description;
+// a metric named as a dataset; a dialect name Publish does not know; any nonportable_extensions
+// (Ossie 0.3's, where 0.2.0.dev0 has custom_extensions). The input is ossieToTmsl's: a folder
+// { 'path.yaml': doc } or one document, parsed. An empty list: Publish refuses none of it.
+export function fabricRefusals(input) {
+  const files = fabricFiles(input);
+  const out = [];
+  const say = (file, path, why) => out.push({ file, path, why });
+  const names = { datasets: new Map(), relationships: new Map(), metrics: new Map() };
+  const items = key => files.flatMap(([file, doc]) => (doc[key] ?? []).map((x, i) => ({ x, file, i })));
+  for (const [file, doc] of files) {
+    if (String(doc.version) !== PUBLISH.version) say(file, ['version'], `Fabric's Publish reads version ${PUBLISH.version} only, not ${doc.version ?? '(none)'}`);
+    if (Array.isArray(doc.datasets) && !doc.datasets.length) say(file, ['datasets'], "Fabric's Publish refuses an empty datasets list");
+    // Anywhere in the document: an expression's dialects, the extensions.
+    const walk = (v, path) => {
+      if (Array.isArray(v)) return v.forEach((y, i) => walk(y, [...path, i]));
+      if (!v || typeof v !== 'object') return;
+      for (const [k, y] of Object.entries(v)) {
+        const at = [...path, k];
+        if (k === 'nonportable_extensions') { say(file, at, "nonportable_extensions is Ossie 0.3's: Fabric's Publish reads 0.2.0.dev0, whose key is custom_extensions"); continue; }
+        if (k === 'dialects' && Array.isArray(y)) {
+          if (!y.length) say(file, at, "Fabric's Publish refuses an empty dialects list");
+          y.forEach((e, i) => {
+            const d = e?.dialect;
+            if (d != null && !PUBLISH.dialects.includes(String(d).toUpperCase())) {
+              say(file, [...at, i, 'dialect'], `Fabric's Publish knows no dialect ${d}, and refuses the view: write it as DAX, or as one Publish leaves out (${PUBLISH.dialects.filter(n => !PUBLISH.reads.includes(n)).join(', ')})`);
+            }
+          });
+        }
+        walk(y, at);
+      }
+    };
+    walk(doc, []);
+  }
+  // A name given twice, in any case and in whichever file: the first is kept.
+  for (const [key, seen] of Object.entries(names)) {
+    for (const { x, file, i } of items(key)) {
+      if (x?.name == null) continue;
+      const k = lc(x.name);
+      if (seen.has(k)) say(file, [key, i, 'name'], `a ${key.replace(/s$/, '')} named ${x.name} is in the view already (${seen.get(k)}), whatever its case: Fabric's Publish refuses a name given twice`);
+      else seen.set(k, file);
+    }
+  }
+  for (const { x, file, i } of items('datasets')) {
+    if (x && typeof x === 'object' && !fabricSource(x)) say(file, ['datasets', i, 'source'], "a dataset's source is schema.table, such as dbo.sales: Fabric's Publish reads no other");
+  }
+  const kept = new Set(items('datasets').filter(({ x }) => fabricSource(x)).map(({ x }) => lc(x.name)));
+  for (const { x: r, file, i } of items('relationships')) {
+    if (!r || typeof r !== 'object') continue;
+    for (const k of ['from_columns', 'to_columns']) {
+      if (Array.isArray(r[k]) && r[k].length > 1) say(file, ['relationships', i, k], "Fabric's Publish takes one column a side: a relationship on more columns is refused");
+    }
+    for (const k of ['from', 'to']) {
+      if (r[k] != null && !kept.has(lc(r[k]))) say(file, ['relationships', i, k], `the dataset ${r[k]} is not in the view, or is refused: Fabric's Publish refuses a relationship to it`);
+    }
+    if (r.description != null) say(file, ['relationships', i, 'description'], "Fabric's Publish refuses a relationship's description");
+  }
+  const datasetNames = new Set(items('datasets').filter(({ x }) => x?.name != null).map(({ x }) => lc(x.name)));
+  for (const { x: m, file, i } of items('metrics')) {
+    if (m?.name != null && datasetNames.has(lc(m.name))) say(file, ['metrics', i, 'name'], `the metric ${m.name} has a dataset's name: Fabric's Publish refuses it`);
+  }
+  return out;
 }
 function fabricView(input, { onSkip, catalog, columnsOf }) {
   if (typeof columnsOf !== 'function') {

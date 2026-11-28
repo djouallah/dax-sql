@@ -18,7 +18,7 @@ import { parse } from 'yaml';
 import { DuckDBInstance } from '@duckdb/node-api';
 import { createCompiler } from '../../src/index.js';
 import { tmslToModel, directLakeTables, storageMode } from '../tmsl.js';
-import { tmslToOssie, ossieToTmsl, ossieToModel, ossieSources, tmslType, OSSIE } from '../ossie.js';
+import { tmslToOssie, ossieToTmsl, ossieToModel, ossieSources, tmslType, OSSIE, fabricRefusals } from '../ossie.js';
 import { metricDax } from '../ossie-sql.js';
 import { readModel, formatOf } from '../model.js';
 import { stringify } from 'yaml';
@@ -617,6 +617,48 @@ test("ossieToTmsl as 'fabric': a semantic view as the model Fabric's Publish mak
   input(() => ossieToTmsl(files, { as: 'Fabric', columnsOf }), /as is 'fabric'/);
   // Not given: the strict reader, as before.
   input(() => ossieToTmsl(files), /dataset CUST is in datasets\.yaml|metric total is in/);
+});
+
+// What Fabric's Publish refuses, by where it is (#27), against what it reads (#29).
+test("fabricRefusals: what Fabric's Publish refuses in a view, by file and path; onSkip says the path too", () => {
+  const dax = e => ({ dialects: [{ dialect: 'DAX', expression: e }] });
+  const files = {
+    'a.yaml': { version: '0.3.0.dev0', name: 'v', datasets: [
+      { name: 'sales', source: 'dbo.sales', fields: [{ name: 'x', expression: { dialects: [{ dialect: 'OSSIE_SQL_2026', expression: 'x' }] } }] },
+      { name: 'cust', source: 'lh.dbo.customers' },
+    ], nonportable_extensions: [{ vendor_name: 'POWER_BI', data: {} }] },
+    'b.yaml': { version: '0.2.0.dev0', name: 'v', datasets: [{ name: 'SALES', source: 'dbo.other' }],
+      relationships: [{ name: 'r', from: 'sales', from_columns: ['a', 'b'], to: 'cust', to_columns: ['c'], description: 'd' }],
+      metrics: [{ name: 'Total', expression: dax('1') }, { name: 'cust', expression: { dialects: [] } }, { name: 'S', expression: { dialects: [{ dialect: 'ANSI_SQL', expression: 'SUM(x)' }] } }] },
+    'c.yaml': { version: '0.2.0.dev0', name: 'v', datasets: [] },
+  };
+  const got = fabricRefusals(files).map(r => [r.file, r.path.join('/')]);
+  assert.deepEqual(got, [
+    ['a.yaml', 'version'], ['a.yaml', 'datasets/0/fields/0/expression/dialects/0/dialect'], ['a.yaml', 'nonportable_extensions'],
+    ['b.yaml', 'metrics/1/expression/dialects'],
+    ['c.yaml', 'datasets'],
+    ['b.yaml', 'datasets/0/name'],
+    ['a.yaml', 'datasets/1/source'],
+    ['b.yaml', 'relationships/0/from_columns'], ['b.yaml', 'relationships/0/to'], ['b.yaml', 'relationships/0/description'],
+    ['b.yaml', 'metrics/1/name'],
+  ]);
+  assert.ok(fabricRefusals(files).every(r => typeof r.why === 'string' && /Publish/.test(r.why)));
+  // ANSI_SQL is a name Publish knows (and leaves out): not refused. A view it takes: none.
+  assert.deepEqual(fabricRefusals({ 'v.yaml': { version: '0.2.0.dev0', name: 'v', datasets: [{ name: 'sales', source: 'dbo.sales' }],
+    metrics: [{ name: 'S', expression: { dialects: [{ dialect: 'ANSI_SQL', expression: 'SUM(x)' }, { dialect: 'DAX', expression: '1' }] } }] } }), []);
+  // onSkip: the same paths, where the model leaves a part out.
+  const skipped = [];
+  ossieToTmsl(files, { as: 'fabric', columnsOf: () => [{ name: 'a', type: 'BIGINT' }], onSkip: s => skipped.push(s) });
+  assert.deepEqual(skipped.filter(s => s.kind !== 'field').map(s => [s.file, s.path.join('/')]), [
+    ['b.yaml', 'datasets/0/name'], ['a.yaml', 'datasets/1/source'], ['b.yaml', 'relationships/0/from_columns'],
+    ['b.yaml', 'metrics/1/expression'], ['b.yaml', 'metrics/2/expression'],
+  ]);
+  // What Publish reads, said beside what dax-sql reads.
+  assert.equal(OSSIE.dialects.standard, 'OSSIE_SQL_2026');
+  assert.equal(OSSIE.publish.version, '0.2.0.dev0');
+  assert.deepEqual([...OSSIE.publish.reads], ['DAX']);
+  assert.ok(OSSIE.publish.dialects.includes('ANSI_SQL') && !OSSIE.publish.dialects.includes('OSSIE_SQL_2026'));
+  assert.ok(Object.isFrozen(OSSIE.publish) && Object.isFrozen(OSSIE.publish.dialects));
 });
 
 // A quoted table name (#28): TMSL's entityName is the name itself, and so is directLakeTables'.

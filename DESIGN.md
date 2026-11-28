@@ -593,13 +593,19 @@ A file is read into a model object by a reader in `formats/`, exported as `dax-s
   With `as: 'fabric'` (`ossieToTmsl`, `ossieSources`, `readModel`), a Fabric semantic view's folder is
   read as the model Fabric's Publish makes of it, leniently. Its files are of version `0.2.0.dev0`
   (what Publish reads) or `0.3.0.dev0`, any other an `INPUT` error naming the file. What Publish
-  refuses but a model can do without is left out and said to `onSkip({ kind, name, file, why })`: a
+  refuses but a model can do without is left out and said to `onSkip({ kind, name, file, path, why })`
+  (`path` where it is in that file's document, `['datasets', 2, 'source']`): a
   dataset, relationship or metric named a second time in any case (the first kept), a dataset whose
   `source` is not `schema.table`, a relationship of more than one column a side or to a dataset
   left out, a metric named as a dataset or with no DAX dialect, a dataset's own metrics. Each
   dataset is a Direct Lake table of `catalog` with the columns `columnsOf` gives (required; none
   is an `INPUT` error naming the dataset and its source), its fields not read; every relationship
   is active; the DAX metrics are in a table of their own, `Metrics`, as Fabric's model has them.
+  `fabricRefusals(folder | doc)` lists everything Publish refuses in a view, `[{ file, path, why }]`,
+  those that change no model too (so a host marks those lines of its YAML): a version other than
+  `OSSIE.publish.version`, an empty `datasets` or `dialects` list, a dialect name Publish does not
+  know, any `nonportable_extensions`, a relationship's description, besides the parts `as:
+  'fabric'` leaves out.
   A column is a field whose `sql` is
   its source column; a measure is a metric of the dataset it reads, in Ossie's portable SQL
   when it says the same there (`formats/ossie-sql.js`: SUM, AVERAGE, COUNTROWS, DIVIDE, ... over
@@ -666,8 +672,11 @@ What a caller may rely on:
 - **The Ossie read**: `OSSIE` (`formats/ossie.js`) says it: `version` (the spec's, which
   `tmslToOssie` writes), `commit` (the apache/ossie commit last checked against), `reads` (the
   versions read; another is an `INPUT` error), `fabric` (a Fabric semantic view's, `as: 'fabric'`)
-  and `dialects.reads` / `dialects.writes` (the expression dialects evaluated and written; one in
-  another dialect is kept as written). The values move with the spec; the keys are contract.
+  `dialects.reads` / `dialects.writes` (the expression dialects evaluated and written; one in
+  another dialect is kept as written), `dialects.standard` (the spec's own SQL, `OSSIE_SQL_2026`)
+  and `publish` (what Fabric's Publish reads: its `version`, the `dialects` names it knows and
+  those it publishes, `reads`; it leaves the others out, and any other name refuses the view). The
+  values move with the spec and Fabric; the keys are contract.
 - **The answers**: Power BI's, blanks as DAX has them; and the SQL a `SELECT` over the model may
   be written in ([SQL](#sql)).
 - **The model as a host lists it**: `describe()` and `dimensionsOf(measure)`.

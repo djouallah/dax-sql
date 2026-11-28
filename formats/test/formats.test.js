@@ -17,7 +17,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { parse } from 'yaml';
 import { DuckDBInstance } from '@duckdb/node-api';
 import { createCompiler } from '../../src/index.js';
-import { tmslToModel } from '../tmsl.js';
+import { tmslToModel, directLakeTables, storageMode } from '../tmsl.js';
 import { tmslToOssie, ossieToTmsl, ossieToModel } from '../ossie.js';
 import { metricDax } from '../ossie-sql.js';
 import { bim as contoso, setup as contosoData } from '../../test/fixtures/contoso.js';
@@ -459,4 +459,30 @@ test('Ossie: a folder of files reads as the document it was split from, merged a
   input({ ...folder, 'f/x.yaml': { ...head, description: 'another' }, 'a/model.yaml': { ...top, description: 'one' } }, /description differs/);
   input({ 'model.yaml': 'version: 1' }, /is text: parse its YAML first/);
   input({ 'old.yml': head }, /no \.yaml file/);
+});
+
+// Where a Direct Lake model's tables are (#13): by GUIDs from a shared expression, or by name in
+// the model's workspace (an Ossie source item.schema.table); and how the model stores them.
+test('directLakeTables and storageMode read where a model\'s data is from its TMSL alone', () => {
+  const ws = '11111111-2222-3333-4444-555555555555', lh = 'AAAAAAAA-2222-3333-4444-555555555555';
+  const bim = { model: {
+    defaultMode: 'directLake',
+    expressions: [{ name: 'DatabaseQuery', expression: ['let', `database = AzureStorage.DataLake("https://onelake.dfs.fabric.microsoft.com/${ws}/${lh}", [HierarchicalNavigation=true])`, 'in database'] }],
+    tables: [
+      { name: 'Sales', partitions: [{ mode: 'directLake', source: { type: 'entity', expressionSource: 'DatabaseQuery', schemaName: 'gold', entityName: 'fact_sales' } }] },
+      { name: 'Dim', partitions: [{ source: { type: 'entity', expressionSource: 'DatabaseQuery' } }] },
+      { name: 'V', partitions: [{ source: { type: 'entity', schemaName: '"my lh".dbo', entityName: 'v' } }] },
+      { name: 'Bare', partitions: [{ source: { type: 'entity', schemaName: 'dbo', entityName: 'b' } }] },
+      { name: 'Calc', partitions: [{ source: { type: 'calculated', expression: '{1}' } }] },
+    ] } };
+  assert.deepEqual([...directLakeTables(bim)], [
+    ['sales', { workspace: ws, item: lh.toLowerCase(), schema: 'gold', entity: 'fact_sales' }],
+    ['dim', { workspace: ws, item: lh.toLowerCase(), schema: 'dbo', entity: 'Dim' }],
+    ['v', { item: 'my lh', schema: 'dbo', entity: 'v', inWorkspace: true }],
+  ]);
+  assert.equal(storageMode(bim), 'directlake');
+  assert.equal(storageMode(bim.model), 'directlake', 'the model itself too');
+  assert.equal(storageMode({ model: { tables: [{ partitions: [{}] }] } }), 'import', 'no mode: import');
+  assert.equal(storageMode({ model: { tables: [{ partitions: [{ mode: 'directQuery' }] }, { partitions: [{ mode: 'import' }] }] } }), 'composite');
+  assert.equal(storageMode({ model: { defaultMode: 'dual', tables: [{ partitions: [{ mode: 'default' }] }] } }), 'dual');
 });

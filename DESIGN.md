@@ -539,7 +539,16 @@ A file is read into a model object by a reader in `formats/`, exported as `dax-s
 `dax-sql/formats/tmdl.js` and `dax-sql/formats/ossie.js`. The compiler never imports them.
 
 - `formats/tmsl.js`: `tmslToModel(bim)` reads a TMSL model (`model.bim`, the JSON of Power BI
-  and Analysis Services).
+  and Analysis Services). For a host, from the TMSL alone (each takes the document or its model):
+  - `directLakeTables(bim)`: where a Direct Lake model's tables are in OneLake, a `Map` by
+    lower-cased table name of `{ workspace, item, schema, entity }` for a partition reading a
+    shared expression whose `AzureStorage.DataLake` URL names the lakehouse by GUIDs (`schema`
+    `dbo` and `entity` the table's name unless the partition says), or `{ item, schema, entity,
+    inWorkspace: true }` for one with no expression whose schema is `item.schema` (an Ossie
+    `source` of `item.schema.table`), the item of that name in the model's workspace;
+  - `storageMode(bim)`: `directlake`, `import`, `directquery`, `dual` or `composite`, from the
+    partitions' `mode` and the model's `defaultMode` (no mode: import; a calculated table or
+    calculation group does not count).
 - `formats/tmdl.js`: `tmdlToModel(text)` reads a TMDL model, through `tmdlToTmsl(text)`, which
   returns it as TMSL. `text` is one file (the whole model, inside a `createOrReplace` script or
   not, as Fabric publishes a semantic view) or a folder's files (a PBIP's `definition/`: their

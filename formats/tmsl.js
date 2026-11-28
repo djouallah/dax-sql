@@ -84,3 +84,60 @@ export function tmslToModel(bim) {
     })),
   };
 }
+
+// --- Where a model's data is (for a host; dax-sql compiles whatever tableSource names) ---------
+
+const lc = s => String(s).toLowerCase();
+// A dotted SQL name's parts as written ("my ws" keeps its quotes), and one without its quotes.
+const nameParts = ident => String(ident).match(/"(?:[^"]|"")*"|[^.]+/g) ?? [];
+const unquote = p => (p.startsWith('"') ? p.slice(1, -1).replace(/""/g, '"') : p);
+const ONELAKE = /onelake\.dfs\.fabric\.microsoft\.com\/([0-9a-f-]{36})\/([0-9a-f-]{36})/i;
+
+// A Direct Lake model's tables in OneLake, by lower-cased table name:
+//   { workspace, item, schema, entity }          a partition reading a shared expression whose
+//     AzureStorage.DataLake URL names the lakehouse by GUIDs (schema `dbo`, entity the table's
+//     name, unless the partition says);
+//   { item, schema, entity, inWorkspace: true }  a partition with no expression whose schema is
+//     item.schema (ossieToTmsl's for a source item.schema.table): the item of that name in the
+//     model's own workspace.
+// A table it places neither way is not in it. It takes the document ({ model }) or its model.
+export function directLakeTables(bim) {
+  const model = bim?.model ?? bim ?? {};
+  const lakes = new Map();
+  for (const e of model.expressions ?? []) {
+    const m = ONELAKE.exec(String(text(e.expression)));
+    if (m) lakes.set(e.name, { workspace: lc(m[1]), item: lc(m[2]) });
+  }
+  const out = new Map();
+  for (const t of model.tables ?? []) {
+    const s = t.partitions?.[0]?.source;
+    if (!s) continue;
+    const lake = s.expressionSource && lakes.get(s.expressionSource);
+    if (lake) { out.set(lc(t.name), { ...lake, schema: s.schemaName ?? 'dbo', entity: s.entityName ?? t.name }); continue; }
+    if (s.expressionSource || !s.entityName || !s.schemaName) continue;
+    const parts = nameParts(s.schemaName);
+    if (parts.length === 2) out.set(lc(t.name), { item: unquote(parts[0]), schema: unquote(parts[1]), entity: s.entityName, inWorkspace: true });
+  }
+  return out;
+}
+
+// How a model stores its tables: 'directlake', 'import', 'directquery', 'dual', or 'composite'
+// (partitions of more than one mode). A partition with no mode (or 'default') takes the model's
+// defaultMode, Import when it has none; a calculated table or calculation group has no storage of
+// its own and does not count.
+export function storageMode(bim) {
+  const model = bim?.model ?? bim ?? {};
+  const fallback = lc(model.defaultMode || 'import');
+  const modes = new Set();
+  for (const t of model.tables ?? []) {
+    for (const p of t.partitions ?? []) {
+      if (p.source?.type === 'calculated' || p.source?.type === 'calculationGroup') continue;
+      const m = lc(p.mode || 'default');
+      modes.add(m === 'default' ? fallback : m);
+    }
+  }
+  if (!modes.size) modes.add(fallback);
+  if (modes.size > 1) return 'composite';
+  const [m] = modes;
+  return ['directlake', 'import', 'directquery', 'dual'].includes(m) ? m : 'import';
+}

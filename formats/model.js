@@ -10,7 +10,8 @@
 // its .yaml files merged as Fabric merges a semantic view's (ossie.js, ossieFolder; a .yml beside
 // them is not read). A UTF-8 BOM before a file's text is dropped (Visual Studio writes one).
 // YAML is parsed by `parseYaml`, the caller's (dax-sql has no dependencies): it is needed for
-// Ossie only. `skipped` is what ossieToTmsl left out ({ kind, name, dataset, why }); a model
+// Ossie only, as are `catalog` and `columnsOf` (ossieToTmsl's: what a Fabric semantic view leaves to
+// the platform). `skipped` is what ossieToTmsl left out ({ kind, name, dataset, why }); a model
 // whose metrics were all left out is refused. Every error is a DaxError of code INPUT naming the
 // file.
 import { DaxError } from '../src/errors.js';
@@ -21,7 +22,7 @@ const FORMATS = 'a .bim (TMSL), a .tmdl or a folder of them (TMDL), or a .yaml /
 const bad = msg => new DaxError(msg, { code: 'INPUT' });
 const noBom = t => String(t).replace(/^﻿/, '');
 
-export function readModel(path, input, { parseYaml } = {}) {
+export function readModel(path, input, { parseYaml, catalog, columnsOf } = {}) {
   path = String(path ?? '');
   if (parseYaml != null && typeof parseYaml !== 'function') throw bad('readModel: parseYaml is a function (text -> document)');
   // A reader's error, its own code kept (INPUT from a folder's merge), any other as INPUT.
@@ -37,9 +38,10 @@ export function readModel(path, input, { parseYaml } = {}) {
   };
   const ossie = doc => {
     const skipped = [];
-    const bim = ossieToTmsl(doc, { onSkip: s => skipped.push(s) });
+    const bim = ossieToTmsl(doc, { onSkip: s => skipped.push(s), catalog, columnsOf });
     const measures = (bim.model?.tables ?? []).reduce((n, t) => n + (t.measures?.length ?? 0), 0);
-    if (!measures && skipped.length) throw bad(`${path}: none of its metrics can be read: ${skipped.map(s => s.why).join('; ')}`);
+    const metrics = skipped.filter(s => s.kind === 'metric');
+    if (!measures && metrics.length) throw bad(`${path}: none of its metrics can be read: ${metrics.map(s => s.why).join('; ')}`);
     return { bim, skipped };
   };
 

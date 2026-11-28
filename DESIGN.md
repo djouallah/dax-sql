@@ -538,7 +538,7 @@ the same at its top.
 A file is read into a model object by a reader in `formats/`, exported as `dax-sql/formats/tmsl.js`,
 `dax-sql/formats/tmdl.js` and `dax-sql/formats/ossie.js`. The compiler never imports them.
 
-- `formats/model.js`: `readModel(path, text | files, { parseYaml })` is the one reader a host
+- `formats/model.js`: `readModel(path, text | files, { parseYaml, catalog, columnsOf })` is the one reader a host
   needs: `{ bim, skipped }`, the TMSL of a model's file, or of a folder of them (`{ path: text }`),
   by the format its path says (`.bim` TMSL, `.tmdl` TMDL, `.yaml` / `.yml` Apache Ossie). A folder
   is TMDL when it holds `.tmdl` files, else Ossie's `.yaml` files merged as Fabric merges a
@@ -571,6 +571,15 @@ A file is read into a model object by a reader in `formats/`, exported as `dax-s
   `version` and `name`; the lists (`datasets`, `relationships`, `metrics`, the extensions)
   concatenated; a dataset, relationship or metric (a metric by its name in any case) defined
   once across the files; one description. Anything else is an `INPUT` error naming the files.
+  What a Fabric semantic view leaves to the platform, the host gives `ossieToTmsl` (and
+  `readModel`): `catalog`, the lakehouse a source named `schema.table` alone (or `table`, schema
+  `dbo`) is read in, when no Direct Lake expression reads it (its schema becomes
+  `"catalog"."schema"`); and `columnsOf({ dataset, source })`, the columns of a dataset that lists
+  no fields, `[{ name, type }]` in the engine's type names (`BIGINT`, `DECIMAL(18,2)`, `TIMESTAMP
+  WITH TIME ZONE`…, read by `tmslType(type)`; struct, list, map, binary and the like left out and
+  said to `onSkip`), or null when not known. With none, such a table has its key and relationship
+  columns as text, so the model holds. `columnsOf` is called as the document is read:
+  `ossieSources(doc)` lists the `{ dataset, source }` it will be asked, for the host to read first.
   A column is a field whose `sql` is
   its source column; a measure is a metric of the dataset it reads, in Ossie's portable SQL
   when it says the same there (`formats/ossie-sql.js`: SUM, AVERAGE, COUNTROWS, DIVIDE, ... over

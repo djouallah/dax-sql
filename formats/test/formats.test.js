@@ -18,7 +18,7 @@ import { parse } from 'yaml';
 import { DuckDBInstance } from '@duckdb/node-api';
 import { createCompiler } from '../../src/index.js';
 import { tmslToModel, directLakeTables, storageMode } from '../tmsl.js';
-import { tmslToOssie, ossieToTmsl, ossieToModel } from '../ossie.js';
+import { tmslToOssie, ossieToTmsl, ossieToModel, ossieSources, tmslType } from '../ossie.js';
 import { metricDax } from '../ossie-sql.js';
 import { readModel } from '../model.js';
 import { stringify } from 'yaml';
@@ -520,4 +520,37 @@ test('readModel reads a .bim, a .tmdl, an Ossie .yaml and a folder of either, an
   input(() => readModel('m.csv', 'a,b'), /m\.csv: a model is read from/);
   input(() => readModel('dir', { 'a.txt': 'x' }), /the folder has no \.tmdl or \.yaml file/);
   input(() => readModel('dir', [1]), /a model is a file's text, or a folder/);
+});
+
+// What a Fabric semantic view leaves to the platform (#20): a dataset's columns when it lists no
+// fields, and the lakehouse a source named schema.table alone is read in.
+test('ossieToTmsl: a dataset with no fields has its source\'s columns (columnsOf), and a schema.table source the catalog\'s', () => {
+  const doc = { version: '0.1', name: 'v', datasets: [
+    { name: 'sales', source: 'dbo.sales', primary_key: ['id'], metrics: [{ name: 'Total', expression: { sql: 'SUM(amount)' } }] },
+    { name: 'cust', source: 'customers', fields: [{ name: 'cid', expression: { sql: 'cid' }, datatype: 'Integer' }] },
+    { name: 'dim', source: 'lh.dbo.dim' },
+  ], relationships: [{ name: 'r', from: 'sales', from_columns: ['cust_id'], to: 'cust', to_columns: ['cid'] }] };
+  assert.deepEqual(ossieSources(doc), [{ dataset: 'sales', source: 'dbo.sales' }, { dataset: 'dim', source: 'lh.dbo.dim' }]);
+  const asked = [], skipped = [];
+  const columns = { sales: [{ name: 'id', type: 'BIGINT' }, { name: 'amount', type: 'DECIMAL(18,2)' }, { name: 'at', type: 'TIMESTAMP WITH TIME ZONE' }, { name: 'cust_id', type: 'long' }, { name: 'tags', type: 'VARCHAR[]' }, { name: 'meta', type: 'STRUCT(a INT)' }] };
+  const bim = ossieToTmsl(doc, { catalog: 'nem', columnsOf: s => { asked.push(s); return columns[s.dataset] ?? null; }, onSkip: s => skipped.push(s) });
+  assert.deepEqual(asked, ossieSources(doc), 'asked of the datasets with no fields');
+  const t = n => bim.model.tables.find(x => x.name === n);
+  assert.deepEqual(t('sales').columns.map(c => [c.name, c.dataType, c.sourceColumn, !!c.isKey]),
+    [['id', 'int64', 'id', true], ['amount', 'decimal', 'amount', false], ['at', 'dateTime', 'at', false], ['cust_id', 'int64', 'cust_id', false]]);
+  assert.deepEqual(skipped.map(s => [s.kind, s.dataset, s.name]), [['field', 'sales', 'tags'], ['field', 'sales', 'meta']]);
+  // schema.table alone, and table alone: in the catalog; one named in full stays where it says.
+  assert.equal(t('sales').partitions[0].source.schemaName, '"nem"."dbo"');
+  assert.equal(t('cust').partitions[0].source.schemaName, '"nem"."dbo"');
+  assert.equal(t('dim').partitions[0].source.schemaName, 'lh.dbo');
+  // No columnsOf (or null): the key and relationship columns as text, so the model holds.
+  const bare = ossieToTmsl(doc);
+  assert.deepEqual(bare.model.tables[0].columns.map(c => [c.name, c.dataType]), [['id', 'string'], ['cust_id', 'string']]);
+  assert.equal(bare.model.tables[0].partitions[0].source.schemaName, 'dbo', 'no catalog: as before');
+  createCompiler(tmslToModel(bare)).compile('EVALUATE ROW("n", COUNTROWS(sales))');
+  assert.ok(createCompiler(tmslToModel(bim)).compile('EVALUATE ROW("t", [Total])').sql, 'its metric reads a column columnsOf gave');
+  // The engine's type names.
+  const want = { BIGINT: 'int64', HUGEINT: 'int64', integer: 'int64', 'DOUBLE': 'double', real: 'double', 'NUMERIC(10,2)': 'decimal', BOOLEAN: 'boolean', date: 'dateTime', datetime2: 'dateTime', 'VARCHAR(20)': 'string', uuid: 'string', BLOB: null, 'MAP(VARCHAR, INT)': null, INTERVAL: null };
+  for (const [k, v] of Object.entries(want)) assert.equal(tmslType(k), v, k);
+  assert.throws(() => ossieToTmsl(doc, { columnsOf: 'x' }), e => e.code === 'INPUT');
 });

@@ -50,6 +50,8 @@ const text = e => (Array.isArray(e) ? e.join('\n') : e);
 const lc = s => String(s).toLowerCase();
 const TO_OSSIE = { string: 'String', int64: 'Integer', decimal: 'Decimal', double: 'Float', boolean: 'Boolean' };
 const TO_TMSL = { String: 'string', Integer: 'int64', Decimal: 'decimal', Float: 'double', Boolean: 'boolean', Date: 'dateTime', DateTime: 'dateTime', DateTimeTz: 'dateTime' };
+// A TMSL dataType as a field's datatype (a source column columnsOf gives).
+const FROM_TMSL = { ...TO_OSSIE, dateTime: 'DateTime' };
 // A dateTime column whose format has no time of day is a date.
 const datatype = c => (c.dataType === 'dateTime' ? (/[Hhms]/.test(c.formatString ?? 'H') ? 'DateTime' : 'Date') : TO_OSSIE[c.dataType]);
 
@@ -292,17 +294,36 @@ const measureDax = (m, dataset, datasets) => {
   catch (e) { return { skip: `metric '${m.name}' has no DAX expression, and its SQL is beyond what dax-sql reads: ${e.message}` }; }
 };
 
-export function ossieToTmsl(doc, { onSkip = () => {} } = {}) {
+// What a Fabric semantic view leaves to the platform, given by the host (it reads the data and
+// knows where the view is):
+//   catalog    a source named schema.table alone (or table), with no Direct Lake expression to
+//              read it by, is read in this catalog, the lakehouse that holds the view: its schema
+//              becomes "catalog"."schema" (dbo when it names none);
+//   columnsOf  a dataset with no fields has every column of its source, as
+//              columnsOf({ dataset, source }) says: [{ name, type }], the engine's type names
+//              (BIGINT, DECIMAL(18,2), TIMESTAMP WITH TIME ZONE…), those a model cannot hold
+//              (struct, list, map, binary) left out and said to onSkip; null when not known. With
+//              none, the table has its key and relationship columns, as text, so the model holds.
+// It is called as the document is read: the host reads the columns first (ossieSources lists
+// what it will be asked).
+export function ossieToTmsl(doc, { onSkip = () => {}, catalog = null, columnsOf = null } = {}) {
   if (isFolder(doc)) doc = ossieFolder(doc);
+  if (catalog != null && typeof catalog !== 'string') throw new DaxError('ossieToTmsl: catalog is a text', { code: 'INPUT' });
+  if (columnsOf != null && typeof columnsOf !== 'function') throw new DaxError('ossieToTmsl: columnsOf is a function ({ dataset, source }) => [{ name, type }]', { code: 'INPUT' });
   // `partition`: the one a dataset with none of its own has. The rest is the TMSL's.
   const { model: modelExtra = {}, partition: defaults = {}, ...docExtra } = powerBi(doc);
-  const tables = doc.datasets.map(d => {
+  // A dataset with no fields has its source's (columnsOf): for its table and for its metrics alike.
+  const datasets = doc.datasets.map(d => (d.fields?.length ? d : { ...d, fields: sourceFields(d, doc, columnsOf, onSkip) }));
+  const tables = datasets.map(d => {
     const keys = new Set(d.primary_key ?? []);
     const extra = powerBi(d);
     const dot = lastDot(d.source);
-    const [schema, entityName] = dot < 0 ? [null, d.source] : [d.source.slice(0, dot), d.source.slice(dot + 1)];
+    let [schema, entityName] = dot < 0 ? [null, d.source] : [d.source.slice(0, dot), d.source.slice(dot + 1)];
     // A source named in full says where it is: the model's partition is for schema.table.
     const own = dot < 0 || lastDot(schema) < 0 ? defaults : {};
+    if (catalog != null && !own.expressionSource && (dot < 0 || lastDot(schema) < 0)) {
+      schema = `${quoteName(catalog)}.${schema?.startsWith('"') ? schema : quoteName(schema ?? 'dbo')}`;
+    }
     // A field is a source column when its SQL is one (a file of an earlier draft wrote it as
     // it was, in ANSI_SQL, quoted or not), and a calculated column when its SQL is more.
     const fields = (d.fields ?? []).map(f => {
@@ -358,15 +379,15 @@ export function ossieToTmsl(doc, { onSkip = () => {} } = {}) {
     extra.annotations = [...(extra.annotations ?? []).filter(a => a.name !== OSSIE), { name: OSSIE, value: JSON.stringify(was) }];
     (home.measures ??= []).push(tmsl({ name: m.name, description: m.description, expression: code }, extra));
   };
-  for (const d of doc.datasets) {
+  for (const d of datasets) {
     for (const m of d.metrics ?? []) {
-      const { dax: code, skip } = measureDax(m, d, doc.datasets);
+      const { dax: code, skip } = measureDax(m, d, datasets);
       if (skip) onSkip({ kind: 'metric', name: m.name, dataset: d.name, why: skip });
       else place(m, powerBi(m).table ?? d.name, code, d.name);
     }
   }
   for (const m of doc.metrics ?? []) {
-    const { dax: code, table, skip } = measureDax(m, null, doc.datasets);
+    const { dax: code, table, skip } = measureDax(m, null, datasets);
     if (skip) onSkip({ kind: 'metric', name: m.name, dataset: null, why: skip });
     else place(m, powerBi(m).table ?? table, code, null);
   }
@@ -384,6 +405,50 @@ export function ossieToTmsl(doc, { onSkip = () => {} } = {}) {
 }
 
 export const ossieToModel = (doc, opts) => tmslToModel(ossieToTmsl(doc, opts));
+
+const quoteName = s => `"${String(s).replace(/"/g, '""')}"`;
+
+// The datasets of a document (or folder) whose columns ossieToTmsl will ask columnsOf: those with
+// no fields, [{ dataset, source }], so a host reads their columns first.
+export function ossieSources(doc) {
+  if (isFolder(doc)) doc = ossieFolder(doc);
+  return (doc.datasets ?? []).filter(d => !d.fields?.length).map(d => ({ dataset: d.name, source: d.source }));
+}
+
+// An engine's type name as TMSL's dataType, or null for one a model cannot hold.
+export function tmslType(type) {
+  const t = String(type ?? '').trim().toLowerCase();
+  if (/\[\]$/.test(t) || /^(struct|list|map|array|union|row|json|geometry|geography|binary|blob|varbinary|bytea|bytes|bit\s+varying|image|interval)\b/.test(t)) return null;
+  if (/^(u?(tiny|small|big|huge)?int(eger)?\d*|long|short|byte|int\d+|u(tiny|small|big|huge)?int)\b/.test(t)) return 'int64';
+  if (/^(double|float\d*|real)\b/.test(t)) return 'double';
+  if (/^(decimal|numeric|number|money|smallmoney|dec)\b/.test(t)) return 'decimal';
+  if (/^(bool|boolean|bit)\b/.test(t)) return 'boolean';
+  if (/^(date|time|timestamp|datetime\d*|smalldatetime|datetimeoffset|timestamptz)\b/.test(t)) return 'dateTime';
+  if (/^(varchar|char|nvarchar|nchar|text|ntext|string|uuid|guid|uniqueidentifier|enum|bpchar|character|clob)\b/.test(t)) return 'string';
+  return null;
+}
+
+// A dataset with no fields: its source's columns as columnsOf says (fields of that name and type),
+// or else its key and relationship columns as text.
+function sourceFields(d, doc, columnsOf, onSkip) {
+  const read = columnsOf ? columnsOf({ dataset: d.name, source: d.source }) : null;
+  if (Array.isArray(read)) {
+    return read.flatMap(c => {
+      const type = tmslType(c?.type);
+      if (!c?.name || !type) {
+        onSkip({ kind: 'field', name: c?.name ?? null, dataset: d.name, why: `field '${d.name}.${c?.name}': a column of type ${c?.type}, which a model cannot hold` });
+        return [];
+      }
+      return [{ name: String(c.name), datatype: FROM_TMSL[type], expression: { sql: sqlName(String(c.name)) } }];
+    });
+  }
+  const names = new Set(d.primary_key ?? []);
+  for (const r of doc.relationships ?? []) {
+    if (r.from === d.name) (r.from_columns ?? []).forEach(c => names.add(c));
+    if (r.to === d.name) (r.to_columns ?? []).forEach(c => names.add(c));
+  }
+  return [...names].map(n => ({ name: n, datatype: 'String', expression: { sql: sqlName(n) } }));
+}
 
 // A folder: an object of files by path, each a .yaml or .yml (a document has its datasets,
 // version and name as keys instead).

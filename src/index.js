@@ -71,7 +71,6 @@ import { fuse } from './passes/fuse.js';
 import { joins } from './passes/joins.js';
 import { outer } from './passes/outer.js';
 import { trimScans, paddedOf } from './passes/trim.js';
-import { ownRows } from './passes/own-rows.js';
 import * as P from './plan.js';
 import { kids, scalarsOf } from './passes/decorrelate.js';
 import { pipe, checked } from './check.js';
@@ -91,10 +90,10 @@ function planSize(root) {
   for (const d of root.defs ?? []) R(d.rel);
   return n;
 }
-const correlated = pipe([['ownRows', ownRows], ['fuseApplies', fuseApplies], ['standard', standard], ['exact', exact], ['closed', closed], ['semijoins', semijoins], ['share', share], ['inline', inline], ['renames', renames], ['prune', prune]]);
+const correlated = pipe([['fuseApplies', fuseApplies], ['standard', standard], ['exact', exact], ['closed', closed], ['semijoins', semijoins], ['share', share], ['inline', inline], ['renames', renames], ['prune', prune]]);
 // The correlated plan unnested (passes/unnest.js), for an engine that does not unnest: no apply,
 // no correlated EXISTS; the σ over × it leaves joins, the measures over the same rows one grouping.
-const unnested = pipe([['ownRows', ownRows], ['fuseApplies', fuseApplies], ['standard', standard], ['exact', exact], ['unnest', unnest], ['joins', joins], ['fuse', fuse], ['outer', outer], ['share', share], ['inline', inline], ['renames', renames], ['prune', prune]]);
+const unnested = pipe([['fuseApplies', fuseApplies], ['standard', standard], ['exact', exact], ['unnest', unnest], ['joins', joins], ['fuse', fuse], ['outer', outer], ['share', share], ['inline', inline], ['renames', renames], ['prune', prune]]);
 // The plan read back from Substrait, checked as any pass's (DAXSQL_CHECK).
 const readBack = checked('the Substrait read back', x => x, { final: true });
 import { explain as drawPlan } from './explain.js';

@@ -113,10 +113,12 @@ export function directLakeTables(bim) {
     const s = t.partitions?.[0]?.source;
     if (!s) continue;
     const lake = s.expressionSource && lakes.get(s.expressionSource);
-    if (lake) { out.set(lc(t.name), { ...lake, schema: s.schemaName ?? 'dbo', entity: s.entityName ?? t.name }); continue; }
+    // Each part a name, unquoted: an entity written quoted (a TMSL of dax-sql before 0.3) too.
+    const entity = unquote(s.entityName ?? t.name);
+    if (lake) { out.set(lc(t.name), { ...lake, schema: unquote(s.schemaName ?? 'dbo'), entity }); continue; }
     if (s.expressionSource || !s.entityName || !s.schemaName) continue;
     const parts = nameParts(s.schemaName);
-    if (parts.length === 2) out.set(lc(t.name), { item: unquote(parts[0]), schema: unquote(parts[1]), entity: s.entityName, inWorkspace: true });
+    if (parts.length === 2) out.set(lc(t.name), { item: unquote(parts[0]), schema: unquote(parts[1]), entity, inWorkspace: true });
   }
   return out;
 }

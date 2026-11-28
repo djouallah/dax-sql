@@ -232,7 +232,9 @@ export function tmslToOssie(bim, name = 'model', { source = () => null } = {}) {
     const metrics = metricsOf.get(lc(t.name));
     return {
       name: t.name,
-      source: named.get(t) ?? (s?.entityName ? (s.schemaName ? `${s.schemaName}.${s.entityName}` : s.entityName) : t.name),
+      // The table's name a name of SQL (quoted where it needs to be: "DUID list"), after the
+      // schema's path as the partition writes it.
+      source: named.get(t) ?? (s?.entityName ? (s.schemaName ? `${s.schemaName}.${sqlName(s.entityName)}` : sqlName(s.entityName)) : sqlName(t.name)),
       ...(keys.length ? { primary_key: keys } : {}),
       ...optional('description', text(t.description)),
       fields: (t.columns ?? []).filter(c => c.type !== 'rowNumber').map(c => field(c, tables.get(lc(t.name)))),
@@ -332,6 +334,8 @@ export function ossieToTmsl(doc, { onSkip = () => {}, catalog = null, columnsOf 
     const extra = powerBi(d);
     const dot = lastDot(d.source);
     let [schema, entityName] = dot < 0 ? [null, d.source] : [d.source.slice(0, dot), d.source.slice(dot + 1)];
+    // TMSL's entityName is the table's name itself: "DUID list" is DUID list.
+    entityName = unquoteName(entityName);
     // A source named in full says where it is: the model's partition is for schema.table.
     const own = dot < 0 || lastDot(schema) < 0 ? defaults : {};
     if (catalog != null && !own.expressionSource && (dot < 0 || lastDot(schema) < 0)) {
@@ -420,6 +424,7 @@ export function ossieToTmsl(doc, { onSkip = () => {}, catalog = null, columnsOf 
 export const ossieToModel = (doc, opts) => tmslToModel(ossieToTmsl(doc, opts));
 
 const quoteName = s => `"${String(s).replace(/"/g, '""')}"`;
+const unquoteName = s => (/^"(?:[^"]|"")*"$/.test(s) ? s.slice(1, -1).replace(/""/g, '"') : s);
 
 // The datasets of a document (or folder) whose columns ossieToTmsl will ask columnsOf: those with
 // no fields, [{ dataset, source }], so a host reads their columns first. With `as: 'fabric'`,

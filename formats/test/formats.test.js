@@ -619,6 +619,20 @@ test("ossieToTmsl as 'fabric': a semantic view as the model Fabric's Publish mak
   input(() => ossieToTmsl(files), /dataset CUST is in datasets\.yaml|metric total is in/);
 });
 
+// A quoted table name (#28): TMSL's entityName is the name itself, and so is directLakeTables'.
+test('a source\'s quoted table name is its name in TMSL, quoted again as Ossie and as SQL', () => {
+  const doc = { version: '0.3.0.dev0', name: 'v', datasets: [
+    { name: 'duid', source: '"my lake".dbo."DUID list"', fields: [{ name: 'id', datatype: 'Integer', expression: { sql: 'id' } }] }] };
+  const bim = ossieToTmsl(doc);
+  assert.deepEqual(bim.model.tables[0].partitions[0].source, { type: 'entity', entityName: 'DUID list', schemaName: '"my lake".dbo' });
+  assert.deepEqual(directLakeTables(bim).get('duid'), { item: 'my lake', schema: 'dbo', entity: 'DUID list', inWorkspace: true });
+  assert.equal(tmslToOssie(bim, 'v').datasets[0].source, '"my lake".dbo."DUID list"');
+  assert.match(createCompiler(tmslToModel(bim)).compile('EVALUATE duid').sql, /FROM "my lake"\."dbo"\."DUID list" AS/);
+  // A TMSL written with the quotes kept (dax-sql before): read the same.
+  const old = { model: { tables: [{ name: 'duid', partitions: [{ source: { type: 'entity', entityName: '"DUID list"', schemaName: '"my lake".dbo' } }] }] } };
+  assert.deepEqual(directLakeTables(old).get('duid'), { item: 'my lake', schema: 'dbo', entity: 'DUID list', inWorkspace: true });
+});
+
 // What the reader is written for, said: the spec's version and commit, the versions and dialects.
 test('OSSIE: the spec version, the Ossie commit checked, what is read; another version refused', () => {
   assert.equal(tmslToOssie(contoso).version, OSSIE.version);

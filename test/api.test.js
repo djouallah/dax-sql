@@ -35,6 +35,9 @@ test('the methods\' options and the views\' are checked the same way', () => {
   for (const f of [() => c.plan(Q, { optimise: false }), () => c.explain(Q, { correlated: 'yes' }), () => c.planSql(Q, { inline: true }), () => c.substrait(Q, { x: 1 })]) inputError(f);
   const v = createViews({ fullNames: true, dialect: 'duckdb' });
   assert.equal(v.define('m', model(), { path: 'm.bim', db: 'memory', schema: 'main', mode: 'replace', tablesFrom: 'search path', orphans: () => undefined }), 'created');
+  // null is no value (OneLake Studio's tablesFrom when its model reads no lakehouse): kept as it is.
+  v.define('k', model(), { mode: 'replace', tablesFrom: null, tableSource: undefined });
+  assert.equal(v.get('k').tablesFrom, null);
   inputError(() => createViews({ fullName: true }));
   inputError(() => v.define('n', model(), { mode: 'upsert' }));
   inputError(() => v.define('n', model(), { blankRows: false }));

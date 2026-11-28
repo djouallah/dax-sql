@@ -460,7 +460,7 @@ export function refsOf(x) {
   walk(x, y => { if (y.k === 'ref') out.add(y.col); });
   return out;
 }
-function existsOf(x) {
+export function existsOf(x) {
   const out = [];
   walk(x, y => { if (y.k === 'exists') out.push(y.rel); });
   return out;

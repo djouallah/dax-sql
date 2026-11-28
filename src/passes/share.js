@@ -5,7 +5,7 @@
 // distinct in it, and reading no column from outside, is shared; a table or a constant alone
 // is not (reading one is no work).
 import * as P from '../plan.js';
-import { kids, scalarsOf, mapKids } from './decorrelate.js';
+import { kids, scalarsOf, mapKids, existsOf } from './decorrelate.js';
 import { clone } from './clone.js';
 
 export function share(root) {
@@ -66,10 +66,15 @@ function hasWork(r) {
   return kids(r).some(hasWork);
 }
 
-// The definitions, each after those it reads.
+// The definitions, each after those it reads (in an EXISTS too: whether a table has its blank row).
 function order(defs) {
   const out = [], done = new Set(), on = new Set();
-  const reads = (r, acc) => { if (r.k === 'shared') acc.add(r.def); kids(r).forEach(k => reads(k, acc)); return acc; };
+  const reads = (r, acc) => {
+    if (r.k === 'shared') acc.add(r.def);
+    kids(r).forEach(k => reads(k, acc));
+    for (const x of scalarsOf(r)) existsOf(x).forEach(e => reads(e, acc));
+    return acc;
+  };
   const place = d => {
     if (done.has(d) || on.has(d)) return;
     on.add(d);

@@ -29,10 +29,9 @@ export function inline(root) {
   const one = rel => {
     if (rel.k !== 'select' || rel.pred.k !== 'ref' || rel.src.k !== 'shared' || !once.has(rel.src.def)) return null;
     const d = rel.src.def.rel;
-    if (d.k !== 'project' || d.src.k !== 'values' || d.src.rows.length !== 1 || d.items.some(i => i.expr.k === 'ref')) return null;
-    const at = rel.src.cols.indexOf(rel.pred.col);
-    const item = at >= 0 && d.items.find(i => i.col === rel.src.picks[at]);
-    return item ? inExists(item.expr, I, one) : null;
+    if (d.k !== 'values' || d.rows.length !== 1) return null;
+    const at = rel.src.cols.indexOf(rel.pred.col), j = at >= 0 ? d.cols.indexOf(rel.src.picks[at]) : -1;
+    return j >= 0 ? inExists(d.rows[0][j], I, one) : null;
   };
   const kept = defs.filter(d => !once.has(d));
   for (const d of kept) d.rel = I(d.rel);

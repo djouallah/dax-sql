@@ -270,7 +270,7 @@ export class Lowerer {
   hasOrphans(table) {
     const test = this.orphans(table);
     if (test === P.TRUE || test === P.FALSE) return test;
-    const s = this.shared(`orphans ${table.name}`, () => P.project(P.oneRow(), [{ name: 'orphans', expr: test, t: 'bool' }]));
+    const s = this.shared(`orphans ${table.name}`, () => P.values([[test]], [P.newCol('orphans', 'bool', { nn: true })]));
     return P.exists(P.select(s, P.ref(s.cols[0])));
   }
 

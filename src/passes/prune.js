@@ -17,7 +17,8 @@ export function prune(root) {
       case 'values': {
         let at = r.cols.map((c, i) => (want.has(c) ? i : -1)).filter(i => i >= 0);
         if (!at.length) at = [0];
-        return { ...r, cols: at.map(i => r.cols[i]), rows: r.rows.map(row => at.map(i => row[i])) };
+        // (A value may be more than a constant: an EXISTS, whether a table has its blank row.)
+        return { ...r, cols: at.map(i => r.cols[i]), rows: r.rows.map(row => at.map(i => S(row[i]))) };
       }
       case 'select': {
         const src = N(r.src, union(want, refs(r.pred)));

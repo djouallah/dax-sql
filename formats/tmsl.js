@@ -86,7 +86,11 @@ const relationship = (r, i) => ({
 export function tmslToModel(bim) {
   const m = bim.model ?? bim;
   if (!Array.isArray(m?.tables)) throw new Error('not a TMSL model: it has no tables');
+  // The model's name: the document's (a database's, an Ossie document's), else its model's.
+  const name = (bim.model ? bim.name : null) ?? m.name ?? null;
   return {
+    ...(name != null ? { name: String(name) } : {}),
+    ...(m.description != null ? { description: text(m.description) } : {}),
     tables: m.tables.map(table),
     relationships: (m.relationships ?? []).map(relationship),
     roles: (m.roles ?? []).map(r => ({

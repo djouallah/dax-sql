@@ -14,7 +14,8 @@
 //
 // The model object is no file format: a reader turns one into it (formats/: TMSL, Apache
 // Ossie). Its shape (DESIGN.md, "The model"), every property optional unless said:
-//   { tables: [{ name (required), source: { schema, entity }, dax (a calculated table),
+//   { name, description,
+//     tables: [{ name (required), source: { schema, entity }, dax (a calculated table),
 //       hidden, dataCategory, description, autoDate (Power BI's auto date/time table),
 //       columns: [{ name (required), type: string|int|double|decimal|datetime|bool|variant,
 //         source (the stored column; its name by default), dax (a calculated column), key,
@@ -41,6 +42,8 @@ const lc = s => String(s).toLowerCase();
 export class Model {
   constructor(model) {
     if (!Array.isArray(model?.tables)) throw semantic('the model has no tables (a model object: { tables, relationships, roles })');
+    this.name = model.name ?? null;
+    this.description = model.description ?? null;
     this.tables = new Map();
     this.measures = new Map();
     for (const t of model.tables) this.addTable(t);

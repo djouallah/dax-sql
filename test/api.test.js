@@ -242,3 +242,19 @@ test('nameParts: a dotted SQL name as its names', async () => {
   assert.deepEqual(nameParts('"a""b".c'), ['a"b', 'c']);
   assert.deepEqual(nameParts(['x', 'y']), ['x', 'y']);
 });
+
+// The model's own name and description (#37), from TMSL, TMDL and Ossie alike.
+test('describe(): the model\'s name and description, whatever its format', async () => {
+  const { tmslToTmdl, tmdlToModel } = await import('../formats/tmdl.js');
+  const { tmslToOssie, ossieToModel } = await import('../formats/ossie.js');
+  const bim = { name: 'nem', model: { description: 'the market', tables: [{ name: 'T', columns: [{ name: 'a', dataType: 'int64', sourceColumn: 'a' }],
+    partitions: [{ name: 'T', source: { type: 'entity', entityName: 't', schemaName: 'dbo' } }] }] } };
+  for (const [what, m] of [['TMSL', tmslToModel(bim)], ['TMDL', tmdlToModel(tmslToTmdl(bim))], ['Ossie', ossieToModel(tmslToOssie(bim, 'nem'))]]) {
+    const d = createCompiler(m).describe();
+    assert.equal(d.name, 'nem', what);
+    assert.equal(d.description, 'the market', what);
+  }
+  const none = createCompiler(tmslToModel({ model: { tables: bim.model.tables } })).describe();
+  assert.equal(none.name, null);
+  assert.equal(none.description, null);
+});

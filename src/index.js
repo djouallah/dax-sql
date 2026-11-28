@@ -525,7 +525,7 @@ export function createCompiler(input, options = {}) {
     },
     fieldParameters: () => fieldParameters(model),
     // The model as a host lists it (SHOW, DESCRIBE, a field list, a diagram), so it needs
-    // nothing of the compiler's own objects: { tables: [{ name, hidden, description, autoDate,
+    // nothing of the compiler's own objects: { name, description, tables: [{ name, hidden, description, autoDate,
     // columns: [{ name, type, calculated, expression, nullable, unique, hidden, description,
     // formatString, displayFolder }] }], measures: [{ name, table, expression, formatString,
     // type, hidden, description, displayFolder }], relationships: [{ name, from: { table,
@@ -536,6 +536,9 @@ export function createCompiler(input, options = {}) {
     // none).
     describe() {
       return {
+        // The model's own: its name (the document's) and description, null when it has none.
+        name: model.name ?? null,
+        description: model.description ?? null,
         tables: [...model.tables.values()].map(describeTable),
         measures: [...model.measures.values()].map(m => ({ name: m.name, table: m.table.name, expression: m.text, formatString: m.formatString ?? null,
           type: measureType(m), hidden: !!m.hidden, description: m.description ?? null, displayFolder: m.displayFolder ?? null })),

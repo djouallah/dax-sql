@@ -30,12 +30,16 @@ test('defining: a name once, unless replaced', () => {
 
 test('CREATE and DROP are reported to the host, which stores the view', () => {
   assert.deepEqual(views.rewrite(`CREATE OR REPLACE SEMANTIC VIEW s.sales FROM 'a/b.bim'`),
-    [{ create: { db: null, schema: 's', name: 'sales', path: 'a/b.bim', mode: 'replace' } }]);
+    [{ create: { db: null, schema: 's', name: 'sales', path: 'a/b.bim', mode: 'replace', exists: false } }]);
   assert.deepEqual(views.rewrite(`create semantic view if not exists sales from 'b.bim';`),
-    [{ create: { db: null, schema: null, name: 'sales', path: 'b.bim', mode: 'if_not_exists' } }]);
-  assert.deepEqual(views.rewrite('DROP SEMANTIC VIEW IF EXISTS nothing'), [{ drop: { name: 'nothing', ifExists: true } }]);
-  assert.throws(() => views.rewrite(`CREATE SEMANTIC VIEW contoso FROM 'x.bim'`), /semantic view contoso already exists/);
-  assert.throws(() => views.rewrite('DROP SEMANTIC VIEW nothing'), /semantic view nothing does not exist/);
+    [{ create: { db: null, schema: null, name: 'sales', path: 'b.bim', mode: 'if_not_exists', exists: false } }]);
+  assert.deepEqual(views.rewrite('DROP SEMANTIC VIEW IF EXISTS nothing'), [{ drop: { name: 'nothing', ifExists: true, exists: false } }]);
+  // The host carries a view statement out, and says whether a missing or present view is an error (#36).
+  assert.equal(views.rewrite(`CREATE SEMANTIC VIEW contoso FROM 'x.bim'`)[0].create.exists, true);
+  assert.deepEqual(views.rewrite('DROP SEMANTIC VIEW nothing'), [{ drop: { name: 'nothing', ifExists: false, exists: false } }]);
+  assert.throws(() => views.drop('nothing'), e => e.code === 'CATALOG' && /does not exist/.test(e.message));
+  // OR REPLACE and IF NOT EXISTS say opposite things (#34).
+  assert.throws(() => views.rewrite(`CREATE OR REPLACE SEMANTIC VIEW IF NOT EXISTS v FROM 'x.bim'`), e => e.code === 'SYNTAX' && /cannot be combined with IF NOT EXISTS/.test(e.message));
   assert.throws(() => views.rewrite('CREATE SEMANTIC VIEW x FROM model.bim'), /expected a quoted path/);
   assert.throws(() => views.rewrite(`CREATE SEMANTIC VIEW x FROM 'a.bim' AND MORE`), /syntax error at or near "AND"/);
 });
@@ -125,11 +129,11 @@ test('views of one name in two schemas: named in full, or in part while that is 
     e => e.code === 'CATALOG' && /ambiguous/.test(e.message) && /prod\.contoso/.test(e.message) && /"Test WS"\.contoso/.test(e.message));
   // SHOW / DESCRIBE / DROP by the full name.
   assert.ok((await h.sql(two.rewrite('SHOW SEMANTIC METRICS IN prod.contoso')[0].sql)).length > 0);
-  assert.deepEqual(two.rewrite('DROP SEMANTIC VIEW prod.contoso'), [{ drop: { name: 'prod.contoso', ifExists: false } }]);
+  assert.deepEqual(two.rewrite('DROP SEMANTIC VIEW prod.contoso'), [{ drop: { name: 'prod.contoso', ifExists: false, exists: true } }]);
   assert.equal(two.drop('prod.contoso'), true);
   assert.equal(two.get('contoso').sqlName, '"Test WS".contoso', 'the other is the only contoso now');
   // CREATE in a schema reports it, and one of that full name exists already.
-  assert.throws(() => two.rewrite(`CREATE SEMANTIC VIEW "Test WS".contoso FROM 'x.bim'`), /already exists/);
+  assert.equal(two.rewrite(`CREATE SEMANTIC VIEW "Test WS".contoso FROM 'x.bim'`)[0].create.exists, true);
 });
 
 test('fullNames: a statement reaches a view by its whole name and no other', async () => {
@@ -217,9 +221,9 @@ test('a view kept with its error when its model does not read (restore, #18)', (
 test('REFRESH SEMANTIC VIEW v: an entry for the host, the name in full (#19)', () => {
   const v = createViews();
   v.define('contoso', tmslToModel(bim), { schema: 'sales' });
-  assert.deepEqual(v.rewrite('REFRESH SEMANTIC VIEW memory.sales.contoso'), [{ refresh: { name: 'sales.contoso' } }]);
-  assert.deepEqual(v.rewrite('REFRESH SEMANTIC VIEW contoso'), [{ refresh: { name: 'sales.contoso' } }]);
-  assert.throws(() => v.rewrite('REFRESH SEMANTIC VIEW nope'), e => e.code === 'CATALOG' && /semantic view nope does not exist/.test(e.message));
+  assert.deepEqual(v.rewrite('REFRESH SEMANTIC VIEW memory.sales.contoso'), [{ refresh: { name: 'sales.contoso', exists: true } }]);
+  assert.deepEqual(v.rewrite('REFRESH SEMANTIC VIEW contoso'), [{ refresh: { name: 'sales.contoso', exists: true } }]);
+  assert.deepEqual(v.rewrite('REFRESH SEMANTIC VIEW nope'), [{ refresh: { name: 'nope', exists: false } }]);
 });
 
 test('a view of the schema main is reached with main written too: main.v, db.main.v', async () => {

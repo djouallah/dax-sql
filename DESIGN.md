@@ -547,6 +547,10 @@ A file is read into a model object by a reader in `formats/`, exported as `dax-s
   whose metrics were all left out is refused (not with `as: 'fabric'`). Every error is `INPUT`, naming the file (one file
   of a Power BI project's folder, not a model; YAML with no datasets). A path of another
   extension is read as its text says.
+- `modelFiles(paths)`: which files of a folder `readModel` reads, given its files' paths: its
+  `.tmdl` files, else its `.yaml` files, in the order given, `[]` for a folder it refuses. A host
+  reads only those (not a PBIP's `.pbism` or `diagramLayout.json`, not the rest of a lakehouse's
+  Files) and gives them to `readModel`, which picks them by the same rule.
 - `formatOf(path, text)`: a model file's format from its path and text, nothing parsed (a host
   sniffs before it reads): `'tmsl'` (a `.bim`, or JSON with a `model`), `'ossie'` (YAML with a
   top-level `datasets:` and `version:`), `'tmdl'` (a whole model: `createOrReplace`, `database`
@@ -835,9 +839,12 @@ SELECT * FROM (SHOW SEMANTIC METRICS IN sales) WHERE ...;   -- each one reads as
   `match(parts)` keeps: a host that defines a view when a statement names one defines those, then
   calls `rewrite`.
 - `rewrite(sql)`: `null` when nothing in the text is a view's; otherwise one entry per statement:
-  `{ create: { db, schema, name, path, mode } }`, `{ drop: { name, ifExists } }` or `{ refresh:
-  { name } }` (the name in full), which the host carries out (it reads the file and calls `define`,
-  forgets the view and calls `drop`, or reads the data again and defines the view anew), or
+  `{ create: { db, schema, name, path, mode, exists } }`, `{ drop: { name, ifExists, exists } }`
+  or `{ refresh: { name, exists } }` (the name in full; `exists`: whether a view of it is
+  defined), which the host carries out (it reads the file and calls `define`, forgets the view
+  and calls `drop`, or reads the data again and defines the view anew): whether a missing or
+  present view is an error is the host's call, as `define` and `drop` throw `CATALOG` for it and
+  `rewrite` does not. `CREATE OR REPLACE ... IF NOT EXISTS` is a `SYNTAX` error. Or
   `{ sql }` to run. In `sql`, each model query is compiled in place (`compileStatement`) and each
   `SHOW SEMANTIC …` or `DESCRIBE <view>` is its rows, as a `SELECT` over `VALUES`.
 - The `SHOW SEMANTIC DIMENSIONS` and `METRICS` columns are `database_name, schema_name,

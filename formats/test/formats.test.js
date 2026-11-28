@@ -20,7 +20,7 @@ import { createCompiler } from '../../src/index.js';
 import { tmslToModel, directLakeTables, unplacedTables, storageMode } from '../tmsl.js';
 import { tmslToOssie, ossieToTmsl, ossieToModel, ossieSources, tmslType, OSSIE, fabricRefusals } from '../ossie.js';
 import { metricDax } from '../ossie-sql.js';
-import { readModel, formatOf } from '../model.js';
+import { readModel, formatOf, modelFiles } from '../model.js';
 import { stringify } from 'yaml';
 import { bim as contoso, setup as contosoData } from '../../test/fixtures/contoso.js';
 
@@ -523,6 +523,20 @@ test('directLakeTables and storageMode read where a model\'s data is from its TM
 
 // One reader for a model's file or folder (#14): the format its path says, a BOM dropped, the
 // caller's YAML parser for Ossie, INPUT errors naming the file.
+// Which files of a folder readModel reads (#35), for a host to read only those.
+test('modelFiles: the files of a folder readModel reads, [] for a folder it refuses', () => {
+  const pbip = ['definition.pbism', '.platform', 'diagramLayout.json', 'definition/model.tmdl', 'definition/tables/Sales.tmdl', 'notes.yaml'];
+  assert.deepEqual(modelFiles(pbip), ['definition/model.tmdl', 'definition/tables/Sales.tmdl']);
+  assert.deepEqual(modelFiles(['model.yaml', 'old.yml', 'datasets/a.yaml', 'logo.png']), ['model.yaml', 'datasets/a.yaml']);
+  assert.deepEqual(modelFiles(['a.csv', 'b.yml', 'c.parquet']), []);
+  assert.throws(() => modelFiles('x.tmdl'), e => e.code === 'INPUT');
+  // readModel reads exactly those: the rest of the folder given or not, the same model.
+  const tmdl = 'model Model\n\tculture: en-US\n\ntable Sales\n\tcolumn Amount\n\t\tdataType: double\n';
+  const all = { 'definition.pbism': '{', 'definition/model.tmdl': tmdl, 'notes.yaml': 'x: [' };
+  const only = Object.fromEntries(modelFiles(Object.keys(all)).map(p => [p, all[p]]));
+  assert.deepEqual(readModel('m', all), readModel('m', only));
+});
+
 test('readModel reads a .bim, a .tmdl, an Ossie .yaml and a folder of either, and says what it cannot', () => {
   const bom = '﻿';
   const input = (f, re) => assert.throws(f, e => e.code === 'INPUT' && re.test(e.message), re);

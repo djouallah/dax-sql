@@ -42,6 +42,17 @@ export function formatOf(path, text) {
   return json() ? 'tmsl' : ossie() ? 'ossie' : tmdl() ? 'tmdl' : null;
 }
 
+// Which files of a folder readModel reads, given its files' paths (relative to it): its .tmdl
+// files (a TMDL model), else its .yaml files (Apache Ossie; a .yml beside them is not read), in
+// the order given; [] when it would refuse the folder. A host reads only those and gives them to
+// readModel as { path: text }: not a Power BI project's .pbism or diagramLayout.json, not the
+// rest of a lakehouse's Files folder.
+export function modelFiles(paths) {
+  if (!Array.isArray(paths) || !paths.every(p => typeof p === 'string')) throw bad('modelFiles: the paths are a list of texts');
+  const tmdl = paths.filter(p => /\.tmdl$/i.test(p));
+  return tmdl.length ? tmdl : paths.filter(p => /\.yaml$/i.test(p));
+}
+
 export function readModel(path, input, { parseYaml, catalog, columnsOf, as } = {}) {
   path = String(path ?? '');
   if (parseYaml != null && typeof parseYaml !== 'function') throw bad('readModel: parseYaml is a function (text -> document)');
@@ -86,11 +97,12 @@ export function readModel(path, input, { parseYaml, catalog, columnsOf, as } = {
   if (input === null || typeof input !== 'object' || Array.isArray(input) || !Object.values(input).every(v => typeof v === 'string')) {
     throw bad(`${path}: a model is a file's text, or a folder of files as { path: text }`);
   }
-  const files = Object.entries(input);
+  const read1 = modelFiles(Object.keys(input));
+  if (!read1.length) throw bad(`${path}: the folder has no .tmdl or .yaml file`);
+  const files = read1.map(p => [p, input[p]]);
   const tmdl = files.filter(([p]) => /\.tmdl$/i.test(p));
   if (tmdl.length) return { bim: read('a TMDL model', () => tmdlToTmsl(Object.fromEntries(tmdl.map(([p, t]) => [p, noBom(t)])))), skipped: [] };
-  const yamls = files.filter(([p]) => /\.yaml$/i.test(p));
-  if (!yamls.length) throw bad(`${path}: the folder has no .tmdl or .yaml file`);
+  const yamls = files;
   const docs = Object.fromEntries(yamls.map(([p, t]) => [p, yaml(p, t)]));
   return read('a folder of Apache Ossie files', () => ossie(docs));
 }

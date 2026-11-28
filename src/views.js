@@ -23,11 +23,15 @@
 //   drop(name, { ifExists })     true when there was one
 //   get(name), list()
 //   rewrite(sql)       null when nothing in the text is a view's, or one entry per statement:
-//                      { create: { db, schema, name, path, mode } } — the host reads the file
-//                      and calls define; { drop: { name, ifExists } } — the host forgets it and
-//                      calls drop; { sql } — what to run
+//                      { create: { db, schema, name, path, mode, exists } } — the host reads
+//                      the file and calls define; { drop: { name, ifExists, exists } } — the
+//                      host forgets it and calls drop; { refresh: { name, exists } } — the host
+//                      reads the data again; { sql } — what to run. `exists`: whether a view of
+//                      that name is defined. A view statement is carried out by the host, which
+//                      says whether a missing (or present) view is an error: define and drop
+//                      throw CATALOG for it, rewrite does not.
 // Errors are DaxError: SYNTAX for a statement that does not read, CATALOG for a view that is
-// missing or already there.
+// missing (a statement that reads one: SHOW, DESCRIBE, a query) or already there (define).
 import { DaxError } from './errors.js';
 import { nameParts, spliceStatement, numberMarkers } from './sql.js';
 import { checkOptions, input, VIEWS, DEFINE, DROP, NAMES } from './options.js';
@@ -384,6 +388,8 @@ export function makeViews(createCompiler, options = {}) {
       const replace = r.words('OR', 'REPLACE');
       if (!r.words('SEMANTIC', 'VIEW')) return null;
       const ifNotExists = r.words('IF', 'NOT', 'EXISTS');
+      // The two say opposite things of a view that exists (as SQL has it for its own objects).
+      if (replace && ifNotExists) throw fail('syntax error: CREATE OR REPLACE SEMANTIC VIEW cannot be combined with IF NOT EXISTS', 'SYNTAX');
       const parts = r.qualified();
       r.expect('FROM');
       const path = r.string();
@@ -391,9 +397,10 @@ export function makeViews(createCompiler, options = {}) {
       const name = parts[parts.length - 1];
       const schema = parts.length > 1 ? parts[parts.length - 2] : null;
       const mode = replace ? 'replace' : ifNotExists ? 'if_not_exists' : 'create';
-      const old = views.get(keyOf(partsOf(name, schema)));
-      if (mode === 'create' && old) throw fail(`semantic view ${old.sqlName} already exists`, 'CATALOG');
-      return { create: { db: parts.length === 3 ? parts[0] : null, schema, name, path, mode } };
+      // Whether one of the name is defined: the host carries the statement out (define throws
+      // CATALOG for a CREATE of a view that exists), so whether that is an error is its call.
+      const exists = views.has(keyOf(partsOf(name, schema)));
+      return { create: { db: parts.length === 3 ? parts[0] : null, schema, name, path, mode, exists } };
     }
     if (r.word('DROP')) {
       if (!r.words('SEMANTIC', 'VIEW')) return null;
@@ -401,9 +408,9 @@ export function makeViews(createCompiler, options = {}) {
       const parts = r.qualified();
       r.end();
       const v = named(parts);
-      if (!v && !ifExists) throw fail(`semantic view ${parts.join('.')} does not exist`, 'CATALOG');
-      // The name in full, so the host drops this view and no other of its name.
-      return { drop: { name: v ? v.sqlName : parts.map(part).join('.'), ifExists } };
+      // The name in full, so the host drops this view and no other of its name; exists: whether
+      // one is defined (drop() throws CATALOG for one that is not, unless ifExists).
+      return { drop: { name: v ? v.sqlName : parts.map(part).join('.'), ifExists, exists: !!v } };
     }
     if (r.word('SHOW')) {
       if (!r.word('SEMANTIC')) return null;
@@ -434,7 +441,8 @@ export function makeViews(createCompiler, options = {}) {
       if (!r.words('SEMANTIC', 'VIEW')) return null;
       const parts = r.qualified();
       r.end();
-      return { refresh: { name: view(parts).sqlName } };
+      const v = named(parts);
+      return { refresh: { name: v ? v.sqlName : parts.map(part).join('.'), exists: !!v } };
     }
     if (r.word('DESCRIBE') || r.word('DESC')) {
       if (r.done()) return null;

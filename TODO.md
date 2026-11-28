@@ -17,7 +17,10 @@ values the data holds: a filter that keeps no row at SF10 says nothing of the SQ
   extensions (the rows the joins add to each), so `S ⋈≡(all of S's columns) δ π(σp(S ⋈ T…))` is
   `S ⋉ σp(T…)` correlated on the row's own keys (an EXISTS, the hand's join), when everything
   between the scan of S and the δ is row-wise (σ, π, inner joins and applies to other tables) and
-  the scan is of S's table, every column.
+  the scan is of S's table, every column. Tried as that EXISTS (8d84576, reverted): DuckDB does
+  not unnest it (a COALESCE match correlated to the row, under each group's apply), past 120 s at
+  SF1. It has to stay a join: S's own conditions on S, and the semi-join on the columns of S the
+  joins read (cs_promo_sk), of the distinct rows of T… holding p.
 - Not a target (a few times the hand's, which a compiler will not close): the fuzz3-0112,
   fuzz2-0043, fuzz3-0149, fuzz3-0139 group, 10–30 s, 3–4× the hand's.
 - Not the SQL's (the hand file reads a fact of the data, not a constant): fuzz2-0006, fuzz2-0106,
